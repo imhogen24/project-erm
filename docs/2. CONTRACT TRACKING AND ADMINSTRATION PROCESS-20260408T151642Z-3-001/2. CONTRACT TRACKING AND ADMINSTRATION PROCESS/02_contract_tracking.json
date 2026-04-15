@@ -1,0 +1,3096 @@
+{
+  "source_file": "02RDB1_IMHOGEN Contract Tracking and Administration Process .xlsx",
+  "workbook_id": 2,
+  "workbook_name": "Contract Tracking and Administration Process",
+  "description": "Workbook 2 \u2014 Maps technical variables into legal clauses, manages contract lifecycle from draft to execution",
+  "documents": [
+    {
+      "sheet_name": "2.i Document Control",
+      "doc_id": "2.i Document Control",
+      "tool_title": "Doc Control",
+      "phase_name": "Contract Tracking and Administration Process",
+      "activity_name": "Document Tracking",
+      "prev_sheet_ref": "-",
+      "next_sheet_ref": "2.1",
+      "related_tool": "2.X series",
+      "header": {
+        "doc_id": "2.i Document Control",
+        "tool_title": "Doc Control",
+        "related_tool": "2.X series",
+        "prev_sheet_ref": "-",
+        "phase_name": "Contract Tracking and Administration Process",
+        "next_sheet_ref": "2.1",
+        "activity_name": "Document Tracking",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "Project Request ID"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "DOCUMENT CONTROL"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "Find link to source files"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "DocID",
+            "C": "Document Title",
+            "G": "Link",
+            "I": "Description"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "D2.1",
+            "C": "Standard Conract Template",
+            "G": "\u27a1\ufe0f",
+            "I": "The master boilerplate containing IMHO GEN's standard legal clauses"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "D2.2",
+            "C": "Initial Draft Contract",
+            "G": "\u27a1\ufe0f",
+            "I": "The first project-specific iteration combining the D2.1 boilerplate with the abstracted D1.15 Project Brief scope and budget."
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "D2.3",
+            "C": "PM Review Draft",
+            "G": "\u27a1\ufe0f",
+            "I": "Internal routing document for the Project Manager to verify operational timelines and technical deliverables are accurately captured."
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "D2.4",
+            "C": "Finance Review Draft",
+            "G": "\u27a1\ufe0f",
+            "I": "Internal routing document for Finance to verify payment schedules"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "D2.5",
+            "C": "Executive Review Draft",
+            "G": "\u27a1\ufe0f",
+            "I": "Internal routing for final executive risk assessment (Head of Ops / R&D) before external transmission."
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "D2.6",
+            "C": "Internally Approved Draft",
+            "G": "\u27a1\ufe0f",
+            "I": "Link to calender invite and meeting agenda"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "D2.7",
+            "C": "Client Transmitted Record",
+            "G": "\u27a1\ufe0f",
+            "I": "Standard template for meeting notes"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "D2.8",
+            "C": "Negotiation meeting Invite",
+            "G": "\u27a1\ufe0f",
+            "I": "Needs assessments records"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "D2.9",
+            "C": "Negotiation Meeting Notes",
+            "G": "\u27a1\ufe0f",
+            "I": "Internal memo for requesting a review of the assessment made"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "D2.10",
+            "C": "Finanlized Contract",
+            "G": "\u27a1\ufe0f",
+            "I": "Reports on capability Assessment"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "D2.11",
+            "C": "Pending Signature Contract",
+            "G": "\u27a1\ufe0f",
+            "I": "Reports on Risk Assessment"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "D2.12",
+            "C": "Exec. Contract & Audit Trail",
+            "G": "\u27a1\ufe0f",
+            "I": "The fully signed, legally binding document complete with signature timestamps and digital audit certificates."
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "D2.13",
+            "C": "Archieved Contract Record",
+            "G": "\u27a1\ufe0f",
+            "I": "Written project brief document"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "D2.14",
+            "C": "Phase Initiation Notice",
+            "G": "\u27a1\ufe0f",
+            "I": "The formal internal trigger alerting Engineering and Finance that the contract is active"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "D2",
+            "C": "Master Contract Database",
+            "G": "\u27a1\ufe0f",
+            "I": "The central dashboard tracking the real-time status of all active contract drafts and execution timelines"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "T3.D2.2a",
+            "C": "Drafting Contract Mapping",
+            "G": "\u27a1\ufe0f",
+            "I": "This handles the \"Native File\" IP and Liability Waiver."
+          }
+        },
+        {
+          "row": 38,
+          "cells": {
+            "A": "Confidential Notice",
+            "M": "Client Name/Organization"
+          }
+        },
+        {
+          "row": 39,
+          "cells": {
+            "M": "Description of Primary activities of Organizaiton"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.1 Master Contract Database",
+      "doc_id": "2.1",
+      "tool_title": "Mastetr Contract Database",
+      "phase_name": "Contract Tracking and Administration Process",
+      "activity_name": "Master Contract Database",
+      "prev_sheet_ref": "2.i",
+      "next_sheet_ref": "2.1",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "2.1",
+        "tool_title": "Mastetr Contract Database",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "2.i",
+        "phase_name": "Contract Tracking and Administration Process",
+        "next_sheet_ref": "2.1",
+        "activity_name": "Master Contract Database",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.1 STANDARD CONTRACT TEMPLATE (Boilerplate Clauses)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 TEMPLATE METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Last Legal Review Date:",
+            "K": "Reviewed By (Legal/Exec):"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Governing Jurisdiction:",
+            "K": "Default Currency:"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 STANDARD LEGAL CLAUSES (Base Text for Copying to D2.2)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Clause Category",
+            "H": "Standard Clause Text (Do not alter without executive approval)",
+            "V": "Status (Active/Archived)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Parties & Definitions",
+            "H": "This Engineering Services Agreement (\"Agreement\") is entered into by and between IMHOGEN LTD (\"Service Provider\") and [Client Name] (\"Client\").",
+            "V": "Active"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.2",
+            "B": "Scope of Services",
+            "H": "IMHOGEN agrees to provide the engineering",
+            "V": "Active"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.3",
+            "B": "Payment Terms",
+            "H": "Client agrees to pay the total sum of [Total GHS] as follows: [X]% upon execution",
+            "V": "Active"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.4",
+            "B": "Intellectual Property (IP)",
+            "H": "Unless otherwise negotiated",
+            "V": "Active"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "2.5",
+            "B": "Limitation of Liability",
+            "H": "IMHOGEN's total liability under this Agreement",
+            "V": "Active"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "2.6",
+            "B": "Termination",
+            "H": "Either party may terminate this agreement with 14 days written notice. Client remains legally liable for all engineering hours logged and materials purchased up to the date of termination.",
+            "V": "Active"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "2.7",
+            "B": "Force Majeure",
+            "H": "Neither party shall be liable for delays caused by circumstances beyond their reasonable control",
+            "V": "Active"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "2.8",
+            "B": "Governing Law & Dispute",
+            "H": "This Agreement shall be governed by the laws of the Republic of Ghana. Disputes shall be resolved through binding arbitration in Kumasi",
+            "V": "Active"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "3.0 STANDARD APPENDICES TO ATTACH (Required for D2.2)"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Appendix A:",
+            "E": "D1.15 Project Brief & Draft Budget",
+            "M": "Appendix C:",
+            "Q": "D1.11 Risk Mitigation Directives"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "Appendix B:",
+            "E": "D1.13 Scope of Work (Exclusions)",
+            "M": "Appendix D:",
+            "Q": "IMHO GEN Standard Service Level Agreement (SLA)"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.2 Initial Draft Template",
+      "doc_id": "2.2",
+      "tool_title": "Initial Draft Template",
+      "phase_name": "Contract Tracking and Administration Process",
+      "activity_name": "Initial Drafting",
+      "prev_sheet_ref": "2.1",
+      "next_sheet_ref": "2.3",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "2.2",
+        "tool_title": "Initial Draft Template",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "2.1",
+        "phase_name": "Contract Tracking and Administration Process",
+        "next_sheet_ref": "2.3",
+        "activity_name": "Initial Drafting",
+        "sheet_version": "V.1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.2 INITIAL DRAFT CONTRACT (Variable Mapping)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 DRAFT METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Drafted By (Contract Admin):",
+            "N": "Project/Client Name:"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date of Initial Draft:",
+            "N": "Reference Hand-off (D1.16):"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Assigned Project Manager:",
+            "N": "Overall Project Value:"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 CORE CONTRACT VARIABLES (The \"Fill-in-the-Blanks\" for D2.1 Boilerplate)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "SN",
+            "B": "Variable Required",
+            "H": "Value / Input to map into Contract",
+            "R": "Source Reference"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.1",
+            "B": "Client Legal Entity Name",
+            "H": "[Type exact legal name]",
+            "R": "[From D1.3]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.2",
+            "B": "Primary Client Signatory",
+            "H": "[Type Name and Title]",
+            "R": "[From D1.15]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.3",
+            "B": "Total Contract Value (GHS)",
+            "H": "[Type exact amount e.g. 173,500.00]",
+            "R": "[From D1.15]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.4",
+            "B": "Project Duration / Timeline",
+            "H": "[e.g. 40 Working Days from receipt of advance]",
+            "R": "[From D1.15]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "2.5",
+            "B": "Payment Milestone 1",
+            "H": "[e.g. 40% (GHS 69,400) Advance Payment]",
+            "R": "[From D1.15]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "2.6",
+            "B": "Payment Milestone 2",
+            "H": "[e.g. 40% (GHS 69,400) upon Phase 2 Fabrication Start]",
+            "R": "[From D1.15]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "2.7",
+            "B": "Payment Milestone 3",
+            "H": "[e.g. 20% (GHS 34,700) upon Final Handover]",
+            "R": "[From D1.15]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "3.0 PROJECT-SPECIFIC LEGAL DIRECTIVES (Extracted from D1.16 Handoff)"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "SN",
+            "B": "Risk / Exclusion Category",
+            "H": "Specific Clause Added to Draft Contract",
+            "S": "Clause Location (Section #)"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "3.1",
+            "B": "Scope Exclusion",
+            "H": "[e.g. \"It is explicitly agreed that regulatory certification (CE/UL) is the sole responsibility of the Client and falls entirely outside the scope of IMHO GEN's deliverables.\"]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "3.2",
+            "B": "Timeline Risk",
+            "H": "[e.g. \"Phase 2 fabrication timelines shall remain paused until formal,written approval of the 3D CAD design is received from the Client.\"],[e.g. Section 4.1]"
+          }
+        },
+        {
+          "row": 30,
+          "cells": {
+            "A": "3.3",
+            "B": "Financial Risk",
+            "H": "[e.g. \"Due to volatile raw material markets,[e.g. Section 3.4]"
+          }
+        },
+        {
+          "row": 32,
+          "cells": {
+            "A": "4.0 APPENDIX ATTACHMENT VERIFICATION"
+          }
+        },
+        {
+          "row": 33,
+          "cells": {
+            "A": "SN",
+            "B": "Required Attachment",
+            "M": "Status (Attached/Missing)",
+            "S": "Notes"
+          }
+        },
+        {
+          "row": 34,
+          "cells": {
+            "A": "4.1",
+            "B": "Appendix A: D1.15 Project Brief & Draft Budget",
+            "M": "[Attached]",
+            "S": "[Governs technical scope]"
+          }
+        },
+        {
+          "row": 35,
+          "cells": {
+            "A": "4.2",
+            "B": "Appendix B: D1.13 Scope of Work (Exclusions)",
+            "M": "[Attached]",
+            "S": "[Governs boundary limits]"
+          }
+        },
+        {
+          "row": 36,
+          "cells": {
+            "A": "4.3",
+            "B": "Appendix C: IMHO GEN Standard SLA",
+            "M": "[Attached]",
+            "S": "[Governs post-delivery support]"
+          }
+        },
+        {
+          "row": 38,
+          "cells": {
+            "A": "5.0 DRAFT ROUTING"
+          }
+        },
+        {
+          "row": 39,
+          "cells": {
+            "A": "Initial Draft Complete?",
+            "E": "[Yes/No]",
+            "M": "Ready for PM Review (D2.3)?:",
+            "Q": "[Yes/No]"
+          }
+        },
+        {
+          "row": 40,
+          "cells": {
+            "A": "Contract Admin Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "T3.D2.2a Drafting Contract Mapp",
+      "doc_id": "T3.D2.2a",
+      "tool_title": "T3 Drafting Contract Mapping",
+      "phase_name": "",
+      "activity_name": "Variable Mapping",
+      "prev_sheet_ref": "T3.D1.15a",
+      "next_sheet_ref": "",
+      "related_tool": "D2.12",
+      "header": {
+        "doc_id": "T3.D2.2a",
+        "tool_title": "T3 Drafting Contract Mapping",
+        "related_tool": "D2.12",
+        "prev_sheet_ref": "T3.D1.15a",
+        "activity_name": "Variable Mapping"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "T3.D2.2a Drafting Contract Mapping"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 INTELLECTUAL PROPERTY (IP) ELECTION"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Check One",
+            "C": "Option",
+            "I": "Legal Definition",
+            "R": "Fee (GHS)"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "0",
+            "C": "Standard Release",
+            "I": "IMHOGEN retains Native CAD; Client gets PDF/STEP",
+            "R": "0.0"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "0",
+            "C": "Full IP Transfer",
+            "I": "Client buys Native Source Files (CAD Assets)",
+            "R": "[Insert Fee]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 SOURCE DATA LIABILITY WAIVER"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "The Client acknowledges that IMHOGEN is modeling based on PROVIDED DATA."
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "IMHOGEN is not responsible for fitment issues arising from inaccuracies in the client's original source model or measurements."
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "3.0 APPROVAL ROUTING"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "Role",
+            "F": "Name",
+            "O": "Signature",
+            "V": "Date"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "Project Manager"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Finance Officer"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Client Signatory"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.3 PM Review Draft",
+      "doc_id": "2.3",
+      "tool_title": "PM Review Draft",
+      "phase_name": "Contract Tracking and Administration Process",
+      "activity_name": "PM Review",
+      "prev_sheet_ref": "2.2",
+      "next_sheet_ref": "2.4",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "2.3",
+        "tool_title": "PM Review Draft",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "2.2",
+        "phase_name": "Contract Tracking and Administration Process",
+        "next_sheet_ref": "2.4",
+        "activity_name": "PM Review",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.3 PM REVIEW DRAFT (Operational Verification)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 REVIEW METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Assigned Project Manager:",
+            "Q": "Reference Draft:"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date Received for Review:",
+            "Q": "Link to D2.2:",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Project / Client Name:",
+            "Q": "Date Review Completed:",
+            "U": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 SCOPE & DELIVERABLES VERIFICATION"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "SN",
+            "B": "Deliverable Category",
+            "H": "Contract Clause Ref",
+            "N": "Status (Accurate / Mismatch)",
+            "R": "PM Comments / Required Edits"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.1",
+            "B": "Engineering Design",
+            "H": "[e.g. Section 2.1]",
+            "N": "[Accurate / Mismatch]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.2",
+            "B": "Physical Fabrication",
+            "H": "[e.g. Section 2.2]",
+            "N": "[Accurate / Mismatch]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.3",
+            "B": "Technical Documentation",
+            "H": "[e.g. Section 2.3]",
+            "N": "[Accurate / Mismatch]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.4",
+            "B": "Excluded Scope / Boundary Limits",
+            "H": "[e.g. Section 2.4]",
+            "N": "[Accurate / Mismatch]",
+            "R": "[Are boundaries tight enough?]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "SN",
+            "B": "Project Milestone",
+            "H": "Contracted Timeline",
+            "N": "Workshop Feasible? (Yes/No)",
+            "R": "Justification / Required Adjustment"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "3.1",
+            "B": "Phase 1 (Concept & Design)",
+            "H": "[e.g. 14 Days]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "3.2",
+            "B": "Phase 2 (Procurement & Fab)",
+            "H": "[e.g. 21 Days]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "3.3",
+            "B": "Phase 3 (Testing & Handover)",
+            "H": "[e.g. 05 Days]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "3.4",
+            "B": "Overall Delivery Date",
+            "H": "[e.g. 40 Days Total]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "4.0 CRITICAL DEPENDENCIES & CLIENT OBLIGATIONS"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "SN",
+            "B": "Client Dependency required for timeline",
+            "H": "Contract Clause Ref",
+            "N": "Adequately Protected? (Yes/No)",
+            "U": "PM Comments"
+          }
+        },
+        {
+          "row": 30,
+          "cells": {
+            "A": "4.1",
+            "B": "[e.g. Client must sign off on CAD before Fab]",
+            "H": "[e.g. Section 4.1]",
+            "N": "[Yes / No]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "4.2",
+            "B": "[e.g. Client site access for delivery]",
+            "H": "[e.g. Section 4.2]",
+            "N": "[Yes / No]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 32,
+          "cells": {
+            "A": "4.3",
+            "B": "[e.g. Client site access for delivery]",
+            "H": "[e.g. Section 4.2]",
+            "N": "[Yes / No]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 33,
+          "cells": {
+            "A": "4.4",
+            "B": "[e.g. Client site access for delivery]",
+            "H": "[e.g. Section 4.2]",
+            "N": "[Yes / No]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 34,
+          "cells": {
+            "A": "4.5",
+            "B": "[e.g. Client site access for delivery]",
+            "H": "[e.g. Section 4.2]",
+            "N": "[Yes / No]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 35,
+          "cells": {
+            "A": "4.6",
+            "B": "[e.g. Client site access for delivery]",
+            "H": "[e.g. Section 4.2]",
+            "N": "[Yes / No]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 36,
+          "cells": {
+            "A": "4.7",
+            "B": "[e.g. Client site access for delivery]",
+            "H": "[e.g. Section 4.2]",
+            "N": "[Yes / No]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 37,
+          "cells": {
+            "A": "4.8",
+            "B": "[e.g. Client site access for delivery]",
+            "H": "[e.g. Section 4.2]",
+            "N": "[Yes / No]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 40,
+          "cells": {
+            "A": "Operational Verification Status:",
+            "E": "[APPROVED / REVISIONS REQUIRED]"
+          }
+        },
+        {
+          "row": 41,
+          "cells": {
+            "A": "Next Step Directive:",
+            "E": "[Proceed to Finance Review (D2.4) / Return to Contract Admin for Edits]"
+          }
+        },
+        {
+          "row": 42,
+          "cells": {
+            "A": "PM Signature:",
+            "E": "[Type here]",
+            "M": "Date:"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.4 Finance Review Draft",
+      "doc_id": "2.4",
+      "tool_title": "Finance Review Draft",
+      "phase_name": "Contract Tracking and Administration",
+      "activity_name": "Finance Review",
+      "prev_sheet_ref": "2.3",
+      "next_sheet_ref": "2.5",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "2.4",
+        "tool_title": "Finance Review Draft",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "2.3",
+        "phase_name": "Contract Tracking and Administration",
+        "next_sheet_ref": "2.5",
+        "activity_name": "Finance Review",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.4 FINANCE REVIEW DRAFT (Commercial Verification)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 REVIEW METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Assigned Finance Officer:",
+            "Q": "Reference Draft:",
+            "U": "D2.2 & D2.3 Edits"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date Received for Review:",
+            "Q": "Link to Draft:",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Project / Client Name:",
+            "Q": "Date Review Completed:",
+            "U": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 PROJECT VALUE & MARGIN VERIFICATION"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "SN",
+            "B": "Financial Element",
+            "H": "Contract Clause Ref",
+            "N": "Status (Accurate / Mismatch)",
+            "R": "Finance Comments / Required Edits"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.1",
+            "B": "Total Contract Value (GHS) matches D1.15?",
+            "H": "[e.g. Section 3.1]",
+            "N": "[Accurate / Mismatch]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.2",
+            "B": "Minimum institutional overhead is recovered?",
+            "H": "[From D1.14]",
+            "N": "[Accurate / Mismatch]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.3",
+            "B": "Currency and Tax (e.g. VAT/WHT) clearly stated?",
+            "H": "[e.g. Section 3.2]",
+            "N": "[Accurate / Mismatch]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 PAYMENT SCHEDULE & CASH FLOW VERIFICATION"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "SN",
+            "B": "Payment Milestone",
+            "H": "Contract Clause Ref",
+            "N": "Cash Flow Safe? (Yes/No)",
+            "R": "Finance Comments / Required Edits"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.1",
+            "B": "Advance Payment (e.g. 40% to cover design/initial BOM)",
+            "H": "[e.g. Section 3.3.1]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "3.2",
+            "B": "Fabrication Milestone (e.g. 40% before ordering parts)",
+            "H": "[e.g. Section 3.3.2]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "3.3",
+            "B": "Final Handover (e.g. 20% margin realization)",
+            "H": "[e.g. Section 3.3.3]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "3.4",
+            "B": "Invoice payment terms (e.g. Net 21 Days) stated?",
+            "H": "[e.g. Section 3.4]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "4.0 FINANCIAL RISK & COMPLIANCE CLAUSES"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "SN",
+            "B": "Risk Protection Required",
+            "H": "Contract Clause Ref",
+            "N": "Adequately Protected? (Yes/No)",
+            "R": "Finance Comments"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "4.1",
+            "B": "Quote Validity Period (e.g. 21 days due to material pricing)",
+            "H": "[e.g. Section 8.1]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 30,
+          "cells": {
+            "A": "4.2",
+            "B": "Late Payment Penalties (e.g. 2% monthly interest)",
+            "H": "[e.g. Section 3.5]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "4.3",
+            "B": "Termination Liability (Client pays for hours/BOM if cancelled)",
+            "H": "[e.g. Section 7.2]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 33,
+          "cells": {
+            "A": "5.0 FINANCE REVIEW CONCLUSION & ROUTING"
+          }
+        },
+        {
+          "row": 34,
+          "cells": {
+            "A": "Commercial Verification Status:",
+            "E": "[APPROVED / REVISIONS REQUIRED]"
+          }
+        },
+        {
+          "row": 35,
+          "cells": {
+            "A": "Next Step Directive:",
+            "E": "[Proceed to Executive Review (D2.5) / Return to Contract Admin for Edits]"
+          }
+        },
+        {
+          "row": 36,
+          "cells": {
+            "A": "Finance Officer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.5 Executive Review Draft",
+      "doc_id": "2.5",
+      "tool_title": "Executive Review Draft",
+      "phase_name": "Contract Tracking and Administration Process",
+      "activity_name": "Executive Review Draft",
+      "prev_sheet_ref": "2.4",
+      "next_sheet_ref": "2.6",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "2.5",
+        "tool_title": "Executive Review Draft",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "2.4",
+        "phase_name": "Contract Tracking and Administration Process",
+        "next_sheet_ref": "2.6",
+        "activity_name": "Executive Review Draft",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.5 EXECUTIVE REVIEW DRAFT (Final Risk & Authorization)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 REVIEW METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Reviewing Executive:",
+            "Q": "Reference Draft:",
+            "T": "D2.4 (Finance Approved)"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date Received for Review:",
+            "Q": "Link to Draft:",
+            "T": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Project / Client Name:",
+            "Q": "Overall Project Value:",
+            "T": "[From D2.4]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 DEPARTMENTAL SIGN-OFF VERIFICATION"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "SN",
+            "B": "Departmental Checkpoint",
+            "H": "Status (Verified / Missing)",
+            "N": "Executive Notes / Overrides"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.1",
+            "B": "PM Operational Approval (D2.3) complete and attached?",
+            "H": "[Verified / Missing]",
+            "N": "[Type here]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.2",
+            "B": "Finance Commercial Approval (D2.4) complete and attached?",
+            "H": "[Verified / Missing]",
+            "N": "[Type here]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.3",
+            "B": "All requested edits from PM and Finance applied to current draft?",
+            "H": "[Verified / Missing]",
+            "N": "[Type here]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 MACRO RISK ASSESSMENT (Executive Level)"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "SN",
+            "B": "Risk Category",
+            "H": "Executive Assessment Question",
+            "N": "Status (Yes/No)",
+            "R": "Remarks / Accepted Liabilities"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.1",
+            "B": "Technical & Scope Risk",
+            "H": "Are the engineering boundaries and exclusions tight enough to prevent scope creep?",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "3.2",
+            "B": "Operational Risk",
+            "H": "Does the timeline allow sufficient buffer for Kumasi supply chain delays?",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "3.3",
+            "B": "Commercial Risk",
+            "H": "Does the payment schedule protect IMHO GEN from out-of-pocket fabrication costs?",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "3.4",
+            "B": "Legal & IP Risk",
+            "H": "Are IMHO GEN's background IP and native CAD files adequately protected?",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "4.0 STRATEGIC ALIGNMENT"
+          }
+        },
+        {
+          "row": 32,
+          "cells": {
+            "A": "Does this project align with IMHO GEN's long-term strategic objectives for 2026?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 33,
+          "cells": {
+            "A": "Executive Justification for Acceptance:",
+            "F": "[Type a brief justification. e.g. \"While margins are tightthis project establishes a critical foothold in the agricultural processing sector.\"]"
+          }
+        },
+        {
+          "row": 35,
+          "cells": {
+            "A": "5.0 EXECUTIVE AUTHORIZATION & ROUTING"
+          }
+        },
+        {
+          "row": 36,
+          "cells": {
+            "A": "Executive Decision:",
+            "E": "[APPROVED FOR CLIENT TRANSMISSION / REJECTED / HOLD FOR REVISION]"
+          }
+        },
+        {
+          "row": 37,
+          "cells": {
+            "A": "Next Step Directive:",
+            "E": "[Proceed to D2.6 (Lock Draft) and D2.7 (Client Transmittal)]"
+          }
+        },
+        {
+          "row": 38,
+          "cells": {
+            "A": "Head of R&D / Ops Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.6 Internally Approved Draft",
+      "doc_id": "2.6",
+      "tool_title": "Internally Approved Draft",
+      "phase_name": "",
+      "activity_name": "Contract Tracking and Administration",
+      "prev_sheet_ref": "2.5",
+      "next_sheet_ref": "2.7",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "2.6",
+        "tool_title": "Internally Approved Draft",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "2.5",
+        "next_sheet_ref": "2.7",
+        "activity_name": "Contract Tracking and Administration",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.6 INTERNALLY APPROVED DRAFT (The Baseline)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 DRAFT LOCK METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Lock Executed By (Admin):",
+            "Q": "Executive Approval Ref:",
+            "U": "D2.5"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date Locked:",
+            "Q": "Project / Client Name:",
+            "U": "[Type Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 IMMUTABLE BASELINE RECORD (Pre-Negotiation)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Contract Variable",
+            "H": "Baseline Value (Approved in D2.5)",
+            "N": "Absolute Limit (Walk-away point during negotiation)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Total Contract Value (GHS)",
+            "H": "[e.g. 173"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "Advance Payment %",
+            "H": "[e.g. 40%]",
+            "N": "[e.g. Absolute minimum 35% to cover initial BOM]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Total Project Timeline",
+            "H": "[e.g. 40 Working Days]",
+            "N": "[e.g. Cannot compress below 35 Days due to workshop load]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "Warranty / Support SLA",
+            "H": "[e.g. 30 Days Post-Delivery]",
+            "N": "[e.g. Maximum 60 Days; no extended warranties without fee]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 DOCUMENT CONVERSION & ARCHIVE"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Task / Action Item",
+            "M": "Assignee",
+            "Q": "Status"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Has the D2.2 Google Doc been exported as a static,non-editable PDF?",
+            "M": "Contract Admin",
+            "Q": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Is the locked PDF named according to standard convention (e.g. IMHO_Contract_V1_ClientName)?",
+            "M": "Contract Admin",
+            "Q": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Is the locked PDF saved in the permanent client folder?",
+            "M": "Contract Admin",
+            "Q": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "4.0 LOCK VERIFICATION"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Baseline Locked and Ready for Transmittal (D2.7)?:",
+            "H": "[Yes/No]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Contract Admin Signature:",
+            "H": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.7 Client Transmitted Record",
+      "doc_id": "2.7",
+      "tool_title": "Client Transmitted Record",
+      "phase_name": "Contract Tracking and Administration Process",
+      "activity_name": "Client Transmitted Record",
+      "prev_sheet_ref": "2.6",
+      "next_sheet_ref": "2.7",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "2.7",
+        "tool_title": "Client Transmitted Record",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "2.6",
+        "phase_name": "Contract Tracking and Administration Process",
+        "next_sheet_ref": "2.7",
+        "activity_name": "Client Transmitted Record",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.7 CLIENT TRANSMITTED RECORD (Dispatch Log)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 DISPATCH METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Sent To (Client Email):",
+            "Q": "Sent By:",
+            "S": "(IMHOGEN Rep)"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "CC / BCC:",
+            "Q": "Date Sent:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Subject Line:",
+            "D": "IMHO GEN Engineering Services Agreement - [Project Name]",
+            "M": "Time Sent:",
+            "Q": "[00:00 AM/PM]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "File Attached:",
+            "D": "[Exact file name of PDF from D2.6]",
+            "M": "Quote Expiry Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.0 STANDARD TRANSMITTAL EMAIL SCRIPT (Copy & Paste)"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Dear [Client Name]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "Following our discussions and the approved Project Brief, please find attached the Draft Engineering Services Agreement for [Project Name]."
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "This document outlines the formal technical scope, and payment schedules we have agreed upon. We encourage you and your legal team to review the terms carefully. Due to current fluctuations in material supply chains"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "If the terms meet your expectations,we are happy to schedule a brief alignment meeting."
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "We look forward to officially kicking off this phase of engineering."
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Best regards"
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "3.0 CRM & FOLLOW-UP TRACKING"
+          }
+        },
+        {
+          "row": 32,
+          "cells": {
+            "A": "Link to Sent Email (CRM/Workspace):",
+            "I": "[Insert Hyperlink Here]"
+          }
+        },
+        {
+          "row": 33,
+          "cells": {
+            "A": "Auto-Follow-Up Scheduled? (3 Days post-send):",
+            "I": "[Yes/No]",
+            "M": "Follow-Up Date:",
+            "R": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 34,
+          "cells": {
+            "A": "Initial Client Response:",
+            "I": "[Pending / Accepted as-is / Requested Negotiation]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.8 Negotiation Meeting Invite",
+      "doc_id": "2.8",
+      "tool_title": "Negotiation Meeting Invite",
+      "phase_name": "Contract Tracking and Administration Process",
+      "activity_name": "Negotiation Meeting",
+      "prev_sheet_ref": "2.7",
+      "next_sheet_ref": "2.9",
+      "related_tool": "",
+      "header": {
+        "doc_id": "2.8",
+        "tool_title": "Negotiation Meeting Invite",
+        "prev_sheet_ref": "2.7",
+        "phase_name": "Contract Tracking and Administration Process",
+        "next_sheet_ref": "2.9",
+        "activity_name": "Negotiation Meeting",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.8 NEGOTIATION MEETING INVITE (Agenda & Scheduling)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 MEETING SCHEDULING METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Proposed Date:",
+            "E": "[DD/MM/YYYY]",
+            "M": "Meeting Time (Zone):",
+            "Q": "[00:00 AM/PM]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Platform / Location:",
+            "E": "[e.g. Google Meet / HQ]",
+            "M": "Meeting Link / PIN:",
+            "Q": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Required IMHOGEN Reps:",
+            "E": "[e.g. Lead PM & Head of R&D]",
+            "M": "Client Reps:",
+            "Q": "[Type Names]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 PRE-MEETING STRATEGY ALIGNMENT"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Reference Document:",
+            "E": "D2.6 Internally Approved Draft (Baseline)",
+            "M": "Link to D2.6:",
+            "Q": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Client's Stated Concerns:",
+            "E": "[Briefly summarize what the client wants to change based on their email reply. e.g."
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "IMHOGEN Hard Limits:",
+            "E": "[Review D2.6 Sec 2.0. e.g., We can compress to 35 days max, but absolutely NO discount on the advance payment.]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 STANDARD MEETING INVITE SCRIPT (Copy & Paste to Client)"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Dear [Client Name]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Thank you for reviewing the Draft Engineering Services Agreement for [Project Name]. We appreciate your feedback regarding [Insert 1-2 words on their concern,e.g.,the delivery timeline]."
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "To ensure we are perfectly aligned and to finalize the terms efficiently, we would like to schedule a brief 30-minute Contract Alignment Meeting with our Lead Project Manager and Engineering Director."
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Please let us know if [Proposed Date & Time] works for your team. Our proposed agenda is as follows:"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "1. Review of requested amendments to the Draft Contract."
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "2. Discussion of operational/timeline impacts."
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "3. Finalizing terms for the Pending Signature Draft."
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "We look forward to a productive discussion."
+          }
+        },
+        {
+          "row": 33,
+          "cells": {
+            "A": "Best regards"
+          }
+        },
+        {
+          "row": 36,
+          "cells": {
+            "A": "4.0 CALENDAR VERIFICATION"
+          }
+        },
+        {
+          "row": 37,
+          "cells": {
+            "A": "Calendar Invite Sent to Client?:",
+            "I": "[Yes/No]",
+            "M": "Client Confirmed / RSVP?:",
+            "Q": "[Yes/No]"
+          }
+        },
+        {
+          "row": 38,
+          "cells": {
+            "A": "Internal pre-meet held with negotiators?:",
+            "I": "[Yes/No]",
+            "M": "Ready for Meeting (D2.9)?:",
+            "Q": "[Yes/No]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.9 Negotiation Meeting Notes",
+      "doc_id": "D2.9",
+      "tool_title": "Negotiation Meeting Notes",
+      "phase_name": "Contracting",
+      "activity_name": "Negotiation",
+      "prev_sheet_ref": "D2.8",
+      "next_sheet_ref": "D2.10",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D2.9",
+        "tool_title": "Negotiation Meeting Notes",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D2.8",
+        "phase_name": "Contracting",
+        "next_sheet_ref": "D2.10",
+        "activity_name": "Negotiation",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.9 NEGOTIATION MEETING NOTES (Live Capture & Resolution)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 MEETING EXECUTION METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Actual Date:",
+            "E": "[DD/MM/YYYY]",
+            "M": "Start / End Time:",
+            "Q": "[00:00 to 00:00]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Lead IMHOGEN Negotiator:",
+            "E": "[Type Name]",
+            "M": "Primary Client Negotiator:",
+            "Q": "[Type Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 LIVE REDLINE & NEGOTIATION TRACKER"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Contract Clause in Question",
+            "H": "Client's Requested Change",
+            "N": "IMHOGEN's Baseline Limit (From D2.6)",
+            "T": "Final Agreed Resolution / Concession"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Sec 3.1 - Total Value]",
+            "H": "[e.g. Wants 10% discount on final price]",
+            "N": "[e.g. Min viable is GHS 160",
+            "T": "[e.g. Agreed to 5% discount (GHS 164,825) IF they increase advance payment to 50%]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Sec 4.1 - Timeline]",
+            "H": "[e.g. Wants delivery compressed to 30 days]",
+            "N": "[e.g. Min 35 days]",
+            "T": "[e.g. IMHOGEN held firm at 35 days. Client accepted.]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[e.g. Sec 6.1 - IP]",
+            "H": "[e.g. Client wants native CAD files included]",
+            "N": "[e.g. We retain native CAD]",
+            "T": "[e.g. Agreed to release CAD files for a separate GHS 5,000 buyout fee]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "N": "[Type here]",
+            "T": "[Type here]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 PARKING LOT (Unresolved Contract Items)"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Item Description",
+            "M": "Who is responsible for resolving?",
+            "U": "Deadline for Resolution"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "[e.g. Client's legal team needs to review our IP buyout clause wording]",
+            "M": "[Client Legal Team]",
+            "U": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "4.0 NEGOTIATION OUTCOME & ROUTING"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "Meeting Outcome:",
+            "E": "[TERMS AGREED - PROCEED TO D2.10 / DEADLOCK - ESCALATE / CLIENT WITHDRAWN]"
+          }
+        },
+        {
+          "row": 30,
+          "cells": {
+            "A": "Summary of Next Steps:",
+            "E": "[e.g. Contract Admin to apply the 5% discount and IP buyout clause to the finalized contract.]"
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "Lead Negotiator Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.10 Finalized Contract",
+      "doc_id": "D2.10",
+      "tool_title": "Finalized Contract",
+      "phase_name": "Contracting",
+      "activity_name": "Final Edit",
+      "prev_sheet_ref": "D2.9",
+      "next_sheet_ref": "D2.11",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D2.10",
+        "tool_title": "Finalized Contract",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D2.9",
+        "phase_name": "Contracting",
+        "next_sheet_ref": "D2.11",
+        "activity_name": "Final Edit",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.10 FINALIZED CONTRACT (Post-Negotiation Edits)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 FINAL EDIT METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Edited By (Contract Admin):",
+            "Q": "Reference Meeting Notes:",
+            "U": "D2.9"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date of Final Edit:",
+            "Q": "Project / Client Name:",
+            "U": "[Type Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 NEGOTIATION AMENDMENT TRACKER"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Agreed Concession (From D2.9)",
+            "H": "Contract Section Updated",
+            "N": "New Contract Text Inserted (Exact Wording)",
+            "V": "Status"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. 5% Discount applied]",
+            "H": "[e.g. Section 3.1]",
+            "N": "[e.g. \"Total Contract Value is GHS 164,825.00\"]",
+            "V": "[Updated]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Advance payment increased to 50%]",
+            "H": "[e.g. Section 3.3.1]",
+            "N": "[e.g. \"50% Advance Payment (GHS 82,412.50)\"]",
+            "V": "[Updated]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[e.g. IP Buyout Clause added]",
+            "H": "[e.g. Section 6.2]",
+            "N": "[e.g. \"Client retains option to purchase native CAD for GHS 5000\"",
+            "V": "[Updated]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "N": "[Type here]",
+            "V": "[Type here]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 FINANCIAL RE-VERIFICATION (If pricing changed during negotiation)"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Has the new pricing structure been verified to ensure minimum overhead recovery?",
+            "M": "Finance Rep:",
+            "Q": "[Sign/Date]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "4.0 DOCUMENT CONVERSION & LOCK"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Task / Action Item",
+            "Q": "Assignee",
+            "U": "Status"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Has the D2.10 Google Doc been exported as the FINAL static PDF?",
+            "Q": "Contract Admin",
+            "U": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Is the locked PDF named according to standard convention (e.g. IMHO_FinalContract_ClientName)?",
+            "Q": "Contract Admin",
+            "U": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "5.0 FINAL ROUTING"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "Contract finalized and ready for signature routing (D2.11)?:",
+            "J": "[Yes/No]"
+          }
+        },
+        {
+          "row": 30,
+          "cells": {
+            "A": "Contract Admin Signature:",
+            "J": "[Type here]",
+            "S": "Date:",
+            "T": "[DD/MM/YY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.11 Pending Signature Contract",
+      "doc_id": "D2.11",
+      "tool_title": "Pending Signature Contract",
+      "phase_name": "Contracting",
+      "activity_name": "Signatures",
+      "prev_sheet_ref": "D2.10",
+      "next_sheet_ref": "D2.12",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D2.11",
+        "tool_title": "Pending Signature Contract",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D2.10",
+        "phase_name": "Contracting",
+        "next_sheet_ref": "D2.12",
+        "activity_name": "Signatures",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.11 PENDING SIGNATURE CONTRACT (Execution Tracker)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 DISPATCH METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Routing Method:",
+            "E": "[Digital Signature (e.g. DocuSign) / Physical Courier]",
+            "M": "Date Dispatched:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Sent To (Client Signatory):",
+            "E": "[Name & Email]",
+            "M": "IMHOGEN Signatory:",
+            "Q": "[Name & Title]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Link to Signature Platform:",
+            "E": "[Insert Hyperlink]",
+            "M": "Auto-Reminder Set?:",
+            "Q": "[Yes/No]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 STANDARD SIGNATURE REQUEST SCRIPT (Copy & Paste)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Dear [Client Name]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "Thank you for a highly productive alignment meeting. We have updated the Engineering Services Agreement to reflect the exact terms we agreed upon."
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "Please find the finalized contract attached for your signature. [If using DocuSign: \"You can click the link below to review and sign the document digitally.\"]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Once executed by both parties,our Finance team will issue the invoice for the advance payment,and our Engineering team will formally initiate Phase 1."
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "We are excited to begin this development journey with you."
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Best regards"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "[Your Name] | IMHOGEN LTD"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "3.0 SIGNATURE STATUS TRACKER"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "Signatory",
+            "J": "Role",
+            "N": "Date Viewed",
+            "R": "Date Signed",
+            "V": "Status"
+          }
+        },
+        {
+          "row": 30,
+          "cells": {
+            "A": "[Client Name]",
+            "J": "Client Representative",
+            "N": "[DD/MM/YYYY]",
+            "R": "[DD/MM/YYYY]",
+            "V": "[Pending / Signed]"
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "[IMHOGEN Rep]",
+            "J": "IMHOGEN Representative",
+            "N": "[DD/MM/YYYY]",
+            "R": "[DD/MM/YYYY]",
+            "V": "[Pending / Signed]"
+          }
+        },
+        {
+          "row": 33,
+          "cells": {
+            "A": "4.0 ESCALATION"
+          }
+        },
+        {
+          "row": 34,
+          "cells": {
+            "A": "Has the contract been pending signature for more than 7 days?",
+            "I": "[Yes/No]",
+            "M": "Action Taken:",
+            "P": "[e.g. Called Client]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.12 Executed Contract & Audit ",
+      "doc_id": "D2.12",
+      "tool_title": "Executed Contract & Audit Trail",
+      "phase_name": "Contracting",
+      "activity_name": "Execution",
+      "prev_sheet_ref": "D2.11",
+      "next_sheet_ref": "D2.13",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D2.12",
+        "tool_title": "Executed Contract & Audit Trail",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D2.11",
+        "phase_name": "Contracting",
+        "next_sheet_ref": "D2.13",
+        "activity_name": "Execution",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.12 EXECUTED CONTRACT & AUDIT TRAIL (Legal Record)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 EXECUTION METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Date Fully Executed:",
+            "E": "[DD/MM/YYYY]",
+            "M": "Project / Client Name:",
+            "Q": "[Type Name]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Client Signatory:",
+            "E": "[Name]",
+            "M": "IMHOGEN Signatory:",
+            "Q": "[Name]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Total Contract Value:",
+            "E": "[e.g. GHS 173,500.00]",
+            "M": "Advance Payment Due:",
+            "Q": "[e.g. GHS 69,400.00]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 DIGITAL AUDIT RECORD"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Document Platform Used:",
+            "E": "[e.g. DocuSign / Adobe Sign / Physical Scan]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Link to Executed PDF:",
+            "E": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "Link to Digital Audit Certificate:",
+            "E": "[Insert Hyperlink (crucial for legal disputes)]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 INITIAL FINANCIAL TRIGGER"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Task / Action Item",
+            "M": "Assignee",
+            "V": "Status"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Has the executed contract been emailed to the Finance Department?",
+            "M": "Contract Admin",
+            "V": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Has Finance generated and issued the Advance Payment Invoice?",
+            "M": "Finance Officer",
+            "V": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Invoice Number Issued:",
+            "E": "[e.g. IMHO-INV26-ADV-010]",
+            "M": "Date Issued:",
+            "V": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "4.0 EXECUTION ROUTING"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Is the contract fully executed and the first invoice sent?",
+            "I": "[Yes/No]"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Contract Admin Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.13 Archived Contract Record",
+      "doc_id": "D2.13",
+      "tool_title": "Archived Contract Record",
+      "phase_name": "Contracting",
+      "activity_name": "Archiving",
+      "prev_sheet_ref": "D2.12",
+      "next_sheet_ref": "D2.14",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D2.13",
+        "tool_title": "Archived Contract Record",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D2.12",
+        "phase_name": "Contracting",
+        "next_sheet_ref": "D2.14",
+        "activity_name": "Archiving",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.13 ARCHIVED CONTRACT RECORD (Permanent Vault)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 ARCHIVE METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Archived By (Admin):",
+            "Q": "Archive Date:",
+            "U": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project / Client Name:",
+            "Q": "Permanent Vault Folder Link:",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 PERMANENT VAULT CHECKLIST"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Required Document for Archival",
+            "H": "Status (Verified in Vault)",
+            "N": "File Naming Convention Check"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "D1.15 Project Brief & Draft Budget",
+            "H": "[Pending / Done]",
+            "N": "[IMHO_Brief_ClientName.pdf]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "D2.6 Internally Approved Draft (Baseline)",
+            "H": "[Pending / Done]",
+            "N": "[IMHO_Contract_V1_ClientName.pdf]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "D2.9 Negotiation Meeting Notes",
+            "H": "[Pending / Done]",
+            "N": "[IMHO_NegNotes_ClientName.pdf]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "D2.12 Fully Executed Contract PDF",
+            "H": "[Pending / Done]",
+            "N": "[IMHO_ExecutedContract_ClientName.pdf]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.5",
+            "B": "Digital Audit Certificate",
+            "H": "[Pending / Done]",
+            "N": "[IMHO_AuditCert_ClientName.pdf]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.0 VAULT LOCK VERIFICATION"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Are all documents present in the secure cloud vault?",
+            "H": "[Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Contract Admin Signature:",
+            "H": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "2.14 Phase Initiation Notice",
+      "doc_id": "D2.14",
+      "tool_title": "Phase Initiation Notice",
+      "phase_name": "Contracting",
+      "activity_name": "Project Launch",
+      "prev_sheet_ref": "D2.13",
+      "next_sheet_ref": "Phase 3 (Eng)",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D2.14",
+        "tool_title": "Phase Initiation Notice",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D2.13",
+        "phase_name": "Contracting",
+        "next_sheet_ref": "Phase 3 (Eng)",
+        "activity_name": "Project Launch",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D2.14 PHASE INITIATION NOTICE (Engineering Green Light)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 INITIATION METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Notice Date:",
+            "E": "[DD/MM/YYYY]",
+            "M": "Project / Client Name:",
+            "Q": "[Type Name]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Assigned Project Manager:",
+            "E": "[Name]",
+            "M": "Total Project Timeline:",
+            "Q": "[e.g. 40 Days]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 FINANCIAL CLEARANCE (The Trigger)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Advance Invoice Number:",
+            "H": "[e.g. IMHO-INV26-ADV-010]",
+            "M": "Amount Expected:",
+            "Q": "[GHS 69,400.00]"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Date Payment Cleared IMHO GEN Bank Account:",
+            "H": "[DD/MM/YYYY]",
+            "M": "Finance Clearance Signature:",
+            "Q": "[Type Name]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "3.0 ENGINEERING LAUNCH DIRECTIVE"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "Official Project Start Date (Day 1):",
+            "H": "[DD/MM/YYYY]",
+            "M": "Target Delivery Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "Link to Executed Contract (For PM reference):",
+            "H": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "4.0 LAUNCH CONFIRMATION"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Task / Action Item",
+            "M": "Assignee",
+            "V": "Status"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Has the central tracking database been updated to \"Active Engineering Phase\"?",
+            "M": "Contract Admin",
+            "V": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Has the Project Manager formally received this Initiation Notice?",
+            "M": "Project Manager",
+            "V": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "5.0 FINAL ROUTING"
+          }
+        },
+        {
+          "row": 30,
+          "cells": {
+            "A": "Is the Engineering Team officially authorized to begin billable work?",
+            "K": "[Yes/No]"
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "Head of Operations / R&D Signature:",
+            "K": "[Type here]",
+            "P": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D2 Master Contract Database",
+      "doc_id": "D2",
+      "tool_title": "Master Contract Database",
+      "phase_name": "Contracting",
+      "activity_name": "Pipeline Tracker",
+      "prev_sheet_ref": "D1",
+      "next_sheet_ref": "N/A",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D2",
+        "tool_title": "Master Contract Database",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D1",
+        "phase_name": "Contracting",
+        "next_sheet_ref": "N/A",
+        "activity_name": "Pipeline Tracker",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 ACTIVE CONTRACT PIPELINE (Drafting & Negotiation)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "SN",
+            "B": "Request ID",
+            "G": "Client / Organization",
+            "K": "Contract Admin Assigned",
+            "O": "Current Stage (D2.1 - D2.11)",
+            "R": "Target Execution Date",
+            "U": "Link to Project Workbook"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PD-17725]",
+            "G": "[Name / Co.]",
+            "K": "[Name]",
+            "O": "[e.g. D2.9 Negotiation Phase]",
+            "R": "[DD/MM/YY]",
+            "U": "[Insert Hyperlink to Spoke Sheet]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "4.0"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "5.0"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.0 RECENTLY EXECUTED & CLEARED CONTRACTS (Ready for Engineering)"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "SN",
+            "B": "Request ID",
+            "F": "Date Executed",
+            "J": "Client / Organization",
+            "N": "Final Contract Value (GHS)",
+            "R": "Advance Cleared? (Yes/No)",
+            "U": "Link to Archived Vault (D2.13)"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PDT-2010]",
+            "F": "[DD/MM/YY]",
+            "J": "[Name / Co.]",
+            "N": "[e.g. 173,500.00]",
+            "R": "[Yes - Trigger D2.14]",
+            "U": "[Insert Hyperlink to Vault]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "4.0"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "5.0"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "3.0 STALLED / ESCALATED CONTRACTS (Risk Watchlist)"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "SN",
+            "B": "Request ID",
+            "F": "Client / Organization",
+            "J": "Days Stalled",
+            "N": "Bottleneck Description",
+            "S": "Lead Exec Escalation",
+            "V": "Next Action Required"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. CAD-1771]",
+            "F": "[Name / Co.]",
+            "J": "[e.g. 14 Days]",
+            "N": "[e.g. Pending Client Legal Review of IP Clause]",
+            "S": "[Assigned to Head of R&D]",
+            "V": "[e.g. Call Client Director]"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "3.0"
+          }
+        }
+      ]
+    }
+  ]
+}

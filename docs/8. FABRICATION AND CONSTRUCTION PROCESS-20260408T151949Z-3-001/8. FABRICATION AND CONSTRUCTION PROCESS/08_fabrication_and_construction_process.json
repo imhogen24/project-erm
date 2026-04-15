@@ -1,0 +1,1258 @@
+{
+  "workbook_id": 8,
+  "workbook_name": "Fabrication and Construction Process",
+  "description": "Workbook 8 \u2014 Shop floor construction using routing travelers and in-process QC",
+  "source_files": [
+    "08RDBI_IMHO GEN FABRICATION AND CONSTRUCTION PROCESS.xlsx"
+  ],
+  "documents": [
+    {
+      "sheet_name": "D8.i Document Control Index",
+      "source_file": "08RDBI_IMHO GEN FABRICATION AND CONSTRUCTION PROCESS.xlsx",
+      "doc_id": "D8-Index",
+      "tool_title": "Fabrication Document Control",
+      "phase_name": "Fabrication & Construction",
+      "activity_name": "Document Index",
+      "prev_sheet_ref": "D7",
+      "next_sheet_ref": "D8.1",
+      "related_tool": "",
+      "header": {
+        "doc_id": "D8-Index",
+        "tool_title": "Fabrication Document Control",
+        "prev_sheet_ref": "D7",
+        "phase_name": "Fabrication & Construction",
+        "next_sheet_ref": "D8.1",
+        "activity_name": "Document Index",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 FABRICATION PHASE DOCUMENT CONTROL INDEX"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "DocID",
+            "B": "Document Title",
+            "G": "Link",
+            "H": "Description"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "D8",
+            "B": "Master Fabrication Database",
+            "G": "\u27a1\ufe0f",
+            "H": "The central Hub tracking shop floor utilization, active builds, and bottleneck stages."
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "D8.1",
+            "B": "Job Process Sheet (Work Order)",
+            "G": "\u27a1\ufe0f",
+            "H": "The daily assignment sheet given to shop floor teams detailing exact tasks, drawing numbers, and expected times."
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "D8.2",
+            "B": "Tooling & Setup Checklist",
+            "G": "\u27a1\ufe0f",
+            "H": "Pre-shift verification that all welders, saws, and measuring tools are calibrated and safe to use."
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "D8.3",
+            "B": "Safety Briefing & PPE Log",
+            "G": "\u27a1\ufe0f",
+            "H": "The mandatory daily sign-in sheet proving technicians attended the toolbox talk and received proper protective gear."
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "D8.4",
+            "B": "Fabrication Routing Traveler",
+            "G": "\u27a1\ufe0f",
+            "H": "The physical/digital tag that moves with the materials, logging transitions from Prepped -> Assembled -> Coated."
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "D8.5",
+            "B": "In-Process QC Log",
+            "G": "\u27a1\ufe0f",
+            "H": "The dimensional and weld-quality checks performed during active fabrication before final assembly hides defects."
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "D8.6",
+            "B": "Fabrication Completion Notice",
+            "G": "\u27a1\ufe0f",
+            "H": "The internal trigger declaring the physical build is finished and ready for Phase 9 Final Testing & Commissioning."
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D8.1 Job Processing Sheet(Work ",
+      "source_file": "08RDBI_IMHO GEN FABRICATION AND CONSTRUCTION PROCESS.xlsx",
+      "doc_id": "D8.1",
+      "tool_title": "Job Process Sheet",
+      "phase_name": "Fabrication & Construction",
+      "activity_name": "Task Assignment",
+      "prev_sheet_ref": "D7.7",
+      "next_sheet_ref": "D8.2",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D8.1",
+        "tool_title": "Job Process Sheet",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D7.7",
+        "phase_name": "Fabrication & Construction",
+        "next_sheet_ref": "D8.2",
+        "activity_name": "Task Assignment",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D8.1 JOB PROCESS SHEET (Daily Work Order)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 WORK ORDER METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Supervisor:",
+            "O": "Date of Work:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project Name:",
+            "O": "Target Output for Shift:",
+            "S": "[e.g. Complete Main Chassis Welding]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 TASK ALLOCATION & ROUTING"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Task Description",
+            "F": "Reference Drawing #",
+            "I": "Assigned Technician / Welder",
+            "M": "Required Machinery",
+            "P": "Allocated Time (Hrs)",
+            "S": "Status (Done/Pending)",
+            "V": "Supervisor Sign-off"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Cut 50x50mm RHS to 2m lengths]",
+            "F": "[e.g. DWG-101-A]",
+            "I": "[e.g. Kwame]",
+            "M": "[e.g. Bandsaw]",
+            "P": "[e.g. 2.0]",
+            "S": "[Pending]",
+            "V": "[Sign]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Tack weld main base frame]",
+            "F": "[e.g. DWG-102-B]",
+            "I": "[e.g. Samuel]",
+            "M": "[e.g. MIG Welder]",
+            "P": "[e.g. 3.5]",
+            "S": "[Pending]",
+            "V": "[Sign]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[e.g. Drill M8 clearance holes on flange]",
+            "F": "[e.g. DWG-103-C]",
+            "I": "[e.g. Kwame]",
+            "M": "[e.g. Pillar Drill]",
+            "P": "[e.g. 1.0]",
+            "S": "[Pending]",
+            "V": "[Sign]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "[Type here]",
+            "F": "[Type here]",
+            "I": "[Type here]",
+            "M": "[Type here]",
+            "P": "[Type here]",
+            "S": "[Type here]",
+            "V": "[Type here]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 ISSUES & ROADBLOCKS LOG"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Did any machine breakdowns or material shortages prevent task completion today?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Details / Escalation Notes:",
+            "E": "[e.g. Bandsaw blade snapped at 11:00 AM. Replaced by 11:30 AM.]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "4.0 SHIFT CLOSURE"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Are all completed tasks physically verified against the engineering drawings?[Yes/No]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Supervisor Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D8.2 Tooling & Setup Checklist",
+      "source_file": "08RDBI_IMHO GEN FABRICATION AND CONSTRUCTION PROCESS.xlsx",
+      "doc_id": "D8.2",
+      "tool_title": "Tooling & Setup Checklist",
+      "phase_name": "Fabrication & Construction",
+      "activity_name": "Equipment Check",
+      "prev_sheet_ref": "D8.1",
+      "next_sheet_ref": "D8.3",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D8.2",
+        "tool_title": "Tooling & Setup Checklist",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D8.1",
+        "phase_name": "Fabrication & Construction",
+        "next_sheet_ref": "D8.3",
+        "activity_name": "Equipment Check",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D8.2 TOOLING & SETUP CHECKLIST (Pre-Shift Verification)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 SETUP METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Executing Supervisor:",
+            "O": "Date & Time of Check:",
+            "R": "[DD/MM/YYYY 00:00 AM]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project / Cell Area:",
+            "O": "Shift:",
+            "Q": "[Morning / Afternoon]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 MACHINERY & TOOLING VERIFICATION"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Equipment Category",
+            "F": "Specific Check Required",
+            "M": "Status (Pass/Fail/NA)",
+            "P": "Corrective Action Taken",
+            "T": "Checked By"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Welding Stations",
+            "F": "Shielding gas levels sufficient (>20%)?",
+            "M": "[Pass / Fail]",
+            "P": "[Type here]",
+            "T": "[Initial]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "Welding Stations",
+            "F": "Wire feed smooth and tip clean?",
+            "M": "[Pass / Fail]",
+            "P": "[Type here]",
+            "T": "[Initial]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Cutting (Bandsaw/Grinders)",
+            "F": "Blades/Discs sharp and free of cracks?",
+            "M": "[Pass / Fail]",
+            "P": "[Type here]",
+            "T": "[Initial]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "Measurement Tools",
+            "F": "Calipers/Squares zeroed and calibrated?",
+            "M": "[Pass / Fail]",
+            "P": "[Type here]",
+            "T": "[Initial]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.5",
+            "B": "Fixtures & Jigs",
+            "F": "Jigs clear of debris and clamps functioning?",
+            "M": "[Pass / Fail]",
+            "P": "[Type here]",
+            "T": "[Initial]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.0 SETUP AUTHORIZATION"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Is the shop floor equipment fully verified and authorized for the active shift?[Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Supervisor Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D8.3 Safety Briefing & PPE Log",
+      "source_file": "08RDBI_IMHO GEN FABRICATION AND CONSTRUCTION PROCESS.xlsx",
+      "doc_id": "D8.3",
+      "tool_title": "Safety Briefing & PPE Log",
+      "phase_name": "Fabrication & Construction",
+      "activity_name": "Health & Safety",
+      "prev_sheet_ref": "D8.2",
+      "next_sheet_ref": "D8.4",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D8.3",
+        "tool_title": "Safety Briefing & PPE Log",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D8.2",
+        "phase_name": "Fabrication & Construction",
+        "next_sheet_ref": "D8.4",
+        "activity_name": "Health & Safety",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D8.3 SAFETY BRIEFING & PPE LOG (Toolbox Talk)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 BRIEFING METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Lead Supervisor / HSE Officer:",
+            "Q": "Date of Briefing:",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Briefing Topic / Primary Risk:",
+            "E": "[e.g. Heavy lifting protocols for chassis assembly]",
+            "Q": "Time:",
+            "T": "[00:00 AM]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 ATTENDANCE & PPE ISSUANCE RECORD"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "By signing below, the technician confirms they attended the safety briefing and are wearing the mandated Personal Protective Equipment (PPE) for their assigned tasks."
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "SN",
+            "B": "Technician Name",
+            "E": "Assigned Task Role",
+            "H": "Safety Glasses",
+            "K": "Welding Helmet",
+            "N": "Gloves",
+            "P": "Steel Toe Boots",
+            "T": "Technician Signature"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Samuel]",
+            "E": "[e.g. MIG Welding]",
+            "H": "[N/A]",
+            "K": "[Yes]",
+            "N": "[Yes]",
+            "P": "[Yes]",
+            "T": "[Sign here]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Kwame]",
+            "E": "[e.g. Metal Cutting]",
+            "H": "[Yes]",
+            "K": "[N/A]",
+            "N": "[Yes]",
+            "P": "[Yes]",
+            "T": "[Sign here]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.3",
+            "B": "[Type here]",
+            "E": "[Type here]",
+            "H": "[Yes/No]",
+            "K": "[Yes/No]",
+            "N": "[Yes/No]",
+            "P": "[Yes/No]",
+            "T": "[Sign here]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.4",
+            "B": "[Type here]",
+            "E": "[Type here]",
+            "H": "[Yes/No]",
+            "K": "[Yes/No]",
+            "N": "[Yes/No]",
+            "P": "[Yes/No]",
+            "T": "[Sign here]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.0 INCIDENT & COMPLIANCE VERIFICATION"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Were any technicians denied entry to the floor due to PPE non-compliance? [Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Supervisor Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D8.4 Fabrication Routing Travel",
+      "source_file": "08RDBI_IMHO GEN FABRICATION AND CONSTRUCTION PROCESS.xlsx",
+      "doc_id": "D8.4",
+      "tool_title": "Fabrication Routing Traveler",
+      "phase_name": "Fabrication & Construction",
+      "activity_name": "Physical Routing",
+      "prev_sheet_ref": "D8.1",
+      "next_sheet_ref": "D8.5",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D8.4",
+        "tool_title": "Fabrication Routing Traveler",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D8.1",
+        "phase_name": "Fabrication & Construction",
+        "next_sheet_ref": "D8.5",
+        "activity_name": "Physical Routing",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D8.4 FABRICATION ROUTING TRAVELER (Physical Batch Tag)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 BATCH METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Batch / Assembly Name:",
+            "E": "[e.g. Main Chassis Frame]",
+            "M": "Ref Drawing #:",
+            "Q": "[e.g. DWG-100-ASSY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Traveler Issued By:",
+            "E": "[Name]",
+            "M": "Date Issued:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 ROUTING STAGES (Must be signed sequentially)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Stage sequence",
+            "E": "Process Description",
+            "K": "Required Tools / Machinery",
+            "O": "Assigned To",
+            "R": "Date Completed",
+            "U": "Supervisor Sign-off"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "1. Prepped Material Batch",
+            "E": "Cut all raw steel to length per Cut List.",
+            "K": "Bandsaw / Grinders",
+            "O": "[Name]",
+            "R": "[DD/MM/YY]",
+            "U": "[Sign]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2. Cleaned Material Batch",
+            "E": "Remove mill scale; deburr all cut edges.",
+            "K": "Angle Grinders",
+            "O": "[Name]",
+            "R": "[DD/MM/YY]",
+            "U": "[Sign]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "3. Fixtured Assembly",
+            "E": "Clamp parts in jig; tack weld only.",
+            "K": "Welding Table / MIG",
+            "O": "[Name]",
+            "R": "[DD/MM/YY]",
+            "U": "[Sign]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "4. Semi-Finished Structure",
+            "E": "Complete all structural seam welds.",
+            "K": "MIG / TIG Welder",
+            "O": "[Name]",
+            "R": "[DD/MM/YY]",
+            "U": "[Sign]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "5. Fully Assembled Structure",
+            "E": "Bolt on all sub-assemblies and panels.",
+            "K": "Hand Tools",
+            "O": "[Name]",
+            "R": "[DD/MM/YY]",
+            "U": "[Sign]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "6. Coated Final Product",
+            "E": "Apply primer and final safety yellow coat.",
+            "K": "Spray Booth",
+            "O": "[Name]",
+            "R": "[DD/MM/YY]",
+            "U": "[Sign]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.0 HOLD POINTS & QC TRIGGERS"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Did this batch require a mandatory D8.5 In-Process QC check before Stage 6 (Coating)?[Yes/No]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "If Yes,is the QC Log signed and attached? [Yes/No]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "4.0 BATCH COMPLETION"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Is  this physical assembly 100% complete and ready to be integrated into the final machine? [Yes/No]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Supervisor Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D8.6 Fabrication Completion Not",
+      "source_file": "08RDBI_IMHO GEN FABRICATION AND CONSTRUCTION PROCESS.xlsx",
+      "doc_id": "D8.6",
+      "tool_title": "Fabrication Completion Notice",
+      "phase_name": "Fabrication & Construction",
+      "activity_name": "Phase Closure",
+      "prev_sheet_ref": "D8.5",
+      "next_sheet_ref": "Phase 9",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D8.6",
+        "tool_title": "Fabrication Completion Notice",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D8.5",
+        "phase_name": "Fabrication & Construction",
+        "next_sheet_ref": "Phase 9",
+        "activity_name": "Phase Closure",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D8.6 FABRICATION COMPLETION NOTICE (Handover to Testing)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 CLOSURE METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Shop Floor Supervisor:",
+            "Q": "Notice Date:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project Name:",
+            "Q": "Receiving PM:",
+            "S": "[e.g. Daniel]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 FINAL VISUAL & ADMINISTRATIVE VERIFICATION"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Task / Action Item",
+            "M": "Assignee",
+            "Q": "Status"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Are all D8.4 Fabrication Travelers signed off and collected?",
+            "M": "Supervisor",
+            "Q": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Have all D8.5 In-Process QC rework items been fully resolved?",
+            "M": "QA Officer",
+            "Q": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "Is the physical machine clean"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "Have all unused raw materials been returned to the D7 Inventory Ledger?",
+            "M": "Supervisor",
+            "Q": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 HANDOVER DIRECTIVE"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Physical Location of Finished Machine:",
+            "G": "[e.g. Testing Bay 2]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Target Testing Start Date:",
+            "G": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "4.0 FINAL AUTHORIZATION"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Is Phase 8 officially closed, and is the physical unit handed over for Phase 9 Testing?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Head of Operations Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D8.5 In-Process QC Log",
+      "source_file": "08RDBI_IMHO GEN FABRICATION AND CONSTRUCTION PROCESS.xlsx",
+      "doc_id": "D8.5",
+      "tool_title": "In-Process QC Log",
+      "phase_name": "Fabrication & Construction",
+      "activity_name": "Active Inspection",
+      "prev_sheet_ref": "D8.4",
+      "next_sheet_ref": "D8.6",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D8.5",
+        "tool_title": "In-Process QC Log",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D8.4",
+        "phase_name": "Fabrication & Construction",
+        "next_sheet_ref": "D8.6",
+        "activity_name": "Active Inspection",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D8.5 IN-PROCESS QC LOG (Dimensional & Structural Check)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 INSPECTION METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "QA Officer:",
+            "P": "Reference Traveler:",
+            "S": "[D8.4 Batch Tag]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Inspection Date:",
+            "P": "Fabrication Stage:",
+            "S": "[e.g. Post-Welding / Pre-Paint]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 CRITICAL INSPECTION POINTS"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Inspection Parameter",
+            "F": "Tolerance / Spec",
+            "K": "Actual Measured Value",
+            "P": "Status (PASS / FAIL / REWORK)",
+            "U": "QA Notes"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Overall Frame Length",
+            "F": "[e.g. 2000mm \u00b1 2mm]",
+            "K": "[e.g. 2001mm]",
+            "P": "[PASS]",
+            "U": "[Within tolerance]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "Diagonal Squareness",
+            "F": "[e.g. Max 3mm diff]",
+            "K": "[e.g. 1.5mm diff]",
+            "P": "[PASS]",
+            "U": "[Verified with tape]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Weld Quality (Visual)",
+            "F": "[e.g. Continuous; No porosity]",
+            "K": "[e.g. Undercut detected]",
+            "P": "[REWORK]",
+            "U": "[Grind and re-weld joint A4]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "Hole Alignments",
+            "F": "[e.g. Aligns with motor mount]",
+            "K": "[e.g. Perfect alignment]",
+            "P": "[PASS]",
+            "U": "[Test fitted with actual motor]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 REWORK & NON-CONFORMANCE (If Applicable)"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Was any rework required during this inspection?[Yes/No]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "If Yes, describe corrective action taken:",
+            "G": "[e.g. Welder instructed to grind out undercut and re-weld. Passed second inspection at 14:00.]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "4.0 ROUTING DIRECTIVE"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Is the structure cleared to proceed to the next fabrication stage (e.g. Coating)?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "QA Officer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D8. ",
+      "source_file": "08RDBI_IMHO GEN FABRICATION AND CONSTRUCTION PROCESS.xlsx",
+      "doc_id": "D8",
+      "tool_title": "Master Fabrication Database",
+      "phase_name": "Fabrication & Construction",
+      "activity_name": "Shop Floor Tracker",
+      "prev_sheet_ref": "D7",
+      "next_sheet_ref": "N/A",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D8",
+        "tool_title": "Master Fabrication Database",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D7",
+        "phase_name": "Fabrication & Construction",
+        "next_sheet_ref": "N/A",
+        "activity_name": "Shop Floor Tracker",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 ACTIVE SHOP FLOOR BUILDS (The Pipeline)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "F": "Client / Project Name",
+            "J": "Lead Supervisor",
+            "M": "Current Fabrication Stage (Per D8.4)",
+            "R": "Target Completion",
+            "T": "Status (On Track / Delayed)",
+            "V": "Link to Project Workbook"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PD-177]",
+            "F": "[e.g. SAYeTECH Dryer]",
+            "J": "[e.g. Samuel]",
+            "M": "[e.g. Stage 3: Fixtured Assembly]",
+            "R": "[DD/MM/YY]",
+            "T": "[On Track]",
+            "V": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "2.0",
+            "B": "[e.g. CAD-178]",
+            "F": "[e.g. Smart Meter Enclosure]",
+            "J": "[e.g. Kwame]",
+            "M": "[e.g. Stage 6: Coating]",
+            "R": "[DD/MM/YY]",
+            "T": "[Delayed - Awaiting Paint]",
+            "V": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "4.0"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "1.0 ACTIVE SHOP FLOOR BUILDS (The Pipeline)"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "F": "Client / Project Name",
+            "J": "Total QC Inspections (D8.5)",
+            "N": "First-Pass Pass Rate %",
+            "Q": "Logged Rework Hours",
+            "T": "Primary Defect / Bottleneck",
+            "V": "Link to QC Log"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PD-177]",
+            "F": "[e.g. SAYeTECH Dryer]",
+            "J": "[e.g. 4]",
+            "N": "[e.g. 75%]",
+            "Q": "[e.g. 3.5 Hrs]",
+            "T": "[e.g. Weld Porosity on Base]",
+            "V": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "4.0"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "1.0 ACTIVE SHOP FLOOR BUILDS (The Pipeline)"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "SN",
+            "B": "Machine / Work Cell",
+            "G": "Current Status",
+            "I": "Assigned Project",
+            "M": "Expected Release Date",
+            "Q": "Maintenance Status",
+            "T": "Notes"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. Heavy Welding Bay 1]",
+            "G": "[In Use]",
+            "I": "[e.g. SAYeTECH Dryer]",
+            "M": "[DD/MM/YY]",
+            "Q": "[Good]",
+            "T": "[Dedicated to main chassis]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "2.0",
+            "B": "[e.g. Paint Spray Booth]",
+            "G": "[Idle]",
+            "I": "[None]",
+            "M": "[N/A]",
+            "Q": "[Filter change due]",
+            "T": "[Schedule maintenance tomorrow]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "3.0",
+            "B": "[e.g. 3D Printing Cell]",
+            "G": "[In Use]",
+            "I": "[e.g. Internal Prototype]",
+            "M": "[DD/MM/YY]",
+            "Q": "[Good]",
+            "T": "[Printing ABS parts]"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "4.0"
+          }
+        }
+      ]
+    }
+  ]
+}

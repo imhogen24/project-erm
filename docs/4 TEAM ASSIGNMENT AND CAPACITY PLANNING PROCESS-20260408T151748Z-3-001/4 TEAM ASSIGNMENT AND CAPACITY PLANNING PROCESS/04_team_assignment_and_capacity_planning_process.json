@@ -1,0 +1,1606 @@
+{
+  "workbook_id": 4,
+  "workbook_name": "Team Assignment and Capacity Planning Process",
+  "description": "Workbook 4 \u2014 Assigns technicians/CAD engineers and freezes project baseline",
+  "source_files": [
+    "04RDBI_IMHO GEN Team Assignment and Capacity Planning Process.xlsx"
+  ],
+  "documents": [
+    {
+      "sheet_name": "D4.i Document Control Index",
+      "source_file": "04RDBI_IMHO GEN Team Assignment and Capacity Planning Process.xlsx",
+      "doc_id": "D4-Index",
+      "tool_title": "Resource Document Control",
+      "phase_name": "Capacity Planning",
+      "activity_name": "Document Index",
+      "prev_sheet_ref": "D3",
+      "next_sheet_ref": "D4.1",
+      "related_tool": "",
+      "header": {
+        "doc_id": "D4-Index",
+        "tool_title": "Resource Document Control",
+        "prev_sheet_ref": "D3",
+        "phase_name": "Capacity Planning",
+        "next_sheet_ref": "D4.1",
+        "activity_name": "Document Index",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 CAPACITY PLANNING DOCUMENT CONTROL INDEX"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "DocID",
+            "B": "Document Title",
+            "H": "Link",
+            "J": "Description"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "D4",
+            "B": "Master Capacity Tracker",
+            "H": "\u27a1\ufe0f",
+            "J": "The central Hub tracking all engineering utilization"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "D4.1",
+            "B": "Technical Requirement Notes",
+            "H": "\u27a1\ufe0f",
+            "J": "The translation of the D2.12 Contract into specific engineering skills"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "D4.2",
+            "B": "Resource Request Form",
+            "H": "\u27a1\ufe0f",
+            "J": "The formal request from the Project Manager to the Head of Engineering to reserve specific staff for specific dates."
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "D4.3",
+            "B": "Team Assignment & Provisioning Record",
+            "H": "\u27a1\ufe0f",
+            "J": "The official roster locking in which engineers are on the project and the hardware/software allocated to them."
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "D4.4",
+            "B": "Access Confirmation Log",
+            "H": "\u27a1\ufe0f",
+            "J": "The IT/Admin checklist ensuring engineers actually have access to the client folders, CAD servers, and project repos."
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "D4.5",
+            "B": "Internal Kick-off Deck (Link)",
+            "H": "\u27a1\ufe0f",
+            "J": "The standardized presentation template used to brief the assigned engineers on the project scope and constraints."
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "D4.6",
+            "B": "Kick-off Calendar Invite & Agenda",
+            "H": "\u27a1\ufe0f",
+            "J": "The structured meeting agenda to ensure the internal handover from Contract Admin to the Engineering team is flawless."
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "D4.7",
+            "B": "Kick-off Meeting Minutes",
+            "H": "\u27a1\ufe0f",
+            "J": "The live capture of engineer questions, immediate technical risks, and Day-1 task assignments."
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "T3.D4.8a",
+            "B": "Drafting Assignment & Baseline",
+            "H": "\u27a1\ufe0f",
+            "J": "Drafting Assignment & Baseline (Fast-Track bypass for Tier 3 jobs)."
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "D4.8",
+            "B": "Locked Project Baseline",
+            "H": "\u27a1\ufe0f",
+            "J": "The final operational lock. The schedule and budget are frozen here against which all future project performance is measured."
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D4.1 Technical Requirement Note",
+      "source_file": "04RDBI_IMHO GEN Team Assignment and Capacity Planning Process.xlsx",
+      "doc_id": "D4.1",
+      "tool_title": "Technical Requirement Notes",
+      "phase_name": "Capacity Planning",
+      "activity_name": "Scope Breakdown",
+      "prev_sheet_ref": "D2.14",
+      "next_sheet_ref": "D4.2",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D4.1",
+        "tool_title": "Technical Requirement Notes",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D2.14",
+        "phase_name": "Capacity Planning",
+        "next_sheet_ref": "D4.2",
+        "activity_name": "Scope Breakdown",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D4.1 TECHNICAL REQUIREMENT NOTES (Scope Translation)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 BREAKDOWN METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Project Manager:",
+            "Q": "Reference Contract:",
+            "U": "[Insert Hyperlink to D2.12]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date of Breakdown:",
+            "Q": "Project / Client Name:",
+            "U": "[Type Name]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Target Project Start Date:",
+            "E": "[DD/MM/YYYY]",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 SKILL & LABOR REQUIREMENTS"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "SN",
+            "B": "Engineering Module (From Pricing Matrix)",
+            "H": "Required Role / Skill Level",
+            "N": "Estimated Effort (Days)",
+            "R": "Specific Constraints / Notes"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Mechanical Design]",
+            "H": "[e.g. Mid-Level CAD Engineer]",
+            "N": "[e.g. 15 Days]",
+            "R": "[e.g. Must be prolific in Autodesk Inventor]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Thermal System Design]",
+            "H": "[e.g. Senior Thermal Engineer]",
+            "N": "[e.g. 10 Days]",
+            "R": "[e.g. Requires background in consumer appliance heating]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.3",
+            "B": "[e.g. Prototype Fabrication]",
+            "H": "[e.g. Junior Technician]",
+            "N": "[e.g. 5 Days]",
+            "R": "[e.g. 3D printing and basic soldering skills needed]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "3.0 SOFTWARE & EQUIPMENT REQUIREMENTS"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "SN",
+            "B": "Resource Category",
+            "H": "Specific Tool / Machine Needed",
+            "N": "Duration Required",
+            "R": "Status (Available/Needs Procurement)"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "3.1",
+            "B": "Software License",
+            "H": "[e.g. Autodesk Inventor 2025]",
+            "N": "[e.g. 15 Days]",
+            "R": "[Available]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "3.2",
+            "B": "Specialized Equipment",
+            "H": "[e.g. 3D Printer (High Temp Resin)]",
+            "N": "[e.g. 3 Days]",
+            "R": "[Available]"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "3.3",
+            "B": "Testing Apparatus",
+            "H": "[e.g. Digital Anemometer / Thermal Camera]",
+            "N": "[e.g. 2 Days]",
+            "R": "[Needs Procurement]"
+          }
+        },
+        {
+          "row": 34,
+          "cells": {
+            "A": "4.0 ROUTING & APPROVAL"
+          }
+        },
+        {
+          "row": 35,
+          "cells": {
+            "A": "Is the technical breakdown complete and ready for Resource Request (D4.2)?",
+            "K": "[Yes/No]"
+          }
+        },
+        {
+          "row": 36,
+          "cells": {
+            "A": "Project Manager Signature:",
+            "K": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D4.2 Resource Request Form",
+      "source_file": "04RDBI_IMHO GEN Team Assignment and Capacity Planning Process.xlsx",
+      "doc_id": "D4.2",
+      "tool_title": "Resource Request Form",
+      "phase_name": "Capacity Planning",
+      "activity_name": "Resource Allocation",
+      "prev_sheet_ref": "D4.1",
+      "next_sheet_ref": "D4.3",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D4.2",
+        "tool_title": "Resource Request Form",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D4.1",
+        "phase_name": "Capacity Planning",
+        "next_sheet_ref": "D4.3",
+        "activity_name": "Resource Allocation",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D4.2 RESOURCE REQUEST FORM (Internal Staffing)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 REQUEST METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Requesting PM:",
+            "Q": "Date of Request:",
+            "U": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project Name:",
+            "Q": "Total Budgeted Labor (GHS):",
+            "U": "[From D1.14 / Pricing Tool]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 HUMAN RESOURCE REQUEST"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Role Required",
+            "H": "Preferred Engineer (Optional)",
+            "P": "Dates Needed (Start to End)",
+            "U": "Total Days Requested"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Senior Mechanical Eng.]",
+            "H": "[e.g. Daniel Asanti]",
+            "P": "[DD/MM to DD/MM]",
+            "U": "[e.g. 15]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Junior Electronics Eng.]",
+            "H": "[e.g. Any available]",
+            "P": "[DD/MM to DD/MM]",
+            "U": "[e.g. 10]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "P": "[Type here]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 CONFLICT & OVERLAP CHECK (To be filled by Head of Engineering)"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "SN",
+            "B": "Requested Engineer",
+            "H": "Current Utilization Status",
+            "P": "Approved for this Project? (Yes/No)",
+            "U": "Alternative Assignment"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.1",
+            "B": "[e.g. Daniel Asanti]",
+            "H": "[e.g. 80% booked on SAYeTECH project]",
+            "P": "[No]",
+            "U": "[Assign Kelvin instead]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.2",
+            "B": "[e.g. Junior Electronics Eng.]",
+            "H": "[e.g. Fully available]",
+            "P": "[Yes]",
+            "U": "[Assign Michael]"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "4.0 APPROVAL & ROUTING"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Are all requested roles filled and approved by Engineering Leadership?",
+            "J": "[Yes/No]"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "Head of Engineering / R&D Signature:",
+            "J": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D4.3 Team Assignment & Provisio",
+      "source_file": "04RDBI_IMHO GEN Team Assignment and Capacity Planning Process.xlsx",
+      "doc_id": "D4.3",
+      "tool_title": "Team Assignment & Provisioning",
+      "phase_name": "Capacity Planning",
+      "activity_name": "Team Lock-in",
+      "prev_sheet_ref": "D4.2",
+      "next_sheet_ref": "D4.4",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D4.3",
+        "tool_title": "Team Assignment & Provisioning",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D4.2",
+        "phase_name": "Capacity Planning",
+        "next_sheet_ref": "D4.4",
+        "activity_name": "Team Lock-in",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D4.3 TEAM ASSIGNMENT & PROVISIONING RECORD"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 ASSIGNMENT METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Project Manager:",
+            "Q": "Reference Request:",
+            "U": "D4.2 Resource Request"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project Name:",
+            "Q": "Assignment Date:",
+            "U": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 OFFICIAL PROJECT ROSTER (Locked Team)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Role / Discipline",
+            "H": "Assigned Engineer",
+            "N": "Allocated Days",
+            "R": "Project Phase Involvement"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Lead Mechanical]",
+            "H": "[e.g. Daniel Asanti]",
+            "N": "[e.g. 15]",
+            "R": "[e.g. Phases 1 & 2]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Electronics/Firmware]",
+            "H": "[e.g. Kelvin]",
+            "N": "[e.g. 10]",
+            "R": "[e.g. Phase 2 Only]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "N": "[Type here]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 HARDWARE & SOFTWARE PROVISIONING TICKET"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "SN",
+            "B": "Assigned Engineer",
+            "H": "Asset / License Required",
+            "N": "Date Required",
+            "R": "Provisioning Status (IT/Admin)"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.1",
+            "B": "[e.g. Daniel Asanti]",
+            "H": "[e.g. Autodesk Inventor 2025 License]",
+            "N": "[DD/MM/YYYY]",
+            "R": "[Pending / Provisioned]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.2",
+            "B": "[e.g. Kelvin]",
+            "H": "[e.g. Oscilloscope / Multimeter]",
+            "N": "[DD/MM/YYYY]",
+            "R": "[Pending / Provisioned]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "4.0 APPROVAL & ROUTING"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Are all engineers officially locked in the Master Capacity Tracker (D4 Hub)?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Head of Engineering Signature:",
+            "L": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D4.4 Access Confirmation Log",
+      "source_file": "04RDBI_IMHO GEN Team Assignment and Capacity Planning Process.xlsx",
+      "doc_id": "D4.4",
+      "tool_title": "Access Confirmation Log",
+      "phase_name": "Capacity Planning",
+      "activity_name": "Digital Access",
+      "prev_sheet_ref": "D4.3",
+      "next_sheet_ref": "D4.5",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D4.4",
+        "tool_title": "Access Confirmation Log",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D4.3",
+        "phase_name": "Capacity Planning",
+        "next_sheet_ref": "D4.5",
+        "activity_name": "Digital Access",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D4.4 ACCESS CONFIRMATION LOG (Digital Onboarding)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 ONBOARDING METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Executing Admin/IT:",
+            "Q": "Project / Client Name:",
+            "T": "[Type Name]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date Executed:",
+            "Q": "Total Team Size:",
+            "T": "[e.g. 3 Engineers]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 CLOUD & SERVER ACCESS CHECKLIST"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Digital Workspace",
+            "H": "Required Action",
+            "S": "Verification Check",
+            "W": "Status"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Google Drive Workspace",
+            "H": "Create Client Root Folder & Add Team",
+            "S": "[Link provided?]",
+            "W": "[Done]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "CAD Vault / Server",
+            "H": "Create Project Repo & Grant Read/Write",
+            "S": "[Permissions verified?]",
+            "W": "[Done]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Communication Channel",
+            "H": "Create WhatsApp/Slack Group & Add Team",
+            "S": "[PM made Admin?]",
+            "W": "[Done]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "QMS Documentation Hub",
+            "H": "Link this Spoke to the D4 Master Hub",
+            "S": "[Linked?]",
+            "W": "[Done]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 ENGINEER CONFIRMATION"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Have all assigned engineers explicitly confirmed they can open the shared folders?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Admin Signature:",
+            "D": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D4.5 Internal Kick-off Deck(Lin",
+      "source_file": "04RDBI_IMHO GEN Team Assignment and Capacity Planning Process.xlsx",
+      "doc_id": "D4.5",
+      "tool_title": "Internal Kick-off Deck",
+      "phase_name": "Capacity Planning",
+      "activity_name": "Briefing Prep",
+      "prev_sheet_ref": "D4.4",
+      "next_sheet_ref": "D4.6",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D4.5",
+        "tool_title": "Internal Kick-off Deck",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D4.4",
+        "phase_name": "Capacity Planning",
+        "next_sheet_ref": "D4.6",
+        "activity_name": "Briefing Prep",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D4.5 INTERNAL KICK-OFF DECK (Compliance Tracker)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 DECK METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Prepared By (Project Manager):",
+            "Q": "Project / Client Name:",
+            "T": "[Type Name]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Link to Presentation Deck:",
+            "E": "[Insert Hyperlink Here]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 MANDATORY SLIDE INCLUSION CHECKLIST"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Required Briefing Topic",
+            "H": "Source Document Reference",
+            "N": "Included in Deck? (Yes/No)",
+            "R": "PM Notes"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Client Background & Ultimate Vision",
+            "H": "[D1.8 Needs Assessment]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "Hard Scope Boundaries (What we are NOT doing)",
+            "H": "[D1.13 Scope of Work]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Strict Timeline & Handover Dates",
+            "H": "[D2.12 Executed Contract]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "Financial/Budget Constraints for Prototyping",
+            "H": "[D1.14 Cost Estimation]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.5",
+            "B": "Known Technical & Operational Risks",
+            "H": "[D1.11 Risk Matrix]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.0 ROUTING"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Is the deck complete and ready for the Internal Kick-off Meeting?",
+            "J": "[Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Project Manager Signature:",
+            "E": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D4.6 Kick-off Calendar Invite a",
+      "source_file": "04RDBI_IMHO GEN Team Assignment and Capacity Planning Process.xlsx",
+      "doc_id": "D4.6",
+      "tool_title": "Kick-off Invite & Agenda",
+      "phase_name": "Capacity Planning",
+      "activity_name": "Meeting Setup",
+      "prev_sheet_ref": "D4.5",
+      "next_sheet_ref": "D4.7",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D4.6",
+        "tool_title": "Kick-off Invite & Agenda",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D4.5",
+        "phase_name": "Capacity Planning",
+        "next_sheet_ref": "D4.7",
+        "activity_name": "Meeting Setup",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D4.6 KICK-OFF CALENDAR INVITE & AGENDA"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 MEETING METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Meeting Date:",
+            "E": "[DD/MM/YYYY]",
+            "M": "Time:",
+            "Q": "[00:00 AM/PM]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Location / Link:",
+            "E": "[HQ / Google Meet]",
+            "M": "Lead Facilitator:",
+            "Q": "[PM Name]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Required Attendees:",
+            "E": "[All Engineers from D4.3 Roster]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 STANDARD INVITE SCRIPT (Internal)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Team"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "We are officially kicking off engineering execution for [Project Name]. The contract is signed",
+            "B": "the advance payment has cleared (D3.10)",
+            "C": "and your time has been secured."
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "Please review the attached project documentation before the meeting. The agenda is as follows:"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "1. Review of Client Objectives & Scope (10 mins)"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "2. Timeline & Deliverable Breakdown (10 mins)"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3. Technical Risk Assessment & Brainstorming (15 mins)"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "4. Day 1 Task Assignments (5 mins)"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Attendance is mandatory to establish our project baseline."
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "3.0 SCHEDULING VERIFICATION"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Calendar Invite sent to all rostered engineers?",
+            "E": "[Yes/No]"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "Room/Platform booked?",
+            "E": "[Yes/No]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D4.7 Kick-off Meeting Minutes",
+      "source_file": "04RDBI_IMHO GEN Team Assignment and Capacity Planning Process.xlsx",
+      "doc_id": "D4.7",
+      "tool_title": "Kick-off Meeting Minutes",
+      "phase_name": "Capacity Planning",
+      "activity_name": "Alignment",
+      "prev_sheet_ref": "D4.6",
+      "next_sheet_ref": "D4.8",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D4.7",
+        "tool_title": "Kick-off Meeting Minutes",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D4.6",
+        "phase_name": "Capacity Planning",
+        "next_sheet_ref": "D4.8",
+        "activity_name": "Alignment",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D4.7 KICK-OFF MEETING MINUTES (Live Capture)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 MEETING EXECUTION METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Actual Meeting Date:",
+            "E": "[DD/MM/YYYY]",
+            "M": "Start / End Time:",
+            "Q": "[00:00 to 00:00]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Lead Facilitator (PM):",
+            "E": "[Type Name]",
+            "M": "Note Taker:",
+            "Q": "[Type Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 ATTENDANCE & VERIFICATION"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Required Attendee (From D4.3)",
+            "H": "Role",
+            "N": "Present? (Yes/No)",
+            "R": "Notes (If absent)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Daniel Asanti]",
+            "H": "[Lead Mechanical]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Kelvin]",
+            "H": "[Electronics/Firmware]",
+            "N": "[Yes / No]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "3.0 TECHNICAL RESOLUTIONS & RISKS IDENTIFIED"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "SN",
+            "B": "Topic Discussed",
+            "H": "Engineer Raising Point",
+            "N": "Decision / Resolution Agreed",
+            "U": "Action Required"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.1",
+            "B": "[e.g. Prototype Material]",
+            "H": "[e.g. Daniel Asanti]",
+            "N": "[e.g. Standard PLA will melt. Must use ABS.]",
+            "U": "[Update BOM]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.2",
+            "B": "[e.g. Timeline Constraints]",
+            "H": "[e.g. Kelvin]",
+            "N": "[e.g. PCB fabrication takes 14 days minimum.]",
+            "U": "[Order PCBs on Day 1]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.3",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "N": "[Type here]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "4.0 DAY 1 IMMEDIATE ACTION ITEMS (Unblocking the Team)"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Task Description",
+            "M": "Assigned To",
+            "T": "Deadline"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "[e.g. PM to formally order ABS filament and PCBs]",
+            "M": "[PM Name]",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "[e.g. Lead Engineer to set up Master CAD Assembly file]",
+            "M": "[Daniel Asanti]",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "5.0 ROUTING"
+          }
+        },
+        {
+          "row": 30,
+          "cells": {
+            "A": "Are all team members fully clear on their Phase 1 objectives?",
+            "J": "[Yes/No]"
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "Project Manager Signature:",
+            "E": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D4.8 Locked Project Baseline",
+      "source_file": "04RDBI_IMHO GEN Team Assignment and Capacity Planning Process.xlsx",
+      "doc_id": "D4.8",
+      "tool_title": "Locked Project Baseline",
+      "phase_name": "Capacity Planning",
+      "activity_name": "Project Freeze",
+      "prev_sheet_ref": "D4.7",
+      "next_sheet_ref": "Phase 5",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D4.8",
+        "tool_title": "Locked Project Baseline",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D4.7",
+        "phase_name": "Capacity Planning",
+        "next_sheet_ref": "Phase 5",
+        "activity_name": "Project Freeze",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D4.8 LOCKED PROJECT BASELINE (The Golden Record)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 BASELINE METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Locked By (Project Manager):",
+            "Q": "Date Locked:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project / Client Name:",
+            "Q": "Total Approved Budget (GHS):",
+            "S": "[From D1.14]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 SCHEDULE BASELINE (Frozen Milestones)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Major Project Phase",
+            "H": "Baseline Start Date",
+            "N": "Baseline End Date",
+            "R": "Allocated Working Days"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Phase 1: Conceptual Design & CAD",
+            "H": "[DD/MM/YYYY]",
+            "N": "[DD/MM/YYYY]",
+            "R": "[e.g. 15 Days]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "Phase 2: Client Review & Iteration",
+            "H": "[DD/MM/YYYY]",
+            "N": "[DD/MM/YYYY]",
+            "R": "[e.g. 5 Days]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Phase 3: Prototype Fabrication",
+            "H": "[DD/MM/YYYY]",
+            "N": "[DD/MM/YYYY]",
+            "R": "[e.g. 20 Days]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "TOTAL PROJECT DURATION:",
+            "R": "[e.g. 40 Days]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 RESOURCE BASELINE (Frozen Labor Hours)"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "SN",
+            "B": "Assigned Engineer",
+            "H": "Role",
+            "N": "Total Baseline Hours/Days Allocated",
+            "U": "Cost Impact Buffer"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.1",
+            "B": "[e.g. Daniel Asanti]",
+            "H": "[Lead Mechanical]",
+            "N": "[e.g. 15 Days]",
+            "U": "[e.g. Max 2 days overtime]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "3.2",
+            "B": "[e.g. Kelvin]",
+            "H": "[Electronics/Firmware]",
+            "N": "[e.g. 10 Days]",
+            "U": "[e.g. None]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "4.0 BASELINE LOCK AUTHORIZATION"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Does this baseline perfectly match the timeline promised in the Contract (D2.12)?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Head of Operations / Engineering Signature:",
+            "G": "[Type here]",
+            "M": "Date:",
+            "N": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "DT3.D4.8a Drafting Assignment &",
+      "source_file": "04RDBI_IMHO GEN Team Assignment and Capacity Planning Process.xlsx",
+      "doc_id": "T3.D4.8a",
+      "tool_title": "T3 Drafting Assignment & Baseline",
+      "phase_name": "",
+      "activity_name": "Direct Assignment",
+      "prev_sheet_ref": "D3.10a",
+      "next_sheet_ref": "",
+      "related_tool": "D4.i",
+      "header": {
+        "doc_id": "T3.D4.8a",
+        "tool_title": "T3 Drafting Assignment & Baseline",
+        "related_tool": "D4.i",
+        "prev_sheet_ref": "D3.10a",
+        "activity_name": "Direct Assignment"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "T3.D4.8a (Drafting Assignment & Baseline)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 ENGINEER ASSIGNMENT (Replaces D4.2 & D4.3)"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "The following engineer is directly assigned to this drafting request. No formal capacity review required if under 5 days."
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "SN",
+            "B": "Assigned Engineer",
+            "F": "Primary Skillset",
+            "N": "Allocated Hours",
+            "Q": "Start Date",
+            "U": "Target Delivery Date"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "1.1",
+            "B": "[e.g. Ocran]",
+            "F": "[e.g. 3D Modeling/Surfacing]",
+            "N": "[e.g. 16 Hrs]",
+            "Q": "[DD/MM]",
+            "U": "[DD/MM]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.0 DIGITAL ACCESS & ASSETS (Replaces D4.4)"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "SN",
+            "B": "Resource Required",
+            "I": "Status",
+            "N": "Direct Link / Asset ID",
+            "T": "Notes"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.1",
+            "B": "Client Source Data",
+            "I": "[Ready/Missing]",
+            "N": "[Link to D1.1 Uploads]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.2",
+            "B": "Project CAD Folder",
+            "I": "[Created]",
+            "N": "[Link to Workspace]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "2.3",
+            "B": "Software License",
+            "I": "[Verified]",
+            "N": "[e.g. Autodesk Inventor]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.0 TECHNICAL BASELINE & STANDARDS (Replaces D4.1 & D4.8)"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "SN",
+            "B": "Parameter",
+            "I": "Requirement",
+            "N": "Reference Standard",
+            "T": "Notes"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "3.1",
+            "B": "Drafting Standard",
+            "I": "[e.g. ISO 128]",
+            "N": "[Must match T3.D1.3a]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "3.2",
+            "B": "Tolerance Class",
+            "I": "[e.g. ISO 2768-m]",
+            "N": "[Linear & Angular]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "3.3",
+            "B": "Deliverable Format",
+            "I": "[e.g. PDF & STEP]",
+            "N": "[As per T3.D2.2a]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "4.0 KICK-OFF BYPASS ACKNOWLEDGMENT (Replaces D4.5,D4.6,D4.7)"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "By signing below, the Lead Engineer confirms they have reviewed the T3.D1.3a Technical Intake and require no further internal briefing."
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "5.0 FINAL AUTHORIZATION"
+          }
+        },
+        {
+          "row": 32,
+          "cells": {
+            "A": "Project Manager Signature",
+            "M": "Date",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 33,
+          "cells": {
+            "A": "Assigned Engineer Signature",
+            "M": "Date",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    }
+  ]
+}

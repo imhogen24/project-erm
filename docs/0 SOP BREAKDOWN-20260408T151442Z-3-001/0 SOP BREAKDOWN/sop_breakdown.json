@@ -1,0 +1,4354 @@
+{
+  "tier1_summary": [
+    {
+      "pid": "1.1",
+      "main_process": "Project Onboarding",
+      "activity_description": "Filter inquiries, translate needs into systems engineering operands.",
+      "activity_owner": "Onboarding Mgr",
+      "supporting_roles": [
+        "Lead Engineer"
+      ],
+      "operator_category": "Human System",
+      "tools": [
+        "Web Browser"
+      ],
+      "information_systems": "Project Request Portal",
+      "documents_used": [
+        "D1.1",
+        "D1.2"
+      ],
+      "documents_generated": [
+        "D1.3"
+      ],
+      "management_policy": "Request Handling Policy",
+      "quality_control_point": "Verify notification contains readable technical data.",
+      "risk_considerations": "Wasting engineering time on out-of-scope inquiries."
+    },
+    {
+      "pid": "1.2",
+      "main_process": "Technical Feasibility",
+      "activity_description": "Evaluate institutional capability, hardware, and specific project risks.",
+      "activity_owner": "Lead Engineer",
+      "supporting_roles": [
+        "Head of Ops"
+      ],
+      "operator_category": "Technical System",
+      "tools": [
+        "Workshop Audit"
+      ],
+      "information_systems": "Capability Matrix",
+      "documents_used": [
+        "D1.8",
+        "D1.9"
+      ],
+      "documents_generated": [
+        "D1.10",
+        "D1.11"
+      ],
+      "management_policy": "Feasibility Policy",
+      "quality_control_point": "Ensure workshop tools can reach required tolerances.",
+      "risk_considerations": "Accepting a project that exceeds machine precision limits."
+    },
+    {
+      "pid": "1.3",
+      "main_process": "Draft Scope & Budget",
+      "activity_description": "Develop detailed SOW and multi-layer cost estimation for the project brief.",
+      "activity_owner": "Project Manager",
+      "supporting_roles": [
+        "Finance Officer"
+      ],
+      "operator_category": "Information System",
+      "tools": [
+        "Spreadsheet"
+      ],
+      "information_systems": "Costing Engine",
+      "documents_used": [
+        "D1.13"
+      ],
+      "documents_generated": [
+        "D1.14",
+        "D1.15"
+      ],
+      "management_policy": "Pricing Policy",
+      "quality_control_point": "Verify markup layers cover regional supply chain volatility.",
+      "risk_considerations": "Underestimating direct costs for imported components."
+    },
+    {
+      "pid": "2.1",
+      "main_process": "Contract Administration",
+      "activity_description": "Map technical variables into legal clauses and secure executive risk sign-off.",
+      "activity_owner": "Contract Admin",
+      "supporting_roles": [
+        "Project Manager"
+      ],
+      "operator_category": "Management System",
+      "tools": [
+        "Legal Templates"
+      ],
+      "information_systems": "CRM / Drive",
+      "documents_used": [
+        "D1.16",
+        "D2.1"
+      ],
+      "documents_generated": [
+        "D2.2",
+        "D2.5"
+      ],
+      "management_policy": "Contracting Policy",
+      "quality_control_point": "Confirm 'Background IP' is protected in Section 6.",
+      "risk_considerations": "Client assuming full ownership of IMHO background IP."
+    },
+    {
+      "pid": "3.1",
+      "main_process": "Fund Management",
+      "activity_description": "Verify advance payment clearance and authorize engineering to commence.",
+      "activity_owner": "Finance Officer",
+      "supporting_roles": [
+        "Project Manager"
+      ],
+      "operator_category": "Information System",
+      "tools": [
+        "Bank Portal"
+      ],
+      "information_systems": "Finance Database",
+      "documents_used": [
+        "D2.12",
+        "D3.1"
+      ],
+      "documents_generated": [
+        "D3.10"
+      ],
+      "management_policy": "Revenue Protection",
+      "quality_control_point": "Cross-reference payment with milestone trigger D3.3.",
+      "risk_considerations": "Beginning engineering work without cleared liquidity."
+    },
+    {
+      "pid": "4.1",
+      "main_process": "Capacity & Baseline",
+      "activity_description": "Formally assign team roster and freeze the project schedule/budget baseline.",
+      "activity_owner": "Project Manager",
+      "supporting_roles": [
+        "Head of Engineering"
+      ],
+      "operator_category": "Human System",
+      "tools": [
+        "Resource Roster"
+      ],
+      "information_systems": "Capacity Tracker",
+      "documents_used": [
+        "D2.14",
+        "D4.3"
+      ],
+      "documents_generated": [
+        "D4.8"
+      ],
+      "management_policy": "Agile Allocation",
+      "quality_control_point": "Verify assigned engineer has correct CAD license.",
+      "risk_considerations": "Assigning personnel who are already 100% utilized."
+    },
+    {
+      "pid": "5.1",
+      "main_process": "Engineering Design",
+      "activity_description": "Execute functional synthesis, morphological matrices, and 3D layout construction.",
+      "activity_owner": "Lead Engineer",
+      "supporting_roles": [
+        "CAD Engineer"
+      ],
+      "operator_category": "Technical System",
+      "tools": [
+        "Autodesk Inventor"
+      ],
+      "information_systems": "CAD Server",
+      "documents_used": [
+        "P1.0",
+        "P3.1"
+      ],
+      "documents_generated": [
+        "P5.4.1",
+        "D5.0"
+      ],
+      "management_policy": "Design Intent Policy",
+      "quality_control_point": "Validate 'Organ Structure' against client wishes.",
+      "risk_considerations": "Designing a system that is functional but unmanufacturable."
+    },
+    {
+      "pid": "6.1",
+      "main_process": "Drafting & Detailing",
+      "activity_description": "Decompose the master model into production drawings with standard GD&T.",
+      "activity_owner": "CAD Engineer",
+      "supporting_roles": [
+        "Lead Draftsman"
+      ],
+      "operator_category": "Technical System",
+      "tools": [
+        "AutoCAD / PDM"
+      ],
+      "information_systems": "Drawing Hub",
+      "documents_used": [
+        "D6.5.1",
+        "D6.5.2"
+      ],
+      "documents_generated": [
+        "D6.5.3",
+        "D6.5.4"
+      ],
+      "management_policy": "Drafting Standard",
+      "quality_control_point": "Verify view arrangements are logical and clear.",
+      "risk_considerations": "Missing dimensions leading to fabrication errors."
+    },
+    {
+      "pid": "7.1",
+      "main_process": "Procurement",
+      "activity_description": "Extract BOM from locked CAD and manage vendor selection/receiving.",
+      "activity_owner": "Operations Mgr",
+      "supporting_roles": [
+        "Lead Engineer"
+      ],
+      "operator_category": "Information System",
+      "tools": [
+        "ERP / Drive"
+      ],
+      "information_systems": "Inventory Ledger",
+      "documents_used": [
+        "D6.10",
+        "D7.1"
+      ],
+      "documents_generated": [
+        "D7.5",
+        "D7.6"
+      ],
+      "management_policy": "Sourcing Policy",
+      "quality_control_point": "Verify incoming goods match technical spec (D7.6).",
+      "risk_considerations": "Delayed lead times for long-lead COTS components."
+    },
+    {
+      "pid": "8.1",
+      "main_process": "Fabrication & Construction",
+      "activity_description": "Execute physical build following work orders and routing travelers.",
+      "activity_owner": "Workshop Supr.",
+      "supporting_roles": [
+        "Technician"
+      ],
+      "operator_category": "Human System",
+      "tools": [
+        "Welders / Machinery"
+      ],
+      "information_systems": "Shop Floor Tracker",
+      "documents_used": [
+        "D8.1",
+        "D8.4"
+      ],
+      "documents_generated": [
+        "D8.5",
+        "D8.6"
+      ],
+      "management_policy": "Safety & Mfg Policy",
+      "quality_control_point": "dimensional checks before final welding.",
+      "risk_considerations": "Welding distortion rendering parts out of tolerance."
+    },
+    {
+      "pid": "9.1",
+      "main_process": "QA & Testing",
+      "activity_description": "Perform dimensional audits and dynamic load/function validation.",
+      "activity_owner": "QA Officer",
+      "supporting_roles": [
+        "Test Engineer"
+      ],
+      "operator_category": "Technical System",
+      "tools": [
+        "Calibrated Gauges"
+      ],
+      "information_systems": "QA Database",
+      "documents_used": [
+        "D9.1",
+        "D9.3"
+      ],
+      "documents_generated": [
+        "D9.5",
+        "D9.7"
+      ],
+      "management_policy": "Validation Standard",
+      "quality_control_point": "Test E-Stops and safety interlocks (D9.4).",
+      "risk_considerations": "Releasing a machine with undetected structural defects."
+    },
+    {
+      "pid": "10.1",
+      "main_process": "Archiving & Handover",
+      "activity_description": "Lock native CAD, compile TDP, and transfer liability to client.",
+      "activity_owner": "Project Manager",
+      "supporting_roles": [
+        "IT Admin"
+      ],
+      "operator_category": "Management System",
+      "tools": [
+        "PDF Proofing"
+      ],
+      "information_systems": "Project Vault",
+      "documents_used": [
+        "D10.1",
+        "D10.3"
+      ],
+      "documents_generated": [
+        "D10.4",
+        "D11.4"
+      ],
+      "management_policy": "Archival Policy",
+      "quality_control_point": "Verify Final Handover Certificate (D11.4) is signed.",
+      "risk_considerations": "Maintaining liability for machines after physical delivery."
+    }
+  ],
+  "tier3_summary": [
+    {
+      "pid": "3.1",
+      "main_process": "Technical Intake & Metrology",
+      "activity_description": "Capture physical dimensions and source asset quality to ensure CAD accuracy.",
+      "activity_owner": "Lead Engineer",
+      "supporting_roles": [
+        "Technician"
+      ],
+      "operator_category": "Human System",
+      "tools": [
+        "Calipers / Scanners"
+      ],
+      "information_systems": "CAD Workspace",
+      "documents_used": [
+        "T3.D1.3a"
+      ],
+      "documents_generated": [
+        "T3.D1.8a"
+      ],
+      "management_policy": "Metrology Standard",
+      "quality_control_point": "Verify calibration of measuring tools.",
+      "risk_considerations": "Inaccurate field data leads to unusable CAD models."
+    },
+    {
+      "pid": "3.2",
+      "main_process": "Tier 3 Commercial Offer",
+      "activity_description": "Generate a combined scope and price offer to bypass heavy feasibility stages.",
+      "activity_owner": "Project Manager",
+      "supporting_roles": [
+        "Finance Officer"
+      ],
+      "operator_category": "Information System",
+      "tools": [
+        "Spreadsheet"
+      ],
+      "information_systems": "ERP / Drive",
+      "documents_used": [
+        "T3.D1.8a"
+      ],
+      "documents_generated": [
+        "T3.D1.15a"
+      ],
+      "management_policy": "Pricing Policy",
+      "quality_control_point": "Ensure IP Buyout fee is discussed if native files are requested.",
+      "risk_considerations": "Underpricing high-complexity reverse engineering work."
+    },
+    {
+      "pid": "3.3",
+      "main_process": "Drafting Contract Mapping",
+      "activity_description": "Define IP ownership (Native vs PDF) and waive liability for client-provided data errors.",
+      "activity_owner": "Contract Admin",
+      "supporting_roles": [
+        "Project Manager"
+      ],
+      "operator_category": "Management System",
+      "tools": [
+        "Legal Templates"
+      ],
+      "information_systems": "CRM / Drive",
+      "documents_used": [
+        "T3.D1.15a"
+      ],
+      "documents_generated": [
+        "T3.D2.2a"
+      ],
+      "management_policy": "IP Protection Policy",
+      "quality_control_point": "Confirm 'Liability Waiver' is signed for client-provided models.",
+      "risk_considerations": "Legal disputes over ownership of source CAD files."
+    },
+    {
+      "pid": "3.4",
+      "main_process": "Digital Asset Release Auth",
+      "activity_description": "Verify final payment in Fidelity Bank before authorizing digital file delivery.",
+      "activity_owner": "Finance Officer",
+      "supporting_roles": [
+        "Lead Engineer"
+      ],
+      "operator_category": "Information System",
+      "tools": [
+        "Bank Portal"
+      ],
+      "information_systems": "Finance Database",
+      "documents_used": [
+        "D3.8",
+        "D3.9"
+      ],
+      "documents_generated": [
+        "T3.D3.10a"
+      ],
+      "management_policy": "Revenue Protection",
+      "quality_control_point": "Cross-reference IP Buyout payment with contract terms.",
+      "risk_considerations": "Releasing native CAD before final GHS clearance."
+    },
+    {
+      "pid": "3.5",
+      "main_process": "Direct Team Assignment",
+      "activity_description": "Assign drafting tasks directly to a CAD engineer, bypassing full capacity reviews.",
+      "activity_owner": "Project Manager",
+      "supporting_roles": [
+        "CAD Engineer"
+      ],
+      "operator_category": "Human System",
+      "tools": [
+        "Resource Roster"
+      ],
+      "information_systems": "Capacity Tracker",
+      "documents_used": [
+        "T3.D3.10a"
+      ],
+      "documents_generated": [
+        "T3.D4.8a"
+      ],
+      "management_policy": "Agile Allocation",
+      "quality_control_point": "Confirm assigned engineer has correct software license.",
+      "risk_considerations": "Assigning an engineer without specific 'Surfacing' or 'Reverse Eng' skills."
+    },
+    {
+      "pid": "3.6",
+      "main_process": "3D Modeling & Validation",
+      "activity_description": "Execute the 3D construction from field measurements and validate against design intent.",
+      "activity_owner": "CAD Engineer",
+      "supporting_roles": [
+        "Lead Engineer"
+      ],
+      "operator_category": "Technical System",
+      "tools": [
+        "Autodesk Inventor"
+      ],
+      "information_systems": "CAD Server",
+      "documents_used": [
+        "T3.D1.8a"
+      ],
+      "documents_generated": [
+        "T3.D6.5.1a"
+      ],
+      "management_policy": "Design Intent Policy",
+      "quality_control_point": "Validate 'As-Built' vs 'Corrected' features with Lead Eng.",
+      "risk_considerations": "Modeling 'wear and tear' instead of functional design intent."
+    },
+    {
+      "pid": "3.7",
+      "main_process": "Final Approval & Asset Handover",
+      "activity_description": "Secure client digital sign-off and formally archive the technical data package.",
+      "activity_owner": "Project Manager",
+      "supporting_roles": [
+        "CAD Engineer"
+      ],
+      "operator_category": "Management System",
+      "tools": [
+        "PDF Proofing"
+      ],
+      "information_systems": "Project Vault",
+      "documents_used": [
+        "T3.D6.5.1a"
+      ],
+      "documents_generated": [
+        "T3.D6.10a"
+      ],
+      "management_policy": "Project Closure Policy",
+      "quality_control_point": "Verify 'Finance Unblock' is active before emailing final assets.",
+      "risk_considerations": "Sending high-res assets to client before formal CAD Lock."
+    }
+  ],
+  "detailed_framework": [
+    {
+      "workbook_id": 1,
+      "name": "Project Onboarding and Definition Process",
+      "processes": [
+        {
+          "pid": "1.1",
+          "name": "Inquiry Receipt & Logging",
+          "activities": [
+            {
+              "pid": "1.1.1",
+              "main_process": "Inquiry Receipt & Logging",
+              "activity_description": "Receive automatic notification of a new client inquiry via website form or email.",
+              "activity_owner": "Project Onboarding Manager",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Email / Web Browser"
+              ],
+              "information_systems": "Project Request Portal",
+              "documents_used": [
+                "Client Email / Web Form"
+              ],
+              "documents_generated": [
+                "Initial Inquiry Notification"
+              ],
+              "management_policy": "Form Submission Protocol",
+              "quality_control_point": "Verify the notification contains readable text and contact info.",
+              "risk_considerations": "Email filtering to spam; missed notifications."
+            },
+            {
+              "pid": "1.1.2",
+              "main_process": "Inquiry Receipt & Logging",
+              "activity_description": "Read the inquiry to perform a preliminary spam/relevance filter.",
+              "activity_owner": "Project Onboarding Manager",
+              "supporting_roles": [],
+              "operator_category": "Human System",
+              "tools": [
+                "Computer Display"
+              ],
+              "information_systems": "Email Client",
+              "documents_used": [
+                "Initial Inquiry Notification"
+              ],
+              "documents_generated": [],
+              "management_policy": "Project Request Handling Policy",
+              "quality_control_point": "Ensure the request broadly aligns with IMHOGEN's engineering services.",
+              "risk_considerations": "Wasting time on spam or out-of-scope solicitations."
+            },
+            {
+              "pid": "1.1.3",
+              "main_process": "Inquiry Receipt & Logging",
+              "activity_description": "Create a new project entry in the tracker and copy/paste all client details into the respective fields.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Project Onboarding Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Keyboard/Mouse"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Initial Inquiry Notification"
+              ],
+              "documents_generated": [
+                "Received Request Record"
+              ],
+              "management_policy": "Data Entry Protocol",
+              "quality_control_point": "Double-check that phone numbers and email addresses are copied without typos.",
+              "risk_considerations": "Typos in contact info leading to lost leads."
+            },
+            {
+              "pid": "1.1.4",
+              "main_process": "Inquiry Receipt & Logging",
+              "activity_description": "Send standard acknowledgment email to the client stating the inquiry was received and outlining the next step.",
+              "activity_owner": "Project Onboarding Manager",
+              "supporting_roles": [
+                "Admin Support"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Email Templates"
+              ],
+              "information_systems": "Email Client / CRM",
+              "documents_used": [
+                "Received Request Record"
+              ],
+              "documents_generated": [
+                "Acknowledgment Email"
+              ],
+              "management_policy": "Client Communication Policy",
+              "quality_control_point": "Verify the client's name is spelled correctly in the template.",
+              "risk_considerations": "Client feels ignored if acknowledgment is delayed."
+            }
+          ]
+        },
+        {
+          "pid": "1.2",
+          "name": "Initial Needs Assessment",
+          "activities": [
+            {
+              "pid": "1.2.1",
+              "main_process": "Initial Needs Assessment",
+              "activity_description": "Contact the client to propose 2-3 available time slots for a technical discovery meeting.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Project Onboarding Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Scheduling Tool"
+              ],
+              "information_systems": "Email Client / CRM",
+              "documents_used": [
+                "Received Request Record"
+              ],
+              "documents_generated": [
+                "Meeting Time Proposal"
+              ],
+              "management_policy": "Meeting Scheduling Policy",
+              "quality_control_point": "Ensure proposed times fall within standard operating hours.",
+              "risk_considerations": "Scheduling conflicts causing delays."
+            },
+            {
+              "pid": "1.2.2",
+              "main_process": "Initial Needs Assessment",
+              "activity_description": "Generate a calendar invite with a video conferencing link and a standard meeting agenda, and send it to the client.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Calendar App",
+                "Video Conferencing"
+              ],
+              "information_systems": "Meeting Repository",
+              "documents_used": [
+                "Meeting Time Proposal"
+              ],
+              "documents_generated": [
+                "Calendar Invite & Agenda"
+              ],
+              "management_policy": "Meeting Scheduling Policy",
+              "quality_control_point": "Verify the video link works and the time zone is correct.",
+              "risk_considerations": "Technical difficulties joining the meeting."
+            },
+            {
+              "pid": "1.2.3",
+              "main_process": "Initial Needs Assessment",
+              "activity_description": "Conduct the discovery meeting to extract exact technical needs, operational constraints, and expected outcomes.",
+              "activity_owner": "Project Onboarding Manager",
+              "supporting_roles": [
+                "Technical Support Provider"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Video Conferencing",
+                "Note-taking app"
+              ],
+              "information_systems": "Communication Channels",
+              "documents_used": [
+                "Calendar Invite & Agenda"
+              ],
+              "documents_generated": [
+                "Raw Meeting Notes"
+              ],
+              "management_policy": "Meeting Facilitation Process",
+              "quality_control_point": "Ensure the client explicitly states their budget constraints and timelines.",
+              "risk_considerations": "Failing to ask critical constraint questions."
+            },
+            {
+              "pid": "1.2.4",
+              "main_process": "Initial Needs Assessment",
+              "activity_description": "Clean up raw meeting notes and upload them into the central documentation repository.",
+              "activity_owner": "Technical Support Provider",
+              "supporting_roles": [
+                "Project Onboarding Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Word Processor"
+              ],
+              "information_systems": "Documentation Repository",
+              "documents_used": [
+                "Raw Meeting Notes"
+              ],
+              "documents_generated": [
+                "Needs Assessment Notes"
+              ],
+              "management_policy": "Documentation Standards",
+              "quality_control_point": "Ensure all technical jargon and constraints are accurately transcribed.",
+              "risk_considerations": "Loss of critical technical details post-meeting."
+            }
+          ]
+        },
+        {
+          "pid": "1.3",
+          "name": "Project Feasibility Assessment",
+          "activities": [
+            {
+              "pid": "1.3.1",
+              "main_process": "Project Feasibility Assessment",
+              "activity_description": "Share the Needs Assessment Notes with the Engineering and R&D team for internal review.",
+              "activity_owner": "Project Onboarding Manager",
+              "supporting_roles": [
+                "Engineering Risk Officer"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Internal Chat/Email"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Needs Assessment Notes"
+              ],
+              "documents_generated": [
+                "Internal Review Request"
+              ],
+              "management_policy": "Internal Communication Protocol",
+              "quality_control_point": "Confirm receipt of the document by the Engineering team.",
+              "risk_considerations": "Bottlenecks if the engineering team misses the notification."
+            },
+            {
+              "pid": "1.3.2",
+              "main_process": "Project Feasibility Assessment",
+              "activity_description": "Evaluate if the department has the required CAD software, tooling, and skills to execute the client's request.",
+              "activity_owner": "R&D Coordinator",
+              "supporting_roles": [
+                "Technical Support Provider"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Capability Checklist"
+              ],
+              "information_systems": "Engineering Knowledge Repository",
+              "documents_used": [
+                "Needs Assessment Notes"
+              ],
+              "documents_generated": [
+                "Capability Assessment"
+              ],
+              "management_policy": "Strategic Performance Protocols",
+              "quality_control_point": "Cross-check required software (e.g., Inventor) against current licenses.",
+              "risk_considerations": "Committing to a project without the necessary software/skills."
+            },
+            {
+              "pid": "1.3.3",
+              "main_process": "Project Feasibility Assessment",
+              "activity_description": "Evaluate the request for regulatory, safety, and operational risks.",
+              "activity_owner": "Engineering Risk & Safety Officer",
+              "supporting_roles": [
+                "R&D Coordinator"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Risk Matrix"
+              ],
+              "information_systems": "Project Data Analytic Platform",
+              "documents_used": [
+                "Needs Assessment Notes"
+              ],
+              "documents_generated": [
+                "Risk Assessment"
+              ],
+              "management_policy": "Risk & Safety Policy",
+              "quality_control_point": "Ensure all physical safety standards related to the request are flagged.",
+              "risk_considerations": "Accepting a project with severe liability risks."
+            },
+            {
+              "pid": "1.3.4",
+              "main_process": "Project Feasibility Assessment",
+              "activity_description": "Compile the Capability and Risk assessments into a final Go/No-Go Feasibility Report.",
+              "activity_owner": "Engineering Risk Officer",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Word Processor"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Capability & Risk Assessments"
+              ],
+              "documents_generated": [
+                "Feasibility Report"
+              ],
+              "management_policy": "Review and Approval Workflow",
+              "quality_control_point": "Final managerial review of the Go/No-Go recommendation.",
+              "risk_considerations": "Incorrect Go/No-Go decision based on flawed data."
+            }
+          ]
+        },
+        {
+          "pid": "1.4",
+          "name": "Scope & Budget Generation",
+          "activities": [
+            {
+              "pid": "1.4.1",
+              "main_process": "Scope & Budget Generation",
+              "activity_description": "If \"Go\", write out the exact technical deliverables (CAD models, BOMs, reports) the department will provide.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Engineering Team"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Word Processor"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Feasibility Report"
+              ],
+              "documents_generated": [
+                "Draft Scope of Work"
+              ],
+              "management_policy": "Scope Definition Policy",
+              "quality_control_point": "Ensure deliverables are strictly defined to prevent scope creep.",
+              "risk_considerations": "Vague deliverables leading to client disputes later."
+            },
+            {
+              "pid": "1.4.2",
+              "main_process": "Scope & Budget Generation",
+              "activity_description": "Estimate the required engineering man-hours, software usage time, and any specialized resource costs.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Finance Team"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Cost Analysis Spreadsheet"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Draft Scope of Work"
+              ],
+              "documents_generated": [
+                "Cost Estimation Sheet"
+              ],
+              "management_policy": "Financial Control Policy",
+              "quality_control_point": "Verify hourly rates match the current department standards.",
+              "risk_considerations": "Underpricing the engineering effort."
+            },
+            {
+              "pid": "1.4.3",
+              "main_process": "Scope & Budget Generation",
+              "activity_description": "Combine the Scope of Work and Cost Estimation into the formal Project Brief & Draft Budget document.",
+              "activity_owner": "Head of Business Operations",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Publishing/Formatting Software"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Scope & Cost Sheets"
+              ],
+              "documents_generated": [
+                "Project Brief & Draft Budget"
+              ],
+              "management_policy": "Documentation Standards",
+              "quality_control_point": "Check formatting, spelling, and mathematical accuracy of the budget.",
+              "risk_considerations": "Presenting an unprofessional or mathematically incorrect brief."
+            }
+          ]
+        },
+        {
+          "pid": "1.5",
+          "name": "Internal Onboarding Handoff",
+          "activities": [
+            {
+              "pid": "1.5.1",
+              "main_process": "Internal Onboarding Handoff",
+              "activity_description": "Conduct a brief internal meeting to formally hand over the Project Brief to the contract administration team.",
+              "activity_owner": "Project Onboarding Manager",
+              "supporting_roles": [
+                "Business Operation Team"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Satiable Meeting Environment"
+              ],
+              "information_systems": "Meeting Repository",
+              "documents_used": [
+                "Project Brief & Draft Budget"
+              ],
+              "documents_generated": [
+                "Handoff Meeting Minutes"
+              ],
+              "management_policy": "Internal Handoff Protocol",
+              "quality_control_point": "Both parties must verbally agree that the scope is clear enough for contracting.",
+              "risk_considerations": "Legal drafting begins with misunderstood technical parameters."
+            },
+            {
+              "pid": "1.5.2",
+              "main_process": "Internal Onboarding Handoff",
+              "activity_description": "Change the project status in the central database from \"Onboarding\" to \"Contracting Phase\".",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Project Onboarding Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Keyboard/Mouse"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Handoff Meeting Minutes"
+              ],
+              "documents_generated": [
+                "Updated System Status"
+              ],
+              "management_policy": "Project Portfolio Governance System",
+              "quality_control_point": "Verify the status change is reflected across all dashboards.",
+              "risk_considerations": "Tracking confusion if the system still shows \"Onboarding\"."
+            },
+            {
+              "pid": "1.5.3",
+              "main_process": "Internal Onboarding Handoff",
+              "activity_description": "Archive all onboarding raw documents (emails, initial notes) into the project's permanent digital folder.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "File Explorer / Cloud Storage"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "All prior documents"
+              ],
+              "documents_generated": [
+                "Archived Onboarding Folder"
+              ],
+              "management_policy": "Documentation Repository Policy",
+              "quality_control_point": "Ensure all files are correctly named and tagged before archiving.",
+              "risk_considerations": "Cluttered or lost historical files."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workbook_id": 2,
+      "name": "Contract Tracking and Administration Process",
+      "processes": [
+        {
+          "pid": "2.1",
+          "name": "Contract Drafting",
+          "activities": [
+            {
+              "pid": "2.1.1",
+              "main_process": "Contract Drafting",
+              "activity_description": "Receive the formal Project Brief & Draft Budget from the Onboarding handoff and review for clarity.",
+              "activity_owner": "Business Operations Team",
+              "supporting_roles": [
+                "Head of Business Operations"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Computer Display"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Project Brief & Draft Budget"
+              ],
+              "documents_generated": [],
+              "management_policy": "Contract Drafting Policy",
+              "quality_control_point": "Ensure all technical deliverables and budget figures are explicitly stated.",
+              "risk_considerations": "Ambiguous inputs leading to poorly drafted contracts."
+            },
+            {
+              "pid": "2.1.2",
+              "main_process": "Contract Drafting",
+              "activity_description": "Access the central legal repository and download the appropriate standard contract templates (SLA, NDA, SOW).",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Business Operations Team"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "File Explorer"
+              ],
+              "information_systems": "Contract Management Database",
+              "documents_used": [],
+              "documents_generated": [
+                "Standard Contract Templates"
+              ],
+              "management_policy": "Document Version Control Policy",
+              "quality_control_point": "Verify the templates are the most currently approved versions by legal.",
+              "risk_considerations": "Using outdated legal templates with voided clauses."
+            },
+            {
+              "pid": "2.1.3",
+              "main_process": "Contract Drafting",
+              "activity_description": "Populate the selected templates with client details, scope of work, budget, and specific constraints.",
+              "activity_owner": "Business Operations Team",
+              "supporting_roles": [
+                "Admin Support"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Word Processor"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Project Brief, Templates"
+              ],
+              "documents_generated": [
+                "Initial Draft Contract"
+              ],
+              "management_policy": "Contract Drafting Policy",
+              "quality_control_point": "Double-check client legal name, addresses, and monetary figures.",
+              "risk_considerations": "Typos in critical financial or legal identifying information."
+            }
+          ]
+        },
+        {
+          "pid": "2.2",
+          "name": "Internal Review & Approval",
+          "activities": [
+            {
+              "pid": "2.2.1",
+              "main_process": "Internal Review & Approval",
+              "activity_description": "Route the Initial Draft Contract to the Project Manager to verify that the technical scope matches the department's capability.",
+              "activity_owner": "Business Operations Team",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Internal Routing/Approval Tool"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Initial Draft Contract"
+              ],
+              "documents_generated": [
+                "PM Reviewed Draft"
+              ],
+              "management_policy": "Internal Review Protocol",
+              "quality_control_point": "PM must sign off that the timeline and technical deliverables are realistic.",
+              "risk_considerations": "Legal commitment to impossible engineering timelines."
+            },
+            {
+              "pid": "2.2.2",
+              "main_process": "Internal Review & Approval",
+              "activity_description": "Route the PM Reviewed Draft to the Finance Team to verify payment milestones, taxes, and total contract value.",
+              "activity_owner": "Business Operations Team",
+              "supporting_roles": [
+                "Finance Team"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Internal Routing/Approval Tool"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "PM Reviewed Draft"
+              ],
+              "documents_generated": [
+                "Finance Reviewed Draft"
+              ],
+              "management_policy": "Financial Control Policy",
+              "quality_control_point": "Finance must verify the payment schedule aligns with cash flow needs.",
+              "risk_considerations": "Unfavorable payment terms that restrict project funding."
+            },
+            {
+              "pid": "2.2.3",
+              "main_process": "Internal Review & Approval",
+              "activity_description": "Submit the draft to the Legal Advisor (if applicable) for a final compliance and liability check.",
+              "activity_owner": "Head of Business Operations",
+              "supporting_roles": [
+                "Legal Advisor"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Word Processor (Track Changes)"
+              ],
+              "information_systems": "Contract Management Database",
+              "documents_used": [
+                "Finance Reviewed Draft"
+              ],
+              "documents_generated": [
+                "Internally Approved Draft"
+              ],
+              "management_policy": "Corporate Governance Policy",
+              "quality_control_point": "Check for excessive liability, indemnification, or IP forfeiture clauses.",
+              "risk_considerations": "Exposing IMHOGEN to severe legal or financial liabilities."
+            }
+          ]
+        },
+        {
+          "pid": "2.3",
+          "name": "Client Negotiation",
+          "activities": [
+            {
+              "pid": "2.3.1",
+              "main_process": "Client Negotiation",
+              "activity_description": "Draft a formal email and send the Internally Approved Draft to the client for their review.",
+              "activity_owner": "Client Experience Manager",
+              "supporting_roles": [
+                "Business Operations Team"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Email Templates"
+              ],
+              "information_systems": "CRM / Email Client",
+              "documents_used": [
+                "Internally Approved Draft"
+              ],
+              "documents_generated": [
+                "Client Transmittal Record"
+              ],
+              "management_policy": "Client Communication Policy",
+              "quality_control_point": "Ensure the email clearly states the deadline for their review/redlines.",
+              "risk_considerations": "Open-ended reviews causing project scheduling delays."
+            },
+            {
+              "pid": "2.3.2",
+              "main_process": "Client Negotiation",
+              "activity_description": "Receive client feedback/redlines. If changes are requested, schedule a negotiation meeting.",
+              "activity_owner": "Client Experience Manager",
+              "supporting_roles": [
+                "Admin Support"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Scheduling Tool"
+              ],
+              "information_systems": "CRM / Calendar",
+              "documents_used": [
+                "Client Redlines"
+              ],
+              "documents_generated": [
+                "Negotiation Meeting Invite"
+              ],
+              "management_policy": "Meeting Scheduling Policy",
+              "quality_control_point": "Ensure relevant decision-makers (Head of Ops, PM) are invited.",
+              "risk_considerations": "Inability to resolve contract disputes via email alone."
+            },
+            {
+              "pid": "2.3.3",
+              "main_process": "Client Negotiation",
+              "activity_description": "Conduct the negotiation meeting, discuss disputed clauses, and agree on mutual compromises.",
+              "activity_owner": "Head of Business Operations",
+              "supporting_roles": [
+                "Client Experience Manager"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Video Conferencing"
+              ],
+              "information_systems": "Meeting Repository",
+              "documents_used": [
+                "Client Redlines"
+              ],
+              "documents_generated": [
+                "Negotiation Meeting Notes"
+              ],
+              "management_policy": "Client Engagement Policy",
+              "quality_control_point": "Never agree to technical or financial changes without PM/Finance input.",
+              "risk_considerations": "Verbal agreement to terms that violate department policies."
+            },
+            {
+              "pid": "2.3.4",
+              "main_process": "Client Negotiation",
+              "activity_description": "Update the contract document based on the agreed compromises and conduct a final internal read-through.",
+              "activity_owner": "Business Operations Team",
+              "supporting_roles": [
+                "Legal Advisor"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Word Processor"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Negotiation Meeting Notes"
+              ],
+              "documents_generated": [
+                "Finalized Contract"
+              ],
+              "management_policy": "Contract Revision Policy",
+              "quality_control_point": "Ensure no unintended clauses were altered during the redline process.",
+              "risk_considerations": "Sneaky or accidental changes inserted into the final text."
+            }
+          ]
+        },
+        {
+          "pid": "2.4",
+          "name": "Execution & Archiving",
+          "activities": [
+            {
+              "pid": "2.4.1",
+              "main_process": "Execution & Archiving",
+              "activity_description": "Upload the Finalized Contract into the digital signature platform and tag the required signature fields.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Business Operations Team"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "E-Signature Platform"
+              ],
+              "information_systems": "Contract Management Database",
+              "documents_used": [
+                "Finalized Contract"
+              ],
+              "documents_generated": [
+                "Pending Signature Contract"
+              ],
+              "management_policy": "Document Execution Policy",
+              "quality_control_point": "Verify the correct authorized signers for both IMHOGEN and the client.",
+              "risk_considerations": "Contract sent to an unauthorized representative."
+            },
+            {
+              "pid": "2.4.2",
+              "main_process": "Execution & Archiving",
+              "activity_description": "Dispatch the digital envelope to the client and monitor the platform for completion.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "E-Signature Platform"
+              ],
+              "information_systems": "Contract Management Database",
+              "documents_used": [
+                "Pending Signature Contract"
+              ],
+              "documents_generated": [
+                "Signature Status Log"
+              ],
+              "management_policy": "Signature Authority Policy",
+              "quality_control_point": "Send automatic 48-hour reminders if the document remains unsigned.",
+              "risk_considerations": "Project stalling due to forgotten signatures."
+            },
+            {
+              "pid": "2.4.3",
+              "main_process": "Execution & Archiving",
+              "activity_description": "Once signed by all parties, download the final document and its digital audit trail certificate.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "E-Signature Platform"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Pending Signature Contract"
+              ],
+              "documents_generated": [
+                "Executed Contract & Audit Trail"
+              ],
+              "management_policy": "Document Execution Policy",
+              "quality_control_point": "Verify the audit certificate is attached to prove legal validity.",
+              "risk_considerations": "Inability to prove the signature's authenticity in a dispute."
+            },
+            {
+              "pid": "2.4.4",
+              "main_process": "Execution & Archiving",
+              "activity_description": "Upload the Executed Contract into the central secure legal repository and apply appropriate metadata tags.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "IT Support"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Cloud Storage / Database"
+              ],
+              "information_systems": "Contract Management Database",
+              "documents_used": [
+                "Executed Contract"
+              ],
+              "documents_generated": [
+                "Archived Contract Record"
+              ],
+              "management_policy": "Data Retention Policy",
+              "quality_control_point": "Ensure strict access control (read-only) is applied to the final file.",
+              "risk_considerations": "Unauthorized alteration or deletion of executed contracts."
+            },
+            {
+              "pid": "2.4.5",
+              "main_process": "Execution & Archiving",
+              "activity_description": "Update the CRM/Project Tracker status to \"Contract Executed\" and trigger a notification to the Finance Team to begin Payment Scheduling.",
+              "activity_owner": "Project Onboarding Manager",
+              "supporting_roles": [
+                "Finance Team"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Workflow Trigger"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Archived Contract Record"
+              ],
+              "documents_generated": [
+                "Phase Initiation Notice"
+              ],
+              "management_policy": "Project Portfolio Governance System",
+              "quality_control_point": "Confirm the Finance Team acknowledges the trigger to start billing.",
+              "risk_considerations": "Failure to initiate invoicing after the contract is signed."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workbook_id": 3,
+      "name": "Payment Scheduling and Fund Management Process.",
+      "processes": [
+        {
+          "pid": "3.1",
+          "name": "Payment Schedule Setup",
+          "activities": [
+            {
+              "pid": "3.1.1",
+              "main_process": "Payment Schedule Setup",
+              "activity_description": "Receive the \"Phase Initiation Notice\" and the Executed Contract from the Business Operations Team.",
+              "activity_owner": "Finance Officer",
+              "supporting_roles": [
+                "Admin Support"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Email / Internal Chat"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Phase Initiation Notice, Executed Contract"
+              ],
+              "documents_generated": [],
+              "management_policy": "Inter-departmental Handoff Policy",
+              "quality_control_point": "Confirm receipt of the fully executed contract before initiating any financial setup.",
+              "risk_considerations": "Setting up billing on an unfinalized or unsigned contract."
+            },
+            {
+              "pid": "3.1.2",
+              "main_process": "Payment Schedule Setup",
+              "activity_description": "Read the contract's commercial terms to extract exact milestone descriptions, payment percentages, and due dates.",
+              "activity_owner": "Finance Officer",
+              "supporting_roles": [],
+              "operator_category": "Human System",
+              "tools": [
+                "Computer Display"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Executed Contract"
+              ],
+              "documents_generated": [
+                "Payment Terms Extract"
+              ],
+              "management_policy": "Billing & Scheduling Policy",
+              "quality_control_point": "Verify that the extracted milestones exactly match the contract's language.",
+              "risk_considerations": "Misinterpreting payment terms leading to incorrect billing schedules."
+            },
+            {
+              "pid": "3.1.3",
+              "main_process": "Payment Schedule Setup",
+              "activity_description": "Create a new client profile and project ledger in the accounting system, inputting the extracted payment schedule.",
+              "activity_owner": "Finance Officer",
+              "supporting_roles": [
+                "Finance Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Keyboard/Mouse"
+              ],
+              "information_systems": "ERP / Accounting Software",
+              "documents_used": [
+                "Payment Terms Extract"
+              ],
+              "documents_generated": [
+                "System Payment Record"
+              ],
+              "management_policy": "Data Entry Protocol",
+              "quality_control_point": "Finance Manager must perform a spot-check on the entered schedule vs the contract.",
+              "risk_considerations": "Data entry errors causing missed or incorrect future invoices."
+            }
+          ]
+        },
+        {
+          "pid": "3.2",
+          "name": "Invoicing & Billing",
+          "activities": [
+            {
+              "pid": "3.2.1",
+              "main_process": "Invoicing & Billing",
+              "activity_description": "Receive formal notification and proof of completion for a specific project milestone from the Project Manager.",
+              "activity_owner": "Finance Officer",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Internal Routing Tool"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Milestone Completion Report"
+              ],
+              "documents_generated": [
+                "Milestone Billing Trigger"
+              ],
+              "management_policy": "Invoicing Policy",
+              "quality_control_point": "Verify the PM's proof of completion aligns with the contract's definition of the milestone.",
+              "risk_considerations": "Billing a client before the engineering value has actually been delivered."
+            },
+            {
+              "pid": "3.2.2",
+              "main_process": "Invoicing & Billing",
+              "activity_description": "Generate a draft invoice in the accounting software corresponding to the achieved milestone and scheduled amount.",
+              "activity_owner": "Finance Officer",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Accounting Software"
+              ],
+              "information_systems": "ERP / Accounting Software",
+              "documents_used": [
+                "System Payment Record"
+              ],
+              "documents_generated": [
+                "Draft Invoice"
+              ],
+              "management_policy": "Invoicing Policy",
+              "quality_control_point": "Ensure PO numbers, tax IDs, and bank details are clearly visible on the invoice.",
+              "risk_considerations": "Invoices rejected by the client's accounts payable due to missing details."
+            },
+            {
+              "pid": "3.2.3",
+              "main_process": "Invoicing & Billing",
+              "activity_description": "Review and approve the draft invoice for mathematical accuracy and tax compliance before issuance.",
+              "activity_owner": "Finance Manager",
+              "supporting_roles": [
+                "Finance Officer"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Accounting Software"
+              ],
+              "information_systems": "ERP / Accounting Software",
+              "documents_used": [
+                "Draft Invoice"
+              ],
+              "documents_generated": [
+                "Approved Invoice"
+              ],
+              "management_policy": "Financial Control Policy",
+              "quality_control_point": "Dual-authorization required for invoices exceeding a predefined monetary threshold.",
+              "risk_considerations": "Sending mathematically incorrect invoices that damage company credibility."
+            },
+            {
+              "pid": "3.2.4",
+              "main_process": "Invoicing & Billing",
+              "activity_description": "Draft a formal email, attach the Approved Invoice (PDF format), and transmit it to the client's designated billing contact.",
+              "activity_owner": "Finance Officer",
+              "supporting_roles": [
+                "Client Experience Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Email Templates"
+              ],
+              "information_systems": "CRM / Email Client",
+              "documents_used": [
+                "Approved Invoice"
+              ],
+              "documents_generated": [
+                "Transmitted Invoice Record"
+              ],
+              "management_policy": "Client Communication Policy",
+              "quality_control_point": "Verify the email address is the official accounts payable contact, not just the technical lead.",
+              "risk_considerations": "Invoice sitting unread in the wrong person's inbox."
+            }
+          ]
+        },
+        {
+          "pid": "3.3",
+          "name": "Reconciliation & Triggering",
+          "activities": [
+            {
+              "pid": "3.3.1",
+              "main_process": "Reconciliation & Triggering",
+              "activity_description": "Log into the corporate banking portal daily to monitor and download reports of incoming client deposits.",
+              "activity_owner": "Finance Officer",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Banking Portals"
+              ],
+              "information_systems": "Banking System",
+              "documents_used": [],
+              "documents_generated": [
+                "Daily Bank Statement"
+              ],
+              "management_policy": "Treasury Management Policy",
+              "quality_control_point": "Ensure secure network connections and VPNs are used when accessing banking portals.",
+              "risk_considerations": "Unnoticed funds leading to unnecessary project delays."
+            },
+            {
+              "pid": "3.3.2",
+              "main_process": "Reconciliation & Triggering",
+              "activity_description": "Cross-reference incoming bank deposits against outstanding invoices in the accounting software.",
+              "activity_owner": "Finance Officer",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Reconciliation Tools"
+              ],
+              "information_systems": "ERP / Accounting Software",
+              "documents_used": [
+                "Daily Bank Statement, Transmitted Invoice"
+              ],
+              "documents_generated": [
+                "Reconciled Payment Log"
+              ],
+              "management_policy": "Financial Reconciliation Policy",
+              "quality_control_point": "Match the exact deposited amount and payment reference number to the specific invoice.",
+              "risk_considerations": "Misallocating funds to the wrong client or project ledger."
+            },
+            {
+              "pid": "3.3.3",
+              "main_process": "Reconciliation & Triggering",
+              "activity_description": "Generate a formal Payment Receipt and email it to the client to acknowledge successful receipt of funds.",
+              "activity_owner": "Finance Officer",
+              "supporting_roles": [
+                "Admin Support"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Accounting Software"
+              ],
+              "information_systems": "CRM / Email Client",
+              "documents_used": [
+                "Reconciled Payment Log"
+              ],
+              "documents_generated": [
+                "Payment Receipt"
+              ],
+              "management_policy": "Documentation Policy",
+              "quality_control_point": "Issue the receipt within 24 hours of the funds clearing the bank.",
+              "risk_considerations": "Client disputes or uncertainty regarding their account standing."
+            },
+            {
+              "pid": "3.3.4",
+              "main_process": "Reconciliation & Triggering",
+              "activity_description": "Change the invoice status to \"Paid\" and send a \"Payment Cleared - Proceed\" notification to the Project Manager.",
+              "activity_owner": "Finance Officer",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Workflow Trigger"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Reconciled Payment Log"
+              ],
+              "documents_generated": [
+                "Phase Unblock Notice"
+              ],
+              "management_policy": "Project Portfolio Governance System",
+              "quality_control_point": "PM must acknowledge the unblock notice before deploying engineering resources.",
+              "risk_considerations": "Engineering team remaining idle because they are unaware funds have cleared."
+            }
+          ]
+        },
+        {
+          "pid": "3.4",
+          "name": "Outstanding Payment Mgmt",
+          "activities": [
+            {
+              "pid": "3.4.1",
+              "main_process": "Outstanding Payment Mgmt",
+              "activity_description": "Generate an Accounts Receivable (AR) aging report weekly to identify invoices that have crossed their payment grace period.",
+              "activity_owner": "Finance Officer",
+              "supporting_roles": [
+                "Finance Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Reporting Dashboard"
+              ],
+              "information_systems": "ERP / Accounting Software",
+              "documents_used": [
+                "System Payment Record"
+              ],
+              "documents_generated": [
+                "Overdue Accounts Report"
+              ],
+              "management_policy": "Credit Control Policy",
+              "quality_control_point": "Ensure the report accurately reflects the net terms (e.g., Net 30) agreed in the contract.",
+              "risk_considerations": "Accumulation of bad debt and severe cash flow bottlenecks."
+            },
+            {
+              "pid": "3.4.2",
+              "main_process": "Outstanding Payment Mgmt",
+              "activity_description": "Send a polite, standardized follow-up email to clients with overdue invoices, requesting payment status.",
+              "activity_owner": "Finance Officer",
+              "supporting_roles": [
+                "Client Experience Manager"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Email Templates"
+              ],
+              "information_systems": "CRM / Email Client",
+              "documents_used": [
+                "Overdue Accounts Report"
+              ],
+              "documents_generated": [
+                "Payment Reminder Log"
+              ],
+              "management_policy": "Outstanding Collections Policy",
+              "quality_control_point": "Maintain a professional tone to preserve the client relationship while being firm on terms.",
+              "risk_considerations": "Damaging client relations with aggressive or premature collection tactics."
+            },
+            {
+              "pid": "3.4.3",
+              "main_process": "Outstanding Payment Mgmt",
+              "activity_description": "If payment is delayed beyond critical thresholds, issue a formal \"Stop Work\" notice to the Project Manager.",
+              "activity_owner": "Finance Manager",
+              "supporting_roles": [
+                "Head of Business Operations"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Internal Communication"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Overdue Accounts Report"
+              ],
+              "documents_generated": [
+                "Stop Work Directive"
+              ],
+              "management_policy": "Risk & Financial Liability Policy",
+              "quality_control_point": "Escalate to Head of Business Operations before halting major engineering work.",
+              "risk_considerations": "Continuing to burn man-hours and resources on a defaulting client."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workbook_id": 4,
+      "name": "Team Assignment and Capacity Planning Process.",
+      "processes": [
+        {
+          "pid": "4.1",
+          "name": "Resource Requirement Analysis",
+          "activities": [
+            {
+              "pid": "4.1.1",
+              "main_process": "Resource Requirement Analysis",
+              "activity_description": "Receive the \"Phase Initiation Notice\" and the finalized Project Brief from the Business Operations Team.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Email / Internal Chat"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Phase Initiation Notice, Project Brief"
+              ],
+              "documents_generated": [],
+              "management_policy": "Inter-departmental Handoff Policy",
+              "quality_control_point": "Verify the Project Brief contains explicitly approved timelines and budgets.",
+              "risk_considerations": "Initiating planning based on unapproved or draft requirements."
+            },
+            {
+              "pid": "4.1.2",
+              "main_process": "Resource Requirement Analysis",
+              "activity_description": "Read the Project Brief to list the specific technical competencies, software platforms (e.g., Inventor), and estimated man-hours required.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Technical Support Provider"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Computer Display"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Project Brief"
+              ],
+              "documents_generated": [
+                "Technical Requirement Notes"
+              ],
+              "management_policy": "Talent Management Policy",
+              "quality_control_point": "Ensure all required niche skills or specialized software modules are identified.",
+              "risk_considerations": "Realizing midway through the project that the team lacks a critical skill."
+            },
+            {
+              "pid": "4.1.3",
+              "main_process": "Resource Requirement Analysis",
+              "activity_description": "Populate the standard Resource Request Form with the required roles, hours, and duration, and submit it to HR/Engineering Management.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Word Processor / Digital Form"
+              ],
+              "information_systems": "HR Management System",
+              "documents_used": [
+                "Technical Requirement Notes"
+              ],
+              "documents_generated": [
+                "Resource Request Form"
+              ],
+              "management_policy": "Resource Allocation Policy",
+              "quality_control_point": "Double-check that the requested man-hours align with the approved budget.",
+              "risk_considerations": "Requesting more man-hours than the project budget can afford."
+            }
+          ]
+        },
+        {
+          "pid": "4.2",
+          "name": "Capacity Assessment & Allocation",
+          "activities": [
+            {
+              "pid": "4.2.1",
+              "main_process": "Capacity Assessment & Allocation",
+              "activity_description": "Receive the Resource Request Form and open the department's scheduling dashboard to view current staff workloads.",
+              "activity_owner": "HR Manager",
+              "supporting_roles": [
+                "Engineering Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Scheduling Dashboard / Gantt"
+              ],
+              "information_systems": "HR Management System",
+              "documents_used": [
+                "Resource Request Form"
+              ],
+              "documents_generated": [],
+              "management_policy": "Workforce Management Policy",
+              "quality_control_point": "Ensure no single engineer is assigned a sustained workload exceeding 85% capacity.",
+              "risk_considerations": "Staff burnout, missed deadlines, and poor quality output due to overloading."
+            },
+            {
+              "pid": "4.2.2",
+              "main_process": "Capacity Assessment & Allocation",
+              "activity_description": "Cross-reference the requested competencies with the skills matrix of available engineers, draftsmen, and QA/QC staff.",
+              "activity_owner": "Engineering Manager",
+              "supporting_roles": [
+                "HR Manager"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Skills Competency Matrix"
+              ],
+              "information_systems": "HR Management System",
+              "documents_used": [
+                "Resource Request Form"
+              ],
+              "documents_generated": [],
+              "management_policy": "Talent Management Policy",
+              "quality_control_point": "Match the complexity of the project with the seniority level of the assigned engineer.",
+              "risk_considerations": "Assigning a junior engineer to a high-risk, complex system design without proper support."
+            },
+            {
+              "pid": "4.2.3",
+              "main_process": "Capacity Assessment & Allocation",
+              "activity_description": "Select the specific personnel for the project and formally log their assigned hours and roles into the tracking system.",
+              "activity_owner": "HR Manager",
+              "supporting_roles": [
+                "Admin Support"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Keyboard/Mouse"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Resource Request Form"
+              ],
+              "documents_generated": [
+                "Team Assignment Record"
+              ],
+              "management_policy": "Resource Allocation Policy",
+              "quality_control_point": "Verify that planned leave or PTO does not conflict with critical project milestones.",
+              "risk_considerations": "Key personnel going on vacation during a critical design deadline."
+            }
+          ]
+        },
+        {
+          "pid": "4.3",
+          "name": "Workspace & Access Setup",
+          "activities": [
+            {
+              "pid": "4.3.1",
+              "main_process": "Workspace & Access Setup",
+              "activity_description": "Receive the Team Assignment Record and trigger the IT/Admin provisioning workflow.",
+              "activity_owner": "IT / Admin Support",
+              "supporting_roles": [
+                "HR Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "IT Ticketing System"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Team Assignment Record"
+              ],
+              "documents_generated": [
+                "Provisioning Ticket"
+              ],
+              "management_policy": "Information Security Policy",
+              "quality_control_point": "Ensure only the individuals listed on the Assignment Record receive access.",
+              "risk_considerations": "Providing confidential client data access to unauthorized personnel."
+            },
+            {
+              "pid": "4.3.2",
+              "main_process": "Workspace & Access Setup",
+              "activity_description": "Create dedicated project folders in the central Document Management System and CAD PDM Vault, applying strict access controls.",
+              "activity_owner": "IT / Admin Support",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Admin Consoles"
+              ],
+              "information_systems": "Document Management System / PDM",
+              "documents_used": [
+                "Provisioning Ticket"
+              ],
+              "documents_generated": [],
+              "management_policy": "Documentation Standards",
+              "quality_control_point": "Apply standardized naming conventions to all newly created digital folders.",
+              "risk_considerations": "Chaotic file storage leading to lost CAD models or overwritten documents."
+            },
+            {
+              "pid": "4.3.3",
+              "main_process": "Workspace & Access Setup",
+              "activity_description": "Set up dedicated internal communication channels (e.g., specific chat groups or email threads) and invite the assigned team.",
+              "activity_owner": "IT / Admin Support",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Communication Platforms"
+              ],
+              "information_systems": "Communication Channels",
+              "documents_used": [
+                "Provisioning Ticket"
+              ],
+              "documents_generated": [
+                "Access Confirmation Log"
+              ],
+              "management_policy": "Internal Communication Protocol",
+              "quality_control_point": "Ensure the Project Manager is granted \"Admin\" rights over the new communication channels.",
+              "risk_considerations": "Fragmented communication happening outside the official project channels."
+            }
+          ]
+        },
+        {
+          "pid": "4.4",
+          "name": "Internal Kick-off Execution",
+          "activities": [
+            {
+              "pid": "4.4.1",
+              "main_process": "Internal Kick-off Execution",
+              "activity_description": "Draft a structured kick-off presentation summarizing the client's goals, the technical constraints, the budget, and the timeline.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Presentation Software"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Project Brief, Team Assignment Record"
+              ],
+              "documents_generated": [
+                "Internal Kick-off Deck"
+              ],
+              "management_policy": "Internal Communication Protocol",
+              "quality_control_point": "Ensure all proprietary client details are masked if the presentation is stored broadly.",
+              "risk_considerations": "Team members lacking a holistic understanding of the project's 'why'."
+            },
+            {
+              "pid": "4.4.2",
+              "main_process": "Internal Kick-off Execution",
+              "activity_description": "Send a calendar invite for the internal kick-off meeting to the assigned team and attach the Project Brief for pre-reading.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Calendar App"
+              ],
+              "information_systems": "Meeting Repository",
+              "documents_used": [
+                "Internal Kick-off Deck"
+              ],
+              "documents_generated": [
+                "Calendar Invite"
+              ],
+              "management_policy": "Meeting Scheduling Policy",
+              "quality_control_point": "Verify that the scheduled time works for all assigned critical personnel.",
+              "risk_considerations": "Key technical experts missing the foundational alignment meeting."
+            },
+            {
+              "pid": "4.4.3",
+              "main_process": "Internal Kick-off Execution",
+              "activity_description": "Conduct the video/in-person kick-off meeting, explicitly outlining the roles, expectations, and the \"black-box\" input/output deliverables.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Assigned Team"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Video Conferencing / Whiteboard"
+              ],
+              "information_systems": "Communication Channels",
+              "documents_used": [
+                "Internal Kick-off Deck"
+              ],
+              "documents_generated": [
+                "Kick-off Meeting Minutes"
+              ],
+              "management_policy": "Project Initiation Policy",
+              "quality_control_point": "Require verbal confirmation from the Lead Engineer that the timeline is understood.",
+              "risk_considerations": "The technical team leaving the meeting with misaligned expectations."
+            },
+            {
+              "pid": "4.4.4",
+              "main_process": "Internal Kick-off Execution",
+              "activity_description": "Log into the Project Tracking Software, formally lock the baseline schedule/budget, and change the project status to \"Engineering Design Phase\".",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [],
+              "operator_category": "Management System",
+              "tools": [
+                "Keyboard/Mouse"
+              ],
+              "information_systems": "Project Portfolio Governance System",
+              "documents_used": [
+                "Kick-off Meeting Minutes"
+              ],
+              "documents_generated": [
+                "Locked Project Baseline"
+              ],
+              "management_policy": "Baseline Governance Policy",
+              "quality_control_point": "Ensure the baseline matches the kick-off agreements exactly; restrict editing access.",
+              "risk_considerations": "Unapproved changes creeping into the schedule after the kick-off."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workbook_id": 5,
+      "name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "processes": [
+        {
+          "pid": "5.1",
+          "name": "P1: Requirements Elaboration",
+          "activities": [
+            {
+              "pid": "5.1.1",
+              "main_process": "P1: Requirements Elaboration",
+              "activity_description": "Establish rough factors for all life phases (technology, operators, inputs, outputs) and analyze the TP environment.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [
+                "Design Engineer"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Requirement Tool (P1.1 - P1.3)"
+              ],
+              "information_systems": "Engineering Database",
+              "documents_used": [
+                "Project Brief (P0)"
+              ],
+              "documents_generated": [
+                "Draft Life Phase Requirements"
+              ],
+              "management_policy": "Requirements Engineering Policy",
+              "quality_control_point": "Verify all input/output operands match the Project Brief constraints.",
+              "risk_considerations": "Missing a critical operational environment constraint early on."
+            },
+            {
+              "pid": "5.1.2",
+              "main_process": "P1: Requirements Elaboration",
+              "activity_description": "Quantify requirements, assign tolerances, and allocate properties across functional life phases and operators.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [
+                "QA",
+                "QC Officer"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Requirement Tool (P1.4 - P1.7b)"
+              ],
+              "information_systems": "Engineering Database",
+              "documents_used": [
+                "Draft Life Phase Requirements"
+              ],
+              "documents_generated": [
+                "Weighted Requirements List"
+              ],
+              "management_policy": "Tolerance & Capability Policy",
+              "quality_control_point": "Validate tolerances against available standard workshop capabilities.",
+              "risk_considerations": "Over-tolerancing leading to unmanufacturable or costly designs."
+            },
+            {
+              "pid": "5.1.3",
+              "main_process": "P1: Requirements Elaboration",
+              "activity_description": "Compile, review, and lock the formal, multi-dimensional design specifications.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Spec Tool (Pr1 - Pr8",
+                "P1.8)"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Weighted Requirements List"
+              ],
+              "documents_generated": [
+                "Final Design Specification (Pr-Set)"
+              ],
+              "management_policy": "Design Specification Governance",
+              "quality_control_point": "Formal sign-off on the Pr-Set before any design work begins.",
+              "risk_considerations": "Proceeding to conceptual design with ambiguous or conflicting specifications."
+            }
+          ]
+        },
+        {
+          "pid": "5.2",
+          "name": "P2: Design Work Planning",
+          "activities": [
+            {
+              "pid": "5.2.1",
+              "main_process": "P2: Design Work Planning",
+              "activity_description": "Analyze the technical process viewpoints, assess difficulty, and assign specific design tasks to operators.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Planning Tool (P2.1 - P2.4)"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Final Design Specification"
+              ],
+              "documents_generated": [
+                "Design Task Allocation"
+              ],
+              "management_policy": "Resource Allocation Policy",
+              "quality_control_point": "Ensure assigned engineers have the required technical competency.",
+              "risk_considerations": "Assigning complex datum calculations to junior staff."
+            },
+            {
+              "pid": "5.2.2",
+              "main_process": "P2: Design Work Planning",
+              "activity_description": "Estimate design costs, map the schedule, and set up phase progress tracking mechanisms.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Planning Tool (P2.5 - P2.8)"
+              ],
+              "information_systems": "Project Portfolio System",
+              "documents_used": [
+                "Design Task Allocation"
+              ],
+              "documents_generated": [
+                "EDPM Gantt & Progress Trackers (Pr2.2a-f)"
+              ],
+              "management_policy": "Baseline Governance Policy",
+              "quality_control_point": "Baseline schedule must align with overall project budget and timeline.",
+              "risk_considerations": "Underestimating required man-hours for complex FEA or CAD modeling."
+            }
+          ]
+        },
+        {
+          "pid": "5.3",
+          "name": "P3: Transformation Process (TrfP)",
+          "activities": [
+            {
+              "pid": "5.3.1",
+              "main_process": "P3: Transformation Process (TrfP)",
+              "activity_description": "Establish the operands (Material, Energy, Information) and the technological principles of the operations process.",
+              "activity_owner": "Systems Engineer",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Process Tool (P3.1",
+                "P3.1a-b)"
+              ],
+              "information_systems": "Engineering Database",
+              "documents_used": [
+                "Final Design Specification"
+              ],
+              "documents_generated": [
+                "Transformation Process Diagram"
+              ],
+              "management_policy": "Systems Engineering Policy",
+              "quality_control_point": "Verify logical flow: all input operands must logically convert to outputs.",
+              "risk_considerations": "Incomplete transformation mapping leading to missing mechanical functions."
+            },
+            {
+              "pid": "5.3.2",
+              "main_process": "P3: TS-Function Structure",
+              "activity_description": "Distribute effects between technical/human systems, defining main, assisting, and evoked functions.",
+              "activity_owner": "Systems Engineer",
+              "supporting_roles": [
+                "Design Engineer"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Function Tool (P3.2",
+                "P3.2a-b",
+                "P3.3)"
+              ],
+              "information_systems": "Engineering Database",
+              "documents_used": [
+                "Transformation Process Diagram"
+              ],
+              "documents_generated": [
+                "Optimal Functional Structure"
+              ],
+              "management_policy": "Functional Decomposition Protocol",
+              "quality_control_point": "Ensure no critical load-bearing or safety function is overlooked.",
+              "risk_considerations": "Functional black-boxes left unresolved before structural synthesis."
+            }
+          ]
+        },
+        {
+          "pid": "5.4",
+          "name": "P4: Organ Structure Synthesis",
+          "activities": [
+            {
+              "pid": "5.4.1",
+              "main_process": "P4: Organ Structure Synthesis",
+              "activity_description": "Populate the morphological matrix with action principles and combine function carriers (organs) into unified concepts.",
+              "activity_owner": "Design Engineer",
+              "supporting_roles": [
+                "Systems Engineer"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Morphological Tool (P4.1)"
+              ],
+              "information_systems": "Concept Repository",
+              "documents_used": [
+                "Optimal Functional Structure"
+              ],
+              "documents_generated": [
+                "Synthesized Concept Proposals"
+              ],
+              "management_policy": "Concept Generation Protocol",
+              "quality_control_point": "Ensure at least 3 distinct conceptual variants are generated.",
+              "risk_considerations": "Fixation on a single design path without exploring optimal alternatives."
+            },
+            {
+              "pid": "5.4.2",
+              "main_process": "P4: Topology & Organ Selection",
+              "activity_description": "Establish spatial topologies (Iconic/Principle) and evaluate proposals to select the optimal Final Organ Structure.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [
+                "Design Engineer"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Topology Tool (P4.2)"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Synthesized Concept Proposals"
+              ],
+              "documents_generated": [
+                "Final Organ Structure"
+              ],
+              "management_policy": "Design Evaluation Policy",
+              "quality_control_point": "Justify the selected organ structure mathematically against the Pr-Set.",
+              "risk_considerations": "Selecting a suboptimal layout due to bias rather than technical merit."
+            }
+          ]
+        },
+        {
+          "pid": "5.5",
+          "name": "P5: Constructional Structure",
+          "activities": [
+            {
+              "pid": "5.5.1",
+              "main_process": "P5: Constructional Structure",
+              "activity_description": "Establish preliminary layouts, rough forms, and define constructional design groups from the organ structure.",
+              "activity_owner": "Design Engineer",
+              "supporting_roles": [
+                "Draftsman"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Layout Tool (P5.1 - P5.3.1)"
+              ],
+              "information_systems": "CAD Environment",
+              "documents_used": [
+                "Final Organ Structure"
+              ],
+              "documents_generated": [
+                "Preliminary Spatial Layout"
+              ],
+              "management_policy": "Spatial Design Policy",
+              "quality_control_point": "Clash detection and clearance check at the preliminary layout stage.",
+              "risk_considerations": "Components interfering spatially during assembly."
+            },
+            {
+              "pid": "5.5.2",
+              "main_process": "P5: Definitive Dimensional Layout",
+              "activity_description": "Definitively establish dimensions, material treatments, part decompositions, and perform strength analyses.",
+              "activity_owner": "Design Engineer",
+              "supporting_roles": [
+                "Technical Expert"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Constructional Tool (P5.4",
+                "P5.4.1)"
+              ],
+              "information_systems": "PDM Vault / CAE Software",
+              "documents_used": [
+                "Preliminary Spatial Layout"
+              ],
+              "documents_generated": [
+                "Detailed 3D CAD Models"
+              ],
+              "management_policy": "Geometric Dimensioning & Tolerancing (GD&T) Policy",
+              "quality_control_point": "Tolerance stack-up analysis and FEA validation against the Pr-Set.",
+              "risk_considerations": "Structural failure or excessive deflection under operational loads."
+            }
+          ]
+        },
+        {
+          "pid": "5.6",
+          "name": "P6: Detailing & Assembly Control",
+          "activities": [
+            {
+              "pid": "5.6.1",
+              "main_process": "P6: Detailing & Assembly Control",
+              "activity_description": "Generate individual detailed manufacturing drawings, control assembly drawings, and hierarchical part lists.",
+              "activity_owner": "Draftsman",
+              "supporting_roles": [
+                "Design Engineer"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Drafting Tool (P6",
+                "P6.1)"
+              ],
+              "information_systems": "PDM / Document Control System",
+              "documents_used": [
+                "Detailed 3D CAD Models"
+              ],
+              "documents_generated": [
+                "Engineering Drawings & CAD BOM"
+              ],
+              "management_policy": "Documentation Standards Policy",
+              "quality_control_point": "Drawing checker review (Title blocks, GD&T, notes) by Lead Engineer.",
+              "risk_considerations": "Releasing incomplete or inaccurate drawings to the fabrication floor."
+            },
+            {
+              "pid": "5.6.2",
+              "main_process": "P6: Final Release & Audit",
+              "activity_description": "Prepare manufacturing instructions, conduct a final design audit, and release the complete technical data package.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Phase Control Tool (P6.4 - P6.6)"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Engineering Drawings & CAD BOM"
+              ],
+              "documents_generated": [
+                "Approved Technical Data Package"
+              ],
+              "management_policy": "Engineering Release Protocol",
+              "quality_control_point": "Complete sign-off matrix verification prior to manufacturing release.",
+              "risk_considerations": "Manufacturing unapproved or obsolete file versions."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workbook_id": 6,
+      "name": "Client Review and Approval Process.",
+      "processes": [
+        {
+          "pid": "6.1",
+          "name": "Deliverable Submission",
+          "activities": [
+            {
+              "pid": "6.1.1",
+              "main_process": "Deliverable Submission",
+              "activity_description": "Receive the \"Approved Technical Data Package\" (CAD, Drawings, BOM, Reports) from the Lead Engineer.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Internal Routing Tool"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Approved Technical Data Package"
+              ],
+              "documents_generated": [],
+              "management_policy": "Internal Handoff Protocol",
+              "quality_control_point": "Verify all files possess the required internal QA/QC signature before sending to the client.",
+              "risk_considerations": "Submitting unverified or draft engineering files to the client."
+            },
+            {
+              "pid": "6.1.2",
+              "main_process": "Deliverable Submission",
+              "activity_description": "Upload the deliverables into a secure, client-facing digital portal or package them into a secure file-transfer link.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "File Sharing Platforms"
+              ],
+              "information_systems": "Client Portal / CRM",
+              "documents_used": [
+                "Approved Technical Data Package"
+              ],
+              "documents_generated": [
+                "Client Delivery Link"
+              ],
+              "management_policy": "Data Security & Sharing Policy",
+              "quality_control_point": "Ensure access permissions are strictly limited to the authorized client contacts.",
+              "risk_considerations": "Unauthorized interception of proprietary IMHOGEN designs."
+            },
+            {
+              "pid": "6.1.3",
+              "main_process": "Deliverable Presentation",
+              "activity_description": "Draft and send a calendar invite for a formal \"Deliverable Presentation Meeting\" to walk the client through the design.",
+              "activity_owner": "Client Relations Team",
+              "supporting_roles": [
+                "Admin Support"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Calendar App / CRM"
+              ],
+              "information_systems": "Meeting Repository",
+              "documents_used": [
+                "Client Delivery Link"
+              ],
+              "documents_generated": [
+                "Meeting Invite"
+              ],
+              "management_policy": "Client Engagement Policy",
+              "quality_control_point": "Schedule the meeting within 48 hours of sending the deliverables to maintain momentum.",
+              "risk_considerations": "Client reviewing complex technical files without proper context, leading to confusion."
+            },
+            {
+              "pid": "6.1.4",
+              "main_process": "Deliverable Presentation",
+              "activity_description": "Conduct the presentation meeting, using 3D viewers to explain technical decisions, constraints, and functional compliance.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Video Conferencing / 3D CAD Viewers"
+              ],
+              "information_systems": "Communication Channels",
+              "documents_used": [
+                "Approved Technical Data Package"
+              ],
+              "documents_generated": [
+                "Presentation Meeting Minutes"
+              ],
+              "management_policy": "Meeting Facilitation Process",
+              "quality_control_point": "Ensure the Lead Engineer explains why certain design constraints were enforced.",
+              "risk_considerations": "Client rejecting a design because they do not understand the underlying engineering logic."
+            }
+          ]
+        },
+        {
+          "pid": "6.2",
+          "name": "Feedback Collection",
+          "activities": [
+            {
+              "pid": "6.2.1",
+              "main_process": "Feedback Collection",
+              "activity_description": "Send the standardized \"Client Feedback Form\" to the client immediately following the presentation.",
+              "activity_owner": "Client Relations Team",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Digital Forms (e.g.",
+                "Google Forms)"
+              ],
+              "information_systems": "CRM",
+              "documents_used": [
+                "Presentation Meeting Minutes"
+              ],
+              "documents_generated": [
+                "Client Feedback Form (Blank)"
+              ],
+              "management_policy": "Feedback Handling Procedure",
+              "quality_control_point": "Formally state the deadline (e.g., 5 business days) for submitting the feedback form.",
+              "risk_considerations": "Open-ended feedback timelines stalling the project indefinitely."
+            },
+            {
+              "pid": "6.2.2",
+              "main_process": "Feedback Collection",
+              "activity_description": "Receive the completed feedback form from the client and extract all requested changes into the central Revision Log.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Client Relations Team"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Spreadsheet"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Completed Feedback Form"
+              ],
+              "documents_generated": [
+                "Master Revision Log"
+              ],
+              "management_policy": "Documentation Standards",
+              "quality_control_point": "Ensure every single client comment is captured line-by-line without summarization.",
+              "risk_considerations": "Losing or ignoring a specific client request, leading to dissatisfaction."
+            }
+          ]
+        },
+        {
+          "pid": "6.3",
+          "name": "Feedback Evaluation",
+          "activities": [
+            {
+              "pid": "6.3.1",
+              "main_process": "Feedback Evaluation",
+              "activity_description": "Review the Master Revision Log against the original signed Contract/Project Brief to classify changes as \"Minor\" or \"Major\".",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Scope Analysis Tools"
+              ],
+              "information_systems": "Contract Management System",
+              "documents_used": [
+                "Master Revision Log, Executed Contract"
+              ],
+              "documents_generated": [
+                "Scope Assessment Report"
+              ],
+              "management_policy": "Change Management Policy",
+              "quality_control_point": "\"Major\" changes (out of scope) must immediately trigger a financial Change Order request.",
+              "risk_considerations": "Performing out-of-scope engineering redesigns for free (Scope Creep)."
+            },
+            {
+              "pid": "6.3.2",
+              "main_process": "Revision Execution",
+              "activity_description": "Route approved \"Minor\" revisions back to the engineering team, assigning specific PID tasks for CAD/Drawing updates.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Engineering Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Task Management Dashboard"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Scope Assessment Report"
+              ],
+              "documents_generated": [
+                "Engineering Revision Tickets"
+              ],
+              "management_policy": "Revision Control Policy",
+              "quality_control_point": "Ensure the revision tickets explicitly link back to the specific client feedback line item.",
+              "risk_considerations": "Engineers misunderstanding the requested change and altering the wrong component."
+            },
+            {
+              "pid": "6.3.3",
+              "main_process": "Revision Execution",
+              "activity_description": "Execute the requested changes in the CAD models and update the associated 2D drawings and BOMs.",
+              "activity_owner": "Design Engineer",
+              "supporting_roles": [
+                "Draftsman"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "3D CAD Software / Drafting Tools"
+              ],
+              "information_systems": "PDM Vault",
+              "documents_used": [
+                "Engineering Revision Tickets"
+              ],
+              "documents_generated": [
+                "Revised Technical Data Package"
+              ],
+              "management_policy": "Iterative Design Policy",
+              "quality_control_point": "Save the revised files as a new version (e.g., V1.1) to preserve the original baseline.",
+              "risk_considerations": "Overwriting the original design files and losing previous work."
+            },
+            {
+              "pid": "6.3.4",
+              "main_process": "Revision Verification",
+              "activity_description": "Perform a QA/QC check on the revised files to ensure the specific feedback was addressed without breaking other system functions.",
+              "activity_owner": "QA/QC Officer",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Traceability Matrix"
+              ],
+              "information_systems": "Requirements Management System",
+              "documents_used": [
+                "Revised Technical Data Package, Revision Log"
+              ],
+              "documents_generated": [
+                "Revision QA Sign-off"
+              ],
+              "management_policy": "Quality Assurance Guidelines",
+              "quality_control_point": "Verify that the new changes still comply with the original Pr-Set safety and load requirements.",
+              "risk_considerations": "A minor revision inadvertently causing a critical structural or functional failure."
+            }
+          ]
+        },
+        {
+          "pid": "6.4",
+          "name": "Final Sign-off & Acceptance",
+          "activities": [
+            {
+              "pid": "6.4.1",
+              "main_process": "Final Sign-off & Acceptance",
+              "activity_description": "Generate the formal \"Delivery & Acceptance Form\" stating that all design requirements and revisions have been met.",
+              "activity_owner": "Business Operations Team",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Word Processor"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Revision QA Sign-off"
+              ],
+              "documents_generated": [
+                "Delivery & Acceptance Form"
+              ],
+              "management_policy": "Sign-off & Acceptance Protocol",
+              "quality_control_point": "Cross-check the final deliverable list on the form against the original contract.",
+              "risk_considerations": "Missing a contracted deliverable on the final acceptance sheet."
+            },
+            {
+              "pid": "6.4.2",
+              "main_process": "Final Sign-off & Acceptance",
+              "activity_description": "Upload the Acceptance Form and the Final Revised Technical Data Package into the e-signature platform.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Client Relations Team"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "E-Signature Platform (DocuSign",
+                "Adobe Sign)"
+              ],
+              "information_systems": "Contract Management Database",
+              "documents_used": [
+                "Delivery & Acceptance Form"
+              ],
+              "documents_generated": [
+                "Pending Signature Envelope"
+              ],
+              "management_policy": "Document Execution Policy",
+              "quality_control_point": "Verify the digital envelope is sent to the client's authorized legal/financial signatory.",
+              "risk_considerations": "Obtaining a sign-off from an unauthorized client representative."
+            },
+            {
+              "pid": "6.4.3",
+              "main_process": "Final Sign-off & Acceptance",
+              "activity_description": "Conduct a brief final Handover Meeting (if requested by the client) to officially close the design phase and answer final questions.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Client Relations Team"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Video Conferencing"
+              ],
+              "information_systems": "Meeting Repository",
+              "documents_used": [
+                "Final Revised Technical Data Package"
+              ],
+              "documents_generated": [
+                "Handover Meeting Minutes"
+              ],
+              "management_policy": "Client Engagement Policy",
+              "quality_control_point": "Confirm verbally during the meeting that no further engineering changes will be made.",
+              "risk_considerations": "Client attempting to request more changes after the handover meeting."
+            },
+            {
+              "pid": "6.4.4",
+              "main_process": "Final Sign-off & Acceptance",
+              "activity_description": "Receive the executed e-signature, archive all final documents, and trigger the Finance Team to issue the final invoice.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Workflow Trigger"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Signed Delivery & Acceptance Form"
+              ],
+              "documents_generated": [
+                "Project Phase Closure Notice"
+              ],
+              "management_policy": "Project Portfolio Governance System",
+              "quality_control_point": "Ensure all finalized CAD models are locked in the PDM vault to prevent further editing.",
+              "risk_considerations": "Accidental alterations to the finalized, client-approved engineering files."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workbook_id": 7,
+      "name": "Procurement Process",
+      "processes": [
+        {
+          "pid": "7.1",
+          "name": "BOM Handover & Review",
+          "activities": [
+            {
+              "pid": "7.1.1",
+              "main_process": "BOM Handover & Review",
+              "activity_description": "Receive the \"Project Phase Closure Notice\" and the finalized, QA-approved Bill of Materials (BOM) from the Project Manager.",
+              "activity_owner": "Procurement Officer",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Internal Routing Tool"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Approved Technical Data Package (BOM)"
+              ],
+              "documents_generated": [],
+              "management_policy": "Inter-departmental Handoff Policy",
+              "quality_control_point": "Verify the BOM has the formal \"Released for Manufacturing\" digital signature.",
+              "risk_considerations": "Procuring materials based on an obsolete or unapproved draft BOM."
+            },
+            {
+              "pid": "7.1.2",
+              "main_process": "BOM Handover & Review",
+              "activity_description": "Import the digital BOM into the procurement dashboard and categorize items into raw materials, standard hardware, and custom components.",
+              "activity_owner": "Procurement Officer",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Spreadsheet / ERP Software"
+              ],
+              "information_systems": "Procurement Dashboard",
+              "documents_used": [
+                "Final CAD BOM"
+              ],
+              "documents_generated": [
+                "Categorized Procurement List"
+              ],
+              "management_policy": "Documentation Standards",
+              "quality_control_point": "Ensure units of measure (e.g., mm, meters, kg) are correctly mapped during import.",
+              "risk_considerations": "Unit conversion errors leading to massive over/under ordering of steel sections."
+            }
+          ]
+        },
+        {
+          "pid": "7.2",
+          "name": "Budget Validation & Sourcing",
+          "activities": [
+            {
+              "pid": "7.2.1",
+              "main_process": "Budget Validation & Sourcing",
+              "activity_description": "Cross-reference the Categorized Procurement List against the locked financial budget established in the Project Brief.",
+              "activity_owner": "Procurement Officer",
+              "supporting_roles": [
+                "Finance Officer"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Budgeting Spreadsheet"
+              ],
+              "information_systems": "Financial Tracking System",
+              "documents_used": [
+                "Categorized Procurement List, Locked Budget"
+              ],
+              "documents_generated": [
+                "Initial Budget Variance Report"
+              ],
+              "management_policy": "Financial Control Policy",
+              "quality_control_point": "Flag any item where the current market price exceeds the estimated baseline budget by >10%.",
+              "risk_considerations": "Material price fluctuations destroying the project's profit margin."
+            },
+            {
+              "pid": "7.2.2",
+              "main_process": "Budget Validation & Sourcing",
+              "activity_description": "Generate a Request for Quotation (RFQ) for required materials, specifying exact tolerances, grades, and quantities.",
+              "activity_owner": "Procurement Officer",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Word Processor / ERP"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Categorized Procurement List"
+              ],
+              "documents_generated": [
+                "Request for Quotation (RFQ)"
+              ],
+              "management_policy": "Vendor Sourcing Policy",
+              "quality_control_point": "Ensure RFQs for standard structural steel clearly state acceptable tolerance limits for local market variations.",
+              "risk_considerations": "Vendors quoting for sub-standard or incorrect material grades."
+            },
+            {
+              "pid": "7.2.3",
+              "main_process": "Budget Validation & Sourcing",
+              "activity_description": "Dispatch RFQs to approved local suppliers (e.g., Suame/Kumasi market vendors) and specialized international distributors via email.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Procurement Officer"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Email Client"
+              ],
+              "information_systems": "CRM / Vendor Database",
+              "documents_used": [
+                "Request for Quotation (RFQ)"
+              ],
+              "documents_generated": [
+                "RFQ Dispatch Log"
+              ],
+              "management_policy": "Vendor Communication Protocol",
+              "quality_control_point": "Verify vendor email addresses and set a strict deadline (e.g., 48 hours) for quote returns.",
+              "risk_considerations": "Project delays due to endlessly waiting on vendor quotes."
+            },
+            {
+              "pid": "7.2.4",
+              "main_process": "Budget Validation & Sourcing",
+              "activity_description": "Receive quotes, compile a comparative vendor matrix (price, lead time, quality history), and select the optimal suppliers.",
+              "activity_owner": "Procurement Officer",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Decision Matrix / Spreadsheet"
+              ],
+              "information_systems": "Procurement Dashboard",
+              "documents_used": [
+                "Vendor Quotes"
+              ],
+              "documents_generated": [
+                "Vendor Selection Matrix"
+              ],
+              "management_policy": "Vendor Sourcing Policy",
+              "quality_control_point": "Justify selection if the cheapest vendor is not chosen (e.g., due to faster lead time or better quality).",
+              "risk_considerations": "Selecting an unreliable vendor solely because they offered the lowest price."
+            }
+          ]
+        },
+        {
+          "pid": "7.3",
+          "name": "Purchasing & PO Issuance",
+          "activities": [
+            {
+              "pid": "7.3.1",
+              "main_process": "Purchasing & PO Issuance",
+              "activity_description": "Generate formal Purchase Orders (POs) in the accounting system for the selected vendors, attaching the required engineering specs.",
+              "activity_owner": "Procurement Officer",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "Accounting / ERP Software"
+              ],
+              "information_systems": "Financial Tracking System",
+              "documents_used": [
+                "Vendor Selection Matrix"
+              ],
+              "documents_generated": [
+                "Draft Purchase Order (PO)"
+              ],
+              "management_policy": "Purchasing Policy",
+              "quality_control_point": "Double-check payment terms, delivery address, and required delivery dates on the PO.",
+              "risk_considerations": "Materials shipped to the wrong address or on the wrong timeline."
+            },
+            {
+              "pid": "7.3.2",
+              "main_process": "Purchasing & PO Issuance",
+              "activity_description": "Route the Draft PO to the Finance Manager for final financial authorization and fund allocation.",
+              "activity_owner": "Procurement Officer",
+              "supporting_roles": [
+                "Finance Manager"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Internal Approval Workflow"
+              ],
+              "information_systems": "Financial Tracking System",
+              "documents_used": [
+                "Draft Purchase Order (PO)"
+              ],
+              "documents_generated": [
+                "Approved Purchase Order"
+              ],
+              "management_policy": "Financial Control Policy",
+              "quality_control_point": "Finance Manager must verify that sufficient cash flow exists to clear the PO upon delivery.",
+              "risk_considerations": "Issuing POs without the capital to pay the vendor, damaging IMHOGEN's credit."
+            },
+            {
+              "pid": "7.3.3",
+              "main_process": "Purchasing & PO Issuance",
+              "activity_description": "Transmit the Approved PO to the vendor and obtain a formal acknowledgment and confirmed delivery schedule.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Procurement Officer"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Email Client"
+              ],
+              "information_systems": "Vendor Database",
+              "documents_used": [
+                "Approved Purchase Order"
+              ],
+              "documents_generated": [
+                "PO Acknowledgment Receipt"
+              ],
+              "management_policy": "Vendor Communication Protocol",
+              "quality_control_point": "Do not mark the item as \"Ordered\" until the vendor explicitly confirms receipt and capacity.",
+              "risk_considerations": "Assuming an order is placed when the vendor never actually saw the PO."
+            }
+          ]
+        },
+        {
+          "pid": "7.4",
+          "name": "Material Receiving & QA",
+          "activities": [
+            {
+              "pid": "7.4.1",
+              "main_process": "Material Receiving & QA",
+              "activity_description": "Receive the physical delivery at the workshop. Cross-reference the vendor's packing slip against the original PO.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Procurement Officer"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Clipboard",
+                "Pen"
+              ],
+              "information_systems": "Inventory Management System",
+              "documents_used": [
+                "Approved PO, Packing Slip"
+              ],
+              "documents_generated": [
+                "Initial Receiving Log"
+              ],
+              "management_policy": "Receiving Protocol",
+              "quality_control_point": "Verify physical box counts and part numbers before the delivery driver leaves the premises.",
+              "risk_considerations": "Signing for missing boxes and losing leverage to claim missing items."
+            },
+            {
+              "pid": "7.4.2",
+              "main_process": "Material Receiving & QA",
+              "activity_description": "Perform incoming Quality Control (QC) on the raw materials using measuring tools (calipers, micrometers) to verify dimensions against the BOM.",
+              "activity_owner": "QA/QC Officer",
+              "supporting_roles": [
+                "Fabrication Supervisor"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Measurement Tools",
+                "Material Certs"
+              ],
+              "information_systems": "Quality Tracking System",
+              "documents_used": [
+                "Final CAD BOM, Initial Receiving Log"
+              ],
+              "documents_generated": [
+                "Incoming Inspection Report"
+              ],
+              "management_policy": "Quality Assurance Guidelines",
+              "quality_control_point": "Mandate a dimensional and visual check for warping, rust, or incorrect thickness on structural steel.",
+              "risk_considerations": "Accepting sub-standard, out-of-tolerance steel that will ruin the welding jig's accuracy."
+            },
+            {
+              "pid": "7.4.3",
+              "main_process": "Material Receiving & QA",
+              "activity_description": "If materials pass QC, formally log them into the digital inventory system and assign them to the specific project storage zone.",
+              "activity_owner": "Procurement Officer",
+              "supporting_roles": [
+                "IT",
+                "Admin Support"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Barcode Scanners / Keyboard"
+              ],
+              "information_systems": "Inventory Management System",
+              "documents_used": [
+                "Incoming Inspection Report"
+              ],
+              "documents_generated": [
+                "Updated Inventory Ledger"
+              ],
+              "management_policy": "Inventory Management Policy",
+              "quality_control_point": "Apply physical project tags/labels to the materials to prevent them from being used on other jobs.",
+              "risk_considerations": "Usable project materials being cannibalized by other workshop teams."
+            },
+            {
+              "pid": "7.4.4",
+              "main_process": "Material Receiving & QA",
+              "activity_description": "Trigger a notification to the Fabrication Supervisor that all required materials are in stock, QA-approved, and ready for production.",
+              "activity_owner": "Procurement Officer",
+              "supporting_roles": [
+                "Fabrication Supervisor"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Workflow Trigger"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Updated Inventory Ledger"
+              ],
+              "documents_generated": [
+                "Fabrication Readiness Notice"
+              ],
+              "management_policy": "Project Portfolio Governance System",
+              "quality_control_point": "Supervisor must acknowledge the notice to trigger the Fabrication timeline.",
+              "risk_considerations": "Fabrication team sitting idle while materials gather dust in the storage zone."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workbook_id": 8,
+      "name": "Fabrication and Construction Process",
+      "processes": [
+        {
+          "pid": "8.1",
+          "name": "Fabrication Planning",
+          "activities": [
+            {
+              "pid": "8.1.1",
+              "main_process": "Fabrication Planning",
+              "activity_description": "Receive the \"Fabrication Readiness Notice\", Final BOM, and 2D Engineering Drawings from Procurement and Engineering.",
+              "activity_owner": "Fabrication Supervisor",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Internal Routing Tool"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Fabrication Readiness Notice, Final Drawings"
+              ],
+              "documents_generated": [],
+              "management_policy": "Inter-departmental Handoff Policy",
+              "quality_control_point": "Ensure all 2D drawings have the correct \"Released for Manufacturing\" stamp and GD&T notes.",
+              "risk_considerations": "Fabricating from obsolete or unapproved drawing versions."
+            },
+            {
+              "pid": "8.1.2",
+              "main_process": "Fabrication Planning",
+              "activity_description": "Review the 2D drawings and BOM to sequence the manufacturing operations (e.g., rough cut \u2192 machine \u2192 form \u2192 join \u2192 finish).",
+              "activity_owner": "Fabrication Supervisor",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Clipboard / Whiteboard"
+              ],
+              "information_systems": "PDM / Document Control System",
+              "documents_used": [
+                "2D Drawings, Final BOM"
+              ],
+              "documents_generated": [
+                "Job Process Sheet"
+              ],
+              "management_policy": "Production Sequencing Policy",
+              "quality_control_point": "Verify that the sequence logically prevents impossible tool-access or assembly situations later in the build.",
+              "risk_considerations": "Assembling components out of order, blocking access for final fastening or machining."
+            },
+            {
+              "pid": "8.1.3",
+              "main_process": "Fabrication Planning",
+              "activity_description": "Identify, reserve, and calibrate all required workshop machinery, CNC centers, fixtures, and hand tools needed for the job.",
+              "activity_owner": "Fabrication Supervisor",
+              "supporting_roles": [
+                "QA",
+                "QC Officer"
+              ],
+              "operator_category": "Active Environment",
+              "tools": [
+                "Workshop Machinery / Tooling"
+              ],
+              "information_systems": "Tool Lifecycle Monitoring System",
+              "documents_used": [
+                "Job Process Sheet"
+              ],
+              "documents_generated": [
+                "Tooling & Setup Checklist"
+              ],
+              "management_policy": "Workshop Resource Policy",
+              "quality_control_point": "QA/QC must verify that measuring tapes, calipers, and gauges are properly calibrated.",
+              "risk_considerations": "Dimensional errors caused by using uncalibrated or worn-out measuring tools."
+            }
+          ]
+        },
+        {
+          "pid": "8.2",
+          "name": "Pre-Fabrication Briefing",
+          "activities": [
+            {
+              "pid": "8.2.1",
+              "main_process": "Pre-Fabrication Briefing",
+              "activity_description": "Conduct a mandatory \"Toolbox Talk\" to brief the shop floor team on the exact structural goals, GD&T tolerances, and specific process hazards.",
+              "activity_owner": "Fabrication Supervisor",
+              "supporting_roles": [
+                "QA",
+                "QC Officer"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Whiteboard",
+                "Printed Drawings"
+              ],
+              "information_systems": "Meeting Repository",
+              "documents_used": [
+                "Job Process Sheet, 2D Drawings"
+              ],
+              "documents_generated": [
+                "Briefing Attendance Log"
+              ],
+              "management_policy": "Occupational Health & Safety Policy",
+              "quality_control_point": "Require machine operators and fabricators to verbally confirm their understanding of the critical datum planes.",
+              "risk_considerations": "Floor workers misunderstanding the drawing symbols or safety risks."
+            },
+            {
+              "pid": "8.2.2",
+              "main_process": "Pre-Fabrication Briefing",
+              "activity_description": "Issue the necessary Personal Protective Equipment (PPE) tailored to the specific fabrication processes (e.g., eye protection, respirators, hearing protection).",
+              "activity_owner": "Fabrication Supervisor",
+              "supporting_roles": [
+                "Admin Support"
+              ],
+              "operator_category": "Active Environment",
+              "tools": [
+                "PPE Inventory"
+              ],
+              "information_systems": "Inventory Management System",
+              "documents_used": [
+                "Briefing Attendance Log"
+              ],
+              "documents_generated": [
+                "PPE Issuance Record"
+              ],
+              "management_policy": "Risk & Safety Policy",
+              "quality_control_point": "Deny workshop floor access to any operator lacking complete, functional PPE.",
+              "risk_considerations": "Severe workplace injuries due to lack of appropriate process protection."
+            }
+          ]
+        },
+        {
+          "pid": "8.3",
+          "name": "Material Preparation",
+          "activities": [
+            {
+              "pid": "8.3.1",
+              "main_process": "Material Preparation",
+              "activity_description": "Perform initial shaping, cutting, or blanking of raw materials to the exact preliminary dimensions specified in the BOM/Cut List.",
+              "activity_owner": "Shop Floor Team",
+              "supporting_roles": [
+                "Fabrication Supervisor"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Saws",
+                "Shears",
+                "CNC Routers"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "Final BOM, 2D Drawings"
+              ],
+              "documents_generated": [
+                "Prepped Material Batch"
+              ],
+              "management_policy": "Material Handling Policy",
+              "quality_control_point": "Verify the dimensions of the first piece before processing the rest of the batch (First-Article Inspection).",
+              "risk_considerations": "Wasting expensive raw materials due to an incorrect initial machine setup or measurement."
+            },
+            {
+              "pid": "8.3.2",
+              "main_process": "Material Preparation",
+              "activity_description": "Deburr, chamfer, and clean the edges/surfaces of all prepped materials to prepare them for safe handling and high-integrity joining or final machining.",
+              "activity_owner": "Shop Floor Team",
+              "supporting_roles": [],
+              "operator_category": "Technical System",
+              "tools": [
+                "Grinders",
+                "Tumblers",
+                "Solvents"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "Prepped Material Batch"
+              ],
+              "documents_generated": [
+                "Cleaned Material Batch"
+              ],
+              "management_policy": "Manufacturing Standards",
+              "quality_control_point": "Visually inspect surfaces to ensure no burrs, oil, or scale remains that could interfere with alignment.",
+              "risk_considerations": "Poor joint integrity or machine tool damage caused by contaminated/burred base materials."
+            }
+          ]
+        },
+        {
+          "pid": "8.4",
+          "name": "Active Fabrication & Assembly",
+          "activities": [
+            {
+              "pid": "8.4.1",
+              "main_process": "Active Fabrication & Assembly",
+              "activity_description": "Load the prepped materials into the designated fixtures, jigs, or machine beds, aligning them strictly to the primary datum planes.",
+              "activity_owner": "Shop Floor Team",
+              "supporting_roles": [
+                "QA",
+                "QC Officer"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Production Fixtures",
+                "Clamps"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "2D Drawings, Cleaned Material"
+              ],
+              "documents_generated": [
+                "Fixtured Assembly / Setup"
+              ],
+              "management_policy": "Assembly Modeling Protocol",
+              "quality_control_point": "Ensure all locating pins and clamps are fully seated before initiating the primary manufacturing process.",
+              "risk_considerations": "Manufacturing a skewed part because the material was not fully seated in the fixture."
+            },
+            {
+              "pid": "8.4.2",
+              "main_process": "Active Fabrication & Assembly",
+              "activity_description": "Execute preliminary forming, temporary fastening, or rough machining passes to establish the baseline geometry.",
+              "activity_owner": "Shop Floor Team",
+              "supporting_roles": [],
+              "operator_category": "Technical System",
+              "tools": [
+                "Presses",
+                "Fasteners",
+                "Machine Tools"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "Fixtured Assembly / Setup"
+              ],
+              "documents_generated": [
+                "Semi-Finished Structure"
+              ],
+              "management_policy": "Manufacturing Standards",
+              "quality_control_point": "QA/QC must perform a quick squareness and dimensional check before final, irreversible joining/machining begins.",
+              "risk_considerations": "Discovering a dimensional error after the entire assembly is permanently joined or finish-machined."
+            },
+            {
+              "pid": "8.4.3",
+              "main_process": "Active Fabrication & Assembly",
+              "activity_description": "Execute the final manufacturing sequence (e.g., final joining, structural fastening, or finishing machine passes) utilizing methods to evenly distribute stress and prevent distortion.",
+              "activity_owner": "Shop Floor Team",
+              "supporting_roles": [
+                "Fabrication Supervisor"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Automated/Manual Production Equipment"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "Semi-Finished Structure"
+              ],
+              "documents_generated": [
+                "Fully Assembled Structure"
+              ],
+              "management_policy": "Process Distortion & Tolerance Control Policy",
+              "quality_control_point": "Strictly enforce the defined process sequence to mitigate mechanical or thermal distortion across the structure.",
+              "risk_considerations": "Severe structural distortion (warping) rendering the assembly unusable and out-of-tolerance."
+            }
+          ]
+        },
+        {
+          "pid": "8.5",
+          "name": "In-Process QC & Finishing",
+          "activities": [
+            {
+              "pid": "8.5.1",
+              "main_process": "In-Process QC & Finishing",
+              "activity_description": "Perform visual, dimensional, and (if required) Non-Destructive Testing (NDT) on the structural joints and critical machined surfaces.",
+              "activity_owner": "QA/QC Officer",
+              "supporting_roles": [
+                "Fabrication Supervisor"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Measurement Gauges",
+                "NDT Equipment"
+              ],
+              "information_systems": "Quality Tracking System",
+              "documents_used": [
+                "Fully Assembled Structure"
+              ],
+              "documents_generated": [
+                "In-Process QC Log"
+              ],
+              "management_policy": "In-Process Quality Control Policy",
+              "quality_control_point": "Flag any defective joint or out-of-tolerance surface for immediate rework before moving to the next stage.",
+              "risk_considerations": "Micro-fractures or weak connections failing under operational load."
+            },
+            {
+              "pid": "8.5.2",
+              "main_process": "In-Process QC & Finishing",
+              "activity_description": "Execute final finishing operations (e.g., grinding flush, polishing, edge routing) to meet the aesthetic and functional surface requirements.",
+              "activity_owner": "Shop Floor Team",
+              "supporting_roles": [],
+              "operator_category": "Technical System",
+              "tools": [
+                "Finish Grinders",
+                "Polishers"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "In-Process QC Log"
+              ],
+              "documents_generated": [
+                "Finished Raw Structure"
+              ],
+              "management_policy": "Surface Finish Standards",
+              "quality_control_point": "Ensure finishing operations do not reduce material thickness or alter dimensions below the safe minimum limits.",
+              "risk_considerations": "Weakening the structural integrity or altering critical tolerances by over-finishing."
+            }
+          ]
+        },
+        {
+          "pid": "8.6",
+          "name": "Surface Coating & Protection",
+          "activities": [
+            {
+              "pid": "8.6.1",
+              "main_process": "Surface Coating & Protection",
+              "activity_description": "Apply standard environmental protections (e.g., primer, paint, anodizing, or anti-rust oil) as dictated by the engineering specifications.",
+              "activity_owner": "Shop Floor Team",
+              "supporting_roles": [
+                "Fabrication Supervisor"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Spray Equipment",
+                "Chemical Baths"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "Finished Raw Structure"
+              ],
+              "documents_generated": [
+                "Coated Final Product"
+              ],
+              "management_policy": "Environmental Protection Standards",
+              "quality_control_point": "Ensure coatings are applied evenly and do not obstruct any threaded holes, sliding rails, or moving joints.",
+              "risk_considerations": "Premature degradation or coating interference with dynamic mechanical assemblies."
+            },
+            {
+              "pid": "8.6.2",
+              "main_process": "Fabrication Handoff",
+              "activity_description": "Move the Coated Final Product to the designated testing staging area and update the project tracker to \"Ready for Final QA Testing\".",
+              "activity_owner": "Fabrication Supervisor",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Workflow Trigger"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Coated Final Product"
+              ],
+              "documents_generated": [
+                "Fabrication Completion Notice"
+              ],
+              "management_policy": "Project Portfolio Governance System",
+              "quality_control_point": "Supervisor must digitally sign off that all fabrication steps on the Job Process Sheet were completed.",
+              "risk_considerations": "Handing over an unfinished, unchecked physical unit to the final testing phase."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workbook_id": 9,
+      "name": "Quality Control and Testing Process",
+      "processes": [
+        {
+          "pid": "9.1",
+          "name": "Inspection Preparation",
+          "activities": [
+            {
+              "pid": "9.1.1",
+              "main_process": "Inspection Preparation",
+              "activity_description": "Receive the \"Fabrication Completion Notice\" and physically transfer the fabricated structure to the QA/QC staging area.",
+              "activity_owner": "QA/QC Officer",
+              "supporting_roles": [
+                "Fabrication Supervisor"
+              ],
+              "operator_category": "Active Environment",
+              "tools": [
+                "Pallet Jacks / Hoists"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Fabrication Completion Notice"
+              ],
+              "documents_generated": [],
+              "management_policy": "Inter-departmental Handoff Policy",
+              "quality_control_point": "Ensure the structure is securely staged and safe to inspect before beginning work.",
+              "risk_considerations": "Handling damage occurring during transfer to the QA area."
+            },
+            {
+              "pid": "9.1.2",
+              "main_process": "Inspection Preparation",
+              "activity_description": "Retrieve the locked Design Specification (Pr-Set), 2D Drawings, and the original Project Brief from the digital vault.",
+              "activity_owner": "QA/QC Officer",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Computer Display"
+              ],
+              "information_systems": "PDM / Document Control System",
+              "documents_used": [
+                "Pr-Set, 2D Drawings"
+              ],
+              "documents_generated": [
+                "QA Testing Checklist"
+              ],
+              "management_policy": "Documentation Standards",
+              "quality_control_point": "Verify that the retrieved drawings are the exact versions used by the fabrication team.",
+              "risk_considerations": "Inspecting a physical part against an outdated or incorrect digital drawing."
+            }
+          ]
+        },
+        {
+          "pid": "9.2",
+          "name": "Visual & Surface Inspection",
+          "activities": [
+            {
+              "pid": "9.2.1",
+              "main_process": "Visual & Surface Inspection",
+              "activity_description": "Perform a comprehensive visual sweep of the structure, checking for sharp edges, burrs, spatter, and coating uniformity.",
+              "activity_owner": "QA/QC Officer",
+              "supporting_roles": [],
+              "operator_category": "Human System",
+              "tools": [
+                "Flashlights",
+                "Magnifying Glasses"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "QA Testing Checklist"
+              ],
+              "documents_generated": [
+                "Visual Inspection Log"
+              ],
+              "management_policy": "Surface Finish Standards",
+              "quality_control_point": "Flag any exposed, uncoated raw steel that violates the environmental protection specs.",
+              "risk_considerations": "Premature corrosion or operator injury due to missed burrs/sharp edges."
+            },
+            {
+              "pid": "9.2.2",
+              "main_process": "Dimensional & GD&T Inspection",
+              "activity_description": "Measure all critical datums, hole centers, and overall bounding dimensions against the defined GD&T tolerances (e.g., \u00b11.0mm).",
+              "activity_owner": "QA/QC Officer",
+              "supporting_roles": [],
+              "operator_category": "Technical System",
+              "tools": [
+                "Calipers",
+                "Micrometers",
+                "Height Gauges"
+              ],
+              "information_systems": "Quality Tracking System",
+              "documents_used": [
+                "2D Drawings"
+              ],
+              "documents_generated": [
+                "Dimensional Audit Report"
+              ],
+              "management_policy": "Tolerance & Capability Policy",
+              "quality_control_point": "Ensure measuring tools are zeroed and calibrated before taking the first measurement.",
+              "risk_considerations": "Falsely passing an out-of-tolerance dimension due to an uncalibrated caliper."
+            }
+          ]
+        },
+        {
+          "pid": "9.3",
+          "name": "Functional & Load Setup",
+          "activities": [
+            {
+              "pid": "9.3.1",
+              "main_process": "Functional & Load Setup",
+              "activity_description": "Prepare the structure for physical testing by securely anchoring it and gathering test operands (e.g., inserting sample pipes into the welding jig).",
+              "activity_owner": "QA/QC Officer",
+              "supporting_roles": [
+                "Shop Floor Team"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Clamps",
+                "Anchors",
+                "Test Operands"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "QA Testing Checklist"
+              ],
+              "documents_generated": [],
+              "management_policy": "Risk & Safety Policy",
+              "quality_control_point": "Ensure all anchors are tight before applying any dynamic or static loads.",
+              "risk_considerations": "Structure tipping or collapsing during the load test, causing severe injury."
+            },
+            {
+              "pid": "9.3.2",
+              "main_process": "Functional & Load Execution",
+              "activity_description": "Actuate all moving parts, clamps, and mechanisms to verify smooth operation, clamping force, and structural deflection under load (e.g., \u2264 0.5 mm).",
+              "activity_owner": "QA/QC Officer",
+              "supporting_roles": [
+                "Technical Expert"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Load Cells",
+                "Dial Indicators"
+              ],
+              "information_systems": "Quality Tracking System",
+              "documents_used": [
+                "Pr-Set (Design Spec)"
+              ],
+              "documents_generated": [
+                "Load & Function Test Report"
+              ],
+              "management_policy": "Design Validation Policy",
+              "quality_control_point": "Verify that the structure returns to absolute zero (no permanent deformation) after the load is removed.",
+              "risk_considerations": "Plastic deformation indicating a fundamental structural design or material failure."
+            }
+          ]
+        },
+        {
+          "pid": "9.4",
+          "name": "Non-Conformance Handling",
+          "activities": [
+            {
+              "pid": "9.4.1",
+              "main_process": "Non-Conformance Handling",
+              "activity_description": "If any dimension or test fails, immediately tag the physical structure with a red \"DO NOT USE\" marker and log the defect.",
+              "activity_owner": "QA/QC Officer",
+              "supporting_roles": [],
+              "operator_category": "Human System",
+              "tools": [
+                "Physical Tags / Labels"
+              ],
+              "information_systems": "Quality Tracking System",
+              "documents_used": [
+                "Dimensional / Test Reports"
+              ],
+              "documents_generated": [
+                "Non-Conformance Report (NCR)"
+              ],
+              "management_policy": "In-Process Quality Control Policy",
+              "quality_control_point": "The NCR must cite the specific drawing coordinate or Pr-Set line item that failed.",
+              "risk_considerations": "Ambiguous defect reporting leading to the wrong area being reworked."
+            },
+            {
+              "pid": "9.4.2",
+              "main_process": "Non-Conformance Handling",
+              "activity_description": "Route the NCR back to the Fabrication Supervisor and Lead Engineer to determine if the part must be reworked, repaired, or scrapped.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [
+                "Fabrication Supervisor"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Workflow Trigger"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Non-Conformance Report (NCR)"
+              ],
+              "documents_generated": [
+                "Rework Action Order"
+              ],
+              "management_policy": "Change Management Policy",
+              "quality_control_point": "Do not authorize a \"repair\" if the structural integrity has been fundamentally compromised.",
+              "risk_considerations": "Attempting to weld over a critical failure, hiding a fatal flaw from the client."
+            }
+          ]
+        },
+        {
+          "pid": "9.5",
+          "name": "Final Validation & Release",
+          "activities": [
+            {
+              "pid": "9.5.1",
+              "main_process": "Final Validation & Release",
+              "activity_description": "Once all tests pass (or rework is successfully re-tested), compile all inspection logs into the final validation package.",
+              "activity_owner": "QA/QC Officer",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Word Processor"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "All QA Logs and Reports"
+              ],
+              "documents_generated": [
+                "Final QA Release Certificate"
+              ],
+              "management_policy": "Final Testing & Inspection Policy",
+              "quality_control_point": "The Lead Engineer must countersign the QA Certificate to accept ultimate technical liability.",
+              "risk_considerations": "Releasing a product solely on a technician's signature without engineering oversight."
+            },
+            {
+              "pid": "9.5.2",
+              "main_process": "Final Validation & Release",
+              "activity_description": "Attach the physical QA Release Certificate to the structure and update the digital project status to \"Ready for Delivery/Handover\".",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "QA",
+                "QC Officer"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Workflow Trigger"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Final QA Release Certificate"
+              ],
+              "documents_generated": [
+                "Delivery Authorization Notice"
+              ],
+              "management_policy": "Project Portfolio Governance System",
+              "quality_control_point": "Ensure the Finance Team is copied on the notice to prepare the final invoice.",
+              "risk_considerations": "Product sitting in the staging area indefinitely because the delivery team was not notified."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workbook_id": 10,
+      "name": "Engineering Documentation and Archiving Process",
+      "processes": [
+        {
+          "pid": "10.1",
+          "name": "As-Built Documentation Update",
+          "activities": [
+            {
+              "pid": "10.1.1",
+              "main_process": "As-Built Documentation Update",
+              "activity_description": "Receive the \"Final QA Release Certificate\" and interview the Fabrication Supervisor for any on-the-fly workshop modifications made during the build.",
+              "activity_owner": "Design Engineer",
+              "supporting_roles": [
+                "Fabrication Supervisor"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Clipboard / Voice Recorder"
+              ],
+              "information_systems": "PDM / Document Control System",
+              "documents_used": [
+                "Final QA Release Certificate, NCRs"
+              ],
+              "documents_generated": [
+                "As-Built Modification Notes"
+              ],
+              "management_policy": "Change Management Policy",
+              "quality_control_point": "Ensure every authorized rework or dimensional shift is captured from the QA reports.",
+              "risk_considerations": "\"As-built\" physical product not matching the final delivered digital CAD files."
+            },
+            {
+              "pid": "10.1.2",
+              "main_process": "As-Built Documentation Update",
+              "activity_description": "Update the 3D CAD models, 2D Drawings, and BOM to reflect the exact \"As-Built\" physical reality of the approved structure.",
+              "activity_owner": "Draftsman",
+              "supporting_roles": [
+                "Design Engineer"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "3D CAD Software / Drafting Tools"
+              ],
+              "information_systems": "PDM Vault",
+              "documents_used": [
+                "As-Built Modification Notes"
+              ],
+              "documents_generated": [
+                "As-Built Engineering Drawings"
+              ],
+              "management_policy": "Revision Control Policy",
+              "quality_control_point": "Increment the file revision number (e.g., Rev A to Rev B) to indicate the final As-Built status.",
+              "risk_considerations": "Overwriting original design intent data without a traceable version history."
+            }
+          ]
+        },
+        {
+          "pid": "10.2",
+          "name": "Technical Authoring",
+          "activities": [
+            {
+              "pid": "10.2.1",
+              "main_process": "Technical Authoring",
+              "activity_description": "Draft the User Manual, detailing safe operational procedures, ergonomic handling limits, and visual cues for correct use.",
+              "activity_owner": "Technical Support Provider",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Word Processor / Publishing Tools"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Pr-Set (Design Spec), As-Built Drawings"
+              ],
+              "documents_generated": [
+                "Draft User Manual"
+              ],
+              "management_policy": "Documentation Standards",
+              "quality_control_point": "Ensure the manual addresses all Human System constraints defined in Pr5 (Safe handling, low skill requirement).",
+              "risk_considerations": "Client operators injuring themselves due to unclear usage instructions."
+            },
+            {
+              "pid": "10.2.2",
+              "main_process": "Technical Authoring",
+              "activity_description": "Draft the Maintenance & Adjustment Guide, specifying lubrication points, replaceable wear element part numbers, and calibration steps.",
+              "activity_owner": "Technical Support Provider",
+              "supporting_roles": [
+                "QA",
+                "QC Officer"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Word Processor / CAD (for exploded views)"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "BOM, QA Testing Logs"
+              ],
+              "documents_generated": [
+                "Draft Maintenance Guide"
+              ],
+              "management_policy": "Quality Assurance Guidelines",
+              "quality_control_point": "Include specific tolerance limits (e.g., maximum wear limits before part replacement is required).",
+              "risk_considerations": "Premature equipment failure due to lack of defined preventative maintenance."
+            }
+          ]
+        },
+        {
+          "pid": "10.3",
+          "name": "Final Package Assembly",
+          "activities": [
+            {
+              "pid": "10.3.1",
+              "main_process": "Final Package Assembly",
+              "activity_description": "Compile the As-Built Drawings, BOM, User Manual, Maintenance Guide, and QA Certificates into a single, cohesive Technical Data Package (TDP).",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Technical Support Provider"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "PDF Compilation Software"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "All Draft Manuals, Drawings, Certificates"
+              ],
+              "documents_generated": [
+                "Final Client Technical Data Package (TDP)"
+              ],
+              "management_policy": "Documentation Delivery Policy",
+              "quality_control_point": "Verify that the document title blocks, page numbers, and IMHOGEN branding are consistent across the package.",
+              "risk_considerations": "Delivering a disorganized, unprofessional stack of unlinked documents to the client."
+            },
+            {
+              "pid": "10.3.2",
+              "main_process": "Final Package Assembly",
+              "activity_description": "Route the compiled Final TDP to the Project Manager and Lead Engineer for a final administrative and technical sign-off.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Internal Routing Tool"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Final Client TDP"
+              ],
+              "documents_generated": [
+                "Approved Client TDP"
+              ],
+              "management_policy": "Engineering Release Protocol",
+              "quality_control_point": "Both the PM and Lead Engineer must digitally sign the master cover page of the TDP.",
+              "risk_considerations": "Releasing unverified instructional documents containing technical errors."
+            }
+          ]
+        },
+        {
+          "pid": "10.4",
+          "name": "Digital Archiving & Vault Locking",
+          "activities": [
+            {
+              "pid": "10.4.1",
+              "main_process": "Digital Archiving & Vault Locking",
+              "activity_description": "Move all finalized native CAD files, FEA simulation data, and internal emails into the project's permanent \"Closed/Archived\" digital folder.",
+              "activity_owner": "IT / Admin Support",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Server Admin Consoles"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "All Project Files"
+              ],
+              "documents_generated": [
+                "Archived Project Folder"
+              ],
+              "management_policy": "Data Retention Policy",
+              "quality_control_point": "Apply strict \"Read-Only\" permissions to the archived folder for all staff except IT Admins.",
+              "risk_considerations": "Accidental deletion or unauthorized alteration of closed project data."
+            },
+            {
+              "pid": "10.4.2",
+              "main_process": "Digital Archiving & Vault Locking",
+              "activity_description": "Change the state of all associated CAD files within the PDM software to \"Released / Locked\" to prevent further parametric editing.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [
+                "IT",
+                "Admin Support"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "PDM Dashboard"
+              ],
+              "information_systems": "PDM Vault",
+              "documents_used": [
+                "As-Built CAD Models"
+              ],
+              "documents_generated": [
+                "Locked CAD Vault Record"
+              ],
+              "management_policy": "Information Security Policy",
+              "quality_control_point": "Verify that the PDM system registers the lock and severs check-out privileges for design staff.",
+              "risk_considerations": "Engineers accidentally opening and modifying archived CAD files for new projects."
+            }
+          ]
+        },
+        {
+          "pid": "10.5",
+          "name": "Knowledge Base Extraction",
+          "activities": [
+            {
+              "pid": "10.5.1",
+              "main_process": "Knowledge Base Extraction",
+              "activity_description": "Conduct a brief project post-mortem to extract key technical lessons, reusable CAD sub-assemblies, and standard parts for the internal library.",
+              "activity_owner": "R&D Coordinator",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Meeting / Note-taking"
+              ],
+              "information_systems": "Engineering Knowledge Repository",
+              "documents_used": [
+                "Archived Project Folder"
+              ],
+              "documents_generated": [
+                "R&D Lessons Learned Log"
+              ],
+              "management_policy": "Research & Development Policy",
+              "quality_control_point": "Strip all confidential client IP from CAD assemblies before adding them to the general IMHOGEN parts library.",
+              "risk_considerations": "Violating client NDAs by reusing proprietary geometries in future public designs."
+            },
+            {
+              "pid": "10.5.2",
+              "main_process": "Project Closure Handoff",
+              "activity_description": "Update the central tracking system status to \"Documentation Complete\" and trigger the Client Relations Team to initiate physical/digital handover.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Admin Support"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Workflow Trigger"
+              ],
+              "information_systems": "Project Tracking Software",
+              "documents_used": [
+                "Approved Client TDP"
+              ],
+              "documents_generated": [
+                "Delivery & Handover Notice"
+              ],
+              "management_policy": "Project Portfolio Governance System",
+              "quality_control_point": "Confirm the Client Relations Team has acknowledged receipt of the Approved TDP.",
+              "risk_considerations": "The physical product is ready, but delivery stalls because the paperwork was never handed over."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workbook_id": 11,
+      "name": "Product / Process Delivery Process",
+      "processes": [
+        {
+          "pid": "11.1",
+          "name": "Logistics & Dispatch Planning",
+          "activities": [
+            {
+              "pid": "11.1.1",
+              "main_process": "Logistics & Dispatch Planning",
+              "activity_description": "Receive the \"Delivery & Handover Notice\" and coordinate a delivery date/time with the client's receiving department.",
+              "activity_owner": "Client Relations Team",
+              "supporting_roles": [
+                "Admin Support"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Email / Phone"
+              ],
+              "information_systems": "CRM / Project Tracking Software",
+              "documents_used": [
+                "Delivery & Handover Notice"
+              ],
+              "documents_generated": [
+                "Dispatch Schedule"
+              ],
+              "management_policy": "Client Engagement Policy",
+              "quality_control_point": "Confirm the client has the necessary lifting equipment (e.g., forklift/hoist) available on-site for unloading.",
+              "risk_considerations": "Delivery vehicle arriving at a site unequipped to unload the heavy physical structure."
+            },
+            {
+              "pid": "11.1.2",
+              "main_process": "Logistics & Dispatch Planning",
+              "activity_description": "Secure an appropriate transport vehicle (e.g., standard pickup or flatbed) based on the structural dimensions and weight.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Transport Booking System"
+              ],
+              "information_systems": "Logistics / ERP System",
+              "documents_used": [
+                "Approved Client TDP (Dimensions)"
+              ],
+              "documents_generated": [
+                "Transport Waybill"
+              ],
+              "management_policy": "Distribution Properties Policy",
+              "quality_control_point": "Verify the vehicle payload capacity exceeds the final As-Built weight of the delivered equipment.",
+              "risk_considerations": "Transport vehicle failure or legal violations due to overloading."
+            }
+          ]
+        },
+        {
+          "pid": "11.2",
+          "name": "Packaging & Load Securing",
+          "activities": [
+            {
+              "pid": "11.2.1",
+              "main_process": "Packaging & Load Securing",
+              "activity_description": "Prepare the physical structure for transport by securing any movable clamps, applying protective wrap to precision datums, and loading it onto the transport vehicle.",
+              "activity_owner": "Fabrication Supervisor",
+              "supporting_roles": [
+                "Shop Floor Team"
+              ],
+              "operator_category": "Active Environment",
+              "tools": [
+                "Pallet Jacks",
+                "Ratchet Straps",
+                "Protective Wrap"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "Dispatch Schedule"
+              ],
+              "documents_generated": [],
+              "management_policy": "Material Handling Policy",
+              "quality_control_point": "Ensure ratchet straps do not apply crushing force to delicate precision locating pins.",
+              "risk_considerations": "Irreversible dimensional damage or scratching of precision surfaces during transit."
+            },
+            {
+              "pid": "11.2.2",
+              "main_process": "Packaging & Load Securing",
+              "activity_description": "Print physical copies of the Approved Client TDP (User Manual, Maintenance Guide, QA Certificates) and place them in a weatherproof document pouch attached to the shipment.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [],
+              "operator_category": "Human System",
+              "tools": [
+                "Printer",
+                "Weatherproof Pouches"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Approved Client TDP"
+              ],
+              "documents_generated": [
+                "Physical Document Packet"
+              ],
+              "management_policy": "Documentation Delivery Policy",
+              "quality_control_point": "Verify all pages are printed clearly and bound professionally before dispatch.",
+              "risk_considerations": "Client receiving damaged, unreadable, or missing operational manuals."
+            }
+          ]
+        },
+        {
+          "pid": "11.3",
+          "name": "On-Site Unloading & Setup",
+          "activities": [
+            {
+              "pid": "11.3.1",
+              "main_process": "On-Site Unloading & Setup",
+              "activity_description": "Arrive at the client site, supervise the safe unloading of the equipment, and move it to the designated operational footprint (e.g., workshop floor).",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Logistics Team"
+              ],
+              "operator_category": "Active Environment",
+              "tools": [
+                "Client Hoists / Forklifts"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "Transport Waybill"
+              ],
+              "documents_generated": [],
+              "management_policy": "Liquidation Properties Policy",
+              "quality_control_point": "Ensure the equipment is placed on a stable, level surface as defined in the initial site requirements.",
+              "risk_considerations": "Equipment instability due to placement on an uneven or unprepared workshop floor."
+            },
+            {
+              "pid": "11.3.2",
+              "main_process": "On-Site Unloading & Setup",
+              "activity_description": "Perform a post-transit visual inspection and basic leveling/alignment using standard hand tools to ensure the structure survived transport intact.",
+              "activity_owner": "QA/QC Officer",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Technical System",
+              "tools": [
+                "Levels",
+                "Squares",
+                "Basic Hand Tools"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "QA Testing Logs"
+              ],
+              "documents_generated": [
+                "Post-Transit Inspection Log"
+              ],
+              "management_policy": "Quality Assurance Guidelines",
+              "quality_control_point": "Re-verify the primary datum plane squareness before handing it over to the client operators.",
+              "risk_considerations": "Handing over equipment that was subtly warped or knocked out of tolerance during the drive."
+            }
+          ]
+        },
+        {
+          "pid": "11.4",
+          "name": "Site Acceptance Walkthrough",
+          "activities": [
+            {
+              "pid": "11.4.1",
+              "main_process": "Site Acceptance Walkthrough",
+              "activity_description": "Conduct a physical walkthrough with the client's operators, demonstrating how to load a workpiece, engage clamps, and safely operate the equipment.",
+              "activity_owner": "Technical Support Provider",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Physical Demonstration"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "Physical Document Packet (User Manual)"
+              ],
+              "documents_generated": [],
+              "management_policy": "Client Training & Handover Policy",
+              "quality_control_point": "Force the client operators to physically perform the loading/clamping sequence themselves while you observe.",
+              "risk_considerations": "Operators nodding in agreement but failing to actually understand the safe handling procedures."
+            },
+            {
+              "pid": "11.4.2",
+              "main_process": "Formal Handover & Sign-Off",
+              "activity_description": "Present the formal \"Final Handover Certificate\" to the client's authorized representative for signature, legally transferring ownership and liability.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Client Relations Team"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Clipboard",
+                "Pen"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "Final Handover Certificate"
+              ],
+              "documents_generated": [
+                "Signed Handover Certificate"
+              ],
+              "management_policy": "Document Execution Policy",
+              "quality_control_point": "Ensure the signatory is a legally authorized client representative, not just a junior workshop floor technician.",
+              "risk_considerations": "Disputed project closure because the wrong person signed the acceptance forms."
+            }
+          ]
+        },
+        {
+          "pid": "11.5",
+          "name": "Commercial Close-Out",
+          "activities": [
+            {
+              "pid": "11.5.1",
+              "main_process": "Commercial Close-Out",
+              "activity_description": "Return the Signed Handover Certificate to the office, scan it, and upload it to the central database.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Scanner / Computer"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Signed Handover Certificate"
+              ],
+              "documents_generated": [
+                "Digitized Handover Record"
+              ],
+              "management_policy": "Data Retention Policy",
+              "quality_control_point": "Ensure the scan is high-resolution and the signatures are clearly legible.",
+              "risk_considerations": "Loss of the physical paper leaving the company with no proof of delivery."
+            },
+            {
+              "pid": "11.5.2",
+              "main_process": "Commercial Close-Out",
+              "activity_description": "Trigger a \"Project Delivered\" notification to the Finance Team to immediately issue the final milestone invoice for the remaining contract balance.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Finance Team"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Workflow Trigger"
+              ],
+              "information_systems": "Project Tracking Software / ERP",
+              "documents_used": [
+                "Digitized Handover Record"
+              ],
+              "documents_generated": [
+                "Final Billing Authorization"
+              ],
+              "management_policy": "Financial Control Policy",
+              "quality_control_point": "Finance must issue the final invoice within 24 hours of receiving the handover authorization.",
+              "risk_considerations": "Delayed revenue collection causing unnecessary cash flow strain at the end of the project."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "workbook_id": 12,
+      "name": "Training and Post-Delivery Support Process",
+      "processes": [
+        {
+          "pid": "12.1",
+          "name": "Training Preparation",
+          "activities": [
+            {
+              "pid": "12.1.1",
+              "main_process": "Training Preparation",
+              "activity_description": "Receive the \"Digitized Handover Record\" and contact the client to schedule formal operator training sessions.",
+              "activity_owner": "Client Relations Team",
+              "supporting_roles": [
+                "Technical Support Provider"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Scheduling Tool / Phone"
+              ],
+              "information_systems": "CRM",
+              "documents_used": [
+                "Digitized Handover Record"
+              ],
+              "documents_generated": [
+                "Training Schedule"
+              ],
+              "management_policy": "Client Engagement Policy",
+              "quality_control_point": "Ensure the scheduled training aligns with the shift patterns of the actual floor operators, not just management.",
+              "risk_considerations": "Training the wrong personnel, leaving actual machine operators uninstructed."
+            },
+            {
+              "pid": "12.1.2",
+              "main_process": "Training Preparation",
+              "activity_description": "Extract the \"Safe Handling and Operation\" guidelines from the User Manual to structure a targeted, hands-on training module.",
+              "activity_owner": "Technical Support Provider",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Presentation / Demonstration Prep"
+              ],
+              "information_systems": "Document Management System",
+              "documents_used": [
+                "Approved Client TDP (User Manual)"
+              ],
+              "documents_generated": [
+                "Operator Training Syllabus"
+              ],
+              "management_policy": "Training & Development Policy",
+              "quality_control_point": "Verify the syllabus directly addresses all Human System constraints identified in the Pr5 Specification.",
+              "risk_considerations": "Omitting critical safety or ergonomic warnings during training preparation."
+            }
+          ]
+        },
+        {
+          "pid": "12.2",
+          "name": "Training Execution",
+          "activities": [
+            {
+              "pid": "12.2.1",
+              "main_process": "Training Execution",
+              "activity_description": "Conduct on-site, hands-on training with the client's operators, demonstrating loading, clamping, safe operation, and basic maintenance.",
+              "activity_owner": "Technical Support Provider",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Physical Equipment Demonstration"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "Operator Training Syllabus"
+              ],
+              "documents_generated": [],
+              "management_policy": "Occupational Health & Safety Policy",
+              "quality_control_point": "Force each operator to independently perform a full operational cycle while being observed.",
+              "risk_considerations": "Operators passively watching but failing to grasp the tactile operational requirements."
+            },
+            {
+              "pid": "12.2.2",
+              "main_process": "Training Execution",
+              "activity_description": "Administer a brief verbal or practical competency check and have all trained operators sign the attendance log.",
+              "activity_owner": "Technical Support Provider",
+              "supporting_roles": [
+                "Admin Support"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Clipboard",
+                "Pen"
+              ],
+              "information_systems": "N/A",
+              "documents_used": [
+                "Operator Training Syllabus"
+              ],
+              "documents_generated": [
+                "Training Completion Log"
+              ],
+              "management_policy": "Client Training & Handover Policy",
+              "quality_control_point": "Only grant certification to operators who successfully complete the practical demonstration without critical errors.",
+              "risk_considerations": "Unqualified operators damaging the equipment or injuring themselves post-handover."
+            }
+          ]
+        },
+        {
+          "pid": "12.3",
+          "name": "Support Window Activation",
+          "activities": [
+            {
+              "pid": "12.3.1",
+              "main_process": "Support Window Activation",
+              "activity_description": "Activate the formal 7 to 30-day \"Post-Delivery Support\" window in the tracking system, starting from the date of the signed Handover Certificate.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Client Relations Team"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Keyboard/Mouse"
+              ],
+              "information_systems": "Project Tracking Software / CRM",
+              "documents_used": [
+                "Digitized Handover Record"
+              ],
+              "documents_generated": [
+                "Active Support Ticket"
+              ],
+              "management_policy": "Post-Delivery Support Policy",
+              "quality_control_point": "Set automated system alerts for the expiration date of the support window.",
+              "risk_considerations": "Providing indefinite free support due to a lack of formal boundary tracking."
+            },
+            {
+              "pid": "12.3.2",
+              "main_process": "Support Ticketing & Resolution",
+              "activity_description": "Receive, log, and route any client feedback, minor adjustments, or operational questions that arise during the active support window.",
+              "activity_owner": "Client Relations Team",
+              "supporting_roles": [
+                "Technical Support Provider"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Digital Helpdesk / Ticketing"
+              ],
+              "information_systems": "CRM",
+              "documents_used": [
+                "Active Support Ticket"
+              ],
+              "documents_generated": [
+                "Support Resolution Log"
+              ],
+              "management_policy": "Feedback Handling Procedure",
+              "quality_control_point": "Categorize requests strictly: verify if the issue is a genuine defect vs. a request for a new (out-of-scope) feature.",
+              "risk_considerations": "Executing out-of-scope engineering changes under the guise of \"post-delivery support\"."
+            }
+          ]
+        },
+        {
+          "pid": "12.4",
+          "name": "Operational Audit",
+          "activities": [
+            {
+              "pid": "12.4.1",
+              "main_process": "Operational Audit",
+              "activity_description": "Schedule and conduct a final operational audit near the end of the support window to verify the equipment is performing optimally under standard production loads.",
+              "activity_owner": "QA/QC Officer",
+              "supporting_roles": [
+                "Technical Support Provider"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "Visual Inspection",
+                "Operator Interviews"
+              ],
+              "information_systems": "Quality Tracking System",
+              "documents_used": [
+                "Original Pr-Set, Support Resolution Log"
+              ],
+              "documents_generated": [
+                "Final Operational Audit Report"
+              ],
+              "management_policy": "Quality Assurance Guidelines",
+              "quality_control_point": "Cross-reference operator feedback against the original \"Wishes and Fixed Requirements\" to measure ultimate project success.",
+              "risk_considerations": "Assuming the equipment is functioning perfectly just because the client hasn't called to complain."
+            }
+          ]
+        },
+        {
+          "pid": "12.5",
+          "name": "Project & Support Closure",
+          "activities": [
+            {
+              "pid": "12.5.1",
+              "main_process": "Project & Support Closure",
+              "activity_description": "Formally close the active support ticket and notify the client that standard warranty/maintenance contract terms now apply.",
+              "activity_owner": "Client Relations Team",
+              "supporting_roles": [
+                "Head of Business Operations"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "Email Templates"
+              ],
+              "information_systems": "CRM",
+              "documents_used": [
+                "Final Operational Audit Report"
+              ],
+              "documents_generated": [
+                "Support Closure Notice"
+              ],
+              "management_policy": "Corporate Governance Policy",
+              "quality_control_point": "Offer a long-term preventative maintenance contract to the client concurrently with the closure notice.",
+              "risk_considerations": "Losing an opportunity for recurring revenue via maintenance contracts."
+            },
+            {
+              "pid": "12.5.2",
+              "main_process": "Final System Archival",
+              "activity_description": "Conduct a final sweep to ensure all logs (training, audit, support) are archived, and permanently lock the project ledger.",
+              "activity_owner": "Admin Support",
+              "supporting_roles": [
+                "Project Manager"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "Server Admin Consoles"
+              ],
+              "information_systems": "Project Portfolio Governance System",
+              "documents_used": [
+                "All remaining project documents"
+              ],
+              "documents_generated": [
+                "Completely Closed Project Record"
+              ],
+              "management_policy": "Data Retention Policy",
+              "quality_control_point": "Verify the Finance Team confirms the final invoice has been fully paid and reconciled before locking the ledger.",
+              "risk_considerations": "Closing a project ledger when outstanding debt remains uncollected."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

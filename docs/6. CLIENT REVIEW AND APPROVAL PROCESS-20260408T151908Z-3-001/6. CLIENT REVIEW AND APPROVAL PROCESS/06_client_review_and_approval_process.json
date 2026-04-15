@@ -1,0 +1,2998 @@
+{
+  "workbook_id": 6,
+  "workbook_name": "Client Review and Approval Process",
+  "description": "Workbook 6 \u2014 Client deliverable review, feedback collection, revision cycles, and CAD Lock",
+  "source_files": [
+    "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+    "06RDBI Engineering Drafting & Detailing Management System (EDDMS)..xlsx"
+  ],
+  "documents": [
+    {
+      "sheet_name": "DT3.D6.5.0a Reverse Engineering",
+      "source_file": "06RDBI Engineering Drafting & Detailing Management System (EDDMS)..xlsx",
+      "doc_id": "T3.D6.5.0a",
+      "tool_title": "T3 Reverse Eng. Validation",
+      "phase_name": "",
+      "activity_name": "Digital Validation",
+      "prev_sheet_ref": "T3.D4.8a",
+      "next_sheet_ref": "",
+      "related_tool": "D6.5.1",
+      "header": {
+        "doc_id": "T3.D6.5.0a",
+        "tool_title": "T3 Reverse Eng. Validation",
+        "related_tool": "D6.5.1",
+        "prev_sheet_ref": "T3.D4.8a",
+        "activity_name": "Digital Validation"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "DT3.D6.5.0a Reverse Engineering Validation"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 PHYSICAL VS. DIGITAL CALIBRATION"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "To be filled after 3D modeling but BEFORE drafting. Compares physical measurements to CAD model."
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "SN",
+            "B": "Critical Feature",
+            "F": "Physical Dim (mm)",
+            "J": "CAD Dim (mm)",
+            "N": "Variance",
+            "R": "Tolerance Status"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "1.1",
+            "B": "Overall Height",
+            "F": "[Value]",
+            "J": "[Value]",
+            "N": "[Diff]",
+            "R": "[Pass/Fail]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "1.2",
+            "B": "Shaft Diameter",
+            "F": "[Value]",
+            "J": "[Value]",
+            "N": "[Diff]",
+            "R": "[Pass/Fail]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "1.3",
+            "B": "Mounting Centers",
+            "F": "[Value]",
+            "J": "[Value]",
+            "N": "[Diff]",
+            "R": "[Pass/Fail]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.0 REVERSE ENGINEERING \"DESIGN INTENT\" LOG"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "Did we model 'as-is' (including wear/damage) or did we 'correct' the design?"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "SN",
+            "B": "Feature Modified",
+            "H": "Observation of Physical Part",
+            "N": "Correction Made in CAD",
+            "U": "Engineering Justification"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.1",
+            "B": "Bearing Seat",
+            "H": "Worn/Ovalized",
+            "N": "Restored to \u00d850.00 H7",
+            "U": "Restore original fitment"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "2.2",
+            "B": "Structural Rib",
+            "H": "Cracked",
+            "N": "Modeled as Solid Plate",
+            "U": "Strength restoration"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.0 AUTHORIZATION TO PROCEED TO DRAFTING (D6.5.1)"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "The 3D model is verified as an accurate representation."
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Lead Engineer Signature",
+            "M": "Date",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "DT3.D6.5.1a 3D Modeling Executi",
+      "source_file": "06RDBI Engineering Drafting & Detailing Management System (EDDMS)..xlsx",
+      "doc_id": "T3.D6.5.1a",
+      "tool_title": "T3 3D Modeling Execution",
+      "phase_name": "",
+      "activity_name": "3D Construction",
+      "prev_sheet_ref": "T3.D1.8a",
+      "next_sheet_ref": "",
+      "related_tool": "D6.5.1",
+      "header": {
+        "doc_id": "T3.D6.5.1a",
+        "tool_title": "T3 3D Modeling Execution",
+        "related_tool": "D6.5.1",
+        "prev_sheet_ref": "T3.D1.8a",
+        "activity_name": "3D Construction"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "DT3.D6.5.1a: 3D Modeling Execution (Reverse Eng)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 MODELING STRATEGY"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Source Data Type:",
+            "D": "[Point Cloud / Sketch / Part]",
+            "I": "Modeling Software:",
+            "M": "[e.g. Autodesk Inventor]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "2.0 FEATURE RECONSTRUCTION LOG"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "SN",
+            "B": "Component/Part",
+            "F": "Status",
+            "K": "Modeling Technique",
+            "Q": "Validation vs Field Log",
+            "V": "Notes"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.1",
+            "B": "Main Chassis",
+            "F": "[Done/WIP]",
+            "K": "[Parametric Frame]",
+            "Q": "[Matches T3.D1.8a Sec 2.3]"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.2",
+            "B": "Drive Components",
+            "F": "[Done/WIP]",
+            "K": "[Feature Sweep]",
+            "Q": "[Matches T3.D1.8a Sec 2.1]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "3.0 \"DESIGN INTENT\" ADJUSTMENTS"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "Standardization of measured values to engineering norms (e.g.19.95mm measured -> 20.00mm modeled)."
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "SN",
+            "B": "Measured Value",
+            "F": "Assumed Standard",
+            "K": "Reasoning",
+            "Q": "Impact on Assembly"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.1",
+            "B": "[Value]",
+            "F": "[Value]",
+            "K": "[Stock Size / Wear]",
+            "Q": "[Fitment Correction]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "4.0 CAD LOCK & PEER REVIEW"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Has the 3D model been checked for 'clashes' or 'interferences'? (Yes/No):"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Does the model mass match the physical machine weight (+/- 5%)? (Yes/No):"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "5.0 AUTHORIZATION TO DRAFT"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "3D model is frozen. Proceed to 2D production drawings (D6.5.1)."
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Lead Engineer Signature",
+            "M": "Date",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.5.1 EDDMS Project Hub & Titl",
+      "source_file": "06RDBI Engineering Drafting & Detailing Management System (EDDMS)..xlsx",
+      "doc_id": "D6.5",
+      "tool_title": "EDDMS Project Hub",
+      "phase_name": "Eng. Design - Detailing",
+      "activity_name": "Drafting Management",
+      "prev_sheet_ref": "D6.4",
+      "next_sheet_ref": "D6.5.2",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id_raw": "D6.5.1",
+        "doc_id": "D6.5",
+        "tool_title": "EDDMS Project Hub",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.4",
+        "phase_name": "Eng. Design - Detailing",
+        "next_sheet_ref": "D6.5.2",
+        "activity_name": "Drafting Management",
+        "sheet_version": "v2.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 PROJECT METADATA & DEADLINES"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "Project / Machine Name:",
+            "F": "[e.g. Surus Emobility Chassis]",
+            "N": "Phase 1 (Representation) Deadline:",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "CAD Master File:",
+            "F": "[e.g. electric scooter chassis.iam]",
+            "N": "Phase 2 (Presentation) Deadline:",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Lead Engineer:",
+            "F": "[Name]",
+            "N": "Phase 3 (Sheet Metal) Deadline:",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Lead Draftsman:",
+            "F": "[Name]",
+            "N": "Phase 4 (Placement) Deadline:",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "Total Parts/Assys:",
+            "F": "[Auto-Count from Tab 2]",
+            "N": "Phase 5 (BOM / Lists) Deadline:",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "N": "Phase 6 (Dimensioning) Deadline:",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "N": "Phase 7 (Description Notes) Deadline:",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.0 GLOBAL TITLE BLOCK VARIABLES (Standardized for all sheets)"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "Variable Name",
+            "G": "Value to be entered on CAD Sheets"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "Company Name",
+            "G": "IMHOGEN LTD"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Drawing Format",
+            "G": "A3 / A4 Landscape"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "General Tolerances",
+            "G": "ISO 2768-mK"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Projection Method",
+            "G": "Third-Angle (ISO 5456-2)"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Standard Units",
+            "G": "Millimeters (mm)"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Revision Code",
+            "G": "00 (Initial Release)"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.5.2 Master Model Decompositi",
+      "source_file": "06RDBI Engineering Drafting & Detailing Management System (EDDMS)..xlsx",
+      "doc_id": "D6.5",
+      "tool_title": "Master Model Decomposition",
+      "phase_name": "Eng. Design - Detailing",
+      "activity_name": "Hierarchy Mapping",
+      "prev_sheet_ref": "D6.5.1",
+      "next_sheet_ref": "D6.5.3",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id_raw": "D6.5.2",
+        "doc_id": "D6.5",
+        "tool_title": "Master Model Decomposition",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.5.1",
+        "phase_name": "Eng. Design - Detailing",
+        "next_sheet_ref": "D6.5.3",
+        "activity_name": "Hierarchy Mapping",
+        "sheet_version": "v2.1"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 MASTER DECOMPOSITION & iPROPERTY DATA FEED"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "Item ID",
+            "B": "Hierarchy Level",
+            "D": "Category Type",
+            "F": "Level 1",
+            "H": "Level 2",
+            "J": "Level 3",
+            "L": "Level 4",
+            "N": "Level 5",
+            "P": "Part Number (iProperty)",
+            "R": "iProperty Description",
+            "U": "Material Spec",
+            "W": "Notes"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "1.0",
+            "B": "Level 1",
+            "D": "Sub-Assembly",
+            "F": "Frames and Extras",
+            "P": "IMHO-FRM-001",
+            "R": "Main Chassis Weldment",
+            "U": "Welded Assembly",
+            "W": "[Enter Notes]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "2.0",
+            "B": "Level 2",
+            "D": "Part",
+            "F": "Frames and Extras",
+            "H": "FR023:1",
+            "P": "IMHO-PRT-023",
+            "R": "Lower Support Bracket",
+            "U": "S235JR Steel (4mm)",
+            "W": "[Enter Notes]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "3.0",
+            "B": "Level 2",
+            "D": "Part",
+            "F": "Frames and Extras",
+            "H": "ISO 657-1 - L25x25x3:1",
+            "P": "IMHO-STK-001",
+            "R": "Angle Iron 25x25x3",
+            "U": "S235JR Steel",
+            "W": "[Enter Notes]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "4.0",
+            "B": "Level 1",
+            "D": "Sub-Assembly",
+            "F": "Wheels",
+            "P": "IMHO-WHL-000",
+            "R": "Wheel Sub-Assembly",
+            "U": "Assembly",
+            "W": "[Enter Notes]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "5.0",
+            "B": "Level 2",
+            "D": "Sub-Assembly",
+            "F": "Wheels",
+            "H": "WH003:1",
+            "P": "IMHO-WHL-003",
+            "R": "Front Wheel Hub Assy",
+            "U": "Assembly",
+            "W": "[Enter Notes]"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "6.0",
+            "B": "Level 3",
+            "D": "Sub-Assembly",
+            "F": "Wheels",
+            "H": "WH003:1",
+            "J": "Wheel assembly:1",
+            "P": "IMHO-WHL-003-A",
+            "R": "Wheel Rim & Hub",
+            "U": "Assembly",
+            "W": "[Enter Notes]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "7.0",
+            "B": "Level 4",
+            "D": "Part",
+            "F": "Wheels",
+            "H": "WH003:1",
+            "J": "Wheel assembly:1",
+            "L": "Disc 152F-406",
+            "P": "IMHO-PRT-152",
+            "R": "Brake Disc 152mm",
+            "U": "AISI 304 Stainless",
+            "W": "[Enter Notes]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "8.0",
+            "B": "Level 4",
+            "D": "Part",
+            "F": "Wheels",
+            "H": "WH003:1",
+            "J": "Wheel assembly:1",
+            "L": "Tyre 324A 9.00-16",
+            "P": "COTS-TYR-324",
+            "R": "Pneumatic Tyre 9.00-16",
+            "U": "Rubber",
+            "W": "[Enter Notes]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.5.3 Drafting Execution Engin",
+      "source_file": "06RDBI Engineering Drafting & Detailing Management System (EDDMS)..xlsx",
+      "doc_id": "D6.5",
+      "tool_title": "Drafting Execution Engine",
+      "phase_name": "Eng. Design - Detailing",
+      "activity_name": "Task Tracking",
+      "prev_sheet_ref": "D6.5.2",
+      "next_sheet_ref": "D6.5.4",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id_raw": "D6.5.3",
+        "doc_id": "D6.5",
+        "tool_title": "Drafting Execution Engine",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.5.2",
+        "phase_name": "Eng. Design - Detailing",
+        "next_sheet_ref": "D6.5.4",
+        "activity_name": "Task Tracking",
+        "sheet_version": "v2.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 DRAFTING EXECUTION MATRIX"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "Item ID",
+            "B": "Component Name",
+            "E": "Assignee",
+            "G": "Priority",
+            "H": "1. Rep",
+            "I": "2. Pres",
+            "J": "3. Sht Metal",
+            "L": "4. Place",
+            "N": "5. BOM",
+            "P": "6. Dims",
+            "R": "7. Notes",
+            "T": "Overall Status",
+            "V": "QA Reviewer"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "1.0",
+            "B": "Frames and Extras",
+            "E": "[Name]",
+            "V": "[Reviewer]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "2.0",
+            "B": "FR023:1",
+            "E": "[Name]",
+            "G": "High",
+            "H": "Done",
+            "I": "N/A",
+            "J": "N/A",
+            "L": "Done",
+            "N": "Done",
+            "P": "Done",
+            "R": "Done",
+            "T": "Ready for QA",
+            "V": "[Reviewer]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "3.0",
+            "B": "ISO 657-1 - L25x25x3:1",
+            "E": "[Name]",
+            "G": "Med",
+            "H": "Done",
+            "I": "N/A",
+            "J": "N/A",
+            "L": "Done",
+            "N": "Done",
+            "P": "WIP",
+            "R": "Pending",
+            "T": "In Progress",
+            "V": "[Reviewer]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "4.0",
+            "B": "Wheels",
+            "E": "[Name]",
+            "G": "Low",
+            "H": "Pending",
+            "I": "Pending",
+            "J": "N/A",
+            "L": "Pending",
+            "N": "Pending",
+            "P": "Pending",
+            "R": "Pending",
+            "T": "In Progress",
+            "V": "[Reviewer]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "5.0",
+            "B": "WH003:1",
+            "E": "[Name]",
+            "G": "Low",
+            "H": "Pending",
+            "I": "Pending",
+            "J": "N/A",
+            "L": "Pending",
+            "N": "Pending",
+            "P": "Pending",
+            "R": "Pending",
+            "T": "In Progress",
+            "V": "[Reviewer]"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "6.0",
+            "B": "Wheel assembly:1",
+            "E": "[Name]",
+            "G": "Low",
+            "H": "Pending",
+            "I": "Pending",
+            "J": "N/A",
+            "L": "Pending",
+            "N": "Pending",
+            "P": "Pending",
+            "R": "Pending",
+            "T": "In Progress",
+            "V": "[Reviewer]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "7.0",
+            "B": "Disc 152F-406",
+            "E": "[Name]",
+            "G": "Med",
+            "H": "Pending",
+            "I": "Pending",
+            "J": "Done",
+            "L": "Pending",
+            "N": "Pending",
+            "P": "Pending",
+            "R": "Pending",
+            "T": "In Progress",
+            "V": "[Reviewer]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "8.0",
+            "B": "Tyre 324A 9.00-16",
+            "E": "[Name]",
+            "G": "Low",
+            "H": "N/A",
+            "I": "N/A",
+            "J": "N/A",
+            "L": "N/A",
+            "N": "N/A",
+            "P": "N/A",
+            "R": "N/A",
+            "T": "Ready for QA",
+            "V": "[Reviewer]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.5.4 Final QA & Drawing Revie",
+      "source_file": "06RDBI Engineering Drafting & Detailing Management System (EDDMS)..xlsx",
+      "doc_id": "D6.5",
+      "tool_title": "QA & Drawing Review Log",
+      "phase_name": "Eng. Design - Detailing",
+      "activity_name": "Drawing QA Audit",
+      "prev_sheet_ref": "D6.5.3",
+      "next_sheet_ref": "Phase 7",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id_raw": "D6.5.4",
+        "doc_id": "D6.5",
+        "tool_title": "QA & Drawing Review Log",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.5.3",
+        "phase_name": "Eng. Design - Detailing",
+        "next_sheet_ref": "Phase 7",
+        "activity_name": "Drawing QA Audit",
+        "sheet_version": "v2.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 QA & INTERNAL REVIEW LOG"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "Review Date",
+            "C": "Dwg/Cmpt name",
+            "E": "Focus Area Checked",
+            "I": "QA Ass'mt (Pass/Fail)",
+            "L": "Identified Errors / Notes",
+            "Q": "Draftsman Action Required",
+            "U": "Issue Status",
+            "W": "Auditor Sign-off"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "[DD/MM/YY]",
+            "C": "FR023:1",
+            "E": "1. View Arrangements",
+            "I": "Pass",
+            "L": "Views are logical and clear.",
+            "Q": "None",
+            "U": "Closed",
+            "W": "[Initials]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "[DD/MM/YY]",
+            "C": "FR023:1",
+            "E": "2. Dimensional Accuracy",
+            "I": "Fail",
+            "L": "Missing overall length dimension on top view.",
+            "Q": "Add 1250mm overall datum.",
+            "U": "Pending Fix",
+            "W": "[Initials]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "[DD/MM/YY]",
+            "C": "FR023:1",
+            "E": "3. Technical Notes",
+            "I": "Pass",
+            "L": "Weld callouts are correct.",
+            "Q": "None",
+            "U": "Closed",
+            "W": "[Initials]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "[DD/MM/YY]",
+            "C": "FR023:1",
+            "E": "4. Styling & Format",
+            "I": "Pass",
+            "L": "Line weights follow standard.",
+            "Q": "None",
+            "U": "Closed",
+            "W": "[Initials]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "[DD/MM/YY]",
+            "C": "FR023:1",
+            "E": "5. Title Block",
+            "I": "Fail",
+            "L": "Revision history block is blank.",
+            "Q": "Update Rev to 00.",
+            "U": "Pending Fix",
+            "W": "[Initials]"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "[DD/MM/YY]",
+            "C": "Disc 152F-406",
+            "E": "2. Dimensional Accuracy",
+            "I": "Pass",
+            "L": "Tolerances for bearing press-fit are accurate.",
+            "Q": "None",
+            "U": "Closed",
+            "W": "[Initials]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.i Document Control Index",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "D6-Index",
+      "tool_title": "Review Document Control",
+      "phase_name": "Client Review",
+      "activity_name": "Document Index",
+      "prev_sheet_ref": "D5",
+      "next_sheet_ref": "D6.1",
+      "related_tool": "",
+      "header": {
+        "doc_id": "D6-Index",
+        "tool_title": "Review Document Control",
+        "prev_sheet_ref": "D5",
+        "phase_name": "Client Review",
+        "next_sheet_ref": "D6.1",
+        "activity_name": "Document Index",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 REVIEW PHASE DOCUMENT CONTROL INDEX"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "DocID",
+            "C": "Document Title",
+            "H": "Link",
+            "J": "Description"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "D6",
+            "C": "Master Revision Database",
+            "H": "\u27a1\ufe0f",
+            "J": "The central Hub tracking all client feedback, active revisions, and approval statuses across the department."
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "D6.1",
+            "C": "Client Delivery Transmittal (Link)",
+            "H": "\u27a1\ufe0f",
+            "J": "The formal dispatch of the initial design package (watermarked PDFs/renders) to the client prior to the meeting."
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "D6.2",
+            "C": "Presentation Meeting Invite",
+            "H": "\u27a1\ufe0f",
+            "J": "The calendar invite establishing the boundaries and agenda for the formal design review meeting."
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "D6.3",
+            "C": "Presentation Meeting Minutes",
+            "H": "\u27a1\ufe0f",
+            "J": "The live capture of the client's initial reactions and high-level feedback during the presentation."
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "D6.4",
+            "C": "Client Feedback Form",
+            "H": "\u27a1\ufe0f",
+            "J": "A blank, standardized form sent to the client to force them to write down their exact requested changes clearly."
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "D6.5",
+            "C": "Master Revision Log",
+            "H": "\u27a1\ufe0f",
+            "J": "The internal tracker logging every single change requested by the client."
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "D6.6",
+            "C": "Scope Assessment Report",
+            "H": "\u27a1\ufe0f",
+            "J": "The PM's analysis determining if the requested changes are within the D2 Contract or require a billable Change Order."
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "D6.7",
+            "C": "Engineering Revision Tickets",
+            "H": "\u27a1\ufe0f",
+            "J": "The formal work orders sent to the CAD team to actually execute the approved changes."
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "D6.8",
+            "C": "Revised Technical Data Package",
+            "H": "\u27a1\ufe0f",
+            "J": "The finalized, updated design files prepared for final client handover."
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "D6.9",
+            "C": "Revision QA Sign-off",
+            "H": "\u27a1\ufe0f",
+            "J": "The Head of Engineering's confirmation that the revisions match the tickets and meet IMHOGEN quality standards."
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "D6.10",
+            "C": "Delivery & Acceptance Form",
+            "H": "\u27a1\ufe0f",
+            "J": "The legal \"CAD Lock\" document where the client formally accepts the design and authorizes fabrication."
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "T3.D6.10a",
+            "C": "Drafting Final Approval & Asset Delivery",
+            "H": "\u27a1\ufe0f",
+            "J": "Single \"Final Approval & Asset Delivery\" form."
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "D6.11",
+            "C": "Project Phase Closure Notice",
+            "H": "\u27a1\ufe0f",
+            "J": "The internal trigger closing the Design Phase and unblocking the Fabrication/Production Phase."
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.1 Client Delivery Transmitta",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "D6.1",
+      "tool_title": "Client Delivery Transmittal",
+      "phase_name": "Client Review",
+      "activity_name": "Design Dispatch",
+      "prev_sheet_ref": "D5.6",
+      "next_sheet_ref": "D6.2",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D6.1",
+        "tool_title": "Client Delivery Transmittal",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D5.6",
+        "phase_name": "Client Review",
+        "next_sheet_ref": "D6.2",
+        "activity_name": "Design Dispatch",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D6.1 CLIENT DELIVERY TRANSMITTAL (Pre-Read Dispatch)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 DISPATCH METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Sent By (Project Manager):",
+            "Q": "Date Sent:",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project / Client Name:",
+            "Q": "Sent To (Client Rep):",
+            "T": "[Type Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 TECHNICAL DATA PACKAGE (TDP) CONTENTS"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Document / File Description",
+            "H": "File Format",
+            "N": "Secure Link / Attachment",
+            "U": "Internal QA Verified?"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Phase 1 General Arrangement Drawing",
+            "H": "[e.g. Watermarked PDF]",
+            "N": "[Insert Link]",
+            "U": "[Yes]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "3D Renderings / Concept Visuals",
+            "H": "[e.g. JPG / MP4]",
+            "N": "[Insert Link]",
+            "U": "[Yes]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Preliminary Bill of Materials (If applicable)",
+            "H": "[e.g. PDF]",
+            "N": "[Insert Link]",
+            "U": "[Yes]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 STANDARD TRANSMITTAL SCRIPT (Copy & Paste)"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Dear [Client Name]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "The engineering team at IMHOGEN LTD has successfully completed the initial design phase for [Project Name]."
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Please find the preliminary Technical Data Package linked above for your review. Note that these are view-only conceptual documents intended to prepare you for our upcoming formal Presentation Meeting."
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "We strongly advise reviewing these documents internally with your stakeholders prior to our meeting. We will send a calendar invite shortly to walk you through the design decisions and gather your feedback."
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Best regards"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "[Your Name] | Lead Project Manager"
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "4.0 DISPATCH TRACKING"
+          }
+        },
+        {
+          "row": 32,
+          "cells": {
+            "A": "Link to Sent Email:",
+            "E": "[Insert Hyperlink]",
+            "M": "TDP Access Confirmed?:",
+            "Q": "[Yes/No]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.2 Presentation Meeting Invit",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "D6.2",
+      "tool_title": "",
+      "phase_name": "Client Review",
+      "activity_name": "Meeting Setup",
+      "prev_sheet_ref": "D6.1",
+      "next_sheet_ref": "D6.3",
+      "related_tool": "",
+      "header": {
+        "doc_id": "D6.2",
+        "prev_sheet_ref": "D6.1",
+        "phase_name": "Client Review",
+        "next_sheet_ref": "D6.3",
+        "activity_name": "Meeting Setup",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D6.2 PRESENTATION MEETING INVITE & AGENDA"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 MEETING METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Proposed Date:",
+            "E": "[DD/MM/YYYY]",
+            "M": "Time:",
+            "Q": "[00:00 AM/PM]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Platform / Location:",
+            "E": "[e.g. HQ / Google Meet]",
+            "M": "Lead Presenter:",
+            "Q": "[e.g. Daniel Asanti]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Required Client Attendees:"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 STANDARD INVITE SCRIPT (Copy & Paste)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Dear [Client Name]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "Following the delivery of your preliminary design package, we would like to formally present the engineering solutions developed for [Project Name]."
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "This meeting is a critical milestone where we will demonstrate how the design meets your original technical requirements. Our agenda will be as follows:"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "1. Review of Original Scope & Constraints (5 mins)"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "2. 3D Model Walkthrough & Operational Explanation (20 mins)"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3. Initial Client Impressions & Q&A (15 mins)"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "4. Next Steps & Formal Feedback Process Explanation (5 mins)"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Please confirm if [Date/Time] works for your primary decision-makers."
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Best regards"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "[Your Name] | IMHOGEN LTD"
+          }
+        },
+        {
+          "row": 30,
+          "cells": {
+            "A": "3.0 SCHEDULING VERIFICATION"
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "Calendar Invite sent and accepted?",
+            "F": "[Yes/No]",
+            "M": "Presentation Deck (D5 output) Ready?",
+            "R": "[Yes/No]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.3 Presentation Meeting Minut",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "D6.3",
+      "tool_title": "Presentation Meeting Minutes",
+      "phase_name": "Client Review",
+      "activity_name": "Live Capture",
+      "prev_sheet_ref": "D6.2",
+      "next_sheet_ref": "D6.4",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D6.3",
+        "tool_title": "Presentation Meeting Minutes",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.2",
+        "phase_name": "Client Review",
+        "next_sheet_ref": "D6.4",
+        "activity_name": "Live Capture",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D6.3 PRESENTATION MEETING MINUTES (Initial Reactions)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 MEETING EXECUTION METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Actual Date:",
+            "E": "[DD/MM/YYYY]",
+            "M": "Lead Presenter:",
+            "Q": "[Name]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Client Attendees Present:",
+            "E": "[List Names]",
+            "M": "Note Taker:",
+            "Q": "[Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 LIVE FEEDBACK CAPTURE"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Design Module Addressed",
+            "H": "Client Comment / Question",
+            "N": "IMHOGEN Live Response / Clarification"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Main Chassis]",
+            "H": "[e.g. \"Looks too bulky. Can we reduce the footprint?\"]",
+            "N": "[e.g. Explained that reducing footprint compromises motor stability. Client understood.]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. User Interface]",
+            "H": "[e.g. \"We need physical buttons,not just a touch screen.\"]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "N": "[Type here]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "N": "[Type here]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.0 OVERALL APPROVAL SENTIMENT"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Client General Impression:",
+            "H": "[Highly Satisfied / Minor Tweaks Needed / Major Redesign Requested]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Were any immediate \"Showstoppers\" identified?",
+            "H": "[Yes/No - Detail here]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "4.0 MEETING CLOSURE & ROUTING"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Task / Action Item",
+            "P": "Assignee",
+            "U": "Status"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Did the PM explicitly explain the D6.4 Formal Feedback Form process?",
+            "P": "Project Manager",
+            "U": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "Will the D6.4 Form be dispatched within 24 hours of this meeting?",
+            "P": "Project Manager",
+            "U": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 30,
+          "cells": {
+            "A": "Project Manager Signature:",
+            "P": "Date:",
+            "U": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.4 Client Feedback Form",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "D6.4",
+      "tool_title": "Client Feedback Form",
+      "phase_name": "Client Review",
+      "activity_name": "Formal Capture",
+      "prev_sheet_ref": "D6.3",
+      "next_sheet_ref": "D6.5",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D6.4",
+        "tool_title": "Client Feedback Form",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.3",
+        "phase_name": "Client Review",
+        "next_sheet_ref": "D6.5",
+        "activity_name": "Formal Capture",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D6.4 CLIENT FEEDBACK FORM (To be completed by Client)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 PROJECT & CLIENT METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Project Name:",
+            "Q": "Form Dispatched Date:",
+            "U": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Client Organization:",
+            "Q": "Form Returned Date:",
+            "U": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Authorized Client Signatory:",
+            "Q": "IMHOGEN Project Manager:",
+            "U": "[Name]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 FORMAL REVISION REQUESTS (Client fills this section)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "SN",
+            "B": "Design Module / Reference Drawing",
+            "H": "Specific Change Requested",
+            "N": "Reason / Business Justification",
+            "U": "Priority (High/Med/Low)"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Heating Chamber]",
+            "H": "[e.g. Increase chamber volume by 15%]",
+            "N": "[e.g. Need higher throughput per batch]",
+            "U": "[High]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.2",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "N": "[Type here]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.3",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "N": "[Type here]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.4",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "N": "[Type here]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.0 CLIENT AUTHORIZATION"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "By signing below, the client confirms that these are the consolidated and final revision requests for this design phase. Additional requests submitted after this form may be subject to additional billing and timeline extensions."
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Client Signature:",
+            "E": "[Type here / Digital Sign]",
+            "P": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.5 Master Revision Log",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "D6.5",
+      "tool_title": "Master Revision Log",
+      "phase_name": "Client Review",
+      "activity_name": "Internal Tracking",
+      "prev_sheet_ref": "D6.4",
+      "next_sheet_ref": "D6.6",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D6.5",
+        "tool_title": "Master Revision Log",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.4",
+        "phase_name": "Client Review",
+        "next_sheet_ref": "D6.6",
+        "activity_name": "Internal Tracking",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D6.5 MASTER REVISION LOG (Internal Tracker)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 TRACKING METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Project Manager:",
+            "O": "Total Revisions Logged:",
+            "S": "[e.g. 4]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project / Client Name:",
+            "O": "Open Revisions:",
+            "S": "[e.g. 2]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 REVISION TRACKER"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Source (D6.3 / D6.4)",
+            "F": "Specific Change Requested",
+            "M": "Current Status (Pending / Approved / Rejected / Aborted)",
+            "T": "PM Notes"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. D6.4 Form]",
+            "F": "[e.g. Increase heating chamber volume by 15%]",
+            "M": "[Pending Scope Assessment]",
+            "T": "[Requires major CAD rework]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Scope Revision Sheet]",
+            "F": "[Abort the mobile application part of the project brief]",
+            "M": "[Aborted]",
+            "T": "[Confirmed. Will remove all mobile UI/UX and API tasks from the engineering backlog.]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[e.g. D6.3 Meeting]",
+            "F": "[e.g. Change control panel color to safety yellow]",
+            "M": "[Approved]",
+            "T": "[Simple BOM update]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "[Type here]",
+            "F": "[Type here]",
+            "M": "[Type here]",
+            "T": "[Type here]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 LOG VERIFICATION"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Have all items from the D6.4 Client Form been accurately transferred to this log?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Project Manager Signature:",
+            "E": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.6 Scope Assessment Report",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "D6.6",
+      "tool_title": "Scope Assessment Report",
+      "phase_name": "Client Review",
+      "activity_name": "Commercial Check",
+      "prev_sheet_ref": "D6.5",
+      "next_sheet_ref": "D6.7",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D6.6",
+        "tool_title": "Scope Assessment Report",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.5",
+        "phase_name": "Client Review",
+        "next_sheet_ref": "D6.7",
+        "activity_name": "Commercial Check",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D6.6 SCOPE ASSESSMENT REPORT (Contract Alignment)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 ASSESSMENT METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Assessing PM:",
+            "O": "Reference Contract:",
+            "S": "[D2.12]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project Name:",
+            "O": "Reference Revision Log:",
+            "S": "[D6.5]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 SCOPE ALIGNMENT & IMPACT ANALYSIS"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Requested Change (From D6.5)",
+            "G": "In Scope? (Yes/No)",
+            "L": "Estimated Engineering Effort (Hours)",
+            "Q": "Estimated Fabrication Cost Impact (GHS)",
+            "V": "Final Directive (Execute / Change Order)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Increase chamber volume by 15%]",
+            "G": "[No - Original spec capped at 100L]",
+            "L": "[e.g. 24 Hours CAD Rework]",
+            "Q": "[e.g. +GHS 4,500 in steel]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Change panel color to yellow]",
+            "G": "[Yes - Cosmetic]",
+            "L": "[e.g. 0.5 Hours]",
+            "Q": "[e.g. 0.00]",
+            "V": "[Execute Revision]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[e.g. Abort mobile application]",
+            "G": "[N/A - Scope Reduction]",
+            "L": "[e.g. -40 Hours]",
+            "Q": "[e.g. 0.00]",
+            "V": "[Execute Scope Reduction / Adjust D4 Baseline]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 FINANCIAL & SCHEDULE ESCALATION"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Do any requested changes require a commercial Change Order to be issued to the client?",
+            "M": "[Yes/No]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Do the approved \"In Scope\" changes push the project past the D4.8 Locked Timeline?",
+            "M": "[Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "4.0 APPROVAL ROUTING"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Is the assessment complete and ready to be translated into Engineering Tickets (D6.7)?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Head of Engineering Signature:",
+            "E": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.7 Engineering Revision Ticke",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "D6.7",
+      "tool_title": "Engineering Revision Tickets",
+      "phase_name": "Client Review",
+      "activity_name": "Work Order",
+      "prev_sheet_ref": "D6.6",
+      "next_sheet_ref": "D6.8",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D6.7",
+        "tool_title": "Engineering Revision Tickets",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.6",
+        "phase_name": "Client Review",
+        "next_sheet_ref": "D6.8",
+        "activity_name": "Work Order",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D6.7 ENGINEERING REVISION TICKETS (CAD Work Orders)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 TICKET METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Issuing PM:",
+            "O": "Reference Assessment:",
+            "S": "D6.6 Scope Assessment"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date Issued:",
+            "O": "Project / Client Name:",
+            "S": "[Type Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 REVISION WORK ORDERS (Assigned to CAD Team)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Ticket ID",
+            "C": "Source Change (From D6.6)",
+            "G": "Assigned Engineer",
+            "J": "Required CAD Tool",
+            "M": "Task Description",
+            "S": "Allocated Hours",
+            "V": "Status (Pending / In Progress / Done)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "REV-01",
+            "C": "[e.g. Increase Chamber Volume]",
+            "G": "[e.g. Daniel Asanti]",
+            "J": "[e.g. Autodesk Inventor]",
+            "M": "[e.g. Adjust sheet metal parameters to 115L capacity and update flat patterns.]",
+            "S": "[e.g. 24]",
+            "V": "[Pending]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "REV-02",
+            "C": "[e.g. Change panel color]",
+            "G": "[e.g. Kelvin]",
+            "J": "[e.g. AutoCAD]",
+            "M": "[e.g. Update BOM color spec to Safety Yellow (RAL 1028).]",
+            "S": "[e.g. 0.5]",
+            "V": "[Pending]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "REV-03",
+            "C": "[Type here]",
+            "G": "[Type here]",
+            "J": "[Type here]",
+            "M": "[Type here]",
+            "S": "[Type here]",
+            "V": "[Type here]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 TICKET CLOSURE VERIFICATION"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Have all assigned engineers marked their tickets as \"Done\"?",
+            "J": "[Yes/No]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Are the updated native files saved in the central project repository?",
+            "J": "[Yes/No]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Project Manager Signature:",
+            "E": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.8 Revision Technical Data Pa",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "D6.8",
+      "tool_title": "Revised Technical Data Package",
+      "phase_name": "Client Review",
+      "activity_name": "Package Compilation",
+      "prev_sheet_ref": "D6.7",
+      "next_sheet_ref": "D6.9",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D6.8",
+        "tool_title": "Revised Technical Data Package",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.7",
+        "phase_name": "Client Review",
+        "next_sheet_ref": "D6.9",
+        "activity_name": "Package Compilation",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D6.8 REVISED TECHNICAL DATA PACKAGE (TDP Version Control)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 PACKAGE METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Compiled By (Project Manager):",
+            "O": "New Package Version:",
+            "S": "[e.g. v2.0 - Final Draft]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Compilation Date:",
+            "O": "Previous Package:",
+            "S": "[e.g. v1.0]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 REVISED FILE INVENTORY"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Document / File Description",
+            "K": "File Format",
+            "P": "Link to Vault / Server",
+            "V": "Version Number"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "General Arrangement Drawing (Updated)",
+            "K": "[e.g. PDF]",
+            "P": "[Insert Link]",
+            "V": "[v2.0]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "Final Bill of Materials",
+            "K": "[e.g. Excel/CSV]",
+            "P": "[Insert Link]",
+            "V": "[v2.0]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Revised 3D Renders",
+            "K": "[e.g. JPG]",
+            "P": "[Insert Link]",
+            "V": "[v2.0]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "Native CAD Assembly (Internal Only)",
+            "K": "[e.g. .iam / .ipt]",
+            "P": "[Insert Link]",
+            "V": "[v2.0]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 OBSOLESCENCE CHECK"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Have all older v1.0 files been moved to the \"Archive\" folder to prevent manufacturing errors?",
+            "M": "[Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "4.0 ROUTING"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Is the Revised TDP ready for internal QA Sign-off (D6.9)?",
+            "I": "[Yes/No]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Project Manager Signature:",
+            "I": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.9 Revision QA Sign-off",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "D6.9",
+      "tool_title": "Revision QA Sign-off",
+      "phase_name": "Client Review",
+      "activity_name": "Quality Assurance",
+      "prev_sheet_ref": "D6.8",
+      "next_sheet_ref": "D6.10",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D6.9",
+        "tool_title": "Revision QA Sign-off",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.8",
+        "phase_name": "Client Review",
+        "next_sheet_ref": "D6.10",
+        "activity_name": "Quality Assurance",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D6.9 REVISION QA SIGN-OFF (Internal Verification)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 QA METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Reviewing Officer (Head of Engineering):",
+            "O": "Reference TDP:",
+            "R": "D6.8 (v2.0)"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Review Date:",
+            "O": "Project Name:",
+            "R": "[Type Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 QUALITY & COMPLIANCE CHECKLIST"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Verification Point",
+            "N": "Status (Pass / Fail)",
+            "R": "QA Officer Comments"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Do the updated CAD files explicitly match the exact requests from D6.7?",
+            "N": "[Pass / Fail]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "Did the revisions introduce any new dimensional clashes or interferences?",
+            "N": "[Pass / Fail]",
+            "R": "[e.g. Checked interference in Inventor. Passed.]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Is the updated Bill of Materials (BOM) accurate and synced with the new CAD?",
+            "N": "[Pass / Fail]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "Are manufacturing drawings fully dimensioned with standard GD&T?",
+            "N": "[Pass / Fail]",
+            "R": "[Type here]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 FINAL AUTHORIZATION FOR CLIENT TRANSMITTAL"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Is this design structurally sound, commercially viable, and ready for final client lock?",
+            "M": "[Yes/No]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Head of Engineering Signature:",
+            "E": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.10 Delivery and Acceptance F",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "D6.10",
+      "tool_title": "Delivery & Acceptance Form",
+      "phase_name": "Client Review",
+      "activity_name": "Client Sign-off",
+      "prev_sheet_ref": "D6.9",
+      "next_sheet_ref": "D6.11",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D6.10",
+        "tool_title": "Delivery & Acceptance Form",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.9",
+        "phase_name": "Client Review",
+        "next_sheet_ref": "D6.11",
+        "activity_name": "Client Sign-off",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D6.10 DELIVERY & ACCEPTANCE FORM (Official CAD Lock)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 ACCEPTANCE METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Project Name:",
+            "O": "Reference TDP Version:",
+            "S": "[e.g. D6.8 v2.0]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Client Organization:",
+            "O": "Date Dispatched:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Authorized Client Signatory:",
+            "O": "IMHOGEN Lead PM:",
+            "S": "[Name]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 FORMAL DECLARATION OF ACCEPTANCE"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "By signing this document, the Client formally acknowledges and agrees to the following terms:"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "1. The engineering design, as represented in Technical Data Package (TDP) Version [Insert Version], meets all functional and technical requirements outlined in the original Project Brief."
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2. All requested revisions and feedback have been satisfactorily incorporated by IMHOGEN LTD."
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "3. This constitutes a \"CAD Lock.\" The design is now legally frozen. Any subsequent requests to alter the design, dimensions, or materials will require a formal Change Order, dimensions, subject to additional engineering fees and timeline extensions."
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "4. IMHOGEN LTD is officially authorized to proceed to the Procurement and Fabrication Phase based exactly on these approved drawings."
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.0 SIGNATURES"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Client Authorized Signature:",
+            "F": "[Digital or Physical Sign]",
+            "M": "Date:",
+            "O": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "IMHOGEN Head of Engineering:",
+            "F": "[Digital or Physical Sign]",
+            "M": "Date:",
+            "O": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "4.0 DOCUMENT ARCHIVAL"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Has the fully executed D6.10 form been saved in the permanent client vault?",
+            "K": "[Yes/No]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "T3.D6.10a Drafting Final Approv",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "T3.D6.10a",
+      "tool_title": "T3 Drafting Approval & Delivery",
+      "phase_name": "",
+      "activity_name": "Final Handover",
+      "prev_sheet_ref": "D6.9",
+      "next_sheet_ref": "",
+      "related_tool": "T3.D3.10a",
+      "header": {
+        "doc_id": "T3.D6.10a",
+        "tool_title": "T3 Drafting Approval & Delivery",
+        "related_tool": "T3.D3.10a",
+        "prev_sheet_ref": "D6.9",
+        "activity_name": "Final Handover"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "T3.D6.10a Drafting Final Approval & Asset Delivery"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 CLIENT ACCEPTANCE OF DRAWINGS"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "By signing,the client confirms the dimensions and specifications in the provided PDF set are correct."
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "TDP Version Accepted:",
+            "E": "[e.g. v1.0]",
+            "I": "Date of Acceptance:",
+            "M": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 ASSET RELEASE CHECKLIST"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Deliverable Item",
+            "H": "Format Released",
+            "N": "Storage Link / Attachment ID",
+            "S": "Notes"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Production Drawings",
+            "H": "PDF & DXF",
+            "N": "[Insert Link]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "3D Model (If Paid)",
+            "H": "STEP / Native",
+            "N": "[Insert Link]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Bill of Materials",
+            "H": "Excel/CSV",
+            "N": "[Insert Link]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 FINAL PROJECT LOCK"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Finance Unblock (T3.D3.10a) Verified? (Yes/No):"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "CAD Files Moved to 'Released' Archive? (Yes/No):"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "4.0 AUTHORIZATION"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "IMHOGEN LTD formally closes this request. No further edits included under this SN."
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Client Signatory",
+            "M": "Date",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Project Manager Signature",
+            "M": "Date",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6.11 Project Phase Closure",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "D6.11",
+      "tool_title": "Project Phase Closure Notice",
+      "phase_name": "Client Review",
+      "activity_name": "Phase Transition",
+      "prev_sheet_ref": "D6.10",
+      "next_sheet_ref": "Phase 7",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D6.11",
+        "tool_title": "Project Phase Closure Notice",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.10",
+        "phase_name": "Client Review",
+        "next_sheet_ref": "Phase 7",
+        "activity_name": "Phase Transition",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D6.11 PROJECT PHASE CLOSURE NOTICE (Unlocking Fabrication)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 CLOSURE METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Project Manager:",
+            "P": "Closure Date:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project Name:",
+            "P": "Client Sign-off Ref:",
+            "S": "[D6.10 Executed]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 PHASE COMPLETION CHECKLIST"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Task / Action Item",
+            "Q": "Assignee",
+            "U": "Status"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Have all native CAD files been locked to \"Read-Only\" to prevent accidental edits?",
+            "Q": "Lead Engineer",
+            "U": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Has the final Bill of Materials (BOM) been exported for Procurement?",
+            "Q": "Project Manager",
+            "U": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "Has Finance been notified to issue the next milestone invoice (if applicable)?",
+            "Q": "Project Manager",
+            "U": "[Pending / Done]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 FABRICATION HANDOVER DIRECTIVE"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Target Fabrication Start Date:",
+            "I": "[DD/MM/YYYY]",
+            "R": "Allocated Shop Floor Budget:",
+            "V": "[GHS Amount]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Has the physical build package been handed over to the Shop Floor Supervisor?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "4.0 FINAL AUTHORIZATION"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Is Phase 6 officially closed, and is the project moving to Active Fabrication (Phase 7)?"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Head of Operations Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "O": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D6 Master Revision Database",
+      "source_file": "06RDBI_IMHO GEN Client Review and Approval Process.xlsx",
+      "doc_id": "D6",
+      "tool_title": "",
+      "phase_name": "Client Review",
+      "activity_name": "Review Tracking",
+      "prev_sheet_ref": "D5",
+      "next_sheet_ref": "N/A",
+      "related_tool": "",
+      "header": {
+        "doc_id": "D6",
+        "prev_sheet_ref": "D5",
+        "phase_name": "Client Review",
+        "next_sheet_ref": "N/A",
+        "activity_name": "Review Tracking",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 ACTIVE CLIENT REVIEWS (Awaiting Feedback or CAD Lock)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "SN",
+            "B": "Request ID",
+            "F": "Client / Organization",
+            "I": "Assigned PM",
+            "M": "Current Status",
+            "Q": "Days in Review",
+            "S": "TDP Version Sent",
+            "U": "Link to Project Workbook"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PD-17725]",
+            "F": "[Name / Co.]",
+            "I": "[Name]",
+            "M": "[e.g. Awaiting D6.4 Form]",
+            "Q": "[e.g. 5 Days]",
+            "S": "[e.g. v1.0]",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "4.0"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.0 ACTIVE ENGINEERING REVISIONS (Internal Rework)"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "SN",
+            "B": "Request ID",
+            "E": "Client / Organization",
+            "I": "Assigned PM",
+            "L": "Number of Open Tickets",
+            "P": "Est. Rework Hours",
+            "S": "Target TDP Resubmission",
+            "U": "Link to Revision Log (D6.5)"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. CAD-1771]",
+            "E": "[Name / Co.]",
+            "I": "[Name]",
+            "L": "[e.g. 3]",
+            "P": "[e.g. 24.5 Hrs]",
+            "S": "[DD/MM/YY]",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "4.0"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.0 LOCKED DESIGNS (Cleared for Fabrication)"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "SN",
+            "B": "Request ID",
+            "F": "Client / Organization",
+            "I": "Sign-off Date (D6.10)",
+            "L": "Approved TDP Version",
+            "P": "Handover to Ops Complete?",
+            "U": "Link to Executed D6.10"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PDT-2010]",
+            "F": "[Name / Co.]",
+            "I": "[DD/MM/YY]",
+            "L": "[e.g. v2.0]",
+            "P": "[Yes - Triggered D6.11]",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "3.0"
+          }
+        }
+      ]
+    }
+  ]
+}

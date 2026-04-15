@@ -1,0 +1,1547 @@
+{
+  "workbook_id": 7,
+  "workbook_name": "Procurement Process",
+  "description": "Workbook 7 \u2014 BOM extraction, vendor sourcing, PO issuance, and material receiving QA",
+  "source_files": [
+    "07RDBI_IMHO GEN PROCUREMENT PROCESS.xlsx"
+  ],
+  "documents": [
+    {
+      "sheet_name": "D7.i Document Control Index",
+      "source_file": "07RDBI_IMHO GEN PROCUREMENT PROCESS.xlsx",
+      "doc_id": "D7-Index",
+      "tool_title": "Procurement Document Control",
+      "phase_name": "Procurement",
+      "activity_name": "Document Index",
+      "prev_sheet_ref": "D6",
+      "next_sheet_ref": "D7.1",
+      "related_tool": "",
+      "header": {
+        "doc_id": "D7-Index",
+        "tool_title": "Procurement Document Control",
+        "prev_sheet_ref": "D6",
+        "phase_name": "Procurement",
+        "next_sheet_ref": "D7.1",
+        "activity_name": "Document Index",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 PROCUREMENT PHASE DOCUMENT CONTROL INDEX"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "DocID",
+            "B": "Document Title",
+            "H": "Link",
+            "I": "Description"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "D7",
+            "B": "Master Procurement Database",
+            "H": "\u27a1\ufe0f",
+            "I": "The central Hub tracking all active purchase orders, vendor deliveries, and inventory allocations across the company."
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "D7.1",
+            "B": "Final CAD Bill of Materials (BOM)",
+            "H": "\u27a1\ufe0f",
+            "I": "The definitive list of every single component required, extracted directly from the locked D6.10 design."
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "D7.2",
+            "B": "Procurement List & Budget Allocation",
+            "H": "\u27a1\ufe0f",
+            "I": "The financial check mapping the required BOM items against the locked D4.8 budget to prevent overspending."
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "D7.3",
+            "B": "Request for Quotation (RFQ) Form",
+            "H": "\u27a1\ufe0f",
+            "I": "The standardized document sent to vendors (e.g. in Suame Magazine or Accra) to solicit official pricing and lead times."
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "D7.4",
+            "B": "Vendor Selection Matrix",
+            "H": "\u27a1\ufe0f",
+            "I": "The analytical tool used to compare quotes based on price, and delivery speed before awarding the contract. quality"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "D7.5",
+            "B": "Approved Purchase Order (PO)",
+            "H": "\u27a1\ufe0f",
+            "I": "The formal, legally binding order sent to the selected vendor, authorizing them to supply the goods."
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "D7.6",
+            "B": "Incoming Inspection Report & Receiving Log",
+            "H": "\u27a1\ufe0f",
+            "I": "The QA checklist executed at the loading dock to verify the delivered materials match the PO and are free of defects."
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "D7.7",
+            "B": "Updated Inventory Ledger & Handover",
+            "H": "\u27a1\ufe0f",
+            "I": "The final trigger logging the cleared materials into the project inventory and unlocking the active fabrication phase."
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D7.1 Final CAD Bill of Material",
+      "source_file": "07RDBI_IMHO GEN PROCUREMENT PROCESS.xlsx",
+      "doc_id": "D7.1",
+      "tool_title": "Final CAD BOM",
+      "phase_name": "Procurement",
+      "activity_name": "Material Extraction",
+      "prev_sheet_ref": "D6.10",
+      "next_sheet_ref": "D7.2",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D7.1",
+        "tool_title": "Final CAD BOM",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6.10",
+        "phase_name": "Procurement",
+        "next_sheet_ref": "D7.2",
+        "activity_name": "Material Extraction",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D7.1 FINAL CAD BILL OF MATERIALS (BOM)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 BOM METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Extracted By (Lead CAD Engineer):",
+            "O": "Reference CAD Lock:",
+            "S": "D6.10"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Extraction Date:",
+            "O": "Project / Client Name:",
+            "S": "[Type Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 RAW MATERIALS (Metals, Plastics, Consumables)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Part Number",
+            "D": "Part Description",
+            "H": "Material Specification",
+            "L": "Dimensions / Sizing",
+            "O": "Quantity Required",
+            "R": "Unit of Measure (UOM)",
+            "U": "Notes for Procurement"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "RM-001",
+            "D": "[e.g. Main Chassis Frame]",
+            "H": "[e.g. Mild Steel Square Tube]",
+            "L": "[e.g. 50x50x3mm]",
+            "O": "[e.g. 12]",
+            "R": "[Meters]",
+            "U": "[e.g. Ensure no surface rust]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "RM-002",
+            "D": "[e.g. Heating Chamber Shell]",
+            "H": "[e.g. Stainless Steel 304 Sheet]",
+            "L": "[e.g. 2mm thick]",
+            "O": "[e.g. 2]",
+            "R": "[Full Sheets]",
+            "U": "[e.g. Food grade required]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[Type here]",
+            "D": "[Type here]",
+            "H": "[Type here]",
+            "L": "[Type here]",
+            "O": "[Type here]",
+            "R": "[Type here]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 COMMERCIAL OFF-THE-SHELF (COTS) COMPONENTS (Motors, Electronics, Fasteners)"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "SN",
+            "B": "Part Number",
+            "D": "Part Description",
+            "G": "Manufacturer / Brand Pref.",
+            "K": "Technical Specifications",
+            "O": "Quantity Required",
+            "R": "Unit of Measure (UOM)",
+            "U": "Notes for Procurement"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.1",
+            "B": "CT-001",
+            "D": "[e.g. Induction Motor]",
+            "G": "[e.g. Siemens or ABB]",
+            "K": "[e.g. 3-Phase, 5HP, 1440 RPM]",
+            "O": "[e.g. 1]",
+            "R": "[Unit]",
+            "U": "[e.g. Must include mounting flange]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.2",
+            "B": "CT-002",
+            "D": "[e.g. PID Temperature Controller]",
+            "G": "[e.g. Omron]",
+            "K": "[e.g. 0-400C range, Relay output]",
+            "O": "[e.g. 2]",
+            "R": "[Units]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "3.3",
+            "B": "CT-003",
+            "D": "[e.g. Hex Bolts M8x25]",
+            "G": "[e.g. Generic]",
+            "K": "[e.g. High Tensile 8.8, Zinc Plated]",
+            "O": "[e.g. 150]",
+            "R": "[Pieces]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "4.0 ENGINEERING HANDOVER"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Is this BOM perfectly synced with the final D6.10 locked design?",
+            "J": "[Yes/No]"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Lead Engineer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "O": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D7.2Procurement List and Budget",
+      "source_file": "07RDBI_IMHO GEN PROCUREMENT PROCESS.xlsx",
+      "doc_id": "D7.2",
+      "tool_title": "Procurement List & Budget Allocation",
+      "phase_name": "Procurement",
+      "activity_name": "Budget Mapping",
+      "prev_sheet_ref": "D7.1",
+      "next_sheet_ref": "D7.3",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D7.2",
+        "tool_title": "Procurement List & Budget Allocation",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D7.1",
+        "phase_name": "Procurement",
+        "next_sheet_ref": "D7.3",
+        "activity_name": "Budget Mapping",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D7.2 PROCUREMENT LIST & BUDGET ALLOCATION"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 PROCUREMENT METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Procurement Officer:",
+            "O": "Reference BOM:",
+            "S": "D7.1"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date Generated:",
+            "O": "Total Allocated BOM Budget:",
+            "S": "[e.g. GHS 45,000]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 CATEGORIZED PROCUREMENT & BUDGET CHECK"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "BOM Category",
+            "G": "Total Items",
+            "I": "Allocated Budget (From D4.8)",
+            "N": "Target Sourcing Strategy",
+            "S": "Critical Lead Time Warning"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Raw Materials (Steel, Plastics)",
+            "G": "[e.g. 15]",
+            "I": "[e.g. GHS 12,000]",
+            "N": "[e.g. Local - Suame Magazine]",
+            "S": "[e.g. Low risk - Same day delivery]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "COTS - Electronics & Sensors",
+            "G": "[e.g. 8]",
+            "I": "[e.g. GHS 8,500.00]",
+            "N": "[e.g. Import - Digikey/Mouser]",
+            "S": "[e.g. High risk - 14 Days customs clearance]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "COTS - Motors & Mechanical",
+            "G": "[e.g. 5]",
+            "I": "[e.g. GHS 20,000.00]",
+            "N": "[e.g. Local Distributors in Accra]",
+            "S": "[e.g. Medium risk - 3 Days]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "Fasteners & Consumables",
+            "G": "[e.g. 20]",
+            "I": "[e.g. GHS 4,500.00]",
+            "N": "[e.g. Local Hardware Stores]",
+            "S": "[e.g. Low risk]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 LONG-LEAD ITEM IDENTIFICATION"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "SN",
+            "B": "Critical Item Description",
+            "G": "Required On-Site Date",
+            "L": "Max Allowable Lead Time",
+            "P": "Action Required"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.1",
+            "B": "[e.g. Specialized 5HP Motor]",
+            "G": "[DD/MM/YYYY]",
+            "L": "[e.g. 7 Days]",
+            "P": "[Issue RFQ immediately - Do not wait for steel orders]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "3.2",
+            "B": "[Type here]",
+            "G": "[DD/MM/YYYY]",
+            "L": "[Type here]",
+            "P": "[Type here]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "4.0 BUDGET CLEARANCE"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Is the procurement strategy aligned with the approved project budget and timeline?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Head of Operations Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "O": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D7.3 Request For Quotation (RFQ",
+      "source_file": "07RDBI_IMHO GEN PROCUREMENT PROCESS.xlsx",
+      "doc_id": "D7.3",
+      "tool_title": "Request for Quotation (RFQ)",
+      "phase_name": "Procurement",
+      "activity_name": "Vendor Sourcing",
+      "prev_sheet_ref": "D7.2",
+      "next_sheet_ref": "D7.4",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D7.3",
+        "tool_title": "Request for Quotation (RFQ)",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D7.2",
+        "phase_name": "Procurement",
+        "next_sheet_ref": "D7.4",
+        "activity_name": "Vendor Sourcing",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D7.3 REQUEST FOR QUOTATION (RFQ)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 RFQ METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "RFQ Number:",
+            "E": "[e.g. IMHO-RFQ-26-045]",
+            "M": "Date Issued:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Issued By:",
+            "E": "[Name]",
+            "M": "Quote Submission Deadline:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Target Delivery Location:",
+            "E": "[IMHOGEN HQ,Kumasi]",
+            "M": "Required Delivery Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 VENDOR INFORMATION"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Vendor Name:",
+            "E": "[Type Name]",
+            "M": "Contact Person:",
+            "Q": "[Type Name]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Vendor Address:",
+            "E": "[Type Address]",
+            "M": "Contact Number:",
+            "Q": "[Type Number]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "3.0 ITEM SPECIFICATIONS (To be priced by Vendor)"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "SN",
+            "B": "Item Description & Specifications",
+            "H": "Quantity",
+            "J": "UOM",
+            "L": "Vendor Unit Price (GHS)",
+            "Q": "Vendor Total Price (GHS)",
+            "V": "Lead Time (Days)"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.1",
+            "B": "[e.g. Mild Steel Square Tube, 50x50x3mm]",
+            "H": "[e.g. 12]",
+            "J": "[Meters]",
+            "L": "[Leave Blank for Vendor]",
+            "Q": "[Leave Blank for Vendor]",
+            "V": "[Leave Blank]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.2",
+            "B": "[e.g. Stainless Steel 304 Sheet, 2mm]",
+            "H": "[e.g. 2]",
+            "J": "[Sheets]",
+            "L": "[Leave Blank]",
+            "Q": "[Leave Blank]",
+            "V": "[Leave Blank]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.3",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "J": "[Type here]",
+            "L": "[Leave Blank]",
+            "Q": "[Leave Blank]",
+            "V": "[Leave Blank]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "4.0 STANDARD IMHOGEN TERMS & CONDITIONS"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "1. All quoted prices must be inclusive of delivery to the stated location unless specified otherwise."
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "2. Please indicate clearly if VAT/Taxes are included or excluded from the quoted prices."
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "3. Goods failing incoming QA inspection (D7.6) will be rejected and returned at the vendor's expense."
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "4. Quotes must be valid for a minimum of 14 days."
+          }
+        },
+        {
+          "row": 30,
+          "cells": {
+            "A": "5.0 DISPATCH TRACKING"
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "Has this RFQ been officially sent to at least 3 competing vendors?",
+            "J": "[Yes/No]"
+          }
+        },
+        {
+          "row": 32,
+          "cells": {
+            "A": "Procurement Officer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "O": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D7.4 Vendor Selection Matrix",
+      "source_file": "07RDBI_IMHO GEN PROCUREMENT PROCESS.xlsx",
+      "doc_id": "D7.4",
+      "tool_title": "Vendor Selection Matrix",
+      "phase_name": "Procurement",
+      "activity_name": "Quote Analysis",
+      "prev_sheet_ref": "D7.3",
+      "next_sheet_ref": "D7.5",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D7.4",
+        "tool_title": "Vendor Selection Matrix",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D7.3",
+        "phase_name": "Procurement",
+        "next_sheet_ref": "D7.5",
+        "activity_name": "Quote Analysis",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D7.4 VENDOR SELECTION MATRIX (Quote Comparison)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 ANALYSIS METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Procurement Officer:",
+            "O": "Reference RFQ:",
+            "S": "[e.g. IMHO-RFQ-26-045]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Analysis Date:",
+            "O": "Target Item / Category:",
+            "S": "[e.g. 5HP Motors & VFDs]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 VENDOR COMPARISON (Minimum 3 Quotes Required for items > GHS 5000)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Evaluation Criteria",
+            "G": "Vendor A: [Name]",
+            "M": "Vendor B: [Name]",
+            "S": "Vendor C: [Name]"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Total Quoted Price (GHS):",
+            "G": "[e.g. 18,500.00]",
+            "M": "[e.g. 19,200.00]",
+            "S": "[e.g. 17,800.00]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Quoted Lead Time (Days):",
+            "G": "[e.g. 14 Days]",
+            "M": "[e.g. 5 Days]",
+            "S": "[e.g. 21 Days]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "Payment Terms:",
+            "G": "[e.g. 50% Adv",
+            "M": "[e.g. 100% on Delivery]",
+            "S": "[e.g. 100% Advance]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "Warranty / Support Offered:",
+            "G": "[e.g. 1 Year]",
+            "M": "[e.g. 6 Months]",
+            "S": "[e.g. None]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "Previous Performance Score (1-10):",
+            "G": "[e.g. 9/10 - Highly Reliable]",
+            "M": "[e.g. 7/10]",
+            "S": "[e.g. New Vendor]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.0 AWARD JUSTIFICATION"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Selected Vendor:",
+            "E": "[e.g. Vendor B]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Justification for Selection:",
+            "E": "[e.g. Though Vendor B is GHS 700 more expensive, their 5-day lead time prevents a 2-week project delay, and their 100% on-delivery payment terms protect our cash flow.]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "4.0 APPROVAL ROUTING"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Is the selection fully justified and ready for Purchase Order (D7.5) generation?",
+            "K": "[Yes/No]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Head of Operations Signature:",
+            "E": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D7.5 Approved Purchase Order(PO",
+      "source_file": "07RDBI_IMHO GEN PROCUREMENT PROCESS.xlsx",
+      "doc_id": "D7.5",
+      "tool_title": "Approved Purchase Order",
+      "phase_name": "Procurement",
+      "activity_name": "Order Execution",
+      "prev_sheet_ref": "D7.4",
+      "next_sheet_ref": "D7.6",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D7.5",
+        "tool_title": "Approved Purchase Order",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D7.4",
+        "phase_name": "Procurement",
+        "next_sheet_ref": "D7.6",
+        "activity_name": "Order Execution",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D7.5 APPROVED PURCHASE ORDER (PO)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 PO METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "PO Number:",
+            "E": "[e.g. IMHO-PO-26-088]",
+            "M": "Date Issued:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Issued By:",
+            "E": "[Name]",
+            "M": "Expected Delivery Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Vendor Name:",
+            "E": "[Type Name]",
+            "M": "Delivery Address:",
+            "Q": "IMHOGEN HQ, Kumasi"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 AUTHORIZED ORDER LINE ITEMS"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "SN",
+            "B": "Item Description & Specifications",
+            "H": "Part Number (Internal)",
+            "L": "Quantity",
+            "O": "UOM",
+            "R": "Unit Price (GHS)",
+            "U": "Total Price (GHS)"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Siemens 5HP Induction Motor 3-Phase]",
+            "H": "[CT-001]",
+            "L": "[e.g. 1]",
+            "O": "[Unit]",
+            "R": "[e.g. 15,000.00]",
+            "U": "[e.g. 15,000.00]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Omron VFD Controller]",
+            "H": "[CT-002]",
+            "L": "[e.g. 1]",
+            "O": "[Unit]",
+            "R": "[e.g. 4,200.00]",
+            "U": "[e.g. 4,200.00]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.3",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "L": "[Type here]",
+            "O": "[Type here]",
+            "R": "[Type here]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "R": "SUBTOTAL:",
+            "U": "[Sum]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "R": "VAT/TAX:",
+            "U": "[Amount]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "R": "GRAND TOTAL:",
+            "U": "[Total Value GHS]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "3.0 PAYMENT & DELIVERY INSTRUCTIONS"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Approved Payment Terms:",
+            "E": "[e.g. 100% on Delivery after QA Inspection]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Special Instructions:",
+            "E": "[e.g. Vendor must provide original manufacturer warranty certificates upon delivery.]"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "4.0 INTERNAL AUTHORIZATION & DISPATCH"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Has Finance approved the release of funds for this PO?",
+            "I": "[Yes/No]",
+            "M": "Finance Signature:",
+            "Q": "[Name]"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "Has the PO been emailed to the vendor as a locked PDF?",
+            "I": "[Yes/No]",
+            "M": "Dispatch Time:",
+            "Q": "[00:00 AM/PM]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D7.6 Incoming Inspection Report",
+      "source_file": "07RDBI_IMHO GEN PROCUREMENT PROCESS.xlsx",
+      "doc_id": "D7.6",
+      "tool_title": "Incoming Inspection Report",
+      "phase_name": "Procurement",
+      "activity_name": "QA Receiving",
+      "prev_sheet_ref": "D7.5",
+      "next_sheet_ref": "D7.7",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D7.6",
+        "tool_title": "Incoming Inspection Report",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D7.5",
+        "phase_name": "Procurement",
+        "next_sheet_ref": "D7.7",
+        "activity_name": "QA Receiving",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D7.6 INCOMING INSPECTION REPORT & RECEIVING LOG"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 RECEIVING METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Receiving QA Officer:",
+            "O": "Reference PO Number:",
+            "S": "[e.g. IMHO-PO-26-088]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date Received:",
+            "O": "Vendor Delivery/Waybill #:",
+            "S": "[Insert Number]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 ITEM INSPECTION LOG"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Item Description (From PO)",
+            "F": "Qty Ordered",
+            "H": "Qty Received",
+            "J": "Visual Condition (Good/Damaged)",
+            "N": "Spec Match? (Yes/No)",
+            "Q": "QA Status (PASS / REJECT)",
+            "U": "Notes / Reason for Rejection"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Siemens 5HP Motor]",
+            "F": "[e.g. 1]",
+            "H": "[e.g. 1]",
+            "J": "[Good]",
+            "N": "[Yes]",
+            "Q": "[PASS]",
+            "U": "[Serial # 12345 verified]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Omron VFD Controller]",
+            "F": "[e.g. 1]",
+            "H": "[e.g. 1]",
+            "J": "[Damaged Box]",
+            "N": "[Yes]",
+            "Q": "[REJECT]",
+            "U": "[Water damage on packaging. Returned to driver.]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[Type here]",
+            "F": "[Type here]",
+            "H": "[Type here]",
+            "J": "[Type here]",
+            "N": "[Type here]",
+            "Q": "[Type here]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 DISCREPANCY & ESCALATION"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Were any items Missing, Damaged, or Incorrectly Specified?",
+            "I": "[Yes/No]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "If Yes, has the Vendor been notified for immediate replacement?",
+            "J": "[Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "4.0 INVENTORY HANDOVER"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Have all \"PASSED\" items been physically moved to the secure project staging area?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "QA Officer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "O": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D7.7 Updated Inventory Ledger &",
+      "source_file": "07RDBI_IMHO GEN PROCUREMENT PROCESS.xlsx",
+      "doc_id": "D7.7",
+      "tool_title": "Updated Inventory Ledger",
+      "phase_name": "Procurement",
+      "activity_name": "Stock Allocation",
+      "prev_sheet_ref": "D7.6",
+      "next_sheet_ref": "Phase 8",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D7.7",
+        "tool_title": "Updated Inventory Ledger",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D7.6",
+        "phase_name": "Procurement",
+        "next_sheet_ref": "Phase 8",
+        "activity_name": "Stock Allocation",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D7.7 UPDATED INVENTORY LEDGER (Project Stock Allocation)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 LEDGER METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Inventory Officer:",
+            "Q": "Reference Inspection:",
+            "U": "D7.6 Incoming Report"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Allocation Date:",
+            "Q": "Project / Client Name:",
+            "U": "[Type Name]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Staging Location:",
+            "D": "[e.g. Rack A-4 / Project Bin 08]",
+            "M": "Current Project Phase:",
+            "Q": "[Handover to Fab]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 ALLOCATED PROJECT STOCK (Ready for Shop Floor)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "SN",
+            "B": "Item Description",
+            "H": "Part Number",
+            "L": "Qty Allocated",
+            "O": "Unit of Measure",
+            "R": "Bin/Storage Ref",
+            "U": "Notes (Serial #s, Batch #s)"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Mild Steel Square Tube]",
+            "H": "[RM-001]",
+            "L": "[e.g. 12]",
+            "O": "[Meters]",
+            "R": "[Rack B-Steel]",
+            "U": "[Cut to 6m lengths]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Siemens 5HP Motor]",
+            "H": "[CT-001]",
+            "L": "[e.g. 1]",
+            "O": "[Unit]",
+            "R": "[Shelf C-01]",
+            "U": "[Serial: 1234567-A]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.3",
+            "B": "[e.g. High Tensile Bolts M8]",
+            "H": "[CT-003]",
+            "L": "[e.g. 150]",
+            "O": "[Pieces]",
+            "R": "[Bin 40]",
+            "U": "[Zinc Plated]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.4",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "L": "[Type here]",
+            "O": "[Type here]",
+            "R": "[Type here]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.0 SHORTAGE & BACKORDER TRACKING"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "SN",
+            "B": "Item Description",
+            "H": "Part Number",
+            "M": "Qty Missing",
+            "P": "Exp. Delivery Date",
+            "T": "Impact on Fabrication Start"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "3.1",
+            "B": "[e.g. Omron VFD Controller]",
+            "H": "[CT-002]",
+            "M": "[e.g. 1]",
+            "P": "[DD/MM/YYYY]",
+            "T": "[High - Cannot test motor without it]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "3.2",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "M": "[Type here]",
+            "P": "[Type here]",
+            "T": "[Type here]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "4.0 FABRICATION HANDOVER AUTHORIZATION"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Are all \"Critical Path\" items currently in stock and secured in the project staging area?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Is the Shop Floor Supervisor authorized to withdraw these materials for Phase 8?",
+            "L": "[Yes/No]"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "Inventory Officer Signature:",
+            "E": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D7 Master Procurement Database",
+      "source_file": "07RDBI_IMHO GEN PROCUREMENT PROCESS.xlsx",
+      "doc_id": "D7",
+      "tool_title": "Master Procurement Database",
+      "phase_name": "Procurement",
+      "activity_name": "Spend Tracking",
+      "prev_sheet_ref": "D6",
+      "next_sheet_ref": "N/A",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D7",
+        "tool_title": "Master Procurement Database",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D6",
+        "phase_name": "Procurement",
+        "next_sheet_ref": "N/A",
+        "activity_name": "Spend Tracking",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 ACTIVE PURCHASE ORDERS (Awaiting Delivery)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "E": "PO Number",
+            "I": "Vendor",
+            "M": "PO Total Value (GHS)",
+            "P": "Expected Delivery",
+            "S": "Current Status",
+            "V": "Link to PO (D7.5)"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PD-177]",
+            "E": "[e.g. PO-26-088]",
+            "I": "[e.g. Steel Co.]",
+            "M": "[e.g. 15,000.00]",
+            "P": "[DD/MM/YY]",
+            "S": "[e.g. In Transit]",
+            "V": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 PROCUREMENT BUDGET VS. ACTUAL (Financial Health)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "F": "Project Name",
+            "I": "Allocated BOM Budget",
+            "L": "Actual Spend to Date",
+            "O": "Variance (Under/Over)",
+            "S": "Status",
+            "V": "Link to Ledger (D7.7)"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PD-177]",
+            "F": "[e.g. SAYeTECH Dryer]",
+            "I": "[e.g. 45,000.00]",
+            "L": "[e.g. 42,300.00]",
+            "O": "[e.g. +2,700.00]",
+            "S": "[Healthy]",
+            "V": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 VENDOR PERFORMANCE SCORECARD"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "SN",
+            "B": "Vendor Name",
+            "G": "Key Category",
+            "K": "Total Orders",
+            "M": "Avg. Lead Time Accuracy",
+            "P": "QA Pass Rate %",
+            "S": "Preferred Status",
+            "V": "Notes"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. Steel Co.]",
+            "G": "[Raw Metals]",
+            "K": "[e.g. 12]",
+            "M": "[e.g. 95%]",
+            "P": "[e.g. 100%]",
+            "S": "[Tier 1 - Primary]",
+            "V": "[Highly reliable]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "2.0",
+            "B": "[e.g. Motor Hub]",
+            "G": "[COTS - Motors]",
+            "K": "[e.g. 4]",
+            "M": "[e.g. 60%]",
+            "P": "[e.g. 80%]",
+            "S": "[Tier 3 - Backup]",
+            "V": "[Poor lead times]"
+          }
+        }
+      ]
+    }
+  ]
+}

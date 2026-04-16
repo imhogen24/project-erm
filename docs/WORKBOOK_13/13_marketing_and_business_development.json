@@ -1,0 +1,528 @@
+{
+  "workbook_id": 13,
+  "workbook_name": "Marketing and Business Development",
+  "description": "Workbook 13 \u2014 Centralized marketing hub for business development tracking",
+  "source_files": [
+    "13RDBI_Cenralized Marketing Hub.xlsx"
+  ],
+  "documents": [
+    {
+      "sheet_name": "MDS SOP Breakdown",
+      "doc_id": "",
+      "tool_title": "",
+      "phase_name": "",
+      "activity_name": "",
+      "prev_sheet_ref": "",
+      "next_sheet_ref": "",
+      "related_tool": "",
+      "header": {},
+      "form_fields": []
+    },
+    {
+      "sheet_name": "MDS.1.1 Content Feed Tool",
+      "doc_id": "MDS.1.1",
+      "tool_title": "Technical Marketing Content Feed",
+      "phase_name": "",
+      "activity_name": "Asset Prep",
+      "prev_sheet_ref": "D10.5",
+      "next_sheet_ref": "",
+      "related_tool": "D1.1 / D1.3",
+      "header": {
+        "doc_id": "MDS.1.1",
+        "tool_title": "Technical Marketing Content Feed",
+        "related_tool": "D1.1 / D1.3",
+        "prev_sheet_ref": "D10.5",
+        "activity_name": "Asset Prep"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "MDS.1.1 Content Feed Tool"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "Provide the simplest version of what the client brought in vs. what IMHOGEN delivered."
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "SN",
+            "B": "Category",
+            "D": "Client Input (The Problem)",
+            "I": "IMHOGEN Output (The Solution)",
+            "O": "Impact / Benefit"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "1.1",
+            "B": "Materials",
+            "D": "[e.g. Bulk Paper/Plastic Waste]",
+            "I": "[e.g. Industrial Shredder Machine]",
+            "O": "[e.g. 500kg/day waste-to-value]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "1.2",
+            "B": "Energy",
+            "D": "[e.g. Unstable Power Grid]",
+            "I": "[e.g. High-Efficiency 3-Phase Drive]",
+            "O": "[e.g. 20% lower electricity bill]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "1.3",
+            "B": "Information",
+            "D": "[e.g. Manual Data Logging]",
+            "I": "[e.g. IoT Throughput Monitoring]",
+            "O": "[e.g. Real-time factory analytics]"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.0 MARKETING ANGLE: THE \"PROCESS\" STORY"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Explain the journey. Which IMHOGEN QMS stages should the client see to trust us?"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "SN",
+            "B": "Process Milestone",
+            "G": "What we did (Simple Terms)",
+            "N": "Reference Photo/Render ID",
+            "T": "Proof of Quality"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.1",
+            "B": "Concept Synthesis",
+            "G": "Designed the dual-shaft torque logic.",
+            "N": "[IMG-Rndr-01]",
+            "T": "[Morphological Matrix Link]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.2",
+            "B": "Fabrication",
+            "G": "Suame-grade heavy-duty welding.",
+            "N": "[IMG-Shop-04]",
+            "T": "[D8.5 In-Process QC Log]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "2.3",
+            "B": "Testing",
+            "G": "Validated 515kg/hr throughput.",
+            "N": "[VID-Test-01]",
+            "T": "[D9.4 Function Test Report]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.0 CALL TO ACTION (CTA) & CHANNEL MAPPING"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Selection",
+            "C": "Target Channel",
+            "G": "Specific Link / Message",
+            "O": "Marketing Objective"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "C": "Website",
+            "G": "imhogen.com/services/product",
+            "O": "Force fill 'Product Dev' Form"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "C": "Social Media",
+            "G": "LinkedIn / Instagram / FB",
+            "O": "Showcase 'Process' and 'Output'"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "C": "Conferences",
+            "G": "Technical Poster / Video",
+            "O": "Establish IMHOGEN as Ghana's R&D hub"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "4.0 APPROVAL & HUB TRANSMITTAL"
+          }
+        },
+        {
+          "row": 29,
+          "cells": {
+            "A": "I certify that this content is technically accurate and client-confidentiality has been cleared."
+          }
+        },
+        {
+          "row": 30,
+          "cells": {
+            "A": "R&D Lead Signature",
+            "M": "Date",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 31,
+          "cells": {
+            "A": "Marketing Hub Acknowledgment",
+            "M": "Date",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 32,
+          "cells": {
+            "A": "Notes"
+          }
+        },
+        {
+          "row": 33,
+          "cells": {
+            "A": "The Hook (Inputs/Outputs): Your division\u2019s goal isn\u2019t to sell \"Machines\"; it\u2019s to sell the transformation of a client's \"messy input\" into a \"valuable output.\"\n\nThe Process Trust: Use documents like D9.4 (Testing) and D8.5 (QC) as marketing \"proof.\" Showing a video of a machine being tested against its original PR-SET (Requirements) makes IMHOGEN look more professional than any competitor.\n\nForm Integration: The most critical QC point in PID 13.4 is ensuring the marketing department links directly to the D1.1 Web Forms. Every post on social media or email must lead back to the form so the QMS cycle can start again for a new project."
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": " MDS.1.2 Asset Marketing Brief",
+      "doc_id": "MDS.1.2",
+      "tool_title": "Asset Marketing Brief",
+      "phase_name": "",
+      "activity_name": "Briefing",
+      "prev_sheet_ref": "MDS.1.1",
+      "next_sheet_ref": "",
+      "related_tool": "MDS.1.1",
+      "header": {
+        "doc_id": "MDS.1.2",
+        "tool_title": "Asset Marketing Brief",
+        "related_tool": "MDS.1.1",
+        "prev_sheet_ref": "MDS.1.1",
+        "activity_name": "Briefing"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "MDS.1.2: Asset Marketing Brief"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 CAMPAIGN STRATEGY"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Campaign Theme:",
+            "E": "[e.g. Sustainable Waste-to-Value]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Key Message:",
+            "E": "[e.g. IMHOGEN transforms campus paper waste into industrial feedstock using dual-shaft technology.]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 TECHNICAL CONTENT FOR COPYWRITING"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Technical Feature",
+            "G": "Client-Facing Benefit (The \"Why\")",
+            "Q": "Source Document Ref"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Dual-Shaft Torque",
+            "G": "Shreds paper and plastics without jamming.",
+            "Q": "D1.8 Needs Assessment"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "Hardened Alloy Blades",
+            "G": "Longer lifespan; reduced maintenance costs.",
+            "Q": "T3.D1.8a Metrology Log"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "IoT Throughput Tracking",
+            "G": "Real-time data on waste processing volume.",
+            "Q": "D9.4 Testing Report"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 CALL TO ACTION (CTA) ENFORCEMENT"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Mandatory Link:",
+            "D": "https://www.imhogen.com/services/product"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Button Text:",
+            "D": "[e.g. Request a Product Consultation]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "4.0 HUB INSTRUCTIONS"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "SN",
+            "B": "Instruction"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "1.0",
+            "B": "Use 'Industrial' color palette."
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "2.0",
+            "B": "Focus on the 'Before/After' transformation."
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "3.0",
+            "B": "Tag TCC-CIMET and KNUST in the post."
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "MDS.1.3 Visual Content Manifest",
+      "doc_id": "MDS.1.3",
+      "tool_title": "Visual Content Manifest",
+      "phase_name": "",
+      "activity_name": "Content Curation",
+      "prev_sheet_ref": "D6.8 / D8.6",
+      "next_sheet_ref": "",
+      "related_tool": "MDS.1.2",
+      "header": {
+        "doc_id": "MDS.1.3",
+        "tool_title": "Visual Content Manifest",
+        "related_tool": "MDS.1.2",
+        "prev_sheet_ref": "D6.8 / D8.6",
+        "activity_name": "Content Curation"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "MDS.1.3: Visual Content Manifest"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 CURATED IMAGE ASSETS"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "SN",
+            "B": "Asset Name",
+            "H": "Type",
+            "J": "File Link / Path",
+            "O": "Description / View Description"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "1.1",
+            "B": "Shredder_Hero_Render",
+            "H": "3D Render",
+            "J": "[Insert Link]",
+            "O": "Isometric view showing industrial hopper setup."
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "1.2",
+            "B": "Fabrication_Action_Shot",
+            "H": "Photo",
+            "J": "[Insert Link]",
+            "O": "Close-up of TIG welding on the main chassis."
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "1.3",
+            "B": "Final_Particle_Output",
+            "H": "Photo",
+            "J": "[Insert Link]",
+            "O": "Comparison of input paper vs. output particles."
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.0 VIDEO & MOTION ASSETS"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "SN",
+            "B": "Asset Name",
+            "G": "Duration",
+            "I": "File Link / Path",
+            "N": "Marketing Purpose"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.1",
+            "B": "Throughput_Test_Video",
+            "G": "15.0",
+            "I": "[Insert Link]",
+            "N": "Showing plastic bottles being granulated (High energy)."
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.2",
+            "B": "Safety_EStop_Demo",
+            "G": "30.0",
+            "I": "[Insert Link]",
+            "N": "Demonstrating industrial safety compliance."
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 BRAND COMPLIANCE CHECK"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Has the IMHOGEN Watermark been applied? (Yes/No):"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Are there any visible safety violations in the photos? (Yes/No):"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "4.0 AUTHORIZATION"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Assets cleared for public distribution."
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "R&D Lead Signature",
+            "M": "Date",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    }
+  ]
+}

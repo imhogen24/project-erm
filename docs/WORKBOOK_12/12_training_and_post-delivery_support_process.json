@@ -1,0 +1,1047 @@
+{
+  "workbook_id": 12,
+  "workbook_name": "Training and Post-Delivery Support Process",
+  "description": "Workbook 12 \u2014 Operator training, 30-day hyper-care, and maintenance contracts",
+  "source_files": [
+    "12RDBI_IMHO GEN Training and Post-Delivery Support Process.xlsx"
+  ],
+  "documents": [
+    {
+      "sheet_name": "D12.i Document Control Index",
+      "source_file": "12RDBI_IMHO GEN Training and Post-Delivery Support Process.xlsx",
+      "doc_id": "D12-Index",
+      "tool_title": "Support Document Control",
+      "phase_name": "Post-Delivery Support",
+      "activity_name": "Document Index",
+      "prev_sheet_ref": "D11",
+      "next_sheet_ref": "D12.1",
+      "related_tool": "",
+      "header": {
+        "doc_id": "D12-Index",
+        "tool_title": "Support Document Control",
+        "prev_sheet_ref": "D11",
+        "phase_name": "Post-Delivery Support",
+        "next_sheet_ref": "D12.1",
+        "activity_name": "Document Index",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 POST-DELIVERY SUPPORT DOCUMENT CONTROL INDEX"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "DocID",
+            "B": "Document Title",
+            "I": "Link",
+            "J": "Description"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "D12",
+            "B": "Master Support & Maintenance Database",
+            "I": "\u27a1\ufe0f",
+            "J": "The central Hub tracking active 30-day support windows,lifetime warranties,and maintenance contracts."
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "D12.1",
+            "B": "Operator Training Syllabus & Schedule",
+            "I": "\u27a1\ufe0f",
+            "J": "The structured curriculum extracted from the User Manual to ensure all safety and operational points are taught."
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "D12.2",
+            "B": "Operator Competency Log",
+            "I": "\u27a1\ufe0f",
+            "J": "The formal sign-off sheet where client staff prove they can safely operate the machine without IMHOGEN supervision."
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "D12.3",
+            "B": "Post-Delivery Support Tracker",
+            "I": "\u27a1\ufe0f",
+            "J": "The ticketing log used during the initial 7-30 day window to capture and resolve client operational questions."
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "D12.4",
+            "B": "Final Operational Audit Report",
+            "I": "\u27a1\ufe0f",
+            "J": "The end-of-support-window evaluation proving the machine operates correctly under standard production loads."
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "D12.5",
+            "B": "Project Ledger Closure & Archival Record",
+            "I": "\u27a1\ufe0f",
+            "J": "The final administrative trigger closing the support window and locking the project permanently in the server vault."
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D12.1 Operator Training Syllabu",
+      "source_file": "12RDBI_IMHO GEN Training and Post-Delivery Support Process.xlsx",
+      "doc_id": "D12.1",
+      "tool_title": "Operator Training Syllabus",
+      "phase_name": "Post-Delivery Support",
+      "activity_name": "Training Planning",
+      "prev_sheet_ref": "D11.4",
+      "next_sheet_ref": "D12.2",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D12.1",
+        "tool_title": "Operator Training Syllabus",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D11.4",
+        "phase_name": "Post-Delivery Support",
+        "next_sheet_ref": "D12.2",
+        "activity_name": "Training Planning",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D12.1 OPERATOR TRAINING SYLLABUS & SCHEDULE"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 TRAINING METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Lead Trainer (IMHOGEN):",
+            "Q": "Scheduled Date:",
+            "U": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project / Machine Name:",
+            "Q": "Client Site Location:",
+            "U": "[Type Address]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Reference User Manual:",
+            "E": "[e.g. UM-26-001_v1.pdf]",
+            "M": "Target Audience:",
+            "Q": "[e.g. Machine Operators & Floor Managers]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 TRAINING MODULES & CURRICULUM"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "SN",
+            "B": "Module Name",
+            "F": "Key Topics to Cover (From User Manual)",
+            "N": "Estimated Duration",
+            "R": "Preparation Required"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.1",
+            "B": "Safety & Hazards",
+            "F": "E-Stops,Pinch Points,PPE Requirements,Lockout/Tagout.",
+            "N": "[e.g. 30 Mins]",
+            "R": "[Ensure machine is powered off]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.2",
+            "B": "Startup & Initialization",
+            "F": "Powering on,HMI navigation,VFD parameters,sensor checks.",
+            "N": "[e.g. 45 Mins]",
+            "R": "[None]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.3",
+            "B": "Standard Operation",
+            "F": "Loading materials,engaging clamps,running a standard cycle.",
+            "N": "[e.g. 60 Mins]",
+            "R": "[Require client to provide sample raw materials]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.4",
+            "B": "Basic Maintenance",
+            "F": "Daily cleaning, grease points, identifying abnormal noises.",
+            "N": "[e.g. 30 Mins]",
+            "R": "[Have grease gun and rags ready]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.0 SCHEDULING AUTHORIZATION"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Has the client formally agreed to this syllabus and confirmed the availability of their operators? [Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Project Manager Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D12.2 Operator Competency Log",
+      "source_file": "12RDBI_IMHO GEN Training and Post-Delivery Support Process.xlsx",
+      "doc_id": "D12.2",
+      "tool_title": "Operator Competency Log",
+      "phase_name": "Post-Delivery Support",
+      "activity_name": "Practical Testing",
+      "prev_sheet_ref": "D12.1",
+      "next_sheet_ref": "D12.3",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D12.2",
+        "tool_title": "Operator Competency Log",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D12.1",
+        "phase_name": "Post-Delivery Support",
+        "next_sheet_ref": "D12.3",
+        "activity_name": "Practical Testing",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D12.2 OPERATOR COMPETENCY LOG (Practical Evaluation)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 EVALUATION METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Evaluating Engineer:",
+            "Q": "Evaluation Date:",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Client Organization:",
+            "Q": "Machine Name:",
+            "T": "[Type Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 PRACTICAL COMPETENCY CHECKLIST (Per Operator)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Operator Name:",
+            "E": "[Type Name]",
+            "M": "Job Title:",
+            "Q": "[Type Title]"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Task Evaluated",
+            "H": "Observation by Engineer",
+            "Q": "Status (Pass / Needs Retraining)",
+            "V": "Operator Initials"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "1. Perform safe startup sequence.",
+            "H": "[e.g. Correctly engaged main breaker and cleared faults.]",
+            "Q": "[Pass]",
+            "V": "[Initials]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2. Successfully load and run one cycle.",
+            "H": "[e.g. Hesitated on clamping mechanism; corrected after reminder.]",
+            "Q": "[Pass]",
+            "V": "[Initials]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "3. Demonstrate Emergency Stop (E-Stop).",
+            "H": "[e.g. Successfully located and engaged E-Stop.]",
+            "Q": "[Pass]",
+            "V": "[Initials]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "4. Identify 3 primary grease/lube points.",
+            "H": "[e.g. Pointed out all main bearings.]",
+            "Q": "[Pass]",
+            "V": "[Initials]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.0 FORMAL TRAINING ACKNOWLEDGMENT"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "By signing below, the Operator acknowledges they have received the D10.2 User Manual, and understand the safe operating limits of this equipment, completed the practical training"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Operator Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Client Manager Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D12.3 Post-Delivery Support Tra",
+      "source_file": "12RDBI_IMHO GEN Training and Post-Delivery Support Process.xlsx",
+      "doc_id": "D12.3",
+      "tool_title": "Post-Delivery Support Tracker",
+      "phase_name": "Post-Delivery Support",
+      "activity_name": "Issue Resolution",
+      "prev_sheet_ref": "D12.2",
+      "next_sheet_ref": "D12.4",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D12.3",
+        "tool_title": "Post-Delivery Support Tracker",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D12.2",
+        "phase_name": "Post-Delivery Support",
+        "next_sheet_ref": "D12.4",
+        "activity_name": "Issue Resolution",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D12.3 POST-DELIVERY SUPPORT TRACKER (Active Window)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 SUPPORT WINDOW METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Support Window Start Date (Handover):",
+            "G": "[DD/MM/YYYY]",
+            "M": "Window End Date (e.g. +30 Days):",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Client Contact:",
+            "G": "[Name & Phone]",
+            "M": "IMHOGEN Support Lead:",
+            "S": "[Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 ISSUE RESOLUTION LOG"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Ticket #",
+            "C": "Date Reported",
+            "E": "Client Issue Description",
+            "K": "IMHOGEN Diagnosis / Root Cause",
+            "P": "Resolution Action Taken",
+            "T": "Status (Resolved / Pending / Escalated)",
+            "W": "Date Closed"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "TCK-01",
+            "C": "[DD/MM/YY]",
+            "E": "[e.g. Conveyor belt slipping under heavy load]",
+            "K": "[e.g. Belt tension naturally loosened during break-in period]",
+            "P": "[e.g. Walked operator through tensioning bolts via video call.]",
+            "T": "[Resolved]",
+            "W": "[DD/MM/YY]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "TCK-02",
+            "C": "[DD/MM/YY]",
+            "E": "[e.g. VFD throwing Error Code 4]",
+            "K": "[e.g. Incoming voltage from client grid dropped below 380V]",
+            "P": "[e.g. Advised client to check facility generator.]",
+            "T": "[Resolved]",
+            "W": "[DD/MM/YY]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "TCK-03",
+            "C": "[Type here]",
+            "E": "[Type here]",
+            "K": "[Type here]",
+            "P": "[Type here]",
+            "T": "[Type here]",
+            "W": "[Type here]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 ESCALATION CHECK"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Did any tickets require a physical field-service visit or replacement of a D7 procured part?",
+            "M": "[Yes/No - Detail here]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "4.0 TRACKER REVIEW"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Is the support window approaching its final 7 days, triggering the D12.4 Final Operational Audit?"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D12.4 Final Operational Audit R",
+      "source_file": "12RDBI_IMHO GEN Training and Post-Delivery Support Process.xlsx",
+      "doc_id": "D12.4",
+      "tool_title": "Final Operational Audit Report",
+      "phase_name": "Post-Delivery Support",
+      "activity_name": "Performance Review",
+      "prev_sheet_ref": "D12.3",
+      "next_sheet_ref": "D12.5",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D12.4",
+        "tool_title": "Final Operational Audit Report",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D12.3",
+        "phase_name": "Post-Delivery Support",
+        "next_sheet_ref": "D12.5",
+        "activity_name": "Performance Review",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D12.4 FINAL OPERATIONAL AUDIT REPORT (30-Day Checkup)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 AUDIT METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Auditing Engineer:",
+            "Q": "Audit Date:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project / Machine Name:",
+            "Q": "Audit Format:",
+            "S": "[On-Site / Virtual]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Reference Pr-Set:",
+            "E": "[Insert Ref]",
+            "M": "Client Representative:",
+            "Q": "[Name]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 PERFORMANCE VS. PR-SET VALIDATION"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "SN",
+            "B": "Original Specification (From Pr-Set)",
+            "H": "Actual Observed Performance",
+            "P": "Status (Pass / Fail)",
+            "S": "Engineer Notes"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Throughput of 500kg per hour]",
+            "H": "[e.g. Averaging 515kg per hour]",
+            "P": "[Pass]",
+            "S": "[Exceeds baseline target]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Max operating temp 200\u00b0C]",
+            "H": "[e.g. Holding steady at 198\u00b0C]",
+            "P": "[Pass]",
+            "S": "[PID controller tuned correctly]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.3",
+            "B": "[e.g. Cycle time under 45 seconds]",
+            "H": "[e.g. Cycle time is 48 seconds]",
+            "P": "[Fail]",
+            "S": "[Operator loading delay; machine is capable.]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 OPERATOR FEEDBACK & WEAR INSPECTION"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "SN",
+            "B": "Inspection Area",
+            "G": "Observation",
+            "N": "Action Required"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.1",
+            "B": "Operator Comfort / Usability",
+            "G": "[e.g. Operators report the handle is slightly too high.]",
+            "N": "[Log as process improvement for next build (D10.5)]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "3.2",
+            "B": "Visible Wear & Tear (30 Days)",
+            "G": "[e.g. Slight fraying on the secondary drive belt.]",
+            "N": "[Send replacement belt under warranty immediately.]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "3.3",
+            "B": "Maintenance Compliance",
+            "G": "[e.g. Grease fittings are dry.]",
+            "N": "[Reminded client to follow daily lube schedule in Manual.]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "4.0 AUDIT DISPOSITION"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Is the machine performing optimally under standard production loads as contracted?",
+            "M": "[Yes/No]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Auditing Engineer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D12.5 Project Ledger Closure & ",
+      "source_file": "12RDBI_IMHO GEN Training and Post-Delivery Support Process.xlsx",
+      "doc_id": "D12.5",
+      "tool_title": "Project Ledger Closure Record",
+      "phase_name": "Post-Delivery Support",
+      "activity_name": "Final Archival",
+      "prev_sheet_ref": "D12.4",
+      "next_sheet_ref": "N/A",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D12.5",
+        "tool_title": "Project Ledger Closure Record",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D12.4",
+        "phase_name": "Post-Delivery Support",
+        "next_sheet_ref": "N/A",
+        "activity_name": "Final Archival",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D12.5 PROJECT LEDGER CLOSURE & ARCHIVAL RECORD"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 CLOSURE METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Project Manager:",
+            "P": "Closure Date:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project Name:",
+            "P": "Final Audit Ref:",
+            "S": "[D12.4]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 CROSS-DEPARTMENTAL CLEARANCE CHECKLIST"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Department",
+            "E": "Required Action for Closure",
+            "P": "Verified By (Name)",
+            "U": "Status (Done / Pending)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "1.0",
+            "E": "Confirm Final Invoice has been paid in full and reconciled.",
+            "P": "[Name]",
+            "U": "[Done]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Engineering",
+            "E": "Confirm D10.4 Vault Lock is secure and D10.5 Knowledge Extracted.",
+            "P": "[Name]",
+            "U": "[Done]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "Client Relations",
+            "E": "Send formal \"Support Closure & Warranty Activation\" email to client.",
+            "P": "[Name]",
+            "U": "[Done]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "Operations",
+            "E": "Ensure all support tickets (D12.3) are marked as Resolved.",
+            "P": "[Name]",
+            "U": "[Done]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 MAINTENANCE CONTRACT OPPORTUNITY"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Did the client opt-in to a paid Preventative Maintenance Contract?",
+            "J": "[Yes/No]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "If Yes, insert CRM Contract Reference Number:",
+            "H": "[Insert Ref]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "If No, set CRM reminder to pitch maintenance package in 6 months:",
+            "J": "[Date Scheduled]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "4.0 ABSOLUTE PROJECT LOCK"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "By signing below, management confirms this project is 100% complete physically, commercially, and administratively. The project ledger is now permanently closed."
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Head of Operations Signature:",
+            "F": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Managing Director / CEO Signature:",
+            "F": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D12 Master Support Database (Th",
+      "source_file": "12RDBI_IMHO GEN Training and Post-Delivery Support Process.xlsx",
+      "doc_id": "D12",
+      "tool_title": "Master Support Database",
+      "phase_name": "Post-Delivery Support",
+      "activity_name": "Lifecycle Tracking",
+      "prev_sheet_ref": "D11",
+      "next_sheet_ref": "N/A",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D12",
+        "tool_title": "Master Support Database",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D11",
+        "phase_name": "Post-Delivery Support",
+        "next_sheet_ref": "N/A",
+        "activity_name": "Lifecycle Tracking",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 ACTIVE 30-DAY SUPPORT WINDOWS (Hyper-Care)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "G": "Client / Machine Name",
+            "K": "Handover Date",
+            "M": "Support Expiry Date",
+            "P": "Open Tickets",
+            "R": "Status",
+            "U": "Link to D12.3 Tracker"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PD-177]",
+            "G": "[e.g. SAYeTECH Dryer]",
+            "K": "[DD/MM/YY]",
+            "M": "[DD/MM/YY]",
+            "P": "[e.g. 1]",
+            "R": "[Active - Monitoring]",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "2.0",
+            "B": "[e.g. CAD-178]",
+            "G": "[e.g. Extruder Frame]",
+            "K": "[DD/MM/YY]",
+            "M": "[DD/MM/YY]",
+            "P": "[e.g. 0]",
+            "R": "[Pending Final Audit]",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "4.0"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.0 ACTIVE WARRANTIES & MAINTENANCE CONTRACTS"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "E": "Client / Machine Name",
+            "G": "Ledger Closed Date",
+            "J": "Warranty Expiry Date",
+            "M": "Maintenance Contract?",
+            "P": "Next Scheduled PM Visit",
+            "T": "Notes"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PDT-199]",
+            "E": "[e.g. Sorting Conveyor]",
+            "G": "[DD/MM/YY]",
+            "J": "[DD/MM/2027]",
+            "M": "[Yes - Tier 1]",
+            "P": "[DD/MM/YY]",
+            "T": "[Client highly engaged]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.0",
+            "B": "[e.g. PDT-150]",
+            "E": "[e.g. Mixing Tank]",
+            "G": "[DD/MM/YY]",
+            "J": "[Expired]",
+            "M": "[No]",
+            "P": "[N/A]",
+            "T": "[Call next week to pitch service]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "4.0"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.0 FULLY ARCHIVED & CLOSED PROJECTS"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "F": "Client / Machine Name",
+            "J": "Final Ledger Closure Date (D12.5)",
+            "O": "Final Profit Margin %",
+            "T": "Link to Master Project Folder"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PDT-142]",
+            "F": "[e.g. Custom Press]",
+            "J": "[DD/MM/YY]",
+            "O": "[e.g. 22%]",
+            "T": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "3.0"
+          }
+        }
+      ]
+    }
+  ]
+}

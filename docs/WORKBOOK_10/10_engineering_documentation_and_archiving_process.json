@@ -1,0 +1,1209 @@
+{
+  "workbook_id": 10,
+  "workbook_name": "Engineering Documentation and Archiving Process",
+  "description": "Workbook 10 \u2014 As-Built CAD sync, TDP assembly, and digital vault locking",
+  "source_files": [
+    "10RDBI_IMHO GEN Engineering Documentation and Archiving Process.xlsx"
+  ],
+  "documents": [
+    {
+      "sheet_name": "D10.i Document Control Index",
+      "source_file": "10RDBI_IMHO GEN Engineering Documentation and Archiving Process.xlsx",
+      "doc_id": "D10-Index",
+      "tool_title": "Archival Document Control",
+      "phase_name": "Documentation & Archiving",
+      "activity_name": "Document Index",
+      "prev_sheet_ref": "D9",
+      "next_sheet_ref": "D10.1",
+      "related_tool": "",
+      "header": {
+        "doc_id": "D10-Index",
+        "tool_title": "Archival Document Control",
+        "prev_sheet_ref": "D9",
+        "phase_name": "Documentation & Archiving",
+        "next_sheet_ref": "D10.1",
+        "activity_name": "Document Index",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 ARCHIVING PHASE DOCUMENT CONTROL INDEX"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "DocID",
+            "B": "Document Title",
+            "H": "Link",
+            "I": "Description"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "D10",
+            "B": "Master Archival Database",
+            "H": "\u27a1\ufe0f",
+            "I": "The central Hub tracking the closure status, knowledge extraction, and vault locking of all completed projects."
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "D10.1",
+            "B": "As-Built Modification Record",
+            "H": "\u27a1\ufe0f",
+            "I": "The formal log of on-the-fly shop floor changes, used to update the 3D CAD to match the physical reality."
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "D10.2",
+            "B": "Technical Authoring Tracker",
+            "H": "\u27a1\ufe0f",
+            "I": "The checklist for drafting the User Manuals and Maintenance Guides required for safe machine operation."
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "D10.3",
+            "B": "Final Technical Data Package (TDP) Manifest",
+            "H": "\u27a1\ufe0f",
+            "I": "The compiled, final package of approved drawings, manuals, and QA certificates prepared for the client."
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "D10.4",
+            "B": "Digital Archiving & Vault Lock Record",
+            "H": "\u27a1\ufe0f",
+            "I": "The strict protocol for moving files to cold storage and locking native CAD files as Read-Only."
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "D10.5",
+            "B": "R&D Lessons Learned Log",
+            "H": "\u27a1\ufe0f",
+            "I": "The post-mortem extraction of reusable engineering data, standard parts, and process failures."
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "D10.6",
+            "B": "Delivery & Handover Notice",
+            "H": "\u27a1\ufe0f",
+            "I": "The final internal notice transferring the project from the Engineering ledger back to Client Relations and Finance."
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D10.1 AS-Built Modification Rec",
+      "source_file": "10RDBI_IMHO GEN Engineering Documentation and Archiving Process.xlsx",
+      "doc_id": "D10.1",
+      "tool_title": "As-Built Modification Record",
+      "phase_name": "Documentation & Archiving",
+      "activity_name": "CAD Synchronization",
+      "prev_sheet_ref": "D9.7",
+      "next_sheet_ref": "D10.2",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D10.1",
+        "tool_title": "As-Built Modification Record",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D9.7",
+        "phase_name": "Documentation & Archiving",
+        "next_sheet_ref": "D10.2",
+        "activity_name": "CAD Synchronization",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D10.1 AS-BUILT MODIFICATION RECORD (Shop Floor to CAD Sync)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 AS-BUILT METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Executing CAD Engineer:",
+            "O": "Reference QA Release:",
+            "S": "[D9.7]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date of Review:",
+            "O": "Shop Floor Supervisor:",
+            "S": "[Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 SHOP FLOOR MODIFICATION LOG (Reviewing NCRs and Redlines)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Affected Component / Assembly",
+            "G": "Original D6.10 Specification",
+            "K": "Actual \"As-Built\" Modification Made",
+            "P": "Reason for Modification",
+            "U": "CAD Updated? (Yes/No)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Motor Mount Plate]",
+            "G": "[e.g. M8 Clearance Holes]",
+            "K": "[e.g. Drilled out to M10 Clearance]",
+            "P": "[e.g. Sourced motor had M10 bolts (Ref NCR-012)]",
+            "U": "[Yes]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Main Chassis Base]",
+            "G": "[e.g. 1500mm Length]",
+            "K": "[e.g. No changes made]",
+            "P": "[e.g. Built to exact spec]",
+            "U": "[N/A]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[Type here]",
+            "G": "[Type here]",
+            "K": "[Type here]",
+            "P": "[Type here]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 MASTER FILE SYNCHRONIZATION"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Have all modifications been explicitly updated in the Master 3D Assembly?",
+            "M": "[Yes/No]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Have the 2D Manufacturing Drawings been re-exported as \"Rev-As-Built\"?",
+            "M": "[Yes/No]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Have the Bill of Materials (BOM) quantities been updated to reflect actual usage?",
+            "M": "[Yes/No]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "4.0 SYNCHRONIZATION APPROVAL"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Lead Engineer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D10.2 Technical Authoring Track",
+      "source_file": "10RDBI_IMHO GEN Engineering Documentation and Archiving Process.xlsx",
+      "doc_id": "D10.2",
+      "tool_title": "Technical Authoring Tracker",
+      "phase_name": "Documentation & Archiving",
+      "activity_name": "Manual Drafting",
+      "prev_sheet_ref": "D10.1",
+      "next_sheet_ref": "D10.3",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D10.2",
+        "tool_title": "Technical Authoring Tracker",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D10.1",
+        "phase_name": "Documentation & Archiving",
+        "next_sheet_ref": "D10.3",
+        "activity_name": "Manual Drafting",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D10.2 TECHNICAL AUTHORING TRACKER"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 AUTHORING METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Assigned Technical Writer:",
+            "O": "Project / Machine Name:",
+            "S": "[Type Name]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Drafting Start Date:",
+            "O": "Target Completion Date:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 USER MANUAL DRAFTING CHECKLIST"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Required Manual Section",
+            "J": "Source Expert / Engineer",
+            "N": "Status (Pending / Drafted / Approved)",
+            "T": "Reviewer Notes"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "General System Overview & Specs",
+            "J": "[e.g. Daniel Asanti]",
+            "N": "[Drafted]",
+            "T": "[Needs updated 3D renders]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "Safety Protocols & Ergonomic Limits",
+            "J": "[e.g. HSE Officer]",
+            "N": "[Approved]",
+            "T": "[Added pinch-point warnings]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Standard Operating Procedures (Startup/Shutdown)",
+            "J": "[e.g. Lead Engineer]",
+            "N": "[Pending]",
+            "T": "[Awaiting final VFD parameters]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "Troubleshooting Guide (Common Faults)",
+            "J": "[e.g. QA Officer]",
+            "N": "[Drafted]",
+            "T": "[Type here]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 MAINTENANCE GUIDE DRAFTING CHECKLIST"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "SN",
+            "B": "Required Manual Section",
+            "K": "Source Expert / Engineer",
+            "P": "Status (Pending / Drafted / Approved)",
+            "V": "Reviewer Notes"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.1",
+            "B": "Preventative Maintenance Schedule (Daily/Weekly/Monthly)",
+            "K": "[e.g. Lead Engineer]",
+            "P": "[Drafted]",
+            "V": "[Type here]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "3.2",
+            "B": "Lubrication Points & Consumable Specs",
+            "K": "[e.g. Shop Floor Supervisor]",
+            "P": "[Pending]",
+            "V": "[Type here]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "3.3",
+            "B": "Recommended Spare Parts List (With internal Part Numbers)",
+            "K": "[e.g. Procurement Officer]",
+            "P": "[Approved]",
+            "V": "[Type here]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "4.0 AUTHORING APPROVAL"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Are both manuals fully drafted, technically accurate, and formatted to IMHO GEN standards?[Yes/No]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Head of Engineering Signature:",
+            "F": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D10.3 Final Technical Data Pack",
+      "source_file": "10RDBI_IMHO GEN Engineering Documentation and Archiving Process.xlsx",
+      "doc_id": "D10.3",
+      "tool_title": "Final TDP Manifest",
+      "phase_name": "Documentation & Archiving",
+      "activity_name": "Package Assembly",
+      "prev_sheet_ref": "D10.2",
+      "next_sheet_ref": "D10.4",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D10.3",
+        "tool_title": "Final TDP Manifest",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D10.2",
+        "phase_name": "Documentation & Archiving",
+        "next_sheet_ref": "D10.4",
+        "activity_name": "Package Assembly",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D10.3 FINAL TECHNICAL DATA PACKAGE (TDP) MANIFEST"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 PACKAGE METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Compiled By (Project Manager):",
+            "O": "Compilation Date:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Client Organization:",
+            "O": "Package Delivery Method:",
+            "S": "[e.g. Secure USB / Cloud Link]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 APPROVED CLIENT DELIVERABLES (The Payload)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Document Description",
+            "J": "Internal File Reference / Version",
+            "P": "Included in Package? (Yes/No)",
+            "T": "QA Verification"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Original Project Brief & Approved Pr-Set",
+            "J": "[e.g. D1.8_Final.pdf]",
+            "P": "[Yes]",
+            "T": "[Verified]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "B": "As-Built General Arrangement Drawings (PDF Only)",
+            "J": "[e.g. DWG-200-AsBuilt.pdf]",
+            "P": "[Yes]",
+            "T": "[Verified]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "B": "Final QA Release Certificate",
+            "J": "[e.g. D9.7_Signed.pdf]",
+            "P": "[Yes]",
+            "T": "[Verified]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "B": "Official User Manual",
+            "J": "[e.g. UM-26-001_v1.pdf]",
+            "P": "[Yes]",
+            "T": "[Verified]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "B": "Official Maintenance Guide & Spare Parts List",
+            "J": "[e.g. MG-26-001_v1.pdf]",
+            "P": "[Yes]",
+            "T": "[Verified]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.0 PROPRIETARY DATA PROTECTION CHECK (Critical)"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Are all native 3D CAD files (.iam, .ipt) EXCLUDED from this package? (Unless contractually agreed)[Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Are all internal financial documents (D1.14 Costing, D7 POs) EXCLUDED from this package? [Yes/No]]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "4.0 PACKAGE AUTHORIZATION"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Is the Final Client TDP compiled, sanitized, and ready for handover?[Yes/No]"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Project Manager Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D10.4 Digital Archiving & Vault",
+      "source_file": "10RDBI_IMHO GEN Engineering Documentation and Archiving Process.xlsx",
+      "doc_id": "D10.4",
+      "tool_title": "Digital Archiving & Vault Lock",
+      "phase_name": "Documentation & Archiving",
+      "activity_name": "Data Security",
+      "prev_sheet_ref": "D10.3",
+      "next_sheet_ref": "D10.5",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D10.4",
+        "tool_title": "Digital Archiving & Vault Lock",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D10.3",
+        "phase_name": "Documentation & Archiving",
+        "next_sheet_ref": "D10.5",
+        "activity_name": "Data Security",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D10.4 DIGITAL ARCHIVING & VAULT LOCK RECORD"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 ARCHIVAL METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Executing IT / Server Admin:",
+            "O": "Reference Package:",
+            "S": "[D10.3 Final TDP]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date Executed:",
+            "O": "Project / Machine Name:",
+            "S": "[Type Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 SERVER & PDM LOCK CHECKLIST"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Task / Action Item",
+            "P": "Assignee",
+            "U": "Status (Pass / Fail / N/A)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Have all native 3D files (.iam,.ipt) been moved to the \"Archived Projects\" server drive?",
+            "P": "Admin",
+            "U": "[Pass / Fail]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Has the PDM (Product Data Management) state for this project been set to \"Released/Locked\"?",
+            "P": "Admin",
+            "U": "[Pass / Fail]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "Have editing permissions been revoked for all drafting engineers (Read-Only access only)?",
+            "P": "Admin",
+            "U": "[Pass / Fail]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "Has a copy of the Approved Client TDP (D10.3) been saved in the permanent Client Vault?",
+            "P": "Admin",
+            "U": "[Pass / Fail]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 OBSOLESCENCE CLEARANCE"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Have all local copies of the project files been deleted from individual engineers' workstations? [Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "4.0 LOCK AUTHORIZATION"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Is the digital vault for this project formally closed and secured?[Yes/No]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Head of R&D / Engineering Signature:",
+            "G": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D10.5 R&D Lessons Learned Log",
+      "source_file": "10RDBI_IMHO GEN Engineering Documentation and Archiving Process.xlsx",
+      "doc_id": "D10.5",
+      "tool_title": "R&D Lessons Learned Log",
+      "phase_name": "Documentation & Archiving",
+      "activity_name": "Knowledge Extraction",
+      "prev_sheet_ref": "D10.4",
+      "next_sheet_ref": "D10.6",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D10.5",
+        "tool_title": "R&D Lessons Learned Log",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D10.4",
+        "phase_name": "Documentation & Archiving",
+        "next_sheet_ref": "D10.6",
+        "activity_name": "Knowledge Extraction",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D10.5 R&D LESSONS LEARNED LOG (Post-Mortem Extraction)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 POST-MORTEM METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Lead Engineer:",
+            "P": "Review Date:",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project Name:",
+            "P": "Team Members Present:",
+            "T": "[Names]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 REUSABLE ASSET EXTRACTION (Building the Library)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Component / Sub-Assembly Description",
+            "H": "Why is it highly reusable?",
+            "Q": "New Internal Library Part #",
+            "U": "Extracted & Saved to Library? (Yes/No)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Heavy Duty Conveyor Roller]",
+            "H": "[e.g. Standardized bearing fit; can be used on future agricultural lines]",
+            "Q": "[e.g. IMHO-LIB-RLL-001]",
+            "U": "[Yes]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. VFD Control Panel Layout]",
+            "H": "[e.g. Clean IP65 layout; easily scalable]",
+            "Q": "[e.g. IMHO-LIB-PNL-004]",
+            "U": "[Yes]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "Q": "[Type here]",
+            "U": "[Yes/No]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 PROCESS FAILURES & BOTTLENECKS (Reviewing NCRs)"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "SN",
+            "B": "What went wrong during Design/Fabrication?",
+            "H": "Root Cause",
+            "Q": "Proposed Process Improvement for Next Project"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.1",
+            "B": "[e.g. Motor didn't fit mounting bracket]",
+            "H": "[e.g. Sourced motor brand was changed in D7 without updating CAD]",
+            "Q": "[e.g. Mandate D7 to D5 feedback loop before PO is issued]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.2",
+            "B": "[Type here]",
+            "H": "[Type here]",
+            "Q": "[Type here]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "4.0 KNOWLEDGE TRANSFER AUTHORIZATION"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Have the extracted assets been successfully added to the IMHOGEN Standard Parts Library?[Yes/No]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Head of R&D Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D10.6 Delivery & Handover Notic",
+      "source_file": "10RDBI_IMHO GEN Engineering Documentation and Archiving Process.xlsx",
+      "doc_id": "D10.6",
+      "tool_title": "Delivery & Handover Notice",
+      "phase_name": "Documentation & Archiving",
+      "activity_name": "Project Closure",
+      "prev_sheet_ref": "D10.5",
+      "next_sheet_ref": "Phase 11",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D10.6",
+        "tool_title": "Delivery & Handover Notice",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D10.5",
+        "phase_name": "Documentation & Archiving",
+        "next_sheet_ref": "Phase 11",
+        "activity_name": "Project Closure",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D10.6 DELIVERY & HANDOVER NOTICE (Triggering Operations)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 HANDOVER METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Project Manager:",
+            "O": "Handover Date:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project / Client Name:",
+            "O": "Receiving Department:",
+            "S": "[Client Relations / Finance]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 PROJECT CLOSURE VERIFICATION"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Task / Action Item",
+            "M": "Status",
+            "Q": "Reference"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Has the physical machine been dispatched/delivered (D9.8)?",
+            "M": "[Yes/No]",
+            "Q": "[Insert Waybill #]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Has the Final Client TDP (D10.3) been transmitted to the client?",
+            "M": "[Yes/No]",
+            "Q": "[Insert Email Link]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "Are all native CAD files locked and secured in the Vault (D10.4)?",
+            "M": "[Yes/No]",
+            "Q": "[Verified]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 HANDOVER DIRECTIVE TO FINANCE & OPERATIONS"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Final Contract Value (GHS):",
+            "E": "[Insert Amount]",
+            "M": "Outstanding Balance (GHS):",
+            "Q": "[Insert Amount]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Warranty Period Start Date:",
+            "E": "[DD/MM/YYYY]",
+            "M": "Warranty Expiration Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Action Required:",
+            "E": "[e.g. Issue Final Milestone Invoice and schedule Client Training Session]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "4.0 FINAL PROJECT LEDGER CLOSURE"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Is the Engineering phase of this project officially CLOSED?[Yes/No]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Head of Operations Signature:",
+            "F": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D10 Master Archival Database (T",
+      "source_file": "10RDBI_IMHO GEN Engineering Documentation and Archiving Process.xlsx",
+      "doc_id": "D10",
+      "tool_title": "Master Archival Database",
+      "phase_name": "Documentation & Archiving",
+      "activity_name": "Closure Tracking",
+      "prev_sheet_ref": "D9",
+      "next_sheet_ref": "N/A",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D10",
+        "tool_title": "Master Archival Database",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D9",
+        "phase_name": "Documentation & Archiving",
+        "next_sheet_ref": "N/A",
+        "activity_name": "Closure Tracking",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 ACTIVE CLOSURES (Pending Documentation or Vault Lock)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "E": "Client / Project Name",
+            "I": "Lead PM",
+            "K": "Manuals Drafted? (D10.2)",
+            "O": "Vault Locked? (D10.4)",
+            "R": "Status",
+            "U": "Link to Project Workbook"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PD-177]",
+            "E": "[e.g. SAYeTECH Dryer]",
+            "I": "[Name]",
+            "K": "[Yes]",
+            "O": "[No - Pending IT]",
+            "R": "[Awaiting Server Lock]",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "2.0",
+            "B": "[e.g. CAD-178]",
+            "E": "[e.g. Extruder Frame]",
+            "I": "[Name]",
+            "K": "[No - Drafting]",
+            "O": "[No]",
+            "R": "[Awaiting Manuals]",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "4.0"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.0 KNOWLEDGE EXTRACTION TRACKER (R&D Value Capture)"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "F": "Client / Project Name",
+            "J": "Post-Mortem Date",
+            "M": "Reusable Parts Extracted",
+            "P": "Library IDs Generated",
+            "S": "Status",
+            "V": "Link to D10.5 Log"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PDT-201]",
+            "F": "[e.g. Sorting Conveyor]",
+            "J": "[DD/MM/YY]",
+            "M": "[e.g. 3]",
+            "P": "[IMHO-LIB-001 to 003]",
+            "S": "[Extraction Complete]",
+            "V": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "4.0"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.0 FULLY CLOSED & ARCHIVED PROJECTS (Ledger Locked)"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "F": "Client / Project Name",
+            "J": "Closure Date (D10.6)",
+            "N": "Final Handover To",
+            "Q": "Warranty Expiry Date",
+            "U": "Link to Final TDP Manifest"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PDT-199]",
+            "F": "[e.g. Mixer Retrofit]",
+            "J": "[DD/MM/YY]",
+            "N": "[Client Relations]",
+            "Q": "[DD/MM/2027]",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "3.0"
+          }
+        }
+      ]
+    }
+  ]
+}

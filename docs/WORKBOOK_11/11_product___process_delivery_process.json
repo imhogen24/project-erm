@@ -1,0 +1,986 @@
+{
+  "workbook_id": 11,
+  "workbook_name": "Product / Process Delivery Process",
+  "description": "Workbook 11 \u2014 Logistics, site acceptance, and formal handover",
+  "source_files": [
+    "11RDBI_IMHO GEN Product and Process Delivery Process.xlsx"
+  ],
+  "documents": [
+    {
+      "sheet_name": "D11.i Document Control Index",
+      "source_file": "11RDBI_IMHO GEN Product and Process Delivery Process.xlsx",
+      "doc_id": "D11-Index",
+      "tool_title": "Delivery Document Control",
+      "phase_name": "Product Delivery",
+      "activity_name": "Document Index",
+      "prev_sheet_ref": "D10",
+      "next_sheet_ref": "D11.1",
+      "related_tool": "",
+      "header": {
+        "doc_id": "D11-Index",
+        "tool_title": "Delivery Document Control",
+        "prev_sheet_ref": "D10",
+        "phase_name": "Product Delivery",
+        "next_sheet_ref": "D11.1",
+        "activity_name": "Document Index",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 DELIVERY PHASE DOCUMENT CONTROL INDEX"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "DocID",
+            "B": "Document Title",
+            "G": "Link",
+            "H": "Description"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "D11",
+            "B": "Master Delivery Database",
+            "G": "\u27a1\ufe0f",
+            "H": "The central Hub tracking all machines in transit, site acceptance statuses,and final billing triggers."
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "D11.1",
+            "B": "Dispatch Schedule & Transport Waybill",
+            "G": "\u27a1\ufe0f",
+            "H": "The logistical packing slip and custody transfer document given to the transport driver."
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "D11.2",
+            "B": "Post-Transit Inspection Log",
+            "G": "\u27a1\ufe0f",
+            "H": "The on-site verification to ensure the machine suffered no structural or cosmetic damage during transport."
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "D11.3",
+            "B": "Site Acceptance & Training Record",
+            "G": "\u27a1\ufe0f",
+            "H": "The checklist for the physical walkthrough and the log proving client operators received safety and operational training."
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "D11.4",
+            "B": "Final Handover Certificate",
+            "G": "\u27a1\ufe0f",
+            "H": "The ultimate legal document where the client accepts the physical machine and liability transfers from IMHOGEN to them."
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "D11.5",
+            "B": "Final Billing Authorization",
+            "G": "\u27a1\ufe0f",
+            "H": "The internal notice sent to Finance confirming successful handover, triggering the final milestone invoice."
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D11.1 Dispatch Schedule & Trans",
+      "source_file": "11RDBI_IMHO GEN Product and Process Delivery Process.xlsx",
+      "doc_id": "D11.1",
+      "tool_title": "Transport Waybill",
+      "phase_name": "Product Delivery",
+      "activity_name": "Dispatch & Custody",
+      "prev_sheet_ref": "D10.6",
+      "next_sheet_ref": "D11.2",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D11.1",
+        "tool_title": "Transport Waybill",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D10.6",
+        "phase_name": "Product Delivery",
+        "next_sheet_ref": "D11.2",
+        "activity_name": "Dispatch & Custody",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D11.1 DISPATCH SCHEDULE & TRANSPORT WAYBILL"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 DISPATCH METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Dispatch Officer:",
+            "O": "Dispatch Date & Time:",
+            "S": "[DD/MM/YYYY 00:00]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project Name / Client:",
+            "O": "Target Delivery Date:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Delivery Address:",
+            "E": "[Type Client Site Address]",
+            "M": "Client Site Contact:",
+            "Q": "[Name & Phone]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 TRANSPORT DETAILS"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Transport Company:",
+            "E": "[e.g. IMHOGEN Internal / Third-Party Logistics]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Driver Name:",
+            "E": "[Type Name]",
+            "M": "Driver Phone:",
+            "Q": "[Type Number]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "Vehicle Registration:",
+            "E": "[e.g. AS-1234-24]",
+            "M": "Vehicle Type:",
+            "Q": "[e.g. 3-Ton Flatbed]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 CARGO MANIFEST (The Payload)"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "SN",
+            "B": "Item Description",
+            "H": "Quantity",
+            "J": "Packaging / Protection Applied, Verified Loaded?",
+            "R": "(Yes/No)"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.1",
+            "B": "[e.g. Main Machine Assembly]",
+            "H": "[1]",
+            "J": "[Palletized, Ratchet Strapped,Weather-wrapped]",
+            "R": "[Yes]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.2",
+            "B": "[e.g. Spare Parts Box (Ref D10.3)]",
+            "H": "[1]",
+            "J": "[Sealed Crate]",
+            "R": "[Yes]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "3.3",
+            "B": "[e.g. Physical Document Packet (Manuals)]",
+            "H": "[1]",
+            "J": "[Weatherproof Pouch zip-tied to frame]",
+            "R": "[Yes]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "4.0 TRANSFER OF CUSTODY"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "By signing below, the Driver acknowledges receipt of the above cargo in good visual condition and assumes responsibility for safe transport to the destination."
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Driver Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "IMHOGEN Dispatcher:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D11.2 Post-Transit Inspection L",
+      "source_file": "11RDBI_IMHO GEN Product and Process Delivery Process.xlsx",
+      "doc_id": "D11.2",
+      "tool_title": "Post-Transit Inspection Log",
+      "phase_name": "Product Delivery",
+      "activity_name": "On-Site QA",
+      "prev_sheet_ref": "D11.1",
+      "next_sheet_ref": "D11.3",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D11.2",
+        "tool_title": "Post-Transit Inspection Log",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D11.1",
+        "phase_name": "Product Delivery",
+        "next_sheet_ref": "D11.3",
+        "activity_name": "On-Site QA",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D11.2 POST-TRANSIT INSPECTION LOG"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 ARRIVAL METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Inspecting Field Engineer:",
+            "O": "Arrival Date & Time:",
+            "S": "[DD/MM/YYYY 00:00]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project / Client Name:",
+            "O": "Waybill Reference:",
+            "S": "[D11.1]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 TRANSIT DAMAGE ASSESSMENT"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Inspection Point",
+            "G": "Status (Intact / Damaged)",
+            "K": "Description of Damage (If any)",
+            "P": "Action Required"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Structural Frame & Welds",
+            "G": "[Intact / Damaged]",
+            "K": "[e.g. None]",
+            "P": "[N/A]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "Paint & Cosmetic Coating",
+            "G": "[Intact / Damaged]",
+            "K": "[e.g. Scratch on left panel from strap]",
+            "P": "[Touch-up paint on site]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Sensitive Electronics / Sensors",
+            "G": "[Intact / Damaged]",
+            "K": "[e.g. None]",
+            "P": "[N/A]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "Cables",
+            "G": "and Routing",
+            "K": "[Intact / Damaged]",
+            "P": "[e.g. None]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 INSTALLATION READINESS"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Did the equipment arrive with all components listed on the Waybill (D11.1)?",
+            "K": "[Yes/No]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Is the unit physically cleared to be moved to the final installation position?",
+            "K": "[Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Field Engineer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D11.3 Site Acceptance & Trainin",
+      "source_file": "11RDBI_IMHO GEN Product and Process Delivery Process.xlsx",
+      "doc_id": "D11.3",
+      "tool_title": "Site Acceptance & Training Record",
+      "phase_name": "Product Delivery",
+      "activity_name": "Client Walkthrough",
+      "prev_sheet_ref": "D11.2",
+      "next_sheet_ref": "D11.4",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D11.3",
+        "tool_title": "Site Acceptance & Training Record",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D11.2",
+        "phase_name": "Product Delivery",
+        "next_sheet_ref": "D11.4",
+        "activity_name": "Client Walkthrough",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D11.3 SITE ACCEPTANCE & TRAINING RECORD"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 ACCEPTANCE METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Lead Field Engineer:",
+            "O": "Date of Walkthrough:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project / Client Name:",
+            "O": "Client Representative:",
+            "S": "[Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 FUNCTIONAL WALKTHROUGH CHECKLIST"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "System / Feature Demonstrated",
+            "I": "Client Acknowledged? (Yes/No)",
+            "O": "Engineer Notes"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Safe Power-On & Initialization Sequence",
+            "I": "[Yes/No]",
+            "O": "[Demonstrated using main breaker]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "Loading / Unloading Procedures",
+            "I": "[Yes/No]",
+            "O": "[Client successfully loaded sample workpiece]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Emergency Stop (E-Stop) & Safety Interlocks",
+            "I": "[Yes/No]",
+            "O": "[Tested E-stop while running; passed]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "Routine Maintenance & Cleaning Points",
+            "I": "[Yes/No]",
+            "O": "[Showed grease nipples and filter locations]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "3.0 OPERATOR TRAINING LOG (Liability Transfer)"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "By signing below, the client's operators acknowledge they have been trained by IMHOGEN personnel on the safe and correct operation of this equipment according to the provided User Manual."
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Operator Name",
+            "E": "Job Title",
+            "I": "Training Received (Safe Ops & E-Stops)",
+            "O": "Operator Signature",
+            "T": "Date"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "E": "[e.g. Machine Operator]",
+            "I": "[Completed]",
+            "O": "[Sign here]",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "[Type Name]",
+            "E": "[Type Title]",
+            "I": "[Completed]",
+            "O": "[Sign here]",
+            "T": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "4.0 WALKTHROUGH CLOSURE"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Are the client and their operators satisfied with the demonstration and training?",
+            "K": "[Yes/No]"
+          }
+        },
+        {
+          "row": 28,
+          "cells": {
+            "A": "Client Rep Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D11.4 Final Handover Certificat",
+      "source_file": "11RDBI_IMHO GEN Product and Process Delivery Process.xlsx",
+      "doc_id": "D11.4",
+      "tool_title": "Final Handover Certificate",
+      "phase_name": "Product Delivery",
+      "activity_name": "Legal Sign-Off",
+      "prev_sheet_ref": "D11.3",
+      "next_sheet_ref": "D11.5",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D11.4",
+        "tool_title": "Final Handover Certificate",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D11.3",
+        "phase_name": "Product Delivery",
+        "next_sheet_ref": "D11.5",
+        "activity_name": "Legal Sign-Off",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D11.4 FINAL HANDOVER CERTIFICATE (Transfer of Liability)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 HANDOVER METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Project / Machine Name:",
+            "O": "Delivery Date:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Client Organization:",
+            "O": "IMHOGEN Lead PM:",
+            "S": "[Name]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Authorized Client Signatory:",
+            "O": "Installation Site:",
+            "S": "[Location]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 FORMAL DECLARATION OF ACCEPTANCE"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "By signing this document"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "1. The physical equipment has been delivered, inspected, and found free of transit damage (Ref D11.2)."
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2. The equipment has been installed, commissioned, and operates according to the agreed Design Specifications (Pr-Set)."
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "3. Client operators have received adequate safety and operational training (Ref D11.3)."
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "4. Ownership, operational liability, and risk of loss are hereby officially transferred from IMHOGEN LTD to the Client."
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "5. The standard warranty period commences as of the date of this signature."
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.0 SIGNATURES"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Client Authorized Signature:",
+            "F": "[Digital or Physical Sign]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "IMHOGEN Lead Field Engineer:",
+            "F": "[Digital or Physical Sign]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "4.0 DOCUMENT ARCHIVAL"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Has the fully executed D11.4 form been scanned and uploaded to the permanent project vault?"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D11.5 Final Billing Authorizati",
+      "source_file": "11RDBI_IMHO GEN Product and Process Delivery Process.xlsx",
+      "doc_id": "D11.5",
+      "tool_title": "Final Billing Authorization",
+      "phase_name": "Product Delivery",
+      "activity_name": "Commercial Close",
+      "prev_sheet_ref": "D11.4",
+      "next_sheet_ref": "Phase 12",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D11.5",
+        "tool_title": "Final Billing Authorization",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D11.4",
+        "phase_name": "Product Delivery",
+        "next_sheet_ref": "Phase 12",
+        "activity_name": "Commercial Close",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D11.5 FINAL BILLING AUTHORIZATION (Triggering Finance)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 BILLING METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Project Manager:",
+            "O": "Notice Date:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project Name:",
+            "O": "Client Sign-off Ref:",
+            "S": "[D11.4 Executed]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 FINANCIAL SUMMARY"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Total Approved Contract Value (GHS):",
+            "H": "[Insert Amount]"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Total Payments Received to Date (GHS):",
+            "H": "[Insert Amount]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Outstanding Balance to be Invoiced (GHS):",
+            "H": "[Insert Amount]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "3.0 ACCOUNTING DIRECTIVE"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "Has the Final Handover Certificate (D11.4) been verified?",
+            "J": "[Yes/No]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Is Finance authorized to immediately issue the final milestone invoice?",
+            "J": "[Yes/No]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "Payment Terms on Final Invoice:",
+            "J": "[e.g. Net 15 Days]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "4.0 COMMERCIAL CLOSURE"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Is Phase 11 officially closed, transitioning the project to Phase 12 (Post-Project Support)?[Yes/No]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Head of Operations Signature:",
+            "E": "[Type here]",
+            "O": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D11 Master Delivery Database (T",
+      "source_file": "11RDBI_IMHO GEN Product and Process Delivery Process.xlsx",
+      "doc_id": "D11",
+      "tool_title": "Master Delivery Database",
+      "phase_name": "Product Delivery",
+      "activity_name": "Delivery Tracking",
+      "prev_sheet_ref": "D10",
+      "next_sheet_ref": "N/A",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D11",
+        "tool_title": "Master Delivery Database",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D10",
+        "phase_name": "Product Delivery",
+        "next_sheet_ref": "N/A",
+        "activity_name": "Delivery Tracking",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 ACTIVE TRANSIT & SITE ACCEPTANCE (Pending Handover)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "F": "Client / Project Name",
+            "J": "Lead Field Engineer",
+            "M": "Target Delivery Date",
+            "P": "Current Status",
+            "S": "Transit Damage?",
+            "V": "Link to Waybill (D11.1)"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PD-177]",
+            "F": "[e.g. SAYeTECH Dryer]",
+            "J": "[Name]",
+            "M": "[DD/MM/YY]",
+            "P": "[In Transit]",
+            "S": "[Pending]",
+            "V": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "2.0",
+            "B": "[e.g. CAD-178]",
+            "F": "[e.g. Extruder Frame]",
+            "J": "[Name]",
+            "M": "[DD/MM/YY]",
+            "P": "[On-Site Walkthrough]",
+            "S": "[None]",
+            "V": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "4.0"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.0 FINANCIALLY CLEARED DELIVERIES (Awaiting Payment)"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "E": "Client / Project Name",
+            "H": "Handover Date (D11.4)",
+            "K": "Final Invoice Value (GHS)",
+            "O": "Invoice Sent Date",
+            "R": "Payment Status",
+            "U": "Link to Billing Auth (D11.5)"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PDT-199]",
+            "E": "[e.g. Sorting Conveyor]",
+            "H": "[DD/MM/YY]",
+            "K": "[e.g. 15.000.00]",
+            "O": "[DD/MM/YY]",
+            "R": "[Pending (Net 15)]",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0"
+          }
+        }
+      ]
+    }
+  ]
+}

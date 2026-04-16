@@ -1,0 +1,1498 @@
+{
+  "workbook_id": 9,
+  "workbook_name": "Quality Control and Testing Process",
+  "description": "Workbook 9 \u2014 Dimensional audits, dynamic load testing, and final QA certification",
+  "source_files": [
+    "09RDBI_IMHO GEN QUALITY CONTROL AND TESTING PROCESS.xlsx"
+  ],
+  "documents": [
+    {
+      "sheet_name": "D9.i Document Control Index",
+      "source_file": "09RDBI_IMHO GEN QUALITY CONTROL AND TESTING PROCESS.xlsx",
+      "doc_id": "D9-Index",
+      "tool_title": "QA Document Control",
+      "phase_name": "QA & Testing",
+      "activity_name": "Document Index",
+      "prev_sheet_ref": "D8",
+      "next_sheet_ref": "D9.1",
+      "related_tool": "",
+      "header": {
+        "doc_id": "D9-Index",
+        "tool_title": "QA Document Control",
+        "prev_sheet_ref": "D8",
+        "phase_name": "QA & Testing",
+        "next_sheet_ref": "D9.1",
+        "activity_name": "Document Index",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 QA & TESTING DOCUMENT CONTROL INDEX"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "DocID",
+            "B": "Document Title",
+            "G": "Link",
+            "H": "Description"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "D9",
+            "B": "Master QA Database",
+            "G": "\u27a1\ufe0f",
+            "H": "The central Hub tracking all ongoing testing, defect rates, and delivery clearances across all projects."
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "D9.1",
+            "B": "QA Testing Checklist (Preparation)",
+            "G": "\u27a1\ufe0f",
+            "H": "The pre-inspection checklist verifying that the correct Pr-Set, 2D drawings, and testing tools are ready."
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "D9.2",
+            "B": "Visual Inspection Log",
+            "G": "\u27a1\ufe0f",
+            "H": "The surface-level QA check for sharp edges, weld spatter, burrs, and coating uniformity."
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "D9.3",
+            "B": "Dimensional Audit Report",
+            "G": "\u27a1\ufe0f",
+            "H": "The precision measurement log comparing the physical build's datums and hole centers against the GD&T tolerances."
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "D9.4",
+            "B": "Load & Function Test Report",
+            "G": "\u27a1\ufe0f",
+            "H": "The dynamic testing record for structural deflection under load and the smooth actuation of moving parts."
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "D9.5",
+            "B": "Non-Conformance Report (NCR)",
+            "G": "\u27a1\ufe0f",
+            "H": "The formal defect log triggering a \"DO NOT USE\" red tag if any dimension or test fails."
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "D9.6",
+            "B": "Rework Action Order",
+            "G": "\u27a1\ufe0f",
+            "H": "The directive sent back to the shop floor detailing exactly how to repair or scrap the non-conforming part."
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "D9.7",
+            "B": "Final QA Release Certificate",
+            "G": "\u27a1\ufe0f",
+            "H": "The compiled validation package proving all tests passed, officially clearing the machine."
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "D9.8",
+            "B": "Delivery Authorization Notice",
+            "G": "\u27a1\ufe0f",
+            "H": "The internal status update signaling that the physical machine is ready for Phase 10 Client Handover."
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D9.1 QA Testing Checklist(Prepa",
+      "source_file": "09RDBI_IMHO GEN QUALITY CONTROL AND TESTING PROCESS.xlsx",
+      "doc_id": "D9.1",
+      "tool_title": "QA Testing Checklist (Prep)",
+      "phase_name": "QA & Testing",
+      "activity_name": "Inspection Prep",
+      "prev_sheet_ref": "D8.6",
+      "next_sheet_ref": "D9.2",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D9.1",
+        "tool_title": "QA Testing Checklist (Prep)",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D8.6",
+        "phase_name": "QA & Testing",
+        "next_sheet_ref": "D9.2",
+        "activity_name": "Inspection Prep",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D9.1 QA TESTING CHECKLIST (Pre-Inspection Readiness)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 PREPARATION METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Assigned QA Officer:",
+            "Q": "Fabrication Notice Ref:",
+            "U": "[D8.6 Completed]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date of Prep:",
+            "Q": "Project Name:",
+            "U": "[Type Name]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Physical Location of Unit:",
+            "E": "[e.g. QA Staging Area]",
+            "Q": "Lead Engineer:",
+            "U": "[Name]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 DOCUMENT & EQUIPMENT VERIFICATION"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "SN",
+            "B": "Required Item",
+            "I": "Reference Location",
+            "M": "Verification Status (Pass/Fail)",
+            "R": "QA Notes"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.1",
+            "B": "Original Project Brief & Pr-Set",
+            "I": "[Digital Vault / PDM]",
+            "M": "[Pass / Fail]",
+            "R": "[Verified client specs]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.2",
+            "B": "Locked 2D Manufacturing Drawings",
+            "I": "[Document Control System]",
+            "M": "[Pass / Fail]",
+            "R": "[Printed Rev 2.0]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.3",
+            "B": "Dimensional Testing Tools (Calipers, Micrometers)",
+            "I": "[QA Tool Crib]",
+            "M": "[Pass / Fail]",
+            "R": "[Calibrated and zeroed]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.4",
+            "B": "Load Testing Equipment (Load Cells,Weights)",
+            "I": "[Testing Bay]",
+            "M": "[Pass / Fail]",
+            "R": "[Capacity checked]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "2.5",
+            "B": "Red \"DO NOT USE\" NCR Tags",
+            "I": "[QA Supply Desk]",
+            "M": "[Pass / Fail]",
+            "R": "[On hand]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.0 AUTHORIZATION TO COMMENCE TESTING"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Are all referenced documents the latest, locked revisions?",
+            "I": "[Yes/No]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "QA Officer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D9.2 Visual Inspection Log",
+      "source_file": "09RDBI_IMHO GEN QUALITY CONTROL AND TESTING PROCESS.xlsx",
+      "doc_id": "D9.2",
+      "tool_title": "Visual Inspection Log",
+      "phase_name": "QA & Testing",
+      "activity_name": "Surface Audit",
+      "prev_sheet_ref": "D9.1",
+      "next_sheet_ref": "D9.3",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D9.2",
+        "tool_title": "Visual Inspection Log",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D9.1",
+        "phase_name": "QA & Testing",
+        "next_sheet_ref": "D9.3",
+        "activity_name": "Surface Audit",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D9.2 VISUAL & SURFACE INSPECTION LOG"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 INSPECTION METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "QA Officer:",
+            "Q": "Time Started:",
+            "T": "[00:00]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Inspection Date:",
+            "Q": "Inspection Method:",
+            "T": "[Visual / Tactile]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 SURFACE QUALITY CHECKLIST"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Inspection Parameter",
+            "H": "Pass/Fail",
+            "J": "Defect Location (If Failed)",
+            "O": "Severity",
+            "Q": "Corrective Action Triggered"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Sharp Edges & Burrs (Handling Safety)",
+            "H": "[Pass / Fail]",
+            "J": "[e.g. Bottom edge of chassis]",
+            "O": "[High]",
+            "Q": "[Trigger NCR - Grind smooth]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "Weld Spatter & Slag Removal",
+            "H": "[Pass / Fail]",
+            "J": "[e.g. None found]",
+            "O": "[N/A]",
+            "Q": "[N/A]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Coating & Paint Uniformity",
+            "H": "[Pass / Fail]",
+            "J": "[e.g. Paint run on left panel]",
+            "O": "[Low]",
+            "Q": "[Trigger NCR - Sand and touch up]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "Component Cleanliness (No grease/debris)",
+            "H": "[Pass / Fail]",
+            "J": "[e.g. Clean]",
+            "O": "[N/A]",
+            "Q": "[N/A]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.5",
+            "B": "Safety Labels & Warnings Applied",
+            "H": "[Pass / Fail]",
+            "J": "[e.g. Pinch point sticker missing]",
+            "O": "[Med]",
+            "Q": "[Apply sticker from inventory]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.0 VISUAL DISPOSITION"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Did the unit pass the visual inspection without any \"High Severity\" defects? [Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "If Failed, has a D9.5 NCR been issued to the shop floor?[Yes/No / N/A]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "QA Officer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D9.3 Dimenstional Audit Report",
+      "source_file": "09RDBI_IMHO GEN QUALITY CONTROL AND TESTING PROCESS.xlsx",
+      "doc_id": "D9.3",
+      "tool_title": "Dimensional Audit Report",
+      "phase_name": "QA & Testing",
+      "activity_name": "GD&T Verification",
+      "prev_sheet_ref": "D9.2",
+      "next_sheet_ref": "D9.4",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D9.3",
+        "tool_title": "Dimensional Audit Report",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D9.2",
+        "phase_name": "QA & Testing",
+        "next_sheet_ref": "D9.4",
+        "activity_name": "GD&T Verification",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D9.3 DIMENSIONAL AUDIT REPORT (GD&T Verification)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 AUDIT METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "QA Officer:",
+            "O": "Reference Drawing #:",
+            "S": "[e.g. DWG-200-ASSY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "QA Officer:",
+            "O": "Measurement Tools Used:",
+            "S": "[e.g. Digital Caliper, Height Gauge]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 CRITICAL DIMENSION LOG"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Feature / Dimension Description",
+            "I": "Nominal Spec (mm)",
+            "L": "Tolerance Zone (mm)",
+            "O": "Actual Measured (mm)",
+            "R": "Variance",
+            "U": "Status (PASS / FAIL)"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Overall Chassis Length]",
+            "I": "[e.g. 1500.0]",
+            "L": "[e.g. \u00b1 2.0]",
+            "O": "[e.g. 1501.5]",
+            "R": "[+ 1.5]",
+            "U": "[PASS]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. Motor Mount Hole Center Distance]",
+            "I": "[e.g. 120.0]",
+            "L": "[e.g. \u00b1 0.5]",
+            "O": "[e.g. 122.0]",
+            "R": "[+ 2.0]",
+            "U": "[FAIL - Triggers NCR]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[e.g. Main Shaft Diameter]",
+            "I": "[e.g. 25.0]",
+            "L": "[e.g. +0.0 / -0.05]",
+            "O": "[e.g. 24.97]",
+            "R": "[- 0.03]",
+            "U": "[PASS]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.4",
+            "B": "[Type here]",
+            "I": "[Type here]",
+            "L": "[Type here]",
+            "O": "[Type here]",
+            "R": "[Type here]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "2.5",
+            "B": "[Type here]",
+            "I": "[Type here]",
+            "L": "[Type here]",
+            "O": "[Type here]",
+            "R": "[Type here]",
+            "U": "[Type here]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.0 AUDIT DISPOSITION"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "Did all critical datums and dimensions fall within acceptable tolerances?[Yes/No]"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "If FAIL, record the D9.5 NCR Number generated:",
+            "H": "[Insert NCR #]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "QA Officer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D9.4 Load & Function Test Repor",
+      "source_file": "09RDBI_IMHO GEN QUALITY CONTROL AND TESTING PROCESS.xlsx",
+      "doc_id": "D9.4",
+      "tool_title": "Load & Function Test Report",
+      "phase_name": "QA & Testing",
+      "activity_name": "Dynamic Testing",
+      "prev_sheet_ref": "D9.3",
+      "next_sheet_ref": "D9.5",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D9.4",
+        "tool_title": "Load & Function Test Report",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D9.3",
+        "phase_name": "QA & Testing",
+        "next_sheet_ref": "D9.5",
+        "activity_name": "Dynamic Testing",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D9.4 LOAD & FUNCTION TEST REPORT (Dynamic Validation)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 TESTING METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Lead QA / Test Engineer:",
+            "O": "Reference Pr-Set:",
+            "S": "[Insert Ref]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Date of Test:",
+            "O": "Test Environment:",
+            "S": "[e.g. Test Bay 1"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 FUNCTIONAL ACTUATION TEST (Moving Parts)"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Mechanism Tested",
+            "G": "Expected Operation",
+            "M": "Actual Observation",
+            "Q": "Status (PASS / FAIL)",
+            "U": "Notes"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "[e.g. Heating Chamber Door]",
+            "G": "[Smooth opening; Latch engages securely]",
+            "M": "[e.g. Hinge stiffness detected]",
+            "Q": "[FAIL]",
+            "U": "[Requires lubrication and adjustment]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "[e.g. VFD Motor Start-up]",
+            "G": "[Ramps up to 1440 RPM without vibration]",
+            "M": "[e.g. Smooth ramp-up]",
+            "Q": "[PASS]",
+            "U": "[Verified with tachometer]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "[e.g. Emergency Stop Button]",
+            "G": "[Immediately cuts power to main drive]",
+            "M": "[e.g. Instant cut-off]",
+            "Q": "[PASS]",
+            "U": "[Tested 3 times]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 LOAD & DEFLECTION TEST"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "SN",
+            "B": "Component Under Load",
+            "G": "Applied Test Load (kg/kN)",
+            "L": "Max Allowable Deflection (mm)",
+            "Q": "Actual Measured Deflection (mm)",
+            "V": "Status (PASS / FAIL)"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "3.1",
+            "B": "[e.g. Main Base Frame]",
+            "G": "[e.g. 500 kg static load]",
+            "L": "[e.g. \u2264 0.5 mm]",
+            "Q": "[e.g. 0.2 mm]",
+            "V": "[PASS]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.2",
+            "B": "[Type here]",
+            "G": "[Type here]",
+            "L": "[Type here]",
+            "Q": "[Type here]",
+            "V": "[Type here]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "4.0 TEST DISPOSITION"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Did the unit pass all functional and load parameters?[Yes/No]"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "If FAIL, has a D9.5 NCR been issued and a \"DO NOT USE\" tag applied? [Yes/No / N/A]"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Test Engineer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D9.6 Rework Action Order",
+      "source_file": "09RDBI_IMHO GEN QUALITY CONTROL AND TESTING PROCESS.xlsx",
+      "doc_id": "D9.6",
+      "tool_title": "Rework Action Order",
+      "phase_name": "QA & Testing",
+      "activity_name": "Corrective Action",
+      "prev_sheet_ref": "D9.5",
+      "next_sheet_ref": "D9.2",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D9.6",
+        "tool_title": "Rework Action Order",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D9.5",
+        "phase_name": "QA & Testing",
+        "next_sheet_ref": "D9.2",
+        "activity_name": "Corrective Action",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D9.6 REWORK ACTION ORDER (Shop Floor Directive)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 REWORK METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Assigned Supervisor:",
+            "E": "[Name]",
+            "M": "Reference NCR Number:",
+            "Q": "[e.g. IMHO-NCR-26-012]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Issued By (Lead Eng):",
+            "E": "[Name]",
+            "M": "Date Issued:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 REWORK INSTRUCTIONS"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Specific Corrective Action Required:",
+            "F": "[e.g. Grind off existing top hinge plate. Re-align using alignment jig #4. Tack weld, verify 0-degree parallelism, then lay final seam weld. Repaint affected area.]"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Required Tools/Materials:",
+            "F": "[e.g. Angle grinder, MIG Welder, Safety Yellow Spray]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Allocated Rework Time:",
+            "F": "[e.g. 2.5 Hours]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "3.0 REWORK EXECUTION (Completed by Shop Floor)"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "Date Rework Completed:",
+            "E": "[DD/MM/YYYY]",
+            "M": "Executing Technician:",
+            "Q": "[Name]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Supervisor Sign-off:",
+            "E": "[Type here]",
+            "M": "Red Tag Removed?",
+            "Q": "[No - QA must remove]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "4.0 RE-INSPECTION TRIGGER"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Is the unit ready to return to Phase 9 QA Testing?[Yes/No]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "(Note: QA Officer must execute a new D9.2/D9.3/D9.4 check on the reworked area)"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D9.5 Non-conformance Report",
+      "source_file": "09RDBI_IMHO GEN QUALITY CONTROL AND TESTING PROCESS.xlsx",
+      "doc_id": "D9.5",
+      "tool_title": "Non-Conformance Report",
+      "phase_name": "QA & Testing",
+      "activity_name": "Defect Logging",
+      "prev_sheet_ref": "D9.4",
+      "next_sheet_ref": "D9.6",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D9.5",
+        "tool_title": "Non-Conformance Report",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D9.4",
+        "phase_name": "QA & Testing",
+        "next_sheet_ref": "D9.6",
+        "activity_name": "Defect Logging",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D9.5 NON-CONFORMANCE REPORT (NCR)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 NCR METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "NCR Number:",
+            "E": "[e.g. IMHO-NCR-26-012]",
+            "M": "Date Raised:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Raised By (QA Officer):",
+            "E": "[Name]",
+            "M": "Project / Client Name:",
+            "Q": "[Type Name]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "Phase of Discovery:",
+            "E": "[e.g. Phase 9 Dynamic Testing]",
+            "M": "Failed Test Ref:",
+            "Q": "[e.g. D9.4 - Item 2.1]"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "2.0 DEFECT DESCRIPTION"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Non-Conforming Item/Part:",
+            "E": "[e.g. Heating Chamber Door Hinge]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "Description of Defect:",
+            "E": "[e.g. Hinge binds at 45-degree angle. Fails smooth actuation test. Door does not close flush.]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "Severity Level:",
+            "E": "[CRITICAL / MAJOR / MINOR]",
+            "M": "Red \"DO NOT USE\" Tag Applied?",
+            "R": "[Yes]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 PRELIMINARY ROOT CAUSE ANALYSIS (Completed by Lead Engineer)"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Why did this failure occur?",
+            "E": "[e.g. Hinge plates were welded 2mm out of parallel alignment during Phase 8.]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "4.0 ROUTING & DISPOSITION DECISION"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Decision by Lead Engineer:",
+            "E": "[REWORK / REPAIR / SCRAP & REBUILD / USE AS-IS (Requires Client Waiver)]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Has this been routed to the Shop Floor via a D9.6 Rework Order?[Yes/No]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "Lead Engineer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D9.7 Final QA Release Certifica",
+      "source_file": "09RDBI_IMHO GEN QUALITY CONTROL AND TESTING PROCESS.xlsx",
+      "doc_id": "D9.7",
+      "tool_title": "Final QA Release Certificate",
+      "phase_name": "QA & Testing",
+      "activity_name": "Validation Sign-off",
+      "prev_sheet_ref": "D9.4",
+      "next_sheet_ref": "D9.8",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D9.7",
+        "tool_title": "Final QA Release Certificate",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D9.4",
+        "phase_name": "QA & Testing",
+        "next_sheet_ref": "D9.8",
+        "activity_name": "Validation Sign-off",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D9.7 FINAL QA RELEASE CERTIFICATE (Master Validation)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 CERTIFICATE METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Project / Machine Name:",
+            "Q": "Reference Pr-Set:",
+            "T": "[Insert Ref]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Serial / Build Number:",
+            "E": "[e.g. IMHO-26-001]",
+            "M": "Date of Release:",
+            "P": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 COMPREHENSIVE TEST COMPLIANCE VERIFICATION"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "SN",
+            "B": "Required QA Document",
+            "H": "Document ID",
+            "J": "Verification Status",
+            "N": "Date Passed",
+            "R": "QA Officer Initials"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.1",
+            "B": "Visual & Surface Inspection Log",
+            "H": "[D9.2]",
+            "J": "[PASS]",
+            "N": "[DD/MM/YYYY]",
+            "R": "[Initials]"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "2.2",
+            "B": "Dimensional Audit Report (GD&T)",
+            "H": "[D9.3]",
+            "J": "[PASS]",
+            "N": "[DD/MM/YYYY]",
+            "R": "[Initials]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "2.3",
+            "B": "Load & Function Test Report",
+            "H": "[D9.4]",
+            "J": "[PASS]",
+            "N": "[DD/MM/YYYY]",
+            "R": "[Initials]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0 NCR CLEARANCE CHECK"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Were any Non-Conformance Reports (D9.5) raised during testing?[Yes/No]"
+          }
+        },
+        {
+          "row": 21,
+          "cells": {
+            "A": "If Yes, have all NCRs been successfully reworked (D9.6) and re-tested?[Yes/No / N/A]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "List Cleared NCR Numbers:",
+            "E": "[e.g. IMHO-NCR-26-012]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "4.0 FINAL QUALITY AUTHORIZATION"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "By signing below, the Quality Department confirms this unit meets all engineering specifications, and is cleared to leave the facility, is safe for operation"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "Lead QA Officer Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 27,
+          "cells": {
+            "A": "Head of Engineering Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D9.8 Delivery Authorization Not",
+      "source_file": "09RDBI_IMHO GEN QUALITY CONTROL AND TESTING PROCESS.xlsx",
+      "doc_id": "D9.8",
+      "tool_title": "Delivery Authorization Notice",
+      "phase_name": "QA & Testing",
+      "activity_name": "Logistics Trigger",
+      "prev_sheet_ref": "D9.7",
+      "next_sheet_ref": "Phase 10",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D9.8",
+        "tool_title": "Delivery Authorization Notice",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D9.7",
+        "phase_name": "QA & Testing",
+        "next_sheet_ref": "Phase 10",
+        "activity_name": "Logistics Trigger",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 7,
+          "cells": {
+            "A": "PROJECT REQUEST ID: [Enter ID]"
+          }
+        },
+        {
+          "row": 8,
+          "cells": {
+            "A": "D9.8 DELIVERY AUTHORIZATION NOTICE (Logistics Trigger)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "1.0 DISPATCH METADATA"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "Issuing QA Officer:",
+            "Q": "Notice Date:",
+            "S": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "Project Name:",
+            "Q": "Receiving PM:",
+            "S": "[Name]"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "2.0 CLEARANCE VERIFICATION"
+          }
+        },
+        {
+          "row": 14,
+          "cells": {
+            "A": "Is the D9.7 Final QA Release Certificate physically attached to the machine?[Yes/No]"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "Is the machine securely palletized/crated for transport?[Yes/No]"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "3.0 LOGISTICS DIRECTIVE"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "Target Delivery / Handover Date:",
+            "F": "[DD/MM/YYYY]"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "Delivery Location / Client Site:",
+            "F": "[Type Address]"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "Special Transport Requirements:",
+            "F": "[e.g. Requires forklift at destination; Keep dry]"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "4.0 PHASE CLOSURE"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "Is Phase 9 (Testing) officially closed, and is the project moving to Phase 10 (Client Handover)?[Yes/No]"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "Project Manager Signature:",
+            "E": "[Type here]",
+            "M": "Date:",
+            "Q": "[DD/MM/YYYY]"
+          }
+        }
+      ]
+    },
+    {
+      "sheet_name": "D9 Master QA Database (The Hub)",
+      "source_file": "09RDBI_IMHO GEN QUALITY CONTROL AND TESTING PROCESS.xlsx",
+      "doc_id": "D9",
+      "tool_title": "Master QA Database",
+      "phase_name": "QA & Testing",
+      "activity_name": "Defect Tracking",
+      "prev_sheet_ref": "D8",
+      "next_sheet_ref": "N/A",
+      "related_tool": "Doc Control",
+      "header": {
+        "doc_id": "D9",
+        "tool_title": "Master QA Database",
+        "related_tool": "Doc Control",
+        "prev_sheet_ref": "D8",
+        "phase_name": "QA & Testing",
+        "next_sheet_ref": "N/A",
+        "activity_name": "Defect Tracking",
+        "sheet_version": "v1.0"
+      },
+      "form_fields": [
+        {
+          "row": 8,
+          "cells": {
+            "A": "1.0 ACTIVE TESTING PIPELINE (Currently in QA Bay)"
+          }
+        },
+        {
+          "row": 9,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "E": "Machine / Build Name",
+            "I": "Assigned QA Officer",
+            "L": "Current Test Phase",
+            "O": "Identified Defects",
+            "R": "Testing Status",
+            "U": "Link to Project Workbook"
+          }
+        },
+        {
+          "row": 10,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PD-177]",
+            "E": "[e.g. SAYeTECH Dryer]",
+            "I": "[Name]",
+            "L": "[e.g. D9.4 Load Testing]",
+            "O": "[e.g. 0]",
+            "R": "[On Track]",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 11,
+          "cells": {
+            "A": "2.0",
+            "B": "[e.g. CAD-178]",
+            "E": "[e.g. Extruder Frame]",
+            "I": "[Name]",
+            "L": "[e.g. D9.3 Dimensional]",
+            "O": "[e.g. 2 - NCR Issued]",
+            "R": "[Halted for Rework]",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 12,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 13,
+          "cells": {
+            "A": "4.0"
+          }
+        },
+        {
+          "row": 15,
+          "cells": {
+            "A": "2.0 NON-CONFORMANCE (NCR) TRACKER (Margin Leakage)"
+          }
+        },
+        {
+          "row": 16,
+          "cells": {
+            "A": "SN",
+            "B": "NCR Number",
+            "F": "Project ID",
+            "I": "Defective Component",
+            "M": "Root Cause Category",
+            "Q": "Rework Time",
+            "S": "Status (Open/Closed)",
+            "V": "Link to D9.5 NCR"
+          }
+        },
+        {
+          "row": 17,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. NCR-26-012]",
+            "F": "[e.g. CAD-178]",
+            "I": "[e.g. Hinge Alignment]",
+            "M": "[e.g. Fabrication Error]",
+            "Q": "[e.g. 2.5 Hrs]",
+            "S": "[Open - Shop Floor]",
+            "V": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 18,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 19,
+          "cells": {
+            "A": "3.0"
+          }
+        },
+        {
+          "row": 20,
+          "cells": {
+            "A": "4.0"
+          }
+        },
+        {
+          "row": 22,
+          "cells": {
+            "A": "3.0 CLEARED & RELEASED BUILDS (Ready for Delivery)"
+          }
+        },
+        {
+          "row": 23,
+          "cells": {
+            "A": "SN",
+            "B": "Project ID",
+            "E": "Machine / Build Name",
+            "J": "QA Release Date (D9.7)",
+            "N": "Total NCRs Logged",
+            "Q": "Logistics Triggered (D9.8)?",
+            "U": "Link to QA Certificate"
+          }
+        },
+        {
+          "row": 24,
+          "cells": {
+            "A": "1.0",
+            "B": "[e.g. PDT-2010]",
+            "E": "[e.g. Sorting Conveyor]",
+            "J": "[DD/MM/YY]",
+            "N": "[e.g. 0]",
+            "Q": "[Yes - Awaiting Truck]",
+            "U": "[Insert Hyperlink]"
+          }
+        },
+        {
+          "row": 25,
+          "cells": {
+            "A": "2.0"
+          }
+        },
+        {
+          "row": 26,
+          "cells": {
+            "A": "3.0"
+          }
+        }
+      ]
+    }
+  ]
+}

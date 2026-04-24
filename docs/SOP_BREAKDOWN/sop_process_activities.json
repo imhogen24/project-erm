@@ -1,0 +1,4259 @@
+{
+  "_meta": {
+    "description": "Flat process activity registry for the IMHOGEN ERM. Each entry is one atomic step in the QMS workflow. Use pid to cross-reference tool_instances; use documents_used/generated for dependency graph construction.",
+    "total_activities": 166,
+    "workbooks_covered": 13,
+    "service_tracks": [
+      "tier1",
+      "tier3",
+      "both"
+    ],
+    "operator_categories": [
+      "human_system",
+      "information_system",
+      "management_system",
+      "technical_system"
+    ],
+    "canonical_roles": [
+      "admin_support",
+      "cad_engineer",
+      "client_relations",
+      "engineering_team",
+      "finance_officer",
+      "head_of_operations",
+      "hr_manager",
+      "it_admin",
+      "lead_engineer",
+      "legal_advisor",
+      "logistics_officer",
+      "marketing_hub",
+      "onboarding_manager",
+      "procurement_officer",
+      "project_manager",
+      "qa_officer",
+      "rd_coordinator",
+      "workshop_supervisor"
+    ]
+  },
+  "process_activities": [
+    {
+      "pid": "1.1.1",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Inquiry Receipt & Logging",
+      "activity_description": "Receive automatic notification of a new client inquiry via website form or email.",
+      "activity_owner": "onboarding_manager",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Email / Web Browser"
+      ],
+      "information_systems": "Project Request Portal",
+      "documents_used": [
+        "EXT:client_inquiry"
+      ],
+      "documents_generated": [
+        "D1.2"
+      ],
+      "management_policy": "Form Submission Protocol",
+      "quality_control_point": "Verify the notification contains readable text and contact info.",
+      "risk_considerations": "Email filtering to spam; missed notifications."
+    },
+    {
+      "pid": "1.1.2",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Inquiry Receipt & Logging",
+      "activity_description": "Read the inquiry to perform a preliminary spam/relevance filter.",
+      "activity_owner": "onboarding_manager",
+      "supporting_roles": [],
+      "operator_category": "human_system",
+      "tools": [
+        "Computer Display"
+      ],
+      "information_systems": "Email Client",
+      "documents_used": [
+        "D1.2"
+      ],
+      "documents_generated": [],
+      "management_policy": "Project Request Handling Policy",
+      "quality_control_point": "Ensure the request broadly aligns with IMHOGEN's engineering services.",
+      "risk_considerations": "Wasting time on spam or out-of-scope solicitations."
+    },
+    {
+      "pid": "1.1.3",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Inquiry Receipt & Logging",
+      "activity_description": "Create a new project entry in the tracker and copy/paste all client details into the respective fields.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "onboarding_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Keyboard/Mouse"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D1.2"
+      ],
+      "documents_generated": [
+        "D1.3"
+      ],
+      "management_policy": "Data Entry Protocol",
+      "quality_control_point": "Double-check that phone numbers and email addresses are copied without typos.",
+      "risk_considerations": "Typos in contact info leading to lost leads."
+    },
+    {
+      "pid": "1.1.4",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Inquiry Receipt & Logging",
+      "activity_description": "Send standard acknowledgment email to the client stating the inquiry was received and outlining the next step.",
+      "activity_owner": "onboarding_manager",
+      "supporting_roles": [
+        "admin_support"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Email Templates"
+      ],
+      "information_systems": "Email Client / CRM",
+      "documents_used": [
+        "D1.3"
+      ],
+      "documents_generated": [
+        "D1.4"
+      ],
+      "management_policy": "Client Communication Policy",
+      "quality_control_point": "Verify the client's name is spelled correctly in the template.",
+      "risk_considerations": "Client feels ignored if acknowledgment is delayed."
+    },
+    {
+      "pid": "1.2.1",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Initial Needs Assessment",
+      "activity_description": "Contact the client to propose 2-3 available time slots for a technical discovery meeting.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "onboarding_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Scheduling Tool"
+      ],
+      "information_systems": "Email Client / CRM",
+      "documents_used": [
+        "D1.3"
+      ],
+      "documents_generated": [
+        "D1.5"
+      ],
+      "management_policy": "Meeting Scheduling Policy",
+      "quality_control_point": "Ensure proposed times fall within standard operating hours.",
+      "risk_considerations": "Scheduling conflicts causing delays."
+    },
+    {
+      "pid": "1.2.2",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Initial Needs Assessment",
+      "activity_description": "Generate a calendar invite with a video conferencing link and a standard meeting agenda, and send it to the client.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Calendar App",
+        "Video Conferencing"
+      ],
+      "information_systems": "Meeting Repository",
+      "documents_used": [
+        "D1.5"
+      ],
+      "documents_generated": [
+        "D1.6"
+      ],
+      "management_policy": "Meeting Scheduling Policy",
+      "quality_control_point": "Verify the video link works and the time zone is correct.",
+      "risk_considerations": "Technical difficulties joining the meeting."
+    },
+    {
+      "pid": "1.2.3",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Initial Needs Assessment",
+      "activity_description": "Conduct the discovery meeting to extract exact technical needs, operational constraints, and expected outcomes.",
+      "activity_owner": "onboarding_manager",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Video Conferencing",
+        "Note-taking app"
+      ],
+      "information_systems": "Communication Channels",
+      "documents_used": [
+        "D1.6"
+      ],
+      "documents_generated": [
+        "D1.7"
+      ],
+      "management_policy": "Meeting Facilitation Process",
+      "quality_control_point": "Ensure the client explicitly states their budget constraints and timelines.",
+      "risk_considerations": "Failing to ask critical constraint questions."
+    },
+    {
+      "pid": "1.2.4",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Initial Needs Assessment",
+      "activity_description": "Clean up raw meeting notes and upload them into the central documentation repository.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "onboarding_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Word Processor"
+      ],
+      "information_systems": "Documentation Repository",
+      "documents_used": [
+        "D1.7"
+      ],
+      "documents_generated": [
+        "D1.8"
+      ],
+      "management_policy": "Documentation Standards",
+      "quality_control_point": "Ensure all technical jargon and constraints are accurately transcribed.",
+      "risk_considerations": "Loss of critical technical details post-meeting."
+    },
+    {
+      "pid": "1.3.1",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Project Feasibility Assessment",
+      "activity_description": "Share the Needs Assessment Notes with the Engineering and R&D team for internal review.",
+      "activity_owner": "onboarding_manager",
+      "supporting_roles": [
+        "engineering_risk_officer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Internal Chat/Email"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D1.8"
+      ],
+      "documents_generated": [
+        "D1.9"
+      ],
+      "management_policy": "Internal Communication Protocol",
+      "quality_control_point": "Confirm receipt of the document by the Engineering team.",
+      "risk_considerations": "Bottlenecks if the engineering team misses the notification."
+    },
+    {
+      "pid": "1.3.2",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Project Feasibility Assessment",
+      "activity_description": "Evaluate if the department has the required CAD software, tooling, and skills to execute the client's request.",
+      "activity_owner": "rd_coordinator",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Capability Checklist"
+      ],
+      "information_systems": "Engineering Knowledge Repository",
+      "documents_used": [
+        "D1.8"
+      ],
+      "documents_generated": [
+        "D1.10"
+      ],
+      "management_policy": "Strategic Performance Protocols",
+      "quality_control_point": "Cross-check required software (e.g., Inventor) against current licenses.",
+      "risk_considerations": "Committing to a project without the necessary software/skills."
+    },
+    {
+      "pid": "1.3.3",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Project Feasibility Assessment",
+      "activity_description": "Evaluate the request for regulatory, safety, and operational risks.",
+      "activity_owner": "engineering_risk_&_safety_officer",
+      "supporting_roles": [
+        "rd_coordinator"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Risk Matrix"
+      ],
+      "information_systems": "Project Data Analytic Platform",
+      "documents_used": [
+        "D1.8"
+      ],
+      "documents_generated": [
+        "D1.11"
+      ],
+      "management_policy": "Risk & Safety Policy",
+      "quality_control_point": "Ensure all physical safety standards related to the request are flagged.",
+      "risk_considerations": "Accepting a project with severe liability risks."
+    },
+    {
+      "pid": "1.3.4",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Project Feasibility Assessment",
+      "activity_description": "Compile the Capability and Risk assessments into a final Go/No-Go Feasibility Report.",
+      "activity_owner": "engineering_risk_officer",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Word Processor"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D1.10"
+      ],
+      "documents_generated": [
+        "D1.12"
+      ],
+      "management_policy": "Review and Approval Workflow",
+      "quality_control_point": "Final managerial review of the Go/No-Go recommendation.",
+      "risk_considerations": "Incorrect Go/No-Go decision based on flawed data."
+    },
+    {
+      "pid": "1.4.1",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Scope & Budget Generation",
+      "activity_description": "If \"Go\", write out the exact technical deliverables (CAD models, BOMs, reports) the department will provide.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "engineering_team"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Word Processor"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D1.12"
+      ],
+      "documents_generated": [
+        "D1.13"
+      ],
+      "management_policy": "Scope Definition Policy",
+      "quality_control_point": "Ensure deliverables are strictly defined to prevent scope creep.",
+      "risk_considerations": "Vague deliverables leading to client disputes later."
+    },
+    {
+      "pid": "1.4.2",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Scope & Budget Generation",
+      "activity_description": "Estimate the required engineering man-hours, software usage time, and any specialized resource costs.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "finance_officer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Cost Analysis Spreadsheet"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D1.13"
+      ],
+      "documents_generated": [
+        "D1.14"
+      ],
+      "management_policy": "Financial Control Policy",
+      "quality_control_point": "Verify hourly rates match the current department standards.",
+      "risk_considerations": "Underpricing the engineering effort."
+    },
+    {
+      "pid": "1.4.3",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Scope & Budget Generation",
+      "activity_description": "Combine the Scope of Work and Cost Estimation into the formal Project Brief & Draft Budget document.",
+      "activity_owner": "head_of_operations",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Publishing/Formatting Software"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D1.13"
+      ],
+      "documents_generated": [
+        "D1.15"
+      ],
+      "management_policy": "Documentation Standards",
+      "quality_control_point": "Check formatting, spelling, and mathematical accuracy of the budget.",
+      "risk_considerations": "Presenting an unprofessional or mathematically incorrect brief."
+    },
+    {
+      "pid": "1.5.1",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Internal Onboarding Handoff",
+      "activity_description": "Conduct a brief internal meeting to formally hand over the Project Brief to the contract administration team.",
+      "activity_owner": "onboarding_manager",
+      "supporting_roles": [
+        "head_of_operations"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Satiable Meeting Environment"
+      ],
+      "information_systems": "Meeting Repository",
+      "documents_used": [
+        "D1.15"
+      ],
+      "documents_generated": [
+        "D1.16"
+      ],
+      "management_policy": "Internal Handoff Protocol",
+      "quality_control_point": "Both parties must verbally agree that the scope is clear enough for contracting.",
+      "risk_considerations": "Legal drafting begins with misunderstood technical parameters."
+    },
+    {
+      "pid": "1.5.2",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Internal Onboarding Handoff",
+      "activity_description": "Change the project status in the central database from \"Onboarding\" to \"Contracting Phase\".",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "onboarding_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Keyboard/Mouse"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D1.16"
+      ],
+      "documents_generated": [],
+      "management_policy": "Project Portfolio Governance System",
+      "quality_control_point": "Verify the status change is reflected across all dashboards.",
+      "risk_considerations": "Tracking confusion if the system still shows \"Onboarding\"."
+    },
+    {
+      "pid": "1.5.3",
+      "workbook_id": 1,
+      "workbook_name": "Project Onboarding and Definition Process",
+      "service_track": "both",
+      "phase_group": "Internal Onboarding Handoff",
+      "activity_description": "Archive all onboarding raw documents (emails, initial notes) into the project's permanent digital folder.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "File Explorer / Cloud Storage"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [],
+      "documents_generated": [],
+      "management_policy": "Documentation Repository Policy",
+      "quality_control_point": "Ensure all files are correctly named and tagged before archiving.",
+      "risk_considerations": "Cluttered or lost historical files."
+    },
+    {
+      "pid": "2.1.1",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Contract Drafting",
+      "activity_description": "Receive the formal Project Brief & Draft Budget from the Onboarding handoff and review for clarity.",
+      "activity_owner": "head_of_operations",
+      "supporting_roles": [
+        "head_of_operations"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Computer Display"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D1.15"
+      ],
+      "documents_generated": [],
+      "management_policy": "Contract Drafting Policy",
+      "quality_control_point": "Ensure all technical deliverables and budget figures are explicitly stated.",
+      "risk_considerations": "Ambiguous inputs leading to poorly drafted contracts."
+    },
+    {
+      "pid": "2.1.2",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Contract Drafting",
+      "activity_description": "Access the central legal repository and download the appropriate standard contract templates (SLA, NDA, SOW).",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "head_of_operations"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "File Explorer"
+      ],
+      "information_systems": "Contract Management Database",
+      "documents_used": [],
+      "documents_generated": [
+        "D2.1"
+      ],
+      "management_policy": "Document Version Control Policy",
+      "quality_control_point": "Verify the templates are the most currently approved versions by legal.",
+      "risk_considerations": "Using outdated legal templates with voided clauses."
+    },
+    {
+      "pid": "2.1.3",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Contract Drafting",
+      "activity_description": "Populate the selected templates with client details, scope of work, budget, and specific constraints.",
+      "activity_owner": "head_of_operations",
+      "supporting_roles": [
+        "admin_support"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Word Processor"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D4.5"
+      ],
+      "documents_generated": [
+        "D2.2"
+      ],
+      "management_policy": "Contract Drafting Policy",
+      "quality_control_point": "Double-check client legal name, addresses, and monetary figures.",
+      "risk_considerations": "Typos in critical financial or legal identifying information."
+    },
+    {
+      "pid": "2.2.1",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Internal Review & Approval",
+      "activity_description": "Route the Initial Draft Contract to the Project Manager to verify that the technical scope matches the department's capability.",
+      "activity_owner": "head_of_operations",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Internal Routing/Approval Tool"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D2.2"
+      ],
+      "documents_generated": [
+        "D2.3"
+      ],
+      "management_policy": "Internal Review Protocol",
+      "quality_control_point": "PM must sign off that the timeline and technical deliverables are realistic.",
+      "risk_considerations": "Legal commitment to impossible engineering timelines."
+    },
+    {
+      "pid": "2.2.2",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Internal Review & Approval",
+      "activity_description": "Route the PM Reviewed Draft to the Finance Team to verify payment milestones, taxes, and total contract value.",
+      "activity_owner": "head_of_operations",
+      "supporting_roles": [
+        "finance_officer"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Internal Routing/Approval Tool"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D2.3"
+      ],
+      "documents_generated": [
+        "D2.4"
+      ],
+      "management_policy": "Financial Control Policy",
+      "quality_control_point": "Finance must verify the payment schedule aligns with cash flow needs.",
+      "risk_considerations": "Unfavorable payment terms that restrict project funding."
+    },
+    {
+      "pid": "2.2.3",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Internal Review & Approval",
+      "activity_description": "Submit the draft to the Legal Advisor (if applicable) for a final compliance and liability check.",
+      "activity_owner": "head_of_operations",
+      "supporting_roles": [
+        "legal_advisor"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Word Processor (Track Changes)"
+      ],
+      "information_systems": "Contract Management Database",
+      "documents_used": [
+        "D2.4"
+      ],
+      "documents_generated": [
+        "D2.6"
+      ],
+      "management_policy": "Corporate Governance Policy",
+      "quality_control_point": "Check for excessive liability, indemnification, or IP forfeiture clauses.",
+      "risk_considerations": "Exposing IMHOGEN to severe legal or financial liabilities."
+    },
+    {
+      "pid": "2.3.1",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Client Negotiation",
+      "activity_description": "Draft a formal email and send the Internally Approved Draft to the client for their review.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "head_of_operations"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Email Templates"
+      ],
+      "information_systems": "CRM / Email Client",
+      "documents_used": [
+        "D2.6"
+      ],
+      "documents_generated": [
+        "D6.1"
+      ],
+      "management_policy": "Client Communication Policy",
+      "quality_control_point": "Ensure the email clearly states the deadline for their review/redlines.",
+      "risk_considerations": "Open-ended reviews causing project scheduling delays."
+    },
+    {
+      "pid": "2.3.2",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Client Negotiation",
+      "activity_description": "Receive client feedback/redlines. If changes are requested, schedule a negotiation meeting.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "admin_support"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Scheduling Tool"
+      ],
+      "information_systems": "CRM / Calendar",
+      "documents_used": [
+        "D6.4"
+      ],
+      "documents_generated": [
+        "D2.8"
+      ],
+      "management_policy": "Meeting Scheduling Policy",
+      "quality_control_point": "Ensure relevant decision-makers (Head of Ops, PM) are invited.",
+      "risk_considerations": "Inability to resolve contract disputes via email alone."
+    },
+    {
+      "pid": "2.3.3",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Client Negotiation",
+      "activity_description": "Conduct the negotiation meeting, discuss disputed clauses, and agree on mutual compromises.",
+      "activity_owner": "head_of_operations",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Video Conferencing"
+      ],
+      "information_systems": "Meeting Repository",
+      "documents_used": [
+        "D6.4"
+      ],
+      "documents_generated": [
+        "D2.9"
+      ],
+      "management_policy": "Client Engagement Policy",
+      "quality_control_point": "Never agree to technical or financial changes without PM/Finance input.",
+      "risk_considerations": "Verbal agreement to terms that violate department policies."
+    },
+    {
+      "pid": "2.3.4",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Client Negotiation",
+      "activity_description": "Update the contract document based on the agreed compromises and conduct a final internal read-through.",
+      "activity_owner": "head_of_operations",
+      "supporting_roles": [
+        "legal_advisor"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Word Processor"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D2.9"
+      ],
+      "documents_generated": [
+        "D2.10"
+      ],
+      "management_policy": "Contract Revision Policy",
+      "quality_control_point": "Ensure no unintended clauses were altered during the redline process.",
+      "risk_considerations": "Sneaky or accidental changes inserted into the final text."
+    },
+    {
+      "pid": "2.4.1",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Execution & Archiving",
+      "activity_description": "Upload the Finalized Contract into the digital signature platform and tag the required signature fields.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "head_of_operations"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "E-Signature Platform"
+      ],
+      "information_systems": "Contract Management Database",
+      "documents_used": [
+        "D2.10"
+      ],
+      "documents_generated": [
+        "D2.11"
+      ],
+      "management_policy": "Document Execution Policy",
+      "quality_control_point": "Verify the correct authorized signers for both IMHOGEN and the client.",
+      "risk_considerations": "Contract sent to an unauthorized representative."
+    },
+    {
+      "pid": "2.4.2",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Execution & Archiving",
+      "activity_description": "Dispatch the digital envelope to the client and monitor the platform for completion.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "E-Signature Platform"
+      ],
+      "information_systems": "Contract Management Database",
+      "documents_used": [
+        "D2.11"
+      ],
+      "documents_generated": [
+        "D2.11"
+      ],
+      "management_policy": "Signature Authority Policy",
+      "quality_control_point": "Send automatic 48-hour reminders if the document remains unsigned.",
+      "risk_considerations": "Project stalling due to forgotten signatures."
+    },
+    {
+      "pid": "2.4.3",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Execution & Archiving",
+      "activity_description": "Once signed by all parties, download the final document and its digital audit trail certificate.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "E-Signature Platform"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D2.11"
+      ],
+      "documents_generated": [
+        "D2.12"
+      ],
+      "management_policy": "Document Execution Policy",
+      "quality_control_point": "Verify the audit certificate is attached to prove legal validity.",
+      "risk_considerations": "Inability to prove the signature's authenticity in a dispute."
+    },
+    {
+      "pid": "2.4.4",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Execution & Archiving",
+      "activity_description": "Upload the Executed Contract into the central secure legal repository and apply appropriate metadata tags.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "it_admin"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Cloud Storage / Database"
+      ],
+      "information_systems": "Contract Management Database",
+      "documents_used": [
+        "D2.12"
+      ],
+      "documents_generated": [
+        "D2.13"
+      ],
+      "management_policy": "Data Retention Policy",
+      "quality_control_point": "Ensure strict access control (read-only) is applied to the final file.",
+      "risk_considerations": "Unauthorized alteration or deletion of executed contracts."
+    },
+    {
+      "pid": "2.4.5",
+      "workbook_id": 2,
+      "workbook_name": "Contract Tracking and Administration Process",
+      "service_track": "both",
+      "phase_group": "Execution & Archiving",
+      "activity_description": "Update the CRM/Project Tracker status to \"Contract Executed\" and trigger a notification to the Finance Team to begin Payment Scheduling.",
+      "activity_owner": "onboarding_manager",
+      "supporting_roles": [
+        "finance_officer"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Workflow Trigger"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D2.13"
+      ],
+      "documents_generated": [
+        "D2.14"
+      ],
+      "management_policy": "Project Portfolio Governance System",
+      "quality_control_point": "Confirm the Finance Team acknowledges the trigger to start billing.",
+      "risk_considerations": "Failure to initiate invoicing after the contract is signed."
+    },
+    {
+      "pid": "3.1.1",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Payment Schedule Setup",
+      "activity_description": "Receive the \"Phase Initiation Notice\" and the Executed Contract from the Business Operations Team.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [
+        "admin_support"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Email / Internal Chat"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D2.14"
+      ],
+      "documents_generated": [],
+      "management_policy": "Inter-departmental Handoff Policy",
+      "quality_control_point": "Confirm receipt of the fully executed contract before initiating any financial setup.",
+      "risk_considerations": "Setting up billing on an unfinalized or unsigned contract."
+    },
+    {
+      "pid": "3.1.2",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Payment Schedule Setup",
+      "activity_description": "Read the contract's commercial terms to extract exact milestone descriptions, payment percentages, and due dates.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [],
+      "operator_category": "human_system",
+      "tools": [
+        "Computer Display"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D2.12"
+      ],
+      "documents_generated": [
+        "D3.1"
+      ],
+      "management_policy": "Billing & Scheduling Policy",
+      "quality_control_point": "Verify that the extracted milestones exactly match the contract's language.",
+      "risk_considerations": "Misinterpreting payment terms leading to incorrect billing schedules."
+    },
+    {
+      "pid": "3.1.3",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Payment Schedule Setup",
+      "activity_description": "Create a new client profile and project ledger in the accounting system, inputting the extracted payment schedule.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [
+        "finance_officer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Keyboard/Mouse"
+      ],
+      "information_systems": "ERP / Accounting Software",
+      "documents_used": [
+        "D3.1"
+      ],
+      "documents_generated": [
+        "D3.2"
+      ],
+      "management_policy": "Data Entry Protocol",
+      "quality_control_point": "Finance Manager must perform a spot-check on the entered schedule vs the contract.",
+      "risk_considerations": "Data entry errors causing missed or incorrect future invoices."
+    },
+    {
+      "pid": "3.2.1",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Invoicing & Billing",
+      "activity_description": "Receive formal notification and proof of completion for a specific project milestone from the Project Manager.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Internal Routing Tool"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D3.3"
+      ],
+      "documents_generated": [
+        "D3.3"
+      ],
+      "management_policy": "Invoicing Policy",
+      "quality_control_point": "Verify the PM's proof of completion aligns with the contract's definition of the milestone.",
+      "risk_considerations": "Billing a client before the engineering value has actually been delivered."
+    },
+    {
+      "pid": "3.2.2",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Invoicing & Billing",
+      "activity_description": "Generate a draft invoice in the accounting software corresponding to the achieved milestone and scheduled amount.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Accounting Software"
+      ],
+      "information_systems": "ERP / Accounting Software",
+      "documents_used": [
+        "D3.2"
+      ],
+      "documents_generated": [
+        "D3.4"
+      ],
+      "management_policy": "Invoicing Policy",
+      "quality_control_point": "Ensure PO numbers, tax IDs, and bank details are clearly visible on the invoice.",
+      "risk_considerations": "Invoices rejected by the client's accounts payable due to missing details."
+    },
+    {
+      "pid": "3.2.3",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Invoicing & Billing",
+      "activity_description": "Review and approve the draft invoice for mathematical accuracy and tax compliance before issuance.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [
+        "finance_officer"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Accounting Software"
+      ],
+      "information_systems": "ERP / Accounting Software",
+      "documents_used": [
+        "D3.4"
+      ],
+      "documents_generated": [
+        "D3.5"
+      ],
+      "management_policy": "Financial Control Policy",
+      "quality_control_point": "Dual-authorization required for invoices exceeding a predefined monetary threshold.",
+      "risk_considerations": "Sending mathematically incorrect invoices that damage company credibility."
+    },
+    {
+      "pid": "3.2.4",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Invoicing & Billing",
+      "activity_description": "Draft a formal email, attach the Approved Invoice (PDF format), and transmit it to the client's designated billing contact.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Email Templates"
+      ],
+      "information_systems": "CRM / Email Client",
+      "documents_used": [
+        "D3.5"
+      ],
+      "documents_generated": [
+        "D3.6"
+      ],
+      "management_policy": "Client Communication Policy",
+      "quality_control_point": "Verify the email address is the official accounts payable contact, not just the technical lead.",
+      "risk_considerations": "Invoice sitting unread in the wrong person's inbox."
+    },
+    {
+      "pid": "3.3.1",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Reconciliation & Triggering",
+      "activity_description": "Log into the corporate banking portal daily to monitor and download reports of incoming client deposits.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Banking Portals"
+      ],
+      "information_systems": "Banking System",
+      "documents_used": [],
+      "documents_generated": [
+        "D3.7"
+      ],
+      "management_policy": "Treasury Management Policy",
+      "quality_control_point": "Ensure secure network connections and VPNs are used when accessing banking portals.",
+      "risk_considerations": "Unnoticed funds leading to unnecessary project delays."
+    },
+    {
+      "pid": "3.3.2",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Reconciliation & Triggering",
+      "activity_description": "Cross-reference incoming bank deposits against outstanding invoices in the accounting software.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Reconciliation Tools"
+      ],
+      "information_systems": "ERP / Accounting Software",
+      "documents_used": [
+        "D3.7"
+      ],
+      "documents_generated": [
+        "D3.8"
+      ],
+      "management_policy": "Financial Reconciliation Policy",
+      "quality_control_point": "Match the exact deposited amount and payment reference number to the specific invoice.",
+      "risk_considerations": "Misallocating funds to the wrong client or project ledger."
+    },
+    {
+      "pid": "3.3.3",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Reconciliation & Triggering",
+      "activity_description": "Generate a formal Payment Receipt and email it to the client to acknowledge successful receipt of funds.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [
+        "admin_support"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Accounting Software"
+      ],
+      "information_systems": "CRM / Email Client",
+      "documents_used": [
+        "D3.8"
+      ],
+      "documents_generated": [
+        "D3.9"
+      ],
+      "management_policy": "Documentation Policy",
+      "quality_control_point": "Issue the receipt within 24 hours of the funds clearing the bank.",
+      "risk_considerations": "Client disputes or uncertainty regarding their account standing."
+    },
+    {
+      "pid": "3.3.4",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Reconciliation & Triggering",
+      "activity_description": "Change the invoice status to \"Paid\" and send a \"Payment Cleared - Proceed\" notification to the Project Manager.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Workflow Trigger"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D3.8"
+      ],
+      "documents_generated": [
+        "D3.10"
+      ],
+      "management_policy": "Project Portfolio Governance System",
+      "quality_control_point": "PM must acknowledge the unblock notice before deploying engineering resources.",
+      "risk_considerations": "Engineering team remaining idle because they are unaware funds have cleared."
+    },
+    {
+      "pid": "3.4.1",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Outstanding Payment Mgmt",
+      "activity_description": "Generate an Accounts Receivable (AR) aging report weekly to identify invoices that have crossed their payment grace period.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [
+        "finance_officer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Reporting Dashboard"
+      ],
+      "information_systems": "ERP / Accounting Software",
+      "documents_used": [
+        "D3.2"
+      ],
+      "documents_generated": [
+        "D3.11"
+      ],
+      "management_policy": "Credit Control Policy",
+      "quality_control_point": "Ensure the report accurately reflects the net terms (e.g., Net 30) agreed in the contract.",
+      "risk_considerations": "Accumulation of bad debt and severe cash flow bottlenecks."
+    },
+    {
+      "pid": "3.4.2",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Outstanding Payment Mgmt",
+      "activity_description": "Send a polite, standardized follow-up email to clients with overdue invoices, requesting payment status.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Email Templates"
+      ],
+      "information_systems": "CRM / Email Client",
+      "documents_used": [
+        "D3.11"
+      ],
+      "documents_generated": [
+        "D3.9"
+      ],
+      "management_policy": "Outstanding Collections Policy",
+      "quality_control_point": "Maintain a professional tone to preserve the client relationship while being firm on terms.",
+      "risk_considerations": "Damaging client relations with aggressive or premature collection tactics."
+    },
+    {
+      "pid": "3.4.3",
+      "workbook_id": 3,
+      "workbook_name": "Payment Scheduling and Fund Management Process.",
+      "service_track": "both",
+      "phase_group": "Outstanding Payment Mgmt",
+      "activity_description": "If payment is delayed beyond critical thresholds, issue a formal \"Stop Work\" notice to the Project Manager.",
+      "activity_owner": "finance_officer",
+      "supporting_roles": [
+        "head_of_operations"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Internal Communication"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D3.11"
+      ],
+      "documents_generated": [],
+      "management_policy": "Risk & Financial Liability Policy",
+      "quality_control_point": "Escalate to Head of Business Operations before halting major engineering work.",
+      "risk_considerations": "Continuing to burn man-hours and resources on a defaulting client."
+    },
+    {
+      "pid": "4.1.1",
+      "workbook_id": 4,
+      "workbook_name": "Team Assignment and Capacity Planning Process.",
+      "service_track": "both",
+      "phase_group": "Resource Requirement Analysis",
+      "activity_description": "Receive the \"Phase Initiation Notice\" and the finalized Project Brief from the Business Operations Team.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Email / Internal Chat"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D2.14"
+      ],
+      "documents_generated": [],
+      "management_policy": "Inter-departmental Handoff Policy",
+      "quality_control_point": "Verify the Project Brief contains explicitly approved timelines and budgets.",
+      "risk_considerations": "Initiating planning based on unapproved or draft requirements."
+    },
+    {
+      "pid": "4.1.2",
+      "workbook_id": 4,
+      "workbook_name": "Team Assignment and Capacity Planning Process.",
+      "service_track": "both",
+      "phase_group": "Resource Requirement Analysis",
+      "activity_description": "Read the Project Brief to list the specific technical competencies, software platforms (e.g., Inventor), and estimated man-hours required.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Computer Display"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D1.15"
+      ],
+      "documents_generated": [
+        "D4.1"
+      ],
+      "management_policy": "Talent Management Policy",
+      "quality_control_point": "Ensure all required niche skills or specialized software modules are identified.",
+      "risk_considerations": "Realizing midway through the project that the team lacks a critical skill."
+    },
+    {
+      "pid": "4.1.3",
+      "workbook_id": 4,
+      "workbook_name": "Team Assignment and Capacity Planning Process.",
+      "service_track": "both",
+      "phase_group": "Resource Requirement Analysis",
+      "activity_description": "Populate the standard Resource Request Form with the required roles, hours, and duration, and submit it to HR/Engineering Management.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Word Processor / Digital Form"
+      ],
+      "information_systems": "HR Management System",
+      "documents_used": [
+        "D4.1"
+      ],
+      "documents_generated": [
+        "D4.2"
+      ],
+      "management_policy": "Resource Allocation Policy",
+      "quality_control_point": "Double-check that the requested man-hours align with the approved budget.",
+      "risk_considerations": "Requesting more man-hours than the project budget can afford."
+    },
+    {
+      "pid": "4.2.1",
+      "workbook_id": 4,
+      "workbook_name": "Team Assignment and Capacity Planning Process.",
+      "service_track": "both",
+      "phase_group": "Capacity Assessment & Allocation",
+      "activity_description": "Receive the Resource Request Form and open the department's scheduling dashboard to view current staff workloads.",
+      "activity_owner": "hr_manager",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Scheduling Dashboard / Gantt"
+      ],
+      "information_systems": "HR Management System",
+      "documents_used": [
+        "D4.2"
+      ],
+      "documents_generated": [],
+      "management_policy": "Workforce Management Policy",
+      "quality_control_point": "Ensure no single engineer is assigned a sustained workload exceeding 85% capacity.",
+      "risk_considerations": "Staff burnout, missed deadlines, and poor quality output due to overloading."
+    },
+    {
+      "pid": "4.2.2",
+      "workbook_id": 4,
+      "workbook_name": "Team Assignment and Capacity Planning Process.",
+      "service_track": "both",
+      "phase_group": "Capacity Assessment & Allocation",
+      "activity_description": "Cross-reference the requested competencies with the skills matrix of available engineers, draftsmen, and QA/QC staff.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "hr_manager"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Skills Competency Matrix"
+      ],
+      "information_systems": "HR Management System",
+      "documents_used": [
+        "D4.2"
+      ],
+      "documents_generated": [],
+      "management_policy": "Talent Management Policy",
+      "quality_control_point": "Match the complexity of the project with the seniority level of the assigned engineer.",
+      "risk_considerations": "Assigning a junior engineer to a high-risk, complex system design without proper support."
+    },
+    {
+      "pid": "4.2.3",
+      "workbook_id": 4,
+      "workbook_name": "Team Assignment and Capacity Planning Process.",
+      "service_track": "both",
+      "phase_group": "Capacity Assessment & Allocation",
+      "activity_description": "Select the specific personnel for the project and formally log their assigned hours and roles into the tracking system.",
+      "activity_owner": "hr_manager",
+      "supporting_roles": [
+        "admin_support"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Keyboard/Mouse"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D4.2"
+      ],
+      "documents_generated": [
+        "D4.3"
+      ],
+      "management_policy": "Resource Allocation Policy",
+      "quality_control_point": "Verify that planned leave or PTO does not conflict with critical project milestones.",
+      "risk_considerations": "Key personnel going on vacation during a critical design deadline."
+    },
+    {
+      "pid": "4.3.1",
+      "workbook_id": 4,
+      "workbook_name": "Team Assignment and Capacity Planning Process.",
+      "service_track": "both",
+      "phase_group": "Workspace & Access Setup",
+      "activity_description": "Receive the Team Assignment Record and trigger the IT/Admin provisioning workflow.",
+      "activity_owner": "it_admin",
+      "supporting_roles": [
+        "hr_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "IT Ticketing System"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D4.3"
+      ],
+      "documents_generated": [
+        "EXT:it_provisioning_ticket"
+      ],
+      "management_policy": "Information Security Policy",
+      "quality_control_point": "Ensure only the individuals listed on the Assignment Record receive access.",
+      "risk_considerations": "Providing confidential client data access to unauthorized personnel."
+    },
+    {
+      "pid": "4.3.2",
+      "workbook_id": 4,
+      "workbook_name": "Team Assignment and Capacity Planning Process.",
+      "service_track": "both",
+      "phase_group": "Workspace & Access Setup",
+      "activity_description": "Create dedicated project folders in the central Document Management System and CAD PDM Vault, applying strict access controls.",
+      "activity_owner": "it_admin",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Admin Consoles"
+      ],
+      "information_systems": "Document Management System / PDM",
+      "documents_used": [
+        "EXT:it_provisioning_ticket"
+      ],
+      "documents_generated": [],
+      "management_policy": "Documentation Standards",
+      "quality_control_point": "Apply standardized naming conventions to all newly created digital folders.",
+      "risk_considerations": "Chaotic file storage leading to lost CAD models or overwritten documents."
+    },
+    {
+      "pid": "4.3.3",
+      "workbook_id": 4,
+      "workbook_name": "Team Assignment and Capacity Planning Process.",
+      "service_track": "both",
+      "phase_group": "Workspace & Access Setup",
+      "activity_description": "Set up dedicated internal communication channels (e.g., specific chat groups or email threads) and invite the assigned team.",
+      "activity_owner": "it_admin",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Communication Platforms"
+      ],
+      "information_systems": "Communication Channels",
+      "documents_used": [
+        "EXT:it_provisioning_ticket"
+      ],
+      "documents_generated": [
+        "D4.4"
+      ],
+      "management_policy": "Internal Communication Protocol",
+      "quality_control_point": "Ensure the Project Manager is granted \"Admin\" rights over the new communication channels.",
+      "risk_considerations": "Fragmented communication happening outside the official project channels."
+    },
+    {
+      "pid": "4.4.1",
+      "workbook_id": 4,
+      "workbook_name": "Team Assignment and Capacity Planning Process.",
+      "service_track": "both",
+      "phase_group": "Internal Kick-off Execution",
+      "activity_description": "Draft a structured kick-off presentation summarizing the client's goals, the technical constraints, the budget, and the timeline.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Presentation Software"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D4.3"
+      ],
+      "documents_generated": [
+        "D4.5"
+      ],
+      "management_policy": "Internal Communication Protocol",
+      "quality_control_point": "Ensure all proprietary client details are masked if the presentation is stored broadly.",
+      "risk_considerations": "Team members lacking a holistic understanding of the project's 'why'."
+    },
+    {
+      "pid": "4.4.2",
+      "workbook_id": 4,
+      "workbook_name": "Team Assignment and Capacity Planning Process.",
+      "service_track": "both",
+      "phase_group": "Internal Kick-off Execution",
+      "activity_description": "Send a calendar invite for the internal kick-off meeting to the assigned team and attach the Project Brief for pre-reading.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Calendar App"
+      ],
+      "information_systems": "Meeting Repository",
+      "documents_used": [
+        "D4.5"
+      ],
+      "documents_generated": [
+        "D1.6"
+      ],
+      "management_policy": "Meeting Scheduling Policy",
+      "quality_control_point": "Verify that the scheduled time works for all assigned critical personnel.",
+      "risk_considerations": "Key technical experts missing the foundational alignment meeting."
+    },
+    {
+      "pid": "4.4.3",
+      "workbook_id": 4,
+      "workbook_name": "Team Assignment and Capacity Planning Process.",
+      "service_track": "both",
+      "phase_group": "Internal Kick-off Execution",
+      "activity_description": "Conduct the video/in-person kick-off meeting, explicitly outlining the roles, expectations, and the \"black-box\" input/output deliverables.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "engineering_team"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Video Conferencing / Whiteboard"
+      ],
+      "information_systems": "Communication Channels",
+      "documents_used": [
+        "D4.5"
+      ],
+      "documents_generated": [
+        "D4.7"
+      ],
+      "management_policy": "Project Initiation Policy",
+      "quality_control_point": "Require verbal confirmation from the Lead Engineer that the timeline is understood.",
+      "risk_considerations": "The technical team leaving the meeting with misaligned expectations."
+    },
+    {
+      "pid": "4.4.4",
+      "workbook_id": 4,
+      "workbook_name": "Team Assignment and Capacity Planning Process.",
+      "service_track": "both",
+      "phase_group": "Internal Kick-off Execution",
+      "activity_description": "Log into the Project Tracking Software, formally lock the baseline schedule/budget, and change the project status to \"Engineering Design Phase\".",
+      "activity_owner": "project_manager",
+      "supporting_roles": [],
+      "operator_category": "management_system",
+      "tools": [
+        "Keyboard/Mouse"
+      ],
+      "information_systems": "Project Portfolio Governance System",
+      "documents_used": [
+        "D4.7"
+      ],
+      "documents_generated": [
+        "D4.8"
+      ],
+      "management_policy": "Baseline Governance Policy",
+      "quality_control_point": "Ensure the baseline matches the kick-off agreements exactly; restrict editing access.",
+      "risk_considerations": "Unapproved changes creeping into the schedule after the kick-off."
+    },
+    {
+      "pid": "5.1.1",
+      "workbook_id": 5,
+      "workbook_name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "service_track": "tier1",
+      "phase_group": "P1: Requirements Elaboration",
+      "activity_description": "Establish rough factors for all life phases (technology, operators, inputs, outputs) and analyze the TP environment.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Requirement Tool (P1.1 - P1.3)"
+      ],
+      "information_systems": "Engineering Database",
+      "documents_used": [
+        "P0.0"
+      ],
+      "documents_generated": [
+        "P1.1"
+      ],
+      "management_policy": "Requirements Engineering Policy",
+      "quality_control_point": "Verify all input/output operands match the Project Brief constraints.",
+      "risk_considerations": "Missing a critical operational environment constraint early on."
+    },
+    {
+      "pid": "5.1.2",
+      "workbook_id": 5,
+      "workbook_name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "service_track": "tier1",
+      "phase_group": "P1: Requirements Elaboration",
+      "activity_description": "Quantify requirements, assign tolerances, and allocate properties across functional life phases and operators.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "qa_officer",
+        "qa_officer"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Requirement Tool (P1.4 - P1.7b)"
+      ],
+      "information_systems": "Engineering Database",
+      "documents_used": [
+        "P1.1"
+      ],
+      "documents_generated": [
+        "P1.0"
+      ],
+      "management_policy": "Tolerance & Capability Policy",
+      "quality_control_point": "Validate tolerances against available standard workshop capabilities.",
+      "risk_considerations": "Over-tolerancing leading to unmanufacturable or costly designs."
+    },
+    {
+      "pid": "5.1.3",
+      "workbook_id": 5,
+      "workbook_name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "service_track": "tier1",
+      "phase_group": "P1: Requirements Elaboration",
+      "activity_description": "Compile, review, and lock the formal, multi-dimensional design specifications.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Spec Tool (Pr1 - Pr8",
+        "P1.8)"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "P1.0"
+      ],
+      "documents_generated": [
+        "P1.0"
+      ],
+      "management_policy": "Design Specification Governance",
+      "quality_control_point": "Formal sign-off on the Pr-Set before any design work begins.",
+      "risk_considerations": "Proceeding to conceptual design with ambiguous or conflicting specifications."
+    },
+    {
+      "pid": "5.2.1",
+      "workbook_id": 5,
+      "workbook_name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "service_track": "tier1",
+      "phase_group": "P2: Design Work Planning",
+      "activity_description": "Analyze the technical process viewpoints, assess difficulty, and assign specific design tasks to operators.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Planning Tool (P2.1 - P2.4)"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "P1.0"
+      ],
+      "documents_generated": [
+        "D4.1"
+      ],
+      "management_policy": "Resource Allocation Policy",
+      "quality_control_point": "Ensure assigned engineers have the required technical competency.",
+      "risk_considerations": "Assigning complex datum calculations to junior staff."
+    },
+    {
+      "pid": "5.2.2",
+      "workbook_id": 5,
+      "workbook_name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "service_track": "tier1",
+      "phase_group": "P2: Design Work Planning",
+      "activity_description": "Estimate design costs, map the schedule, and set up phase progress tracking mechanisms.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Planning Tool (P2.5 - P2.8)"
+      ],
+      "information_systems": "Project Portfolio System",
+      "documents_used": [
+        "D4.1"
+      ],
+      "documents_generated": [
+        "P2.0"
+      ],
+      "management_policy": "Baseline Governance Policy",
+      "quality_control_point": "Baseline schedule must align with overall project budget and timeline.",
+      "risk_considerations": "Underestimating required man-hours for complex FEA or CAD modeling."
+    },
+    {
+      "pid": "5.3.1",
+      "workbook_id": 5,
+      "workbook_name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "service_track": "tier1",
+      "phase_group": "P3: Transformation Process (TrfP)",
+      "activity_description": "Establish the operands (Material, Energy, Information) and the technological principles of the operations process.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Process Tool (P3.1",
+        "P3.1a-b)"
+      ],
+      "information_systems": "Engineering Database",
+      "documents_used": [
+        "P1.0"
+      ],
+      "documents_generated": [
+        "P3.1"
+      ],
+      "management_policy": "Systems Engineering Policy",
+      "quality_control_point": "Verify logical flow: all input operands must logically convert to outputs.",
+      "risk_considerations": "Incomplete transformation mapping leading to missing mechanical functions."
+    },
+    {
+      "pid": "5.3.2",
+      "workbook_id": 5,
+      "workbook_name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "service_track": "tier1",
+      "phase_group": "P3: Transformation Process (TrfP)",
+      "activity_description": "Distribute effects between technical/human systems, defining main, assisting, and evoked functions.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Function Tool (P3.2",
+        "P3.2a-b",
+        "P3.3)"
+      ],
+      "information_systems": "Engineering Database",
+      "documents_used": [
+        "P3.1"
+      ],
+      "documents_generated": [
+        "P3.3"
+      ],
+      "management_policy": "Functional Decomposition Protocol",
+      "quality_control_point": "Ensure no critical load-bearing or safety function is overlooked.",
+      "risk_considerations": "Functional black-boxes left unresolved before structural synthesis."
+    },
+    {
+      "pid": "5.4.1",
+      "workbook_id": 5,
+      "workbook_name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "service_track": "tier1",
+      "phase_group": "P4: Organ Structure Synthesis",
+      "activity_description": "Populate the morphological matrix with action principles and combine function carriers (organs) into unified concepts.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Morphological Tool (P4.1)"
+      ],
+      "information_systems": "Concept Repository",
+      "documents_used": [
+        "P3.3"
+      ],
+      "documents_generated": [
+        "P4.1"
+      ],
+      "management_policy": "Concept Generation Protocol",
+      "quality_control_point": "Ensure at least 3 distinct conceptual variants are generated.",
+      "risk_considerations": "Fixation on a single design path without exploring optimal alternatives."
+    },
+    {
+      "pid": "5.4.2",
+      "workbook_id": 5,
+      "workbook_name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "service_track": "tier1",
+      "phase_group": "P4: Organ Structure Synthesis",
+      "activity_description": "Establish spatial topologies (Iconic/Principle) and evaluate proposals to select the optimal Final Organ Structure.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Topology Tool (P4.2)"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "P4.1"
+      ],
+      "documents_generated": [
+        "P4.2-FINAL"
+      ],
+      "management_policy": "Design Evaluation Policy",
+      "quality_control_point": "Justify the selected organ structure mathematically against the Pr-Set.",
+      "risk_considerations": "Selecting a suboptimal layout due to bias rather than technical merit."
+    },
+    {
+      "pid": "5.5.1",
+      "workbook_id": 5,
+      "workbook_name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "service_track": "tier1",
+      "phase_group": "P5: Constructional Structure",
+      "activity_description": "Establish preliminary layouts, rough forms, and define constructional design groups from the organ structure.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "cad_engineer"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Layout Tool (P5.1 - P5.3.1)"
+      ],
+      "information_systems": "CAD Environment",
+      "documents_used": [
+        "P4.2-FINAL"
+      ],
+      "documents_generated": [
+        "P5a.1i"
+      ],
+      "management_policy": "Spatial Design Policy",
+      "quality_control_point": "Clash detection and clearance check at the preliminary layout stage.",
+      "risk_considerations": "Components interfering spatially during assembly."
+    },
+    {
+      "pid": "5.5.2",
+      "workbook_id": 5,
+      "workbook_name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "service_track": "tier1",
+      "phase_group": "P5: Constructional Structure",
+      "activity_description": "Definitively establish dimensions, material treatments, part decompositions, and perform strength analyses.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Constructional Tool (P5.4",
+        "P5.4.1)"
+      ],
+      "information_systems": "PDM Vault / CAE Software",
+      "documents_used": [
+        "P5a.1i"
+      ],
+      "documents_generated": [
+        "P5.4"
+      ],
+      "management_policy": "Geometric Dimensioning & Tolerancing (GD&T) Policy",
+      "quality_control_point": "Tolerance stack-up analysis and FEA validation against the Pr-Set.",
+      "risk_considerations": "Structural failure or excessive deflection under operational loads."
+    },
+    {
+      "pid": "5.6.1",
+      "workbook_id": 5,
+      "workbook_name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "service_track": "tier1",
+      "phase_group": "P6: Detailing & Assembly Control",
+      "activity_description": "Generate individual detailed manufacturing drawings, control assembly drawings, and hierarchical part lists.",
+      "activity_owner": "cad_engineer",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Drafting Tool (P6",
+        "P6.1)"
+      ],
+      "information_systems": "PDM / Document Control System",
+      "documents_used": [
+        "P5.4"
+      ],
+      "documents_generated": [
+        "D6.5.2"
+      ],
+      "management_policy": "Documentation Standards Policy",
+      "quality_control_point": "Drawing checker review (Title blocks, GD&T, notes) by Lead Engineer.",
+      "risk_considerations": "Releasing incomplete or inaccurate drawings to the fabrication floor."
+    },
+    {
+      "pid": "5.6.2",
+      "workbook_id": 5,
+      "workbook_name": "Standard Engineering Design Process (P1 - P6 Framework)",
+      "service_track": "tier1",
+      "phase_group": "P6: Detailing & Assembly Control",
+      "activity_description": "Prepare manufacturing instructions, conduct a final design audit, and release the complete technical data package.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Phase Control Tool (P6.4 - P6.6)"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D6.5.2"
+      ],
+      "documents_generated": [
+        "D6.8"
+      ],
+      "management_policy": "Engineering Release Protocol",
+      "quality_control_point": "Complete sign-off matrix verification prior to manufacturing release.",
+      "risk_considerations": "Manufacturing unapproved or obsolete file versions."
+    },
+    {
+      "pid": "6.1.1",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Deliverable Submission",
+      "activity_description": "Receive the \"Approved Technical Data Package\" (CAD, Drawings, BOM, Reports) from the Lead Engineer.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Internal Routing Tool"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D6.8"
+      ],
+      "documents_generated": [],
+      "management_policy": "Internal Handoff Protocol",
+      "quality_control_point": "Verify all files possess the required internal QA/QC signature before sending to the client.",
+      "risk_considerations": "Submitting unverified or draft engineering files to the client."
+    },
+    {
+      "pid": "6.1.2",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Deliverable Submission",
+      "activity_description": "Upload the deliverables into a secure, client-facing digital portal or package them into a secure file-transfer link.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "File Sharing Platforms"
+      ],
+      "information_systems": "Client Portal / CRM",
+      "documents_used": [
+        "D6.8"
+      ],
+      "documents_generated": [
+        "EXT:client_delivery_link"
+      ],
+      "management_policy": "Data Security & Sharing Policy",
+      "quality_control_point": "Ensure access permissions are strictly limited to the authorized client contacts.",
+      "risk_considerations": "Unauthorized interception of proprietary IMHOGEN designs."
+    },
+    {
+      "pid": "6.1.3",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Deliverable Submission",
+      "activity_description": "Draft and send a calendar invite for a formal \"Deliverable Presentation Meeting\" to walk the client through the design.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "admin_support"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Calendar App / CRM"
+      ],
+      "information_systems": "Meeting Repository",
+      "documents_used": [
+        "EXT:client_delivery_link"
+      ],
+      "documents_generated": [
+        "D2.8"
+      ],
+      "management_policy": "Client Engagement Policy",
+      "quality_control_point": "Schedule the meeting within 48 hours of sending the deliverables to maintain momentum.",
+      "risk_considerations": "Client reviewing complex technical files without proper context, leading to confusion."
+    },
+    {
+      "pid": "6.1.4",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Deliverable Submission",
+      "activity_description": "Conduct the presentation meeting, using 3D viewers to explain technical decisions, constraints, and functional compliance.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Video Conferencing / 3D CAD Viewers"
+      ],
+      "information_systems": "Communication Channels",
+      "documents_used": [
+        "D6.8"
+      ],
+      "documents_generated": [
+        "D6.3"
+      ],
+      "management_policy": "Meeting Facilitation Process",
+      "quality_control_point": "Ensure the Lead Engineer explains why certain design constraints were enforced.",
+      "risk_considerations": "Client rejecting a design because they do not understand the underlying engineering logic."
+    },
+    {
+      "pid": "6.2.1",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Feedback Collection",
+      "activity_description": "Send the standardized \"Client Feedback Form\" to the client immediately following the presentation.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Digital Forms (e.g.",
+        "Google Forms)"
+      ],
+      "information_systems": "CRM",
+      "documents_used": [
+        "D6.3"
+      ],
+      "documents_generated": [
+        "D6.4"
+      ],
+      "management_policy": "Feedback Handling Procedure",
+      "quality_control_point": "Formally state the deadline (e.g., 5 business days) for submitting the feedback form.",
+      "risk_considerations": "Open-ended feedback timelines stalling the project indefinitely."
+    },
+    {
+      "pid": "6.2.2",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Feedback Collection",
+      "activity_description": "Receive the completed feedback form from the client and extract all requested changes into the central Revision Log.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Spreadsheet"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D6.4"
+      ],
+      "documents_generated": [
+        "D6.5"
+      ],
+      "management_policy": "Documentation Standards",
+      "quality_control_point": "Ensure every single client comment is captured line-by-line without summarization.",
+      "risk_considerations": "Losing or ignoring a specific client request, leading to dissatisfaction."
+    },
+    {
+      "pid": "6.3.1",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Feedback Evaluation",
+      "activity_description": "Review the Master Revision Log against the original signed Contract/Project Brief to classify changes as \"Minor\" or \"Major\".",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Scope Analysis Tools"
+      ],
+      "information_systems": "Contract Management System",
+      "documents_used": [
+        "D6.5"
+      ],
+      "documents_generated": [
+        "D6.6"
+      ],
+      "management_policy": "Change Management Policy",
+      "quality_control_point": "\"Major\" changes (out of scope) must immediately trigger a financial Change Order request.",
+      "risk_considerations": "Performing out-of-scope engineering redesigns for free (Scope Creep)."
+    },
+    {
+      "pid": "6.3.2",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Feedback Evaluation",
+      "activity_description": "Route approved \"Minor\" revisions back to the engineering team, assigning specific PID tasks for CAD/Drawing updates.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Task Management Dashboard"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D6.6"
+      ],
+      "documents_generated": [
+        "D6.7"
+      ],
+      "management_policy": "Revision Control Policy",
+      "quality_control_point": "Ensure the revision tickets explicitly link back to the specific client feedback line item.",
+      "risk_considerations": "Engineers misunderstanding the requested change and altering the wrong component."
+    },
+    {
+      "pid": "6.3.3",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Feedback Evaluation",
+      "activity_description": "Execute the requested changes in the CAD models and update the associated 2D drawings and BOMs.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "cad_engineer"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "3D CAD Software / Drafting Tools"
+      ],
+      "information_systems": "PDM Vault",
+      "documents_used": [
+        "D6.7"
+      ],
+      "documents_generated": [
+        "D6.8"
+      ],
+      "management_policy": "Iterative Design Policy",
+      "quality_control_point": "Save the revised files as a new version (e.g., V1.1) to preserve the original baseline.",
+      "risk_considerations": "Overwriting the original design files and losing previous work."
+    },
+    {
+      "pid": "6.3.4",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Feedback Evaluation",
+      "activity_description": "Perform a QA/QC check on the revised files to ensure the specific feedback was addressed without breaking other system functions.",
+      "activity_owner": "qa_officer",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Traceability Matrix"
+      ],
+      "information_systems": "Requirements Management System",
+      "documents_used": [
+        "D6.8"
+      ],
+      "documents_generated": [
+        "D6.9"
+      ],
+      "management_policy": "Quality Assurance Guidelines",
+      "quality_control_point": "Verify that the new changes still comply with the original Pr-Set safety and load requirements.",
+      "risk_considerations": "A minor revision inadvertently causing a critical structural or functional failure."
+    },
+    {
+      "pid": "6.4.1",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Final Sign-off & Acceptance",
+      "activity_description": "Generate the formal \"Delivery & Acceptance Form\" stating that all design requirements and revisions have been met.",
+      "activity_owner": "head_of_operations",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Word Processor"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D6.9"
+      ],
+      "documents_generated": [
+        "D6.10"
+      ],
+      "management_policy": "Sign-off & Acceptance Protocol",
+      "quality_control_point": "Cross-check the final deliverable list on the form against the original contract.",
+      "risk_considerations": "Missing a contracted deliverable on the final acceptance sheet."
+    },
+    {
+      "pid": "6.4.2",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Final Sign-off & Acceptance",
+      "activity_description": "Upload the Acceptance Form and the Final Revised Technical Data Package into the e-signature platform.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "E-Signature Platform (DocuSign",
+        "Adobe Sign)"
+      ],
+      "information_systems": "Contract Management Database",
+      "documents_used": [
+        "D6.10"
+      ],
+      "documents_generated": [
+        "D2.11"
+      ],
+      "management_policy": "Document Execution Policy",
+      "quality_control_point": "Verify the digital envelope is sent to the client's authorized legal/financial signatory.",
+      "risk_considerations": "Obtaining a sign-off from an unauthorized client representative."
+    },
+    {
+      "pid": "6.4.3",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Final Sign-off & Acceptance",
+      "activity_description": "Conduct a brief final Handover Meeting (if requested by the client) to officially close the design phase and answer final questions.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Video Conferencing"
+      ],
+      "information_systems": "Meeting Repository",
+      "documents_used": [
+        "D6.8"
+      ],
+      "documents_generated": [
+        "D6.11"
+      ],
+      "management_policy": "Client Engagement Policy",
+      "quality_control_point": "Confirm verbally during the meeting that no further engineering changes will be made.",
+      "risk_considerations": "Client attempting to request more changes after the handover meeting."
+    },
+    {
+      "pid": "6.4.4",
+      "workbook_id": 6,
+      "workbook_name": "Client Review and Approval Process.",
+      "service_track": "both",
+      "phase_group": "Final Sign-off & Acceptance",
+      "activity_description": "Receive the executed e-signature, archive all final documents, and trigger the Finance Team to issue the final invoice.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Workflow Trigger"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D6.10"
+      ],
+      "documents_generated": [
+        "D6.11"
+      ],
+      "management_policy": "Project Portfolio Governance System",
+      "quality_control_point": "Ensure all finalized CAD models are locked in the PDM vault to prevent further editing.",
+      "risk_considerations": "Accidental alterations to the finalized, client-approved engineering files."
+    },
+    {
+      "pid": "7.1.1",
+      "workbook_id": 7,
+      "workbook_name": "Procurement Process",
+      "service_track": "both",
+      "phase_group": "BOM Handover & Review",
+      "activity_description": "Receive the \"Project Phase Closure Notice\" and the finalized, QA-approved Bill of Materials (BOM) from the Project Manager.",
+      "activity_owner": "procurement_officer",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Internal Routing Tool"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D6.8"
+      ],
+      "documents_generated": [],
+      "management_policy": "Inter-departmental Handoff Policy",
+      "quality_control_point": "Verify the BOM has the formal \"Released for Manufacturing\" digital signature.",
+      "risk_considerations": "Procuring materials based on an obsolete or unapproved draft BOM."
+    },
+    {
+      "pid": "7.1.2",
+      "workbook_id": 7,
+      "workbook_name": "Procurement Process",
+      "service_track": "both",
+      "phase_group": "BOM Handover & Review",
+      "activity_description": "Import the digital BOM into the procurement dashboard and categorize items into raw materials, standard hardware, and custom components.",
+      "activity_owner": "procurement_officer",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Spreadsheet / ERP Software"
+      ],
+      "information_systems": "Procurement Dashboard",
+      "documents_used": [
+        "D7.1"
+      ],
+      "documents_generated": [
+        "D7.2"
+      ],
+      "management_policy": "Documentation Standards",
+      "quality_control_point": "Ensure units of measure (e.g., mm, meters, kg) are correctly mapped during import.",
+      "risk_considerations": "Unit conversion errors leading to massive over/under ordering of steel sections."
+    },
+    {
+      "pid": "7.2.1",
+      "workbook_id": 7,
+      "workbook_name": "Procurement Process",
+      "service_track": "both",
+      "phase_group": "Budget Validation & Sourcing",
+      "activity_description": "Cross-reference the Categorized Procurement List against the locked financial budget established in the Project Brief.",
+      "activity_owner": "procurement_officer",
+      "supporting_roles": [
+        "finance_officer"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Budgeting Spreadsheet"
+      ],
+      "information_systems": "Financial Tracking System",
+      "documents_used": [
+        "D7.2"
+      ],
+      "documents_generated": [
+        "D3.11"
+      ],
+      "management_policy": "Financial Control Policy",
+      "quality_control_point": "Flag any item where the current market price exceeds the estimated baseline budget by >10%.",
+      "risk_considerations": "Material price fluctuations destroying the project's profit margin."
+    },
+    {
+      "pid": "7.2.2",
+      "workbook_id": 7,
+      "workbook_name": "Procurement Process",
+      "service_track": "both",
+      "phase_group": "Budget Validation & Sourcing",
+      "activity_description": "Generate a Request for Quotation (RFQ) for required materials, specifying exact tolerances, grades, and quantities.",
+      "activity_owner": "procurement_officer",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Word Processor / ERP"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D7.2"
+      ],
+      "documents_generated": [
+        "D7.3"
+      ],
+      "management_policy": "Vendor Sourcing Policy",
+      "quality_control_point": "Ensure RFQs for standard structural steel clearly state acceptable tolerance limits for local market variations.",
+      "risk_considerations": "Vendors quoting for sub-standard or incorrect material grades."
+    },
+    {
+      "pid": "7.2.3",
+      "workbook_id": 7,
+      "workbook_name": "Procurement Process",
+      "service_track": "both",
+      "phase_group": "Budget Validation & Sourcing",
+      "activity_description": "Dispatch RFQs to approved local suppliers (e.g., Suame/Kumasi market vendors) and specialized international distributors via email.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "procurement_officer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Email Client"
+      ],
+      "information_systems": "CRM / Vendor Database",
+      "documents_used": [
+        "D7.3"
+      ],
+      "documents_generated": [
+        "D7.3"
+      ],
+      "management_policy": "Vendor Communication Protocol",
+      "quality_control_point": "Verify vendor email addresses and set a strict deadline (e.g., 48 hours) for quote returns.",
+      "risk_considerations": "Project delays due to endlessly waiting on vendor quotes."
+    },
+    {
+      "pid": "7.2.4",
+      "workbook_id": 7,
+      "workbook_name": "Procurement Process",
+      "service_track": "both",
+      "phase_group": "Budget Validation & Sourcing",
+      "activity_description": "Receive quotes, compile a comparative vendor matrix (price, lead time, quality history), and select the optimal suppliers.",
+      "activity_owner": "procurement_officer",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Decision Matrix / Spreadsheet"
+      ],
+      "information_systems": "Procurement Dashboard",
+      "documents_used": [
+        "EXT:vendor_quotes"
+      ],
+      "documents_generated": [
+        "D7.4"
+      ],
+      "management_policy": "Vendor Sourcing Policy",
+      "quality_control_point": "Justify selection if the cheapest vendor is not chosen (e.g., due to faster lead time or better quality).",
+      "risk_considerations": "Selecting an unreliable vendor solely because they offered the lowest price."
+    },
+    {
+      "pid": "7.3.1",
+      "workbook_id": 7,
+      "workbook_name": "Procurement Process",
+      "service_track": "both",
+      "phase_group": "Purchasing & PO Issuance",
+      "activity_description": "Generate formal Purchase Orders (POs) in the accounting system for the selected vendors, attaching the required engineering specs.",
+      "activity_owner": "procurement_officer",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "Accounting / ERP Software"
+      ],
+      "information_systems": "Financial Tracking System",
+      "documents_used": [
+        "D7.4"
+      ],
+      "documents_generated": [
+        "D7.5"
+      ],
+      "management_policy": "Purchasing Policy",
+      "quality_control_point": "Double-check payment terms, delivery address, and required delivery dates on the PO.",
+      "risk_considerations": "Materials shipped to the wrong address or on the wrong timeline."
+    },
+    {
+      "pid": "7.3.2",
+      "workbook_id": 7,
+      "workbook_name": "Procurement Process",
+      "service_track": "both",
+      "phase_group": "Purchasing & PO Issuance",
+      "activity_description": "Route the Draft PO to the Finance Manager for final financial authorization and fund allocation.",
+      "activity_owner": "procurement_officer",
+      "supporting_roles": [
+        "finance_officer"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Internal Approval Workflow"
+      ],
+      "information_systems": "Financial Tracking System",
+      "documents_used": [
+        "D7.5"
+      ],
+      "documents_generated": [
+        "D7.5"
+      ],
+      "management_policy": "Financial Control Policy",
+      "quality_control_point": "Finance Manager must verify that sufficient cash flow exists to clear the PO upon delivery.",
+      "risk_considerations": "Issuing POs without the capital to pay the vendor, damaging IMHOGEN's credit."
+    },
+    {
+      "pid": "7.3.3",
+      "workbook_id": 7,
+      "workbook_name": "Procurement Process",
+      "service_track": "both",
+      "phase_group": "Purchasing & PO Issuance",
+      "activity_description": "Transmit the Approved PO to the vendor and obtain a formal acknowledgment and confirmed delivery schedule.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "procurement_officer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Email Client"
+      ],
+      "information_systems": "Vendor Database",
+      "documents_used": [
+        "D7.5"
+      ],
+      "documents_generated": [
+        "EXT:vendor_acknowledgment"
+      ],
+      "management_policy": "Vendor Communication Protocol",
+      "quality_control_point": "Do not mark the item as \"Ordered\" until the vendor explicitly confirms receipt and capacity.",
+      "risk_considerations": "Assuming an order is placed when the vendor never actually saw the PO."
+    },
+    {
+      "pid": "7.4.1",
+      "workbook_id": 7,
+      "workbook_name": "Procurement Process",
+      "service_track": "both",
+      "phase_group": "Material Receiving & QA",
+      "activity_description": "Receive the physical delivery at the workshop. Cross-reference the vendor's packing slip against the original PO.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "procurement_officer"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Clipboard",
+        "Pen"
+      ],
+      "information_systems": "Inventory Management System",
+      "documents_used": [
+        "D7.5"
+      ],
+      "documents_generated": [
+        "D7.6"
+      ],
+      "management_policy": "Receiving Protocol",
+      "quality_control_point": "Verify physical box counts and part numbers before the delivery driver leaves the premises.",
+      "risk_considerations": "Signing for missing boxes and losing leverage to claim missing items."
+    },
+    {
+      "pid": "7.4.2",
+      "workbook_id": 7,
+      "workbook_name": "Procurement Process",
+      "service_track": "both",
+      "phase_group": "Material Receiving & QA",
+      "activity_description": "Perform incoming Quality Control (QC) on the raw materials using measuring tools (calipers, micrometers) to verify dimensions against the BOM.",
+      "activity_owner": "qa_officer",
+      "supporting_roles": [
+        "workshop_supervisor"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Measurement Tools",
+        "Material Certs"
+      ],
+      "information_systems": "Quality Tracking System",
+      "documents_used": [
+        "D7.1"
+      ],
+      "documents_generated": [
+        "D7.6"
+      ],
+      "management_policy": "Quality Assurance Guidelines",
+      "quality_control_point": "Mandate a dimensional and visual check for warping, rust, or incorrect thickness on structural steel.",
+      "risk_considerations": "Accepting sub-standard, out-of-tolerance steel that will ruin the welding jig's accuracy."
+    },
+    {
+      "pid": "7.4.3",
+      "workbook_id": 7,
+      "workbook_name": "Procurement Process",
+      "service_track": "both",
+      "phase_group": "Material Receiving & QA",
+      "activity_description": "If materials pass QC, formally log them into the digital inventory system and assign them to the specific project storage zone.",
+      "activity_owner": "procurement_officer",
+      "supporting_roles": [
+        "it_admin",
+        "admin_support"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Barcode Scanners / Keyboard"
+      ],
+      "information_systems": "Inventory Management System",
+      "documents_used": [
+        "D7.6"
+      ],
+      "documents_generated": [
+        "D7.7"
+      ],
+      "management_policy": "Inventory Management Policy",
+      "quality_control_point": "Apply physical project tags/labels to the materials to prevent them from being used on other jobs.",
+      "risk_considerations": "Usable project materials being cannibalized by other workshop teams."
+    },
+    {
+      "pid": "7.4.4",
+      "workbook_id": 7,
+      "workbook_name": "Procurement Process",
+      "service_track": "both",
+      "phase_group": "Material Receiving & QA",
+      "activity_description": "Trigger a notification to the Fabrication Supervisor that all required materials are in stock, QA-approved, and ready for production.",
+      "activity_owner": "procurement_officer",
+      "supporting_roles": [
+        "workshop_supervisor"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Workflow Trigger"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D7.7"
+      ],
+      "documents_generated": [
+        "D8.1"
+      ],
+      "management_policy": "Project Portfolio Governance System",
+      "quality_control_point": "Supervisor must acknowledge the notice to trigger the Fabrication timeline.",
+      "risk_considerations": "Fabrication team sitting idle while materials gather dust in the storage zone."
+    },
+    {
+      "pid": "8.1.1",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "Fabrication Planning",
+      "activity_description": "Receive the \"Fabrication Readiness Notice\", Final BOM, and 2D Engineering Drawings from Procurement and Engineering.",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Internal Routing Tool"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D8.1"
+      ],
+      "documents_generated": [],
+      "management_policy": "Inter-departmental Handoff Policy",
+      "quality_control_point": "Ensure all 2D drawings have the correct \"Released for Manufacturing\" stamp and GD&T notes.",
+      "risk_considerations": "Fabricating from obsolete or unapproved drawing versions."
+    },
+    {
+      "pid": "8.1.2",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "Fabrication Planning",
+      "activity_description": "Review the 2D drawings and BOM to sequence the manufacturing operations (e.g., rough cut \u2192 machine \u2192 form \u2192 join \u2192 finish).",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Clipboard / Whiteboard"
+      ],
+      "information_systems": "PDM / Document Control System",
+      "documents_used": [],
+      "documents_generated": [
+        "D8.1"
+      ],
+      "management_policy": "Production Sequencing Policy",
+      "quality_control_point": "Verify that the sequence logically prevents impossible tool-access or assembly situations later in the build.",
+      "risk_considerations": "Assembling components out of order, blocking access for final fastening or machining."
+    },
+    {
+      "pid": "8.1.3",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "Fabrication Planning",
+      "activity_description": "Identify, reserve, and calibrate all required workshop machinery, CNC centers, fixtures, and hand tools needed for the job.",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [
+        "qa_officer",
+        "qa_officer"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Workshop Machinery / Tooling"
+      ],
+      "information_systems": "Tool Lifecycle Monitoring System",
+      "documents_used": [
+        "D8.1"
+      ],
+      "documents_generated": [
+        "D8.2"
+      ],
+      "management_policy": "Workshop Resource Policy",
+      "quality_control_point": "QA/QC must verify that measuring tapes, calipers, and gauges are properly calibrated.",
+      "risk_considerations": "Dimensional errors caused by using uncalibrated or worn-out measuring tools."
+    },
+    {
+      "pid": "8.2.1",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "Pre-Fabrication Briefing",
+      "activity_description": "Conduct a mandatory \"Toolbox Talk\" to brief the shop floor team on the exact structural goals, GD&T tolerances, and specific process hazards.",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [
+        "qa_officer",
+        "qa_officer"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Whiteboard",
+        "Printed Drawings"
+      ],
+      "information_systems": "Meeting Repository",
+      "documents_used": [
+        "D8.1"
+      ],
+      "documents_generated": [
+        "D4.6"
+      ],
+      "management_policy": "Occupational Health & Safety Policy",
+      "quality_control_point": "Require machine operators and fabricators to verbally confirm their understanding of the critical datum planes.",
+      "risk_considerations": "Floor workers misunderstanding the drawing symbols or safety risks."
+    },
+    {
+      "pid": "8.2.2",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "Pre-Fabrication Briefing",
+      "activity_description": "Issue the necessary Personal Protective Equipment (PPE) tailored to the specific fabrication processes (e.g., eye protection, respirators, hearing protection).",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [
+        "admin_support"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "PPE Inventory"
+      ],
+      "information_systems": "Inventory Management System",
+      "documents_used": [
+        "D4.6"
+      ],
+      "documents_generated": [
+        "D8.3"
+      ],
+      "management_policy": "Risk & Safety Policy",
+      "quality_control_point": "Deny workshop floor access to any operator lacking complete, functional PPE.",
+      "risk_considerations": "Severe workplace injuries due to lack of appropriate process protection."
+    },
+    {
+      "pid": "8.3.1",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "Material Preparation",
+      "activity_description": "Perform initial shaping, cutting, or blanking of raw materials to the exact preliminary dimensions specified in the BOM/Cut List.",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [
+        "workshop_supervisor"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Saws",
+        "Shears",
+        "CNC Routers"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [],
+      "documents_generated": [],
+      "management_policy": "Material Handling Policy",
+      "quality_control_point": "Verify the dimensions of the first piece before processing the rest of the batch (First-Article Inspection).",
+      "risk_considerations": "Wasting expensive raw materials due to an incorrect initial machine setup or measurement."
+    },
+    {
+      "pid": "8.3.2",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "Material Preparation",
+      "activity_description": "Deburr, chamfer, and clean the edges/surfaces of all prepped materials to prepare them for safe handling and high-integrity joining or final machining.",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [],
+      "operator_category": "technical_system",
+      "tools": [
+        "Grinders",
+        "Tumblers",
+        "Solvents"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [],
+      "documents_generated": [],
+      "management_policy": "Manufacturing Standards",
+      "quality_control_point": "Visually inspect surfaces to ensure no burrs, oil, or scale remains that could interfere with alignment.",
+      "risk_considerations": "Poor joint integrity or machine tool damage caused by contaminated/burred base materials."
+    },
+    {
+      "pid": "8.4.1",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "Active Fabrication & Assembly",
+      "activity_description": "Load the prepped materials into the designated fixtures, jigs, or machine beds, aligning them strictly to the primary datum planes.",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [
+        "qa_officer",
+        "qa_officer"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Production Fixtures",
+        "Clamps"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [],
+      "documents_generated": [],
+      "management_policy": "Assembly Modeling Protocol",
+      "quality_control_point": "Ensure all locating pins and clamps are fully seated before initiating the primary manufacturing process.",
+      "risk_considerations": "Manufacturing a skewed part because the material was not fully seated in the fixture."
+    },
+    {
+      "pid": "8.4.2",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "Active Fabrication & Assembly",
+      "activity_description": "Execute preliminary forming, temporary fastening, or rough machining passes to establish the baseline geometry.",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [],
+      "operator_category": "technical_system",
+      "tools": [
+        "Presses",
+        "Fasteners",
+        "Machine Tools"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [],
+      "documents_generated": [],
+      "management_policy": "Manufacturing Standards",
+      "quality_control_point": "QA/QC must perform a quick squareness and dimensional check before final, irreversible joining/machining begins.",
+      "risk_considerations": "Discovering a dimensional error after the entire assembly is permanently joined or finish-machined."
+    },
+    {
+      "pid": "8.4.3",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "Active Fabrication & Assembly",
+      "activity_description": "Execute the final manufacturing sequence (e.g., final joining, structural fastening, or finishing machine passes) utilizing methods to evenly distribute stress and prevent distortion.",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [
+        "workshop_supervisor"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Automated/Manual Production Equipment"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [],
+      "documents_generated": [],
+      "management_policy": "Process Distortion & Tolerance Control Policy",
+      "quality_control_point": "Strictly enforce the defined process sequence to mitigate mechanical or thermal distortion across the structure.",
+      "risk_considerations": "Severe structural distortion (warping) rendering the assembly unusable and out-of-tolerance."
+    },
+    {
+      "pid": "8.5.1",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "In-Process QC & Finishing",
+      "activity_description": "Perform visual, dimensional, and (if required) Non-Destructive Testing (NDT) on the structural joints and critical machined surfaces.",
+      "activity_owner": "qa_officer",
+      "supporting_roles": [
+        "workshop_supervisor"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Measurement Gauges",
+        "NDT Equipment"
+      ],
+      "information_systems": "Quality Tracking System",
+      "documents_used": [],
+      "documents_generated": [
+        "D8.5"
+      ],
+      "management_policy": "In-Process Quality Control Policy",
+      "quality_control_point": "Flag any defective joint or out-of-tolerance surface for immediate rework before moving to the next stage.",
+      "risk_considerations": "Micro-fractures or weak connections failing under operational load."
+    },
+    {
+      "pid": "8.5.2",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "In-Process QC & Finishing",
+      "activity_description": "Execute final finishing operations (e.g., grinding flush, polishing, edge routing) to meet the aesthetic and functional surface requirements.",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [],
+      "operator_category": "technical_system",
+      "tools": [
+        "Finish Grinders",
+        "Polishers"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [
+        "D8.5"
+      ],
+      "documents_generated": [],
+      "management_policy": "Surface Finish Standards",
+      "quality_control_point": "Ensure finishing operations do not reduce material thickness or alter dimensions below the safe minimum limits.",
+      "risk_considerations": "Weakening the structural integrity or altering critical tolerances by over-finishing."
+    },
+    {
+      "pid": "8.6.1",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "Surface Coating & Protection",
+      "activity_description": "Apply standard environmental protections (e.g., primer, paint, anodizing, or anti-rust oil) as dictated by the engineering specifications.",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [
+        "workshop_supervisor"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Spray Equipment",
+        "Chemical Baths"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [],
+      "documents_generated": [],
+      "management_policy": "Environmental Protection Standards",
+      "quality_control_point": "Ensure coatings are applied evenly and do not obstruct any threaded holes, sliding rails, or moving joints.",
+      "risk_considerations": "Premature degradation or coating interference with dynamic mechanical assemblies."
+    },
+    {
+      "pid": "8.6.2",
+      "workbook_id": 8,
+      "workbook_name": "Fabrication and Construction Process",
+      "service_track": "both",
+      "phase_group": "Surface Coating & Protection",
+      "activity_description": "Move the Coated Final Product to the designated testing staging area and update the project tracker to \"Ready for Final QA Testing\".",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Workflow Trigger"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [],
+      "documents_generated": [
+        "D8.6"
+      ],
+      "management_policy": "Project Portfolio Governance System",
+      "quality_control_point": "Supervisor must digitally sign off that all fabrication steps on the Job Process Sheet were completed.",
+      "risk_considerations": "Handing over an unfinished, unchecked physical unit to the final testing phase."
+    },
+    {
+      "pid": "9.1.1",
+      "workbook_id": 9,
+      "workbook_name": "Quality Control and Testing Process",
+      "service_track": "both",
+      "phase_group": "Inspection Preparation",
+      "activity_description": "Receive the \"Fabrication Completion Notice\" and physically transfer the fabricated structure to the QA/QC staging area.",
+      "activity_owner": "qa_officer",
+      "supporting_roles": [
+        "workshop_supervisor"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Pallet Jacks / Hoists"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D8.6"
+      ],
+      "documents_generated": [],
+      "management_policy": "Inter-departmental Handoff Policy",
+      "quality_control_point": "Ensure the structure is securely staged and safe to inspect before beginning work.",
+      "risk_considerations": "Handling damage occurring during transfer to the QA area."
+    },
+    {
+      "pid": "9.1.2",
+      "workbook_id": 9,
+      "workbook_name": "Quality Control and Testing Process",
+      "service_track": "both",
+      "phase_group": "Inspection Preparation",
+      "activity_description": "Retrieve the locked Design Specification (Pr-Set), 2D Drawings, and the original Project Brief from the digital vault.",
+      "activity_owner": "qa_officer",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Computer Display"
+      ],
+      "information_systems": "PDM / Document Control System",
+      "documents_used": [],
+      "documents_generated": [
+        "D9.1"
+      ],
+      "management_policy": "Documentation Standards",
+      "quality_control_point": "Verify that the retrieved drawings are the exact versions used by the fabrication team.",
+      "risk_considerations": "Inspecting a physical part against an outdated or incorrect digital drawing."
+    },
+    {
+      "pid": "9.2.1",
+      "workbook_id": 9,
+      "workbook_name": "Quality Control and Testing Process",
+      "service_track": "both",
+      "phase_group": "Visual & Surface Inspection",
+      "activity_description": "Perform a comprehensive visual sweep of the structure, checking for sharp edges, burrs, spatter, and coating uniformity.",
+      "activity_owner": "qa_officer",
+      "supporting_roles": [],
+      "operator_category": "human_system",
+      "tools": [
+        "Flashlights",
+        "Magnifying Glasses"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [
+        "D9.1"
+      ],
+      "documents_generated": [
+        "D9.2"
+      ],
+      "management_policy": "Surface Finish Standards",
+      "quality_control_point": "Flag any exposed, uncoated raw steel that violates the environmental protection specs.",
+      "risk_considerations": "Premature corrosion or operator injury due to missed burrs/sharp edges."
+    },
+    {
+      "pid": "9.2.2",
+      "workbook_id": 9,
+      "workbook_name": "Quality Control and Testing Process",
+      "service_track": "both",
+      "phase_group": "Visual & Surface Inspection",
+      "activity_description": "Measure all critical datums, hole centers, and overall bounding dimensions against the defined GD&T tolerances (e.g., \u00b11.0mm).",
+      "activity_owner": "qa_officer",
+      "supporting_roles": [],
+      "operator_category": "technical_system",
+      "tools": [
+        "Calipers",
+        "Micrometers",
+        "Height Gauges"
+      ],
+      "information_systems": "Quality Tracking System",
+      "documents_used": [],
+      "documents_generated": [
+        "D9.3"
+      ],
+      "management_policy": "Tolerance & Capability Policy",
+      "quality_control_point": "Ensure measuring tools are zeroed and calibrated before taking the first measurement.",
+      "risk_considerations": "Falsely passing an out-of-tolerance dimension due to an uncalibrated caliper."
+    },
+    {
+      "pid": "9.3.1",
+      "workbook_id": 9,
+      "workbook_name": "Quality Control and Testing Process",
+      "service_track": "both",
+      "phase_group": "Functional & Load Setup",
+      "activity_description": "Prepare the structure for physical testing by securely anchoring it and gathering test operands (e.g., inserting sample pipes into the welding jig).",
+      "activity_owner": "qa_officer",
+      "supporting_roles": [
+        "workshop_supervisor"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Clamps",
+        "Anchors",
+        "Test Operands"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [
+        "D9.1"
+      ],
+      "documents_generated": [],
+      "management_policy": "Risk & Safety Policy",
+      "quality_control_point": "Ensure all anchors are tight before applying any dynamic or static loads.",
+      "risk_considerations": "Structure tipping or collapsing during the load test, causing severe injury."
+    },
+    {
+      "pid": "9.3.2",
+      "workbook_id": 9,
+      "workbook_name": "Quality Control and Testing Process",
+      "service_track": "both",
+      "phase_group": "Functional & Load Setup",
+      "activity_description": "Actuate all moving parts, clamps, and mechanisms to verify smooth operation, clamping force, and structural deflection under load (e.g., \u2264 0.5 mm).",
+      "activity_owner": "qa_officer",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Load Cells",
+        "Dial Indicators"
+      ],
+      "information_systems": "Quality Tracking System",
+      "documents_used": [
+        "P1.0"
+      ],
+      "documents_generated": [
+        "D9.4"
+      ],
+      "management_policy": "Design Validation Policy",
+      "quality_control_point": "Verify that the structure returns to absolute zero (no permanent deformation) after the load is removed.",
+      "risk_considerations": "Plastic deformation indicating a fundamental structural design or material failure."
+    },
+    {
+      "pid": "9.4.1",
+      "workbook_id": 9,
+      "workbook_name": "Quality Control and Testing Process",
+      "service_track": "both",
+      "phase_group": "Non-Conformance Handling",
+      "activity_description": "If any dimension or test fails, immediately tag the physical structure with a red \"DO NOT USE\" marker and log the defect.",
+      "activity_owner": "qa_officer",
+      "supporting_roles": [],
+      "operator_category": "human_system",
+      "tools": [
+        "Physical Tags / Labels"
+      ],
+      "information_systems": "Quality Tracking System",
+      "documents_used": [
+        "D9.3"
+      ],
+      "documents_generated": [
+        "D9.5"
+      ],
+      "management_policy": "In-Process Quality Control Policy",
+      "quality_control_point": "The NCR must cite the specific drawing coordinate or Pr-Set line item that failed.",
+      "risk_considerations": "Ambiguous defect reporting leading to the wrong area being reworked."
+    },
+    {
+      "pid": "9.4.2",
+      "workbook_id": 9,
+      "workbook_name": "Quality Control and Testing Process",
+      "service_track": "both",
+      "phase_group": "Non-Conformance Handling",
+      "activity_description": "Route the NCR back to the Fabrication Supervisor and Lead Engineer to determine if the part must be reworked, repaired, or scrapped.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "workshop_supervisor"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Workflow Trigger"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D9.5"
+      ],
+      "documents_generated": [
+        "D9.6"
+      ],
+      "management_policy": "Change Management Policy",
+      "quality_control_point": "Do not authorize a \"repair\" if the structural integrity has been fundamentally compromised.",
+      "risk_considerations": "Attempting to weld over a critical failure, hiding a fatal flaw from the client."
+    },
+    {
+      "pid": "9.5.1",
+      "workbook_id": 9,
+      "workbook_name": "Quality Control and Testing Process",
+      "service_track": "both",
+      "phase_group": "Final Validation & Release",
+      "activity_description": "Once all tests pass (or rework is successfully re-tested), compile all inspection logs into the final validation package.",
+      "activity_owner": "qa_officer",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Word Processor"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D9.4"
+      ],
+      "documents_generated": [
+        "D9.7"
+      ],
+      "management_policy": "Final Testing & Inspection Policy",
+      "quality_control_point": "The Lead Engineer must countersign the QA Certificate to accept ultimate technical liability.",
+      "risk_considerations": "Releasing a product solely on a technician's signature without engineering oversight."
+    },
+    {
+      "pid": "9.5.2",
+      "workbook_id": 9,
+      "workbook_name": "Quality Control and Testing Process",
+      "service_track": "both",
+      "phase_group": "Final Validation & Release",
+      "activity_description": "Attach the physical QA Release Certificate to the structure and update the digital project status to \"Ready for Delivery/Handover\".",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "qa_officer",
+        "qa_officer"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Workflow Trigger"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D9.7"
+      ],
+      "documents_generated": [
+        "D9.8"
+      ],
+      "management_policy": "Project Portfolio Governance System",
+      "quality_control_point": "Ensure the Finance Team is copied on the notice to prepare the final invoice.",
+      "risk_considerations": "Product sitting in the staging area indefinitely because the delivery team was not notified."
+    },
+    {
+      "pid": "10.1.1",
+      "workbook_id": 10,
+      "workbook_name": "Engineering Documentation and Archiving Process",
+      "service_track": "both",
+      "phase_group": "As-Built Documentation Update",
+      "activity_description": "Receive the \"Final QA Release Certificate\" and interview the Fabrication Supervisor for any on-the-fly workshop modifications made during the build.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "workshop_supervisor"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Clipboard / Voice Recorder"
+      ],
+      "information_systems": "PDM / Document Control System",
+      "documents_used": [
+        "D9.7"
+      ],
+      "documents_generated": [
+        "D10.1"
+      ],
+      "management_policy": "Change Management Policy",
+      "quality_control_point": "Ensure every authorized rework or dimensional shift is captured from the QA reports.",
+      "risk_considerations": "\"As-built\" physical product not matching the final delivered digital CAD files."
+    },
+    {
+      "pid": "10.1.2",
+      "workbook_id": 10,
+      "workbook_name": "Engineering Documentation and Archiving Process",
+      "service_track": "both",
+      "phase_group": "As-Built Documentation Update",
+      "activity_description": "Update the 3D CAD models, 2D Drawings, and BOM to reflect the exact \"As-Built\" physical reality of the approved structure.",
+      "activity_owner": "cad_engineer",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "3D CAD Software / Drafting Tools"
+      ],
+      "information_systems": "PDM Vault",
+      "documents_used": [
+        "D10.1"
+      ],
+      "documents_generated": [
+        "D10.1"
+      ],
+      "management_policy": "Revision Control Policy",
+      "quality_control_point": "Increment the file revision number (e.g., Rev A to Rev B) to indicate the final As-Built status.",
+      "risk_considerations": "Overwriting original design intent data without a traceable version history."
+    },
+    {
+      "pid": "10.2.1",
+      "workbook_id": 10,
+      "workbook_name": "Engineering Documentation and Archiving Process",
+      "service_track": "both",
+      "phase_group": "Technical Authoring",
+      "activity_description": "Draft the User Manual, detailing safe operational procedures, ergonomic handling limits, and visual cues for correct use.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Word Processor / Publishing Tools"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "P1.0"
+      ],
+      "documents_generated": [
+        "D10.2"
+      ],
+      "management_policy": "Documentation Standards",
+      "quality_control_point": "Ensure the manual addresses all Human System constraints defined in Pr5 (Safe handling, low skill requirement).",
+      "risk_considerations": "Client operators injuring themselves due to unclear usage instructions."
+    },
+    {
+      "pid": "10.2.2",
+      "workbook_id": 10,
+      "workbook_name": "Engineering Documentation and Archiving Process",
+      "service_track": "both",
+      "phase_group": "Technical Authoring",
+      "activity_description": "Draft the Maintenance & Adjustment Guide, specifying lubrication points, replaceable wear element part numbers, and calibration steps.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "qa_officer",
+        "qa_officer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Word Processor / CAD (for exploded views)"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D9.1"
+      ],
+      "documents_generated": [
+        "D10.2"
+      ],
+      "management_policy": "Quality Assurance Guidelines",
+      "quality_control_point": "Include specific tolerance limits (e.g., maximum wear limits before part replacement is required).",
+      "risk_considerations": "Premature equipment failure due to lack of defined preventative maintenance."
+    },
+    {
+      "pid": "10.3.1",
+      "workbook_id": 10,
+      "workbook_name": "Engineering Documentation and Archiving Process",
+      "service_track": "both",
+      "phase_group": "Final Package Assembly",
+      "activity_description": "Compile the As-Built Drawings, BOM, User Manual, Maintenance Guide, and QA Certificates into a single, cohesive Technical Data Package (TDP).",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "PDF Compilation Software"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D10.2"
+      ],
+      "documents_generated": [
+        "D10.3"
+      ],
+      "management_policy": "Documentation Delivery Policy",
+      "quality_control_point": "Verify that the document title blocks, page numbers, and IMHOGEN branding are consistent across the package.",
+      "risk_considerations": "Delivering a disorganized, unprofessional stack of unlinked documents to the client."
+    },
+    {
+      "pid": "10.3.2",
+      "workbook_id": 10,
+      "workbook_name": "Engineering Documentation and Archiving Process",
+      "service_track": "both",
+      "phase_group": "Final Package Assembly",
+      "activity_description": "Route the compiled Final TDP to the Project Manager and Lead Engineer for a final administrative and technical sign-off.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Internal Routing Tool"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D10.3"
+      ],
+      "documents_generated": [
+        "D10.3"
+      ],
+      "management_policy": "Engineering Release Protocol",
+      "quality_control_point": "Both the PM and Lead Engineer must digitally sign the master cover page of the TDP.",
+      "risk_considerations": "Releasing unverified instructional documents containing technical errors."
+    },
+    {
+      "pid": "10.4.1",
+      "workbook_id": 10,
+      "workbook_name": "Engineering Documentation and Archiving Process",
+      "service_track": "both",
+      "phase_group": "Digital Archiving & Vault Locking",
+      "activity_description": "Move all finalized native CAD files, FEA simulation data, and internal emails into the project's permanent \"Closed/Archived\" digital folder.",
+      "activity_owner": "it_admin",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Server Admin Consoles"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [],
+      "documents_generated": [],
+      "management_policy": "Data Retention Policy",
+      "quality_control_point": "Apply strict \"Read-Only\" permissions to the archived folder for all staff except IT Admins.",
+      "risk_considerations": "Accidental deletion or unauthorized alteration of closed project data."
+    },
+    {
+      "pid": "10.4.2",
+      "workbook_id": 10,
+      "workbook_name": "Engineering Documentation and Archiving Process",
+      "service_track": "both",
+      "phase_group": "Digital Archiving & Vault Locking",
+      "activity_description": "Change the state of all associated CAD files within the PDM software to \"Released / Locked\" to prevent further parametric editing.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "it_admin",
+        "admin_support"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "PDM Dashboard"
+      ],
+      "information_systems": "PDM Vault",
+      "documents_used": [
+        "D10.1"
+      ],
+      "documents_generated": [
+        "D10.4"
+      ],
+      "management_policy": "Information Security Policy",
+      "quality_control_point": "Verify that the PDM system registers the lock and severs check-out privileges for design staff.",
+      "risk_considerations": "Engineers accidentally opening and modifying archived CAD files for new projects."
+    },
+    {
+      "pid": "10.5.1",
+      "workbook_id": 10,
+      "workbook_name": "Engineering Documentation and Archiving Process",
+      "service_track": "both",
+      "phase_group": "Knowledge Base Extraction",
+      "activity_description": "Conduct a brief project post-mortem to extract key technical lessons, reusable CAD sub-assemblies, and standard parts for the internal library.",
+      "activity_owner": "rd_coordinator",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Meeting / Note-taking"
+      ],
+      "information_systems": "Engineering Knowledge Repository",
+      "documents_used": [],
+      "documents_generated": [
+        "D10.5"
+      ],
+      "management_policy": "Research & Development Policy",
+      "quality_control_point": "Strip all confidential client IP from CAD assemblies before adding them to the general IMHOGEN parts library.",
+      "risk_considerations": "Violating client NDAs by reusing proprietary geometries in future public designs."
+    },
+    {
+      "pid": "10.5.2",
+      "workbook_id": 10,
+      "workbook_name": "Engineering Documentation and Archiving Process",
+      "service_track": "both",
+      "phase_group": "Knowledge Base Extraction",
+      "activity_description": "Update the central tracking system status to \"Documentation Complete\" and trigger the Client Relations Team to initiate physical/digital handover.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "admin_support"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Workflow Trigger"
+      ],
+      "information_systems": "Project Tracking Software",
+      "documents_used": [
+        "D10.3"
+      ],
+      "documents_generated": [
+        "D10.6"
+      ],
+      "management_policy": "Project Portfolio Governance System",
+      "quality_control_point": "Confirm the Client Relations Team has acknowledged receipt of the Approved TDP.",
+      "risk_considerations": "The physical product is ready, but delivery stalls because the paperwork was never handed over."
+    },
+    {
+      "pid": "11.1.1",
+      "workbook_id": 11,
+      "workbook_name": "Product / Process Delivery Process",
+      "service_track": "both",
+      "phase_group": "Logistics & Dispatch Planning",
+      "activity_description": "Receive the \"Delivery & Handover Notice\" and coordinate a delivery date/time with the client's receiving department.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "admin_support"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Email / Phone"
+      ],
+      "information_systems": "CRM / Project Tracking Software",
+      "documents_used": [
+        "D10.6"
+      ],
+      "documents_generated": [
+        "D9.8"
+      ],
+      "management_policy": "Client Engagement Policy",
+      "quality_control_point": "Confirm the client has the necessary lifting equipment (e.g., forklift/hoist) available on-site for unloading.",
+      "risk_considerations": "Delivery vehicle arriving at a site unequipped to unload the heavy physical structure."
+    },
+    {
+      "pid": "11.1.2",
+      "workbook_id": 11,
+      "workbook_name": "Product / Process Delivery Process",
+      "service_track": "both",
+      "phase_group": "Logistics & Dispatch Planning",
+      "activity_description": "Secure an appropriate transport vehicle (e.g., standard pickup or flatbed) based on the structural dimensions and weight.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Transport Booking System"
+      ],
+      "information_systems": "Logistics / ERP System",
+      "documents_used": [
+        "D10.3"
+      ],
+      "documents_generated": [
+        "D11.1"
+      ],
+      "management_policy": "Distribution Properties Policy",
+      "quality_control_point": "Verify the vehicle payload capacity exceeds the final As-Built weight of the delivered equipment.",
+      "risk_considerations": "Transport vehicle failure or legal violations due to overloading."
+    },
+    {
+      "pid": "11.2.1",
+      "workbook_id": 11,
+      "workbook_name": "Product / Process Delivery Process",
+      "service_track": "both",
+      "phase_group": "Packaging & Load Securing",
+      "activity_description": "Prepare the physical structure for transport by securing any movable clamps, applying protective wrap to precision datums, and loading it onto the transport vehicle.",
+      "activity_owner": "workshop_supervisor",
+      "supporting_roles": [
+        "workshop_supervisor"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Pallet Jacks",
+        "Ratchet Straps",
+        "Protective Wrap"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [
+        "D9.8"
+      ],
+      "documents_generated": [],
+      "management_policy": "Material Handling Policy",
+      "quality_control_point": "Ensure ratchet straps do not apply crushing force to delicate precision locating pins.",
+      "risk_considerations": "Irreversible dimensional damage or scratching of precision surfaces during transit."
+    },
+    {
+      "pid": "11.2.2",
+      "workbook_id": 11,
+      "workbook_name": "Product / Process Delivery Process",
+      "service_track": "both",
+      "phase_group": "Packaging & Load Securing",
+      "activity_description": "Print physical copies of the Approved Client TDP (User Manual, Maintenance Guide, QA Certificates) and place them in a weatherproof document pouch attached to the shipment.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [],
+      "operator_category": "human_system",
+      "tools": [
+        "Printer",
+        "Weatherproof Pouches"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D10.3"
+      ],
+      "documents_generated": [
+        "EXT:physical_packet"
+      ],
+      "management_policy": "Documentation Delivery Policy",
+      "quality_control_point": "Verify all pages are printed clearly and bound professionally before dispatch.",
+      "risk_considerations": "Client receiving damaged, unreadable, or missing operational manuals."
+    },
+    {
+      "pid": "11.3.1",
+      "workbook_id": 11,
+      "workbook_name": "Product / Process Delivery Process",
+      "service_track": "both",
+      "phase_group": "On-Site Unloading & Setup",
+      "activity_description": "Arrive at the client site, supervise the safe unloading of the equipment, and move it to the designated operational footprint (e.g., workshop floor).",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "logistics_officer"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Client Hoists / Forklifts"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [
+        "D11.1"
+      ],
+      "documents_generated": [],
+      "management_policy": "Liquidation Properties Policy",
+      "quality_control_point": "Ensure the equipment is placed on a stable, level surface as defined in the initial site requirements.",
+      "risk_considerations": "Equipment instability due to placement on an uneven or unprepared workshop floor."
+    },
+    {
+      "pid": "11.3.2",
+      "workbook_id": 11,
+      "workbook_name": "Product / Process Delivery Process",
+      "service_track": "both",
+      "phase_group": "On-Site Unloading & Setup",
+      "activity_description": "Perform a post-transit visual inspection and basic leveling/alignment using standard hand tools to ensure the structure survived transport intact.",
+      "activity_owner": "qa_officer",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "technical_system",
+      "tools": [
+        "Levels",
+        "Squares",
+        "Basic Hand Tools"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [
+        "D9.4"
+      ],
+      "documents_generated": [
+        "D11.2"
+      ],
+      "management_policy": "Quality Assurance Guidelines",
+      "quality_control_point": "Re-verify the primary datum plane squareness before handing it over to the client operators.",
+      "risk_considerations": "Handing over equipment that was subtly warped or knocked out of tolerance during the drive."
+    },
+    {
+      "pid": "11.4.1",
+      "workbook_id": 11,
+      "workbook_name": "Product / Process Delivery Process",
+      "service_track": "both",
+      "phase_group": "Site Acceptance Walkthrough",
+      "activity_description": "Conduct a physical walkthrough with the client's operators, demonstrating how to load a workpiece, engage clamps, and safely operate the equipment.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Physical Demonstration"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [
+        "EXT:physical_packet_manual"
+      ],
+      "documents_generated": [],
+      "management_policy": "Client Training & Handover Policy",
+      "quality_control_point": "Force the client operators to physically perform the loading/clamping sequence themselves while you observe.",
+      "risk_considerations": "Operators nodding in agreement but failing to actually understand the safe handling procedures."
+    },
+    {
+      "pid": "11.4.2",
+      "workbook_id": 11,
+      "workbook_name": "Product / Process Delivery Process",
+      "service_track": "both",
+      "phase_group": "Site Acceptance Walkthrough",
+      "activity_description": "Present the formal \"Final Handover Certificate\" to the client's authorized representative for signature, legally transferring ownership and liability.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Clipboard",
+        "Pen"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [
+        "D11.4"
+      ],
+      "documents_generated": [
+        "D11.4"
+      ],
+      "management_policy": "Document Execution Policy",
+      "quality_control_point": "Ensure the signatory is a legally authorized client representative, not just a junior workshop floor technician.",
+      "risk_considerations": "Disputed project closure because the wrong person signed the acceptance forms."
+    },
+    {
+      "pid": "11.5.1",
+      "workbook_id": 11,
+      "workbook_name": "Product / Process Delivery Process",
+      "service_track": "both",
+      "phase_group": "Commercial Close-Out",
+      "activity_description": "Return the Signed Handover Certificate to the office, scan it, and upload it to the central database.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Scanner / Computer"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D11.4"
+      ],
+      "documents_generated": [
+        "D11.4"
+      ],
+      "management_policy": "Data Retention Policy",
+      "quality_control_point": "Ensure the scan is high-resolution and the signatures are clearly legible.",
+      "risk_considerations": "Loss of the physical paper leaving the company with no proof of delivery."
+    },
+    {
+      "pid": "11.5.2",
+      "workbook_id": 11,
+      "workbook_name": "Product / Process Delivery Process",
+      "service_track": "both",
+      "phase_group": "Commercial Close-Out",
+      "activity_description": "Trigger a \"Project Delivered\" notification to the Finance Team to immediately issue the final milestone invoice for the remaining contract balance.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "finance_officer"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Workflow Trigger"
+      ],
+      "information_systems": "Project Tracking Software / ERP",
+      "documents_used": [
+        "D11.4"
+      ],
+      "documents_generated": [
+        "D11.5"
+      ],
+      "management_policy": "Financial Control Policy",
+      "quality_control_point": "Finance must issue the final invoice within 24 hours of receiving the handover authorization.",
+      "risk_considerations": "Delayed revenue collection causing unnecessary cash flow strain at the end of the project."
+    },
+    {
+      "pid": "12.1.1",
+      "workbook_id": 12,
+      "workbook_name": "Training and Post-Delivery Support Process",
+      "service_track": "both",
+      "phase_group": "Training Preparation",
+      "activity_description": "Receive the \"Digitized Handover Record\" and contact the client to schedule formal operator training sessions.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Scheduling Tool / Phone"
+      ],
+      "information_systems": "CRM",
+      "documents_used": [
+        "D11.4"
+      ],
+      "documents_generated": [
+        "D11.3"
+      ],
+      "management_policy": "Client Engagement Policy",
+      "quality_control_point": "Ensure the scheduled training aligns with the shift patterns of the actual floor operators, not just management.",
+      "risk_considerations": "Training the wrong personnel, leaving actual machine operators uninstructed."
+    },
+    {
+      "pid": "12.1.2",
+      "workbook_id": 12,
+      "workbook_name": "Training and Post-Delivery Support Process",
+      "service_track": "both",
+      "phase_group": "Training Preparation",
+      "activity_description": "Extract the \"Safe Handling and Operation\" guidelines from the User Manual to structure a targeted, hands-on training module.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Presentation / Demonstration Prep"
+      ],
+      "information_systems": "Document Management System",
+      "documents_used": [
+        "D10.3"
+      ],
+      "documents_generated": [
+        "D12.1"
+      ],
+      "management_policy": "Training & Development Policy",
+      "quality_control_point": "Verify the syllabus directly addresses all Human System constraints identified in the Pr5 Specification.",
+      "risk_considerations": "Omitting critical safety or ergonomic warnings during training preparation."
+    },
+    {
+      "pid": "12.2.1",
+      "workbook_id": 12,
+      "workbook_name": "Training and Post-Delivery Support Process",
+      "service_track": "both",
+      "phase_group": "Training Execution",
+      "activity_description": "Conduct on-site, hands-on training with the client's operators, demonstrating loading, clamping, safe operation, and basic maintenance.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Physical Equipment Demonstration"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [
+        "D12.1"
+      ],
+      "documents_generated": [],
+      "management_policy": "Occupational Health & Safety Policy",
+      "quality_control_point": "Force each operator to independently perform a full operational cycle while being observed.",
+      "risk_considerations": "Operators passively watching but failing to grasp the tactile operational requirements."
+    },
+    {
+      "pid": "12.2.2",
+      "workbook_id": 12,
+      "workbook_name": "Training and Post-Delivery Support Process",
+      "service_track": "both",
+      "phase_group": "Training Execution",
+      "activity_description": "Administer a brief verbal or practical competency check and have all trained operators sign the attendance log.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "admin_support"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Clipboard",
+        "Pen"
+      ],
+      "information_systems": "N/A",
+      "documents_used": [
+        "D12.1"
+      ],
+      "documents_generated": [
+        "D11.3"
+      ],
+      "management_policy": "Client Training & Handover Policy",
+      "quality_control_point": "Only grant certification to operators who successfully complete the practical demonstration without critical errors.",
+      "risk_considerations": "Unqualified operators damaging the equipment or injuring themselves post-handover."
+    },
+    {
+      "pid": "12.3.1",
+      "workbook_id": 12,
+      "workbook_name": "Training and Post-Delivery Support Process",
+      "service_track": "both",
+      "phase_group": "Support Window Activation",
+      "activity_description": "Activate the formal 7 to 30-day \"Post-Delivery Support\" window in the tracking system, starting from the date of the signed Handover Certificate.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Keyboard/Mouse"
+      ],
+      "information_systems": "Project Tracking Software / CRM",
+      "documents_used": [
+        "D11.4"
+      ],
+      "documents_generated": [
+        "D12.3"
+      ],
+      "management_policy": "Post-Delivery Support Policy",
+      "quality_control_point": "Set automated system alerts for the expiration date of the support window.",
+      "risk_considerations": "Providing indefinite free support due to a lack of formal boundary tracking."
+    },
+    {
+      "pid": "12.3.2",
+      "workbook_id": 12,
+      "workbook_name": "Training and Post-Delivery Support Process",
+      "service_track": "both",
+      "phase_group": "Support Window Activation",
+      "activity_description": "Receive, log, and route any client feedback, minor adjustments, or operational questions that arise during the active support window.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Digital Helpdesk / Ticketing"
+      ],
+      "information_systems": "CRM",
+      "documents_used": [
+        "D12.3"
+      ],
+      "documents_generated": [
+        "D12.3"
+      ],
+      "management_policy": "Feedback Handling Procedure",
+      "quality_control_point": "Categorize requests strictly: verify if the issue is a genuine defect vs. a request for a new (out-of-scope) feature.",
+      "risk_considerations": "Executing out-of-scope engineering changes under the guise of \"post-delivery support\"."
+    },
+    {
+      "pid": "12.4.1",
+      "workbook_id": 12,
+      "workbook_name": "Training and Post-Delivery Support Process",
+      "service_track": "both",
+      "phase_group": "Operational Audit",
+      "activity_description": "Schedule and conduct a final operational audit near the end of the support window to verify the equipment is performing optimally under standard production loads.",
+      "activity_owner": "qa_officer",
+      "supporting_roles": [
+        "client_relations"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "Visual Inspection",
+        "Operator Interviews"
+      ],
+      "information_systems": "Quality Tracking System",
+      "documents_used": [
+        "D12.3"
+      ],
+      "documents_generated": [
+        "D12.4"
+      ],
+      "management_policy": "Quality Assurance Guidelines",
+      "quality_control_point": "Cross-reference operator feedback against the original \"Wishes and Fixed Requirements\" to measure ultimate project success.",
+      "risk_considerations": "Assuming the equipment is functioning perfectly just because the client hasn't called to complain."
+    },
+    {
+      "pid": "12.5.1",
+      "workbook_id": 12,
+      "workbook_name": "Training and Post-Delivery Support Process",
+      "service_track": "both",
+      "phase_group": "Project & Support Closure",
+      "activity_description": "Formally close the active support ticket and notify the client that standard warranty/maintenance contract terms now apply.",
+      "activity_owner": "client_relations",
+      "supporting_roles": [
+        "head_of_operations"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "Email Templates"
+      ],
+      "information_systems": "CRM",
+      "documents_used": [
+        "D12.4"
+      ],
+      "documents_generated": [
+        "D12.3"
+      ],
+      "management_policy": "Corporate Governance Policy",
+      "quality_control_point": "Offer a long-term preventative maintenance contract to the client concurrently with the closure notice.",
+      "risk_considerations": "Losing an opportunity for recurring revenue via maintenance contracts."
+    },
+    {
+      "pid": "12.5.2",
+      "workbook_id": 12,
+      "workbook_name": "Training and Post-Delivery Support Process",
+      "service_track": "both",
+      "phase_group": "Project & Support Closure",
+      "activity_description": "Conduct a final sweep to ensure all logs (training, audit, support) are archived, and permanently lock the project ledger.",
+      "activity_owner": "admin_support",
+      "supporting_roles": [
+        "project_manager"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "Server Admin Consoles"
+      ],
+      "information_systems": "Project Portfolio Governance System",
+      "documents_used": [],
+      "documents_generated": [
+        "D12.5"
+      ],
+      "management_policy": "Data Retention Policy",
+      "quality_control_point": "Verify the Finance Team confirms the final invoice has been fully paid and reconciled before locking the ledger.",
+      "risk_considerations": "Closing a project ledger when outstanding debt remains uncollected."
+    },
+    {
+      "pid": "13.1.1",
+      "workbook_id": 13,
+      "workbook_name": "Marketing and Business Development",
+      "service_track": "both",
+      "phase_group": "Content Identification & Feed",
+      "activity_description": "Identify project innovations and document client input vs IMHOGEN output per category using the Content Feed Tool.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [],
+      "operator_category": "human_system",
+      "tools": [
+        "MDS.1.1 Content Feed Tool"
+      ],
+      "information_systems": "Marketing Hub",
+      "documents_used": [
+        "D10.5"
+      ],
+      "documents_generated": [
+        "MDS.1.1"
+      ],
+      "management_policy": "Content Capture Protocol",
+      "quality_control_point": "Every content entry must be tied to a valid Project Request ID and have verified technical accuracy.",
+      "risk_considerations": "Releasing proprietary client data or unverified claims without clearance."
+    },
+    {
+      "pid": "13.1.2",
+      "workbook_id": 13,
+      "workbook_name": "Marketing and Business Development",
+      "service_track": "both",
+      "phase_group": "Content Identification & Feed",
+      "activity_description": "Document the process story milestones with plain-language descriptions and supporting QMS evidence references.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "cad_engineer"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "MDS.1.1 Content Feed Tool"
+      ],
+      "information_systems": "Marketing Hub",
+      "documents_used": [
+        "D8.5",
+        "D9.4"
+      ],
+      "documents_generated": [
+        "MDS.1.1"
+      ],
+      "management_policy": "Process Story Documentation Policy",
+      "quality_control_point": "Each milestone must reference at least one QMS quality proof document.",
+      "risk_considerations": "Process story without evidence reduces credibility of marketing claims."
+    },
+    {
+      "pid": "13.1.3",
+      "workbook_id": 13,
+      "workbook_name": "Marketing and Business Development",
+      "service_track": "both",
+      "phase_group": "Content Identification & Feed",
+      "activity_description": "Map distribution channels and define call-to-action links ensuring every channel routes back to the IMHOGEN inquiry form.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "marketing_hub"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "MDS.1.1 Content Feed Tool"
+      ],
+      "information_systems": "Marketing Hub",
+      "documents_used": [
+        "MDS.1.1"
+      ],
+      "documents_generated": [
+        "MDS.1.1"
+      ],
+      "management_policy": "Channel Mapping and Call to Action Policy",
+      "quality_control_point": "All channels must include the mandatory inquiry link before the feed is submitted.",
+      "risk_considerations": "Content distributed without CTA breaks the QMS lead-generation cycle."
+    },
+    {
+      "pid": "13.1.4",
+      "workbook_id": 13,
+      "workbook_name": "Marketing and Business Development",
+      "service_track": "both",
+      "phase_group": "Content Identification & Feed",
+      "activity_description": "R&D Lead certifies technical accuracy and client confidentiality clearance; marketing hub formally acknowledges receipt.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "marketing_hub"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "MDS.1.1 Content Feed Tool"
+      ],
+      "information_systems": "Marketing Hub",
+      "documents_used": [
+        "MDS.1.1"
+      ],
+      "documents_generated": [
+        "MDS.1.1"
+      ],
+      "management_policy": "Content Approval and Transmittal Policy",
+      "quality_control_point": "Both R&D Lead signature and Marketing Hub acknowledgment must be recorded before any external release.",
+      "risk_considerations": "Unsigned content transmitted to marketing creates liability and audit gaps."
+    },
+    {
+      "pid": "13.2.1",
+      "workbook_id": 13,
+      "workbook_name": "Marketing and Business Development",
+      "service_track": "both",
+      "phase_group": "Asset Brief & Campaign Strategy",
+      "activity_description": "Define campaign theme and key message translating engineering outputs into client-facing benefit statements.",
+      "activity_owner": "marketing_hub",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "MDS.1.2 Asset Marketing Brief"
+      ],
+      "information_systems": "Marketing Hub",
+      "documents_used": [
+        "MDS.1.1"
+      ],
+      "documents_generated": [
+        "MDS.1.2"
+      ],
+      "management_policy": "Campaign Strategy Policy",
+      "quality_control_point": "Campaign theme must reflect IMHOGEN engineering identity and be documented before any creative production begins.",
+      "risk_considerations": "Vague or off-brand campaign theme produces content that misrepresents the company."
+    },
+    {
+      "pid": "13.2.2",
+      "workbook_id": 13,
+      "workbook_name": "Marketing and Business Development",
+      "service_track": "both",
+      "phase_group": "Asset Brief & Campaign Strategy",
+      "activity_description": "List technical features with client-facing benefit statements and source document references for copywriting.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [
+        "marketing_hub"
+      ],
+      "operator_category": "human_system",
+      "tools": [
+        "MDS.1.2 Asset Marketing Brief"
+      ],
+      "information_systems": "Marketing Hub",
+      "documents_used": [
+        "MDS.1.1",
+        "D1.8",
+        "D9.4"
+      ],
+      "documents_generated": [
+        "MDS.1.2"
+      ],
+      "management_policy": "Technical Content Accuracy Policy",
+      "quality_control_point": "Every technical claim must cite a source document before the brief is issued.",
+      "risk_considerations": "Unverified technical claims in marketing copy create reputational and legal exposure."
+    },
+    {
+      "pid": "13.2.3",
+      "workbook_id": 13,
+      "workbook_name": "Marketing and Business Development",
+      "service_track": "both",
+      "phase_group": "Asset Brief & Campaign Strategy",
+      "activity_description": "Specify mandatory CTA link, button text, and hub creative instructions; issue completed brief to marketing hub for execution.",
+      "activity_owner": "marketing_hub",
+      "supporting_roles": [],
+      "operator_category": "information_system",
+      "tools": [
+        "MDS.1.2 Asset Marketing Brief"
+      ],
+      "information_systems": "Marketing Hub",
+      "documents_used": [
+        "MDS.1.2"
+      ],
+      "documents_generated": [
+        "MDS.1.2"
+      ],
+      "management_policy": "Call to Action Enforcement Policy",
+      "quality_control_point": "Mandatory inquiry link must be present in every asset before brief is approved for production.",
+      "risk_considerations": "Assets without CTA break the lead-generation loop and waste marketing spend."
+    },
+    {
+      "pid": "13.3.1",
+      "workbook_id": 13,
+      "workbook_name": "Marketing and Business Development",
+      "service_track": "both",
+      "phase_group": "Visual Asset Curation",
+      "activity_description": "Catalogue all image assets with asset name, type, file path, and view description in the Visual Content Manifest.",
+      "activity_owner": "cad_engineer",
+      "supporting_roles": [
+        "marketing_hub"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "MDS.1.3 Visual Content Manifest"
+      ],
+      "information_systems": "Marketing Hub",
+      "documents_used": [
+        "D6.8",
+        "D8.6"
+      ],
+      "documents_generated": [
+        "MDS.1.3"
+      ],
+      "management_policy": "Image Asset Curation Policy",
+      "quality_control_point": "All image assets must have a confirmed file link before being marked marketing-ready.",
+      "risk_considerations": "Broken or missing file links block campaign production."
+    },
+    {
+      "pid": "13.3.2",
+      "workbook_id": 13,
+      "workbook_name": "Marketing and Business Development",
+      "service_track": "both",
+      "phase_group": "Visual Asset Curation",
+      "activity_description": "Log all video and motion assets with duration, file path, and marketing purpose.",
+      "activity_owner": "cad_engineer",
+      "supporting_roles": [
+        "marketing_hub"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "MDS.1.3 Visual Content Manifest"
+      ],
+      "information_systems": "Marketing Hub",
+      "documents_used": [
+        "D9.4"
+      ],
+      "documents_generated": [
+        "MDS.1.3"
+      ],
+      "management_policy": "Video and Motion Asset Policy",
+      "quality_control_point": "No video asset may be released without a confirmed file link and documented marketing purpose.",
+      "risk_considerations": "Unverified video assets may contain safety violations or expose proprietary data."
+    },
+    {
+      "pid": "13.3.3",
+      "workbook_id": 13,
+      "workbook_name": "Marketing and Business Development",
+      "service_track": "both",
+      "phase_group": "Visual Asset Curation",
+      "activity_description": "Conduct brand compliance check: verify IMHOGEN watermark is applied and no safety violations are visible in any asset.",
+      "activity_owner": "marketing_hub",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "MDS.1.3 Visual Content Manifest"
+      ],
+      "information_systems": "Marketing Hub",
+      "documents_used": [
+        "MDS.1.3"
+      ],
+      "documents_generated": [
+        "MDS.1.3"
+      ],
+      "management_policy": "Brand Compliance Policy",
+      "quality_control_point": "Watermark confirmed and zero safety violations present before assets are cleared for distribution.",
+      "risk_considerations": "Unmarked or non-compliant assets published externally damage brand integrity and create liability."
+    },
+    {
+      "pid": "13.3.4",
+      "workbook_id": 13,
+      "workbook_name": "Marketing and Business Development",
+      "service_track": "both",
+      "phase_group": "Visual Asset Curation",
+      "activity_description": "R&D Lead authorizes visual assets for public distribution and records signature with approval date.",
+      "activity_owner": "lead_engineer",
+      "supporting_roles": [],
+      "operator_category": "management_system",
+      "tools": [
+        "MDS.1.3 Visual Content Manifest"
+      ],
+      "information_systems": "Marketing Hub",
+      "documents_used": [
+        "MDS.1.3"
+      ],
+      "documents_generated": [
+        "MDS.1.3"
+      ],
+      "management_policy": "Authorization and Distribution Policy",
+      "quality_control_point": "R&D Lead signature and date must be recorded in the manifest before any asset is released externally.",
+      "risk_considerations": "Unauthorized asset distribution exposes confidential client information."
+    },
+    {
+      "pid": "13.4.1",
+      "workbook_id": 13,
+      "workbook_name": "Marketing and Business Development",
+      "service_track": "both",
+      "phase_group": "Hub Synchronization & Release",
+      "activity_description": "Marketing hub compiles all approved MDS documents into a campaign package ready for publication.",
+      "activity_owner": "marketing_hub",
+      "supporting_roles": [
+        "cad_engineer"
+      ],
+      "operator_category": "information_system",
+      "tools": [
+        "MDS.1.4 Hub Synchronization"
+      ],
+      "information_systems": "Marketing Hub",
+      "documents_used": [
+        "MDS.1.1",
+        "MDS.1.2",
+        "MDS.1.3"
+      ],
+      "documents_generated": [
+        "MDS.1.4"
+      ],
+      "management_policy": "QMS-Linked Marketing Policy",
+      "quality_control_point": "All three MDS documents must be in approved state before hub synchronization can proceed.",
+      "risk_considerations": "Publishing an incomplete campaign package damages professional credibility."
+    },
+    {
+      "pid": "13.4.2",
+      "workbook_id": 13,
+      "workbook_name": "Marketing and Business Development",
+      "service_track": "both",
+      "phase_group": "Hub Synchronization & Release",
+      "activity_description": "PM reviews the final campaign package and provides confidentiality clearance signature on MDS.1.4 before public release.",
+      "activity_owner": "project_manager",
+      "supporting_roles": [
+        "lead_engineer"
+      ],
+      "operator_category": "management_system",
+      "tools": [
+        "MDS.1.4 Hub Synchronization"
+      ],
+      "information_systems": "Marketing Hub",
+      "documents_used": [
+        "MDS.1.4"
+      ],
+      "documents_generated": [
+        "MDS.1.4"
+      ],
+      "management_policy": "Confidentiality and Data Governance Policy",
+      "quality_control_point": "PM must confirm no proprietary client information is present before final release approval.",
+      "risk_considerations": "Client confidentiality breach through marketing content creates legal liability and loss of trust."
+    }
+  ]
+}

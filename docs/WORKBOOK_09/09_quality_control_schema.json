@@ -1,0 +1,846 @@
+{
+  "workbook_id": 9,
+  "workbook_name": "Quality Control and Testing Process",
+  "tools": [
+    {
+      "tool_id": "D9.1",
+      "tool_title": "QA Testing Checklist (Prep)",
+      "activity_name": "QA Preparation",
+      "tier": "both",
+      "notes": "Pre-testing setup verification. Confirms test equipment is calibrated, test plans reference the correct drawings, and the fabricated unit matches the BOM. Must be approved before any testing begins.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Inspection Prep Metadata",
+          "fields": [
+            {
+              "name": "qa_officer",
+              "label": "QA Officer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "ref_fabrication_completion",
+              "label": "Reference Fabrication Completion Notice",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Pre-Test Checklist",
+          "fields": [
+            {
+              "name": "checklist",
+              "label": "Preparation Checks",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "check_item",
+                  "label": "Check Item",
+                  "type": "text"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Pass",
+                    "Fail",
+                    "N/A"
+                  ]
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "text"
+                }
+              ],
+              "prefilled_rows": [
+                "Test equipment calibration certificates current",
+                "Reference drawings match D6.10 CAD-locked version",
+                "Unit serial/batch number recorded",
+                "All D8.5 rework items closed",
+                "Safety area prepared"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "ready_for_testing",
+              "label": "Unit cleared for QA testing?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "qa_officer_signature",
+              "label": "QA Officer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D9.2",
+      "tool_title": "Visual Inspection Log",
+      "activity_name": "Visual QA",
+      "tier": "both",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Inspection Metadata",
+          "fields": [
+            {
+              "name": "qa_officer",
+              "label": "QA Officer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "inspection_date",
+              "label": "Inspection Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "unit_reference",
+              "label": "Unit / Batch Reference",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Visual Inspection Points",
+          "fields": [
+            {
+              "name": "visual_checks",
+              "label": "Visual Inspection Log",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "inspection_area",
+                  "label": "Inspection Area",
+                  "type": "string"
+                },
+                {
+                  "name": "defect_observed",
+                  "label": "Defect Observed (if any)",
+                  "type": "text"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Pass",
+                    "Fail"
+                  ]
+                },
+                {
+                  "name": "photo_ref",
+                  "label": "Photo Ref",
+                  "type": "string"
+                },
+                {
+                  "name": "qa_notes",
+                  "label": "QA Notes",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Outcome",
+          "fields": [
+            {
+              "name": "all_pass",
+              "label": "All visual checks passed?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "qa_officer_signature",
+              "label": "QA Officer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D9.3",
+      "tool_title": "Dimensional Audit Report",
+      "activity_name": "Dimensional QA",
+      "tier": "both",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Audit Metadata",
+          "fields": [
+            {
+              "name": "qa_officer",
+              "label": "QA Officer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "audit_date",
+              "label": "Audit Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "ref_drawing",
+              "label": "Reference Drawing #",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Dimensional Measurements",
+          "fields": [
+            {
+              "name": "measurements",
+              "label": "Critical Dimensions",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "feature",
+                  "label": "Feature / Dimension",
+                  "type": "string"
+                },
+                {
+                  "name": "nominal_mm",
+                  "label": "Nominal (mm)",
+                  "type": "number"
+                },
+                {
+                  "name": "tolerance",
+                  "label": "Tolerance",
+                  "type": "string"
+                },
+                {
+                  "name": "actual_mm",
+                  "label": "Actual (mm)",
+                  "type": "number"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Pass",
+                    "Fail"
+                  ]
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Outcome",
+          "fields": [
+            {
+              "name": "all_within_tolerance",
+              "label": "All dimensions within tolerance?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "qa_officer_signature",
+              "label": "QA Officer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D9.4",
+      "tool_title": "Load & Function Test Report",
+      "activity_name": "Functional Testing",
+      "tier": "both",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Test Metadata",
+          "fields": [
+            {
+              "name": "test_engineer",
+              "label": "Test Engineer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "test_date",
+              "label": "Test Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "test_environment",
+              "label": "Test Environment / Conditions",
+              "type": "text",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Test Results",
+          "fields": [
+            {
+              "name": "test_results",
+              "label": "Functional & Load Test Results",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "test_name",
+                  "label": "Test Name",
+                  "type": "string"
+                },
+                {
+                  "name": "test_spec",
+                  "label": "Pass Criteria / Spec",
+                  "type": "text"
+                },
+                {
+                  "name": "result",
+                  "label": "Result",
+                  "type": "text"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Pass",
+                    "Fail"
+                  ]
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Test Outcome",
+          "fields": [
+            {
+              "name": "all_tests_pass",
+              "label": "All load and function tests passed?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "test_engineer_signature",
+              "label": "Test Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D9.5",
+      "tool_title": "Non-Conformance Report",
+      "activity_name": "NCR Logging",
+      "tier": "both",
+      "conditional": true,
+      "condition": "Raised when any D9.2, D9.3, or D9.4 check returns Fail",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "NCR Metadata",
+          "fields": [
+            {
+              "name": "ncr_number",
+              "label": "NCR Number",
+              "type": "string",
+              "required": true,
+              "auto_generated": true
+            },
+            {
+              "name": "raised_by",
+              "label": "Raised By",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_raised",
+              "label": "Date Raised",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "source_tool",
+              "label": "Source Tool (D9.2 / D9.3 / D9.4)",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Non-Conformance Detail",
+          "fields": [
+            {
+              "name": "description",
+              "label": "Description of Non-Conformance",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "affected_feature",
+              "label": "Affected Feature / Component",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "severity",
+              "label": "Severity",
+              "type": "enum",
+              "options": [
+                "Critical",
+                "Major",
+                "Minor"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Disposition",
+          "fields": [
+            {
+              "name": "disposition",
+              "label": "Disposition Decision",
+              "type": "enum",
+              "options": [
+                "Rework (D9.6)",
+                "Accept as-is with waiver",
+                "Scrap"
+              ],
+              "required": true
+            },
+            {
+              "name": "head_of_engineering_signature",
+              "label": "Head of Engineering Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D9.6",
+      "tool_title": "Rework Action Order",
+      "activity_name": "Rework Authorization",
+      "tier": "both",
+      "conditional": true,
+      "condition": "Issued when D9.5 disposition = Rework",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Rework Metadata",
+          "fields": [
+            {
+              "name": "rework_order_number",
+              "label": "Rework Order Number",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "ref_ncr",
+              "label": "Reference NCR Number",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "issued_by",
+              "label": "Issued By",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_issued",
+              "label": "Date Issued",
+              "type": "date",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Rework Instructions",
+          "fields": [
+            {
+              "name": "rework_tasks",
+              "label": "Rework Tasks",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "task_description",
+                  "label": "Task Description",
+                  "type": "text"
+                },
+                {
+                  "name": "assigned_to",
+                  "label": "Assigned To",
+                  "type": "string"
+                },
+                {
+                  "name": "deadline",
+                  "label": "Deadline",
+                  "type": "date"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Pending",
+                    "Complete"
+                  ]
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Rework Completion",
+          "fields": [
+            {
+              "name": "rework_complete",
+              "label": "Rework complete and ready for re-inspection?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "supervisor_signature",
+              "label": "Supervisor Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D9.7",
+      "tool_title": "Final QA Release Certificate",
+      "activity_name": "QA Release",
+      "tier": "both",
+      "notes": "Issued when all D9.2, D9.3, D9.4 checks pass (and any D9.6 rework is re-inspected and closed). Formally releases the unit from QA hold. Unlocks D9.8.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Release Metadata",
+          "fields": [
+            {
+              "name": "qa_manager",
+              "label": "QA Manager",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "release_date",
+              "label": "Release Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "unit_serial",
+              "label": "Unit Serial / Batch Number",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "QA Summary",
+          "fields": [
+            {
+              "name": "qa_summary",
+              "label": "Test Results Summary",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "test_tool",
+                  "label": "Test Tool",
+                  "type": "string"
+                },
+                {
+                  "name": "outcome",
+                  "label": "Outcome",
+                  "type": "enum",
+                  "options": [
+                    "Pass",
+                    "Waived"
+                  ]
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "text"
+                }
+              ],
+              "prefilled_rows": [
+                "D9.2 Visual Inspection",
+                "D9.3 Dimensional Audit",
+                "D9.4 Load & Function Test"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Release Authorization",
+          "fields": [
+            {
+              "name": "all_qa_complete",
+              "label": "All QA checks passed or waived with documented justification?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "head_of_engineering_signature",
+              "label": "Head of Engineering Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D9.8",
+      "tool_title": "Delivery Authorization Notice",
+      "activity_name": "Delivery Clearance",
+      "tier": "both",
+      "notes": "Final tool in WB09. PM and Head of Ops jointly authorize delivery. Sign-off sets projects.status = 'Delivery Phase' and unlocks WB10 and WB11.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Authorization Metadata",
+          "fields": [
+            {
+              "name": "project_manager",
+              "label": "Project Manager",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "authorization_date",
+              "label": "Authorization Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "ref_qa_certificate",
+              "label": "Reference QA Release Certificate (D9.7)",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Delivery Clearance Checklist",
+          "fields": [
+            {
+              "name": "clearance_checklist",
+              "label": "Pre-Delivery Checks",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "task",
+                  "label": "Task",
+                  "type": "text"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Done",
+                    "Pending"
+                  ]
+                }
+              ],
+              "prefilled_rows": [
+                "D9.7 QA Release Certificate issued",
+                "Client delivery schedule confirmed",
+                "Transport logistics arranged",
+                "Final invoice prepared (D11.5)"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Dual Sign-off",
+          "fields": [
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "head_of_ops_signature",
+              "label": "Head of Operations Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

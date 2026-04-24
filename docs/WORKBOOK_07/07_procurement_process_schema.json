@@ -1,0 +1,998 @@
+{
+  "workbook_id": 7,
+  "workbook_name": "Procurement Process",
+  "tools": [
+    {
+      "tool_id": "D7.1",
+      "tool_title": "Final CAD BOM",
+      "activity_name": "BOM Extraction",
+      "tier": "both",
+      "notes": "Extracted directly from CAD system after D6.10 CAD lock. Provides the definitive list of all raw materials, standard parts, and bought-out components. Source of truth for D7.2 procurement planning.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "BOM Metadata",
+          "fields": [
+            {
+              "name": "extracted_by",
+              "label": "Extracted By (Lead CAD Engineer)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "extraction_date",
+              "label": "Extraction Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_client_name",
+              "label": "Project / Client Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "reference_cad_lock",
+              "label": "Reference CAD Lock",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Raw Materials (Metals, Plastics, Consumables)",
+          "fields": [
+            {
+              "name": "raw_materials",
+              "label": "Raw Material Items",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "part_number",
+                  "label": "Part Number",
+                  "type": "string"
+                },
+                {
+                  "name": "part_description",
+                  "label": "Part Description",
+                  "type": "string"
+                },
+                {
+                  "name": "material_spec",
+                  "label": "Material Specification",
+                  "type": "string"
+                },
+                {
+                  "name": "dimensions_sizing",
+                  "label": "Dimensions / Sizing",
+                  "type": "string"
+                },
+                {
+                  "name": "qty_required",
+                  "label": "Quantity Required",
+                  "type": "number"
+                },
+                {
+                  "name": "uom",
+                  "label": "Unit of Measure (UOM)",
+                  "type": "string"
+                },
+                {
+                  "name": "source_type",
+                  "label": "Source Type",
+                  "type": "enum",
+                  "options": [
+                    "Buy",
+                    "Make",
+                    "Stock"
+                  ]
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Bought-out Components (Motors, Electronics, Hardware)",
+          "fields": [
+            {
+              "name": "bought_out_components",
+              "label": "Bought-out Component Items",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "part_number",
+                  "label": "Part Number",
+                  "type": "string"
+                },
+                {
+                  "name": "part_description",
+                  "label": "Part Description",
+                  "type": "string"
+                },
+                {
+                  "name": "technical_spec",
+                  "label": "Technical Specification",
+                  "type": "string"
+                },
+                {
+                  "name": "qty_required",
+                  "label": "Quantity Required",
+                  "type": "number"
+                },
+                {
+                  "name": "preferred_brand_model",
+                  "label": "Preferred Brand / Model",
+                  "type": "string"
+                },
+                {
+                  "name": "source_type",
+                  "label": "Source Type",
+                  "type": "enum",
+                  "options": [
+                    "Buy",
+                    "Stock"
+                  ]
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "BOM Verification",
+          "fields": [
+            {
+              "name": "bom_matches_cad",
+              "label": "BOM matches locked CAD model exactly?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "lead_engineer_signature",
+              "label": "Lead Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D7.2",
+      "tool_title": "Procurement List & Budget Allocation",
+      "activity_name": "Procurement Planning",
+      "tier": "both",
+      "notes": "Categorizes D7.1 BOM items into procurement categories with budget allocation from D4.8. Flags critical lead time warnings. Triggers RFQ issuance (D7.3) per category.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Procurement Metadata",
+          "fields": [
+            {
+              "name": "procurement_officer",
+              "label": "Procurement Officer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_generated",
+              "label": "Date Generated",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "reference_bom",
+              "label": "Reference BOM",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "total_allocated_bom_budget_ghs",
+              "label": "Total Allocated BOM Budget (GHS)",
+              "type": "currency",
+              "required": true,
+              "inherited_from": "D4.8"
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Categorized Procurement & Budget Check",
+          "fields": [
+            {
+              "name": "procurement_categories",
+              "label": "Procurement Categories",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "bom_category",
+                  "label": "BOM Category",
+                  "type": "string"
+                },
+                {
+                  "name": "total_items",
+                  "label": "Total Items",
+                  "type": "number"
+                },
+                {
+                  "name": "allocated_budget_ghs",
+                  "label": "Allocated Budget (GHS)",
+                  "type": "currency"
+                },
+                {
+                  "name": "sourcing_strategy",
+                  "label": "Target Sourcing Strategy",
+                  "type": "enum",
+                  "options": [
+                    "Local Purchase",
+                    "Import",
+                    "Stock Draw",
+                    "Fabricate In-house"
+                  ]
+                },
+                {
+                  "name": "lead_time_warning",
+                  "label": "Critical Lead Time Warning",
+                  "type": "boolean"
+                }
+              ],
+              "required": true
+            },
+            {
+              "name": "total_estimated_spend_ghs",
+              "label": "Total Estimated Spend (GHS)",
+              "type": "currency",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Approval",
+          "fields": [
+            {
+              "name": "within_budget",
+              "label": "Total estimated spend within allocated BOM budget?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "head_of_ops_signature",
+              "label": "Head of Operations Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D7.3",
+      "tool_title": "Request for Quotation (RFQ)",
+      "activity_name": "Vendor Solicitation",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One RFQ issued per procurement category or per vendor. Multiple RFQs may run in parallel for the same category (minimum 3 quotes required for items > GHS 5,000).",
+      "notes": "Formal RFQ document sent to vendors. Includes technical specifications and commercial terms. Feeds into D7.4 (Vendor Selection Matrix).",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "RFQ Metadata",
+          "fields": [
+            {
+              "name": "rfq_number",
+              "label": "RFQ Number",
+              "type": "string",
+              "required": true,
+              "auto_generated": true
+            },
+            {
+              "name": "issued_by",
+              "label": "Issued By",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_issued",
+              "label": "Date Issued",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "quote_submission_deadline",
+              "label": "Quote Submission Deadline",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "target_delivery_location",
+              "label": "Target Delivery Location",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "required_delivery_date",
+              "label": "Required Delivery Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Vendor Information",
+          "fields": [
+            {
+              "name": "vendor_name",
+              "label": "Vendor Name",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "vendor_contact",
+              "label": "Vendor Contact Person",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "vendor_email",
+              "label": "Vendor Email",
+              "type": "email",
+              "required": true
+            },
+            {
+              "name": "vendor_phone",
+              "label": "Vendor Phone",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Items Requested",
+          "fields": [
+            {
+              "name": "rfq_items",
+              "label": "Items for Quotation",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "item_description",
+                  "label": "Item Description",
+                  "type": "string"
+                },
+                {
+                  "name": "technical_spec",
+                  "label": "Technical Specification",
+                  "type": "text"
+                },
+                {
+                  "name": "qty_required",
+                  "label": "Qty Required",
+                  "type": "number"
+                },
+                {
+                  "name": "uom",
+                  "label": "UOM",
+                  "type": "string"
+                },
+                {
+                  "name": "preferred_brand",
+                  "label": "Preferred Brand / Model",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Commercial Terms",
+          "fields": [
+            {
+              "name": "payment_terms",
+              "label": "Required Payment Terms",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "warranty_required",
+              "label": "Warranty Required",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "rfq_dispatched",
+              "label": "RFQ dispatched to vendor?",
+              "type": "boolean",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D7.4",
+      "tool_title": "Vendor Selection Matrix",
+      "activity_name": "Quote Comparison",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One matrix per procurement category. Minimum 3 vendor quotes required for items > GHS 5,000.",
+      "notes": "Compares vendor quotes across price, lead time, quality rating, and payment terms. Procurement officer selects the approved vendor. Feeds into D7.5 (Purchase Order).",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Analysis Metadata",
+          "fields": [
+            {
+              "name": "procurement_officer",
+              "label": "Procurement Officer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "analysis_date",
+              "label": "Analysis Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "reference_rfq",
+              "label": "Reference RFQ Number",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "target_item_category",
+              "label": "Target Item / Category",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Vendor Comparison",
+          "description": "Minimum 3 quotes for items > GHS 5,000",
+          "fields": [
+            {
+              "name": "vendor_comparison",
+              "label": "Vendor Quotes",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "evaluation_criteria",
+                  "label": "Evaluation Criteria",
+                  "type": "string"
+                },
+                {
+                  "name": "vendor_a",
+                  "label": "Vendor A",
+                  "type": "string"
+                },
+                {
+                  "name": "vendor_b",
+                  "label": "Vendor B",
+                  "type": "string"
+                },
+                {
+                  "name": "vendor_c",
+                  "label": "Vendor C",
+                  "type": "string"
+                }
+              ],
+              "prefilled_rows": [
+                "Vendor Name",
+                "Unit Price (GHS)",
+                "Total Quote Value (GHS)",
+                "Lead Time (Days)",
+                "Quality / Brand Rating",
+                "Payment Terms",
+                "Warranty Offered"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Vendor Selection Decision",
+          "fields": [
+            {
+              "name": "approved_vendor",
+              "label": "Approved Vendor",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "selection_rationale",
+              "label": "Selection Rationale",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "approved_total_value_ghs",
+              "label": "Approved Total Value (GHS)",
+              "type": "currency",
+              "required": true
+            },
+            {
+              "name": "head_of_ops_signature",
+              "label": "Head of Operations Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D7.5",
+      "tool_title": "Approved Purchase Order",
+      "activity_name": "Purchase Order Issuance",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One PO per vendor per procurement cycle. Multiple POs may be active simultaneously.",
+      "notes": "Formal, legally binding purchase order issued to the selected vendor from D7.4. Must be signed by Head of Operations. Triggers delivery and leads to D7.6 inspection.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "PO Metadata",
+          "fields": [
+            {
+              "name": "po_number",
+              "label": "PO Number",
+              "type": "string",
+              "required": true,
+              "auto_generated": true
+            },
+            {
+              "name": "issued_by",
+              "label": "Issued By",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_issued",
+              "label": "Date Issued",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "expected_delivery_date",
+              "label": "Expected Delivery Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "vendor_name",
+              "label": "Vendor Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D7.4"
+            },
+            {
+              "name": "delivery_address",
+              "label": "Delivery Address",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Authorized Order Line Items",
+          "fields": [
+            {
+              "name": "order_items",
+              "label": "Line Items",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "item_description",
+                  "label": "Item Description",
+                  "type": "string"
+                },
+                {
+                  "name": "part_number",
+                  "label": "Part Number / Spec",
+                  "type": "string"
+                },
+                {
+                  "name": "qty_ordered",
+                  "label": "Qty Ordered",
+                  "type": "number"
+                },
+                {
+                  "name": "uom",
+                  "label": "UOM",
+                  "type": "string"
+                },
+                {
+                  "name": "unit_price_ghs",
+                  "label": "Unit Price (GHS)",
+                  "type": "currency"
+                },
+                {
+                  "name": "total_price_ghs",
+                  "label": "Total Price (GHS)",
+                  "type": "currency"
+                }
+              ],
+              "required": true,
+              "has_subtotal": true
+            },
+            {
+              "name": "po_total_value_ghs",
+              "label": "PO Total Value (GHS)",
+              "type": "currency",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Commercial Terms",
+          "fields": [
+            {
+              "name": "payment_terms",
+              "label": "Payment Terms",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "warranty_terms",
+              "label": "Warranty Terms",
+              "type": "string",
+              "required": false
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Authorization",
+          "fields": [
+            {
+              "name": "head_of_ops_signature",
+              "label": "Head of Operations Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D7.6",
+      "tool_title": "Incoming Inspection Report",
+      "activity_name": "Goods Receiving & QA",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One report per delivery / PO received. Any Fail or shortfall blocks goods from entering project stock until resolved.",
+      "notes": "QA inspection of goods received against the PO. Checks quantity, visual condition, and spec match. Failed items trigger vendor return or re-order. Accepted items feed into D7.7.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Receiving Metadata",
+          "fields": [
+            {
+              "name": "receiving_qa_officer",
+              "label": "Receiving QA Officer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_received",
+              "label": "Date Received",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "reference_po_number",
+              "label": "Reference PO Number",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D7.5"
+            },
+            {
+              "name": "vendor_waybill_number",
+              "label": "Vendor Delivery / Waybill #",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Item Inspection Log",
+          "fields": [
+            {
+              "name": "inspection_log",
+              "label": "Received Items",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "item_description",
+                  "label": "Item Description (from PO)",
+                  "type": "string"
+                },
+                {
+                  "name": "qty_ordered",
+                  "label": "Qty Ordered",
+                  "type": "number"
+                },
+                {
+                  "name": "qty_received",
+                  "label": "Qty Received",
+                  "type": "number"
+                },
+                {
+                  "name": "visual_condition",
+                  "label": "Visual Condition",
+                  "type": "enum",
+                  "options": [
+                    "Good",
+                    "Damaged"
+                  ]
+                },
+                {
+                  "name": "spec_match",
+                  "label": "Spec Match? (Yes/No)",
+                  "type": "enum",
+                  "options": [
+                    "Yes",
+                    "No"
+                  ]
+                },
+                {
+                  "name": "qa_status",
+                  "label": "QA Status",
+                  "type": "enum",
+                  "options": [
+                    "Accepted",
+                    "Rejected \u2014 Return to Vendor",
+                    "Pending Lab Test"
+                  ]
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Inspection Outcome",
+          "fields": [
+            {
+              "name": "all_items_accepted",
+              "label": "All items accepted into project stock?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "shortfall_items",
+              "label": "Shortfall / Rejected Items (if any)",
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "qa_officer_signature",
+              "label": "QA Officer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D7.7",
+      "tool_title": "Updated Inventory Ledger",
+      "activity_name": "Stock Allocation",
+      "tier": "both",
+      "notes": "Final tool in WB07. Allocates accepted goods from D7.6 into project-specific stock. Records staging location. Sign-off confirms all BOM items are received and staged for fabrication, unlocking WB08.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Ledger Metadata",
+          "fields": [
+            {
+              "name": "inventory_officer",
+              "label": "Inventory Officer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "allocation_date",
+              "label": "Allocation Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_client_name",
+              "label": "Project / Client Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "staging_location",
+              "label": "Staging Location",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "current_project_phase",
+              "label": "Current Project Phase",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "reference_inspection",
+              "label": "Reference Inspection Report",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Allocated Project Stock",
+          "description": "Ready for shop floor",
+          "fields": [
+            {
+              "name": "stock_ledger",
+              "label": "Allocated Stock Items",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "item_description",
+                  "label": "Item Description",
+                  "type": "string"
+                },
+                {
+                  "name": "part_number",
+                  "label": "Part Number",
+                  "type": "string"
+                },
+                {
+                  "name": "qty_allocated",
+                  "label": "Qty Allocated",
+                  "type": "number"
+                },
+                {
+                  "name": "uom",
+                  "label": "UOM",
+                  "type": "string"
+                },
+                {
+                  "name": "bin_location",
+                  "label": "Bin / Location",
+                  "type": "string"
+                },
+                {
+                  "name": "allocation_status",
+                  "label": "Allocation Status",
+                  "type": "enum",
+                  "options": [
+                    "Ready for Fabrication",
+                    "Awaiting Delivery",
+                    "Partially Received"
+                  ]
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Phase Unlock Sign-off",
+          "fields": [
+            {
+              "name": "all_bom_items_staged",
+              "label": "All critical BOM items received, inspected and staged for fabrication?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "inventory_officer_signature",
+              "label": "Inventory Officer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "head_of_ops_signature",
+              "label": "Head of Operations Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

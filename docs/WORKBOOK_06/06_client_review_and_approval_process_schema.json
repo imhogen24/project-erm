@@ -1,0 +1,1764 @@
+{
+  "workbook_id": 6,
+  "workbook_name": "Client Review and Approval Process",
+  "tools": [
+    {
+      "tool_id": "T3.D6.5.0a",
+      "tool_title": "T3 Reverse Engineering Validation",
+      "activity_name": "Physical-Digital Calibration",
+      "tier": 3,
+      "notes": "Filled after 3D modeling but before drafting. Compares physical field measurements against CAD model dimensions. Any Fail status blocks drafting until corrected.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Physical vs. Digital Calibration",
+          "fields": [
+            {
+              "name": "calibration_check",
+              "label": "Critical Feature Measurements",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "critical_feature",
+                  "label": "Critical Feature",
+                  "type": "string"
+                },
+                {
+                  "name": "physical_dim_mm",
+                  "label": "Physical Dim (mm)",
+                  "type": "number"
+                },
+                {
+                  "name": "cad_dim_mm",
+                  "label": "CAD Dim (mm)",
+                  "type": "number"
+                },
+                {
+                  "name": "variance",
+                  "label": "Variance",
+                  "type": "number"
+                },
+                {
+                  "name": "tolerance_status",
+                  "label": "Tolerance Status",
+                  "type": "enum",
+                  "options": [
+                    "Pass",
+                    "Fail"
+                  ]
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "all_checks_pass",
+              "label": "All critical features within tolerance?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "lead_engineer_signature",
+              "label": "Lead Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "T3.D6.5.1a",
+      "tool_title": "T3 3D Modeling Execution",
+      "activity_name": "Feature Reconstruction",
+      "tier": 3,
+      "notes": "Feature reconstruction log for reverse engineering projects. Each row tracks a component from source data through to validated CAD model. References T3.D1.8a field log for validation.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Modeling Strategy",
+          "fields": [
+            {
+              "name": "source_data_type",
+              "label": "Source Data Type",
+              "type": "enum",
+              "options": [
+                "Point Cloud",
+                "Sketch",
+                "Part",
+                "Drawing"
+              ],
+              "required": true
+            },
+            {
+              "name": "modeling_software",
+              "label": "Modeling Software",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Feature Reconstruction Log",
+          "fields": [
+            {
+              "name": "reconstruction_log",
+              "label": "Component Reconstruction Status",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "component_part",
+                  "label": "Component / Part",
+                  "type": "string"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Done",
+                    "WIP",
+                    "Not Started"
+                  ]
+                },
+                {
+                  "name": "modeling_technique",
+                  "label": "Modeling Technique",
+                  "type": "string"
+                },
+                {
+                  "name": "validation_vs_field_log",
+                  "label": "Validation vs. Field Log (T3.D1.8a)",
+                  "type": "string"
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Design Intent Preservation",
+          "fields": [
+            {
+              "name": "design_intent_notes",
+              "label": "Design Intent Notes",
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "cad_master_link",
+              "label": "CAD Master File Link",
+              "type": "file_link",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "all_features_reconstructed",
+              "label": "All components reconstructed and validated against field log?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "lead_engineer_signature",
+              "label": "Lead Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.5.1",
+      "tool_title": "EDDMS Project Hub",
+      "activity_name": "CAD Project Setup",
+      "tier": 1,
+      "notes": "Engineering Drawing and Document Management System project hub. Defines CAD master file, team, part/assembly count, and phase deadlines. Set up once per project at the start of WB06.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Project Metadata & Deadlines",
+          "fields": [
+            {
+              "name": "project_machine_name",
+              "label": "Project / Machine Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "cad_master_file",
+              "label": "CAD Master File Name",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "lead_engineer",
+              "label": "Lead Engineer",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D4.3"
+            },
+            {
+              "name": "lead_draftsman",
+              "label": "Lead Draftsman",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D4.3"
+            },
+            {
+              "name": "total_parts_assemblies",
+              "label": "Total Parts / Assemblies (from D6.5.2 BOM)",
+              "type": "number",
+              "required": true,
+              "inherited_from": "D6.5.2"
+            },
+            {
+              "name": "phase_deadlines",
+              "label": "Drafting Phase Deadlines",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "phase",
+                  "label": "Drafting Phase",
+                  "type": "string",
+                  "locked": true
+                },
+                {
+                  "name": "deadline",
+                  "label": "Deadline Date",
+                  "type": "date"
+                }
+              ],
+              "prefilled_rows": [
+                "Phase 1 \u2014 Representation",
+                "Phase 2 \u2014 Presentation",
+                "Phase 3 \u2014 Sheet Metal",
+                "Phase 4 \u2014 Placement",
+                "Phase 5 \u2014 BOM / Lists",
+                "Phase 6 \u2014 Dimensioning"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "lead_engineer_signature",
+              "label": "Lead Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.5.3",
+      "tool_title": "Drafting Execution Engine",
+      "activity_name": "Component-Level Drafting",
+      "tier": 1,
+      "notes": "Per-component drafting status matrix. Tracks each part and assembly through 7 drafting phases (Representation, Presentation, Sheet Metal, Placement, BOM/Lists, Dimensioning, Notes). Overall Status and QA Reviewer assigned per component.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Drafting Execution Matrix",
+          "fields": [
+            {
+              "name": "drafting_matrix",
+              "label": "Component Drafting Status",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "item_id",
+                  "label": "Item ID",
+                  "type": "string"
+                },
+                {
+                  "name": "component_name",
+                  "label": "Component Name",
+                  "type": "string"
+                },
+                {
+                  "name": "assignee",
+                  "label": "Assignee",
+                  "type": "string"
+                },
+                {
+                  "name": "priority",
+                  "label": "Priority",
+                  "type": "enum",
+                  "options": [
+                    "High",
+                    "Med",
+                    "Low"
+                  ]
+                },
+                {
+                  "name": "phase_1_rep",
+                  "label": "1. Rep",
+                  "type": "enum",
+                  "options": [
+                    "Done",
+                    "WIP",
+                    "N/A",
+                    "Pending"
+                  ]
+                },
+                {
+                  "name": "phase_2_pres",
+                  "label": "2. Pres",
+                  "type": "enum",
+                  "options": [
+                    "Done",
+                    "WIP",
+                    "N/A",
+                    "Pending"
+                  ]
+                },
+                {
+                  "name": "phase_3_sht_metal",
+                  "label": "3. Sht Metal",
+                  "type": "enum",
+                  "options": [
+                    "Done",
+                    "WIP",
+                    "N/A",
+                    "Pending"
+                  ]
+                },
+                {
+                  "name": "phase_4_place",
+                  "label": "4. Place",
+                  "type": "enum",
+                  "options": [
+                    "Done",
+                    "WIP",
+                    "N/A",
+                    "Pending"
+                  ]
+                },
+                {
+                  "name": "phase_5_bom",
+                  "label": "5. BOM",
+                  "type": "enum",
+                  "options": [
+                    "Done",
+                    "WIP",
+                    "N/A",
+                    "Pending"
+                  ]
+                },
+                {
+                  "name": "phase_6_dims",
+                  "label": "6. Dims",
+                  "type": "enum",
+                  "options": [
+                    "Done",
+                    "WIP",
+                    "N/A",
+                    "Pending"
+                  ]
+                },
+                {
+                  "name": "phase_7_notes",
+                  "label": "7. Notes",
+                  "type": "enum",
+                  "options": [
+                    "Done",
+                    "WIP",
+                    "N/A",
+                    "Pending"
+                  ]
+                },
+                {
+                  "name": "overall_status",
+                  "label": "Overall Status",
+                  "type": "enum",
+                  "options": [
+                    "Ready for QA",
+                    "In Progress",
+                    "Pending",
+                    "Blocked"
+                  ]
+                },
+                {
+                  "name": "qa_reviewer",
+                  "label": "QA Reviewer",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.5.4",
+      "tool_title": "QA & Drawing Review Log",
+      "activity_name": "Internal QA Review",
+      "tier": "both",
+      "notes": "Final internal QA before TDP is sent to client (D6.1). One row per drawing per focus area checked. Any Fail blocks client dispatch until resolved. Used by both T1 and T3 paths.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "QA & Internal Review Log",
+          "fields": [
+            {
+              "name": "qa_log",
+              "label": "QA Review Entries",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "review_date",
+                  "label": "Review Date",
+                  "type": "date"
+                },
+                {
+                  "name": "dwg_component_name",
+                  "label": "Dwg / Component Name",
+                  "type": "string"
+                },
+                {
+                  "name": "focus_area",
+                  "label": "Focus Area Checked",
+                  "type": "string"
+                },
+                {
+                  "name": "qa_assessment",
+                  "label": "QA Assessment",
+                  "type": "enum",
+                  "options": [
+                    "Pass",
+                    "Fail"
+                  ]
+                },
+                {
+                  "name": "errors_notes",
+                  "label": "Identified Errors / Notes",
+                  "type": "text"
+                },
+                {
+                  "name": "action_required",
+                  "label": "Draftsman Action Required",
+                  "type": "text"
+                },
+                {
+                  "name": "issue_status",
+                  "label": "Issue Status",
+                  "type": "enum",
+                  "options": [
+                    "Open",
+                    "Pending Fix",
+                    "Closed"
+                  ]
+                },
+                {
+                  "name": "auditor_signoff",
+                  "label": "Auditor Sign-off",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "QA Gate Sign-off",
+          "fields": [
+            {
+              "name": "all_issues_closed",
+              "label": "All identified issues resolved and closed?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "head_of_engineering_signature",
+              "label": "Head of Engineering Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.1",
+      "tool_title": "Client Delivery Transmittal",
+      "activity_name": "TDP Dispatch",
+      "tier": "both",
+      "notes": "Formal record of TDP delivery to client. Lists every file in the package with its format, secure link, and QA verification status. Triggers the client review clock.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Dispatch Metadata",
+          "fields": [
+            {
+              "name": "sent_by",
+              "label": "Sent By (Project Manager)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_sent",
+              "label": "Date Sent",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_client_name",
+              "label": "Project / Client Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "sent_to",
+              "label": "Sent To (Client Rep)",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Technical Data Package (TDP) Contents",
+          "fields": [
+            {
+              "name": "tdp_contents",
+              "label": "TDP Files",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "document_description",
+                  "label": "Document / File Description",
+                  "type": "string"
+                },
+                {
+                  "name": "file_format",
+                  "label": "File Format",
+                  "type": "string"
+                },
+                {
+                  "name": "secure_link",
+                  "label": "Secure Link / Attachment",
+                  "type": "file_link"
+                },
+                {
+                  "name": "internal_qa_verified",
+                  "label": "Internal QA Verified?",
+                  "type": "boolean"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Dispatch Confirmation",
+          "fields": [
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_dispatched",
+              "label": "Date Dispatched",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.2",
+      "tool_title": "Presentation Meeting Invite & Agenda",
+      "activity_name": "Review Meeting Scheduling",
+      "tier": "both",
+      "notes": "Schedules the design presentation meeting with the client. Contains a standard invite email script and meeting agenda. Calendar invite must be sent before D6.3 can be created.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Meeting Metadata",
+          "fields": [
+            {
+              "name": "proposed_date",
+              "label": "Proposed Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "meeting_time",
+              "label": "Time",
+              "type": "time",
+              "required": true
+            },
+            {
+              "name": "platform_location",
+              "label": "Platform / Location",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "lead_presenter",
+              "label": "Lead Presenter",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "required_client_attendees",
+              "label": "Required Client Attendees",
+              "type": "text",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Standard Invite Script",
+          "fields": [
+            {
+              "name": "invite_script",
+              "label": "Invite Email Script",
+              "type": "instruction",
+              "content": "Dear [Client Name],\n\nFollowing the delivery of your preliminary design package, we would like to formally present the engineering designs and gather your structured feedback.\n\nPlease review the Technical Data Package sent via D6.1 before our session.\n\nAgenda:\n1. Design Walkthrough & Key Decisions (20 mins)\n2. Open Questions & Client Concerns (15 mins)\n3. Formal Feedback Collection (10 mins)\n\nPlease confirm your attendance at your earliest convenience.\n\n[PM Name] | IMHOGEN LTD"
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Scheduling Confirmation",
+          "fields": [
+            {
+              "name": "calendar_invite_sent",
+              "label": "Calendar invite sent to all required attendees?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.3",
+      "tool_title": "Presentation Meeting Minutes",
+      "activity_name": "Review Meeting",
+      "tier": "both",
+      "notes": "Captures live client reactions and feedback during the design presentation. Each comment is logged with IMHOGEN's live response. Feeds into D6.4 for formal revision requests.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Meeting Execution Metadata",
+          "fields": [
+            {
+              "name": "actual_date",
+              "label": "Actual Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "lead_presenter",
+              "label": "Lead Presenter",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "client_attendees",
+              "label": "Client Attendees Present",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "note_taker",
+              "label": "Note Taker",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Live Feedback Capture",
+          "fields": [
+            {
+              "name": "feedback",
+              "label": "Client Feedback Log",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "design_module",
+                  "label": "Design Module Addressed",
+                  "type": "string"
+                },
+                {
+                  "name": "client_comment",
+                  "label": "Client Comment / Question",
+                  "type": "text"
+                },
+                {
+                  "name": "imhogen_response",
+                  "label": "IMHOGEN Live Response / Clarification",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Meeting Outcome",
+          "fields": [
+            {
+              "name": "client_initial_reaction",
+              "label": "Client Initial Reaction",
+              "type": "enum",
+              "options": [
+                "Accepted as-is",
+                "Minor revisions requested",
+                "Major revisions requested",
+                "Rejected"
+              ],
+              "required": true
+            },
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.4",
+      "tool_title": "Client Feedback Form",
+      "activity_name": "Formal Revision Request",
+      "tier": "both",
+      "notes": "Completed by the client. Captures formal, structured revision requests with business justification and priority. The authorised client signatory must sign. Feeds into D6.5 and D6.6.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Project & Client Metadata",
+          "fields": [
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "client_organization",
+              "label": "Client Organization",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "authorized_client_signatory",
+              "label": "Authorized Client Signatory",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "form_dispatched_date",
+              "label": "Form Dispatched Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "form_returned_date",
+              "label": "Form Returned Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "imhogen_pm",
+              "label": "IMHOGEN Project Manager",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Formal Revision Requests",
+          "description": "Completed by client",
+          "fields": [
+            {
+              "name": "revision_requests",
+              "label": "Revision Requests",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "design_module_ref",
+                  "label": "Design Module / Reference Drawing",
+                  "type": "string"
+                },
+                {
+                  "name": "change_requested",
+                  "label": "Specific Change Requested",
+                  "type": "text"
+                },
+                {
+                  "name": "reason",
+                  "label": "Reason / Business Justification",
+                  "type": "text"
+                },
+                {
+                  "name": "priority",
+                  "label": "Priority",
+                  "type": "enum",
+                  "options": [
+                    "High",
+                    "Med",
+                    "Low"
+                  ]
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Client Sign-off",
+          "fields": [
+            {
+              "name": "client_signature",
+              "label": "Authorized Client Signatory Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.5",
+      "tool_title": "Master Revision Log",
+      "activity_name": "Revision Tracking",
+      "tier": "both",
+      "notes": "Internal PM tracker for all revision requests from D6.3 and D6.4. Tracks status of each revision: Pending / Approved / Rejected / Aborted. PM must classify before D6.6 scope assessment.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Tracking Metadata",
+          "fields": [
+            {
+              "name": "project_manager",
+              "label": "Project Manager",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "project_client_name",
+              "label": "Project / Client Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "total_revisions_logged",
+              "label": "Total Revisions Logged",
+              "type": "number",
+              "required": false
+            },
+            {
+              "name": "open_revisions",
+              "label": "Open Revisions",
+              "type": "number",
+              "required": false
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Revision Tracker",
+          "fields": [
+            {
+              "name": "revisions",
+              "label": "Revision Entries",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "source",
+                  "label": "Source (D6.3 / D6.4)",
+                  "type": "string"
+                },
+                {
+                  "name": "change_requested",
+                  "label": "Specific Change Requested",
+                  "type": "text"
+                },
+                {
+                  "name": "status",
+                  "label": "Current Status",
+                  "type": "enum",
+                  "options": [
+                    "Pending Scope Assessment",
+                    "Approved",
+                    "Rejected",
+                    "Aborted"
+                  ]
+                },
+                {
+                  "name": "pm_notes",
+                  "label": "PM Notes",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.6",
+      "tool_title": "Scope Assessment Report",
+      "activity_name": "Contract Alignment Check",
+      "tier": "both",
+      "notes": "For each revision in D6.5, determines if it is within the original contract scope (D2.12). Out-of-scope changes trigger a change order. PM must sign off before engineering revision tickets (D6.7) are issued.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Assessment Metadata",
+          "fields": [
+            {
+              "name": "assessing_pm",
+              "label": "Assessing PM",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "reference_contract",
+              "label": "Reference Contract",
+              "type": "file_link",
+              "required": true,
+              "inherited_from": "D2.12"
+            },
+            {
+              "name": "reference_revision_log",
+              "label": "Reference Revision Log",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Scope Alignment & Impact Analysis",
+          "fields": [
+            {
+              "name": "scope_assessment",
+              "label": "Revision Scope Analysis",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "requested_change",
+                  "label": "Requested Change (from D6.5)",
+                  "type": "text"
+                },
+                {
+                  "name": "in_scope",
+                  "label": "In Scope? (Yes/No)",
+                  "type": "enum",
+                  "options": [
+                    "Yes",
+                    "No"
+                  ]
+                },
+                {
+                  "name": "engineering_effort_hrs",
+                  "label": "Estimated Engineering Effort (Hours)",
+                  "type": "number"
+                },
+                {
+                  "name": "fabrication_cost_impact_ghs",
+                  "label": "Estimated Fabrication Cost Impact (GHS)",
+                  "type": "currency"
+                },
+                {
+                  "name": "directive",
+                  "label": "Final Directive",
+                  "type": "enum",
+                  "options": [
+                    "Execute",
+                    "Change Order Required",
+                    "Reject"
+                  ]
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.7",
+      "tool_title": "Engineering Revision Tickets",
+      "activity_name": "CAD Work Order Issuance",
+      "tier": "both",
+      "notes": "Formal CAD work orders issued to the engineering team based on approved revisions from D6.6. Each ticket specifies the assigned engineer, required CAD tool, task description, hours, and status.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Ticket Metadata",
+          "fields": [
+            {
+              "name": "issuing_pm",
+              "label": "Issuing PM",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_issued",
+              "label": "Date Issued",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_client_name",
+              "label": "Project / Client Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "reference_assessment",
+              "label": "Reference Assessment",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Revision Work Orders",
+          "description": "Assigned to CAD team",
+          "fields": [
+            {
+              "name": "work_orders",
+              "label": "Revision Tickets",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "ticket_id",
+                  "label": "Ticket ID",
+                  "type": "string"
+                },
+                {
+                  "name": "source_change",
+                  "label": "Source Change (from D6.6)",
+                  "type": "text"
+                },
+                {
+                  "name": "assigned_engineer",
+                  "label": "Assigned Engineer",
+                  "type": "string"
+                },
+                {
+                  "name": "required_cad_tool",
+                  "label": "Required CAD Tool",
+                  "type": "string"
+                },
+                {
+                  "name": "task_description",
+                  "label": "Task Description",
+                  "type": "text"
+                },
+                {
+                  "name": "allocated_hours",
+                  "label": "Allocated Hours",
+                  "type": "number"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Pending",
+                    "In Progress",
+                    "Done"
+                  ]
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.8",
+      "tool_title": "Revised Technical Data Package",
+      "activity_name": "TDP Version Control",
+      "tier": "both",
+      "notes": "Version-controlled manifest of the revised TDP. Lists every file in the updated package with version number and vault link. Supersedes the previous D6.1 dispatch. Goes to D6.9 for internal QA before re-dispatch.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Package Metadata",
+          "fields": [
+            {
+              "name": "compiled_by",
+              "label": "Compiled By (Project Manager)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "compilation_date",
+              "label": "Compilation Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "new_package_version",
+              "label": "New Package Version",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "previous_package",
+              "label": "Previous Package Version",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Revised File Inventory",
+          "fields": [
+            {
+              "name": "file_inventory",
+              "label": "Revised TDP Files",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "document_description",
+                  "label": "Document / File Description",
+                  "type": "string"
+                },
+                {
+                  "name": "file_format",
+                  "label": "File Format",
+                  "type": "string"
+                },
+                {
+                  "name": "vault_link",
+                  "label": "Link to Vault / Server",
+                  "type": "file_link"
+                },
+                {
+                  "name": "version_number",
+                  "label": "Version Number",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.9",
+      "tool_title": "Revision QA Sign-off",
+      "activity_name": "Internal Verification",
+      "tier": "both",
+      "notes": "Internal QA gate before re-dispatching revised TDP to client. Head of Engineering verifies each D6.7 ticket was executed correctly. Any Fail blocks re-dispatch.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "QA Metadata",
+          "fields": [
+            {
+              "name": "reviewing_officer",
+              "label": "Reviewing Officer (Head of Engineering)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "review_date",
+              "label": "Review Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "reference_tdp",
+              "label": "Reference TDP (D6.8 version)",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Quality & Compliance Checklist",
+          "fields": [
+            {
+              "name": "qa_checklist",
+              "label": "Verification Points",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "verification_point",
+                  "label": "Verification Point",
+                  "type": "text"
+                },
+                {
+                  "name": "status",
+                  "label": "Status (Pass / Fail)",
+                  "type": "enum",
+                  "options": [
+                    "Pass",
+                    "Fail"
+                  ]
+                },
+                {
+                  "name": "qa_comments",
+                  "label": "QA Officer Comments",
+                  "type": "text"
+                }
+              ],
+              "prefilled_rows": [
+                "Do the updated CAD files explicitly match the exact requests from D6.7?",
+                "Have all previous QA failures from D6.5.4 been resolved?",
+                "Are all BOM items updated to reflect revision changes?",
+                "Is the new TDP version number correctly applied to all files?"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "QA Gate Decision",
+          "fields": [
+            {
+              "name": "all_checks_pass",
+              "label": "All verification points passed?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "head_of_engineering_signature",
+              "label": "Head of Engineering Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.10",
+      "tool_title": "Delivery & Acceptance Form",
+      "activity_name": "Official CAD Lock",
+      "tier": 1,
+      "notes": "Client formally accepts the TDP and signs to confirm the design is approved. This is the CAD Lock document. Once signed, all native CAD files are set to read-only. Unlocks D6.11.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Acceptance Metadata",
+          "fields": [
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "client_organization",
+              "label": "Client Organization",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "authorized_client_signatory",
+              "label": "Authorized Client Signatory",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "reference_tdp_version",
+              "label": "Reference TDP Version",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D6.8"
+            },
+            {
+              "name": "date_dispatched",
+              "label": "Date Dispatched",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "imhogen_lead_pm",
+              "label": "IMHOGEN Lead PM",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Formal Declaration of Acceptance",
+          "fields": [
+            {
+              "name": "acceptance_declaration",
+              "label": "Acceptance Terms",
+              "type": "instruction",
+              "content": "By signing this document, the Client formally acknowledges and agrees:\n1. The engineering design, as represented in the TDP, meets all functional and technical requirements in the original Project Brief.\n2. No further design revisions will be requested under the current contract terms.\n3. IMHOGEN LTD is formally authorized to proceed to the next project phase (Fabrication / Delivery)."
+            },
+            {
+              "name": "client_accepts_design",
+              "label": "Client formally accepts the design and authorises next phase?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "client_signature",
+              "label": "Authorized Client Signatory Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "client_date",
+              "label": "Client Sign Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "pm_signature",
+              "label": "IMHOGEN Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "pm_date",
+              "label": "PM Sign Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "T3.D6.10a",
+      "tool_title": "T3 Drafting Approval & Delivery",
+      "activity_name": "T3 Client Acceptance",
+      "tier": 3,
+      "notes": "T3 equivalent of D6.10. Client confirms drawing dimensions and specs are correct. Asset release checklist confirms all deliverables (PDFs, DXFs, native files) are released to the correct storage location.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Client Acceptance of Drawings",
+          "fields": [
+            {
+              "name": "tdp_version_accepted",
+              "label": "TDP Version Accepted",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_of_acceptance",
+              "label": "Date of Acceptance",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "client_signature",
+              "label": "Authorized Client Signatory Signature",
+              "type": "signature",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Asset Release Checklist",
+          "fields": [
+            {
+              "name": "asset_release",
+              "label": "Deliverable Items",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "deliverable_item",
+                  "label": "Deliverable Item",
+                  "type": "string"
+                },
+                {
+                  "name": "format_released",
+                  "label": "Format Released",
+                  "type": "string"
+                },
+                {
+                  "name": "storage_link",
+                  "label": "Storage Link / Attachment ID",
+                  "type": "file_link"
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "text"
+                }
+              ],
+              "prefilled_rows": [
+                "Production Drawings",
+                "3D Model (If Paid)",
+                "DXF / DWG Export",
+                "BOM Export"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "pm_date",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D6.11",
+      "tool_title": "Project Phase Closure Notice",
+      "activity_name": "Phase Closure & Unlock",
+      "tier": "both",
+      "notes": "Final tool in WB06. Confirms CAD lock actions are complete and unlocks the next phase (WB07 Procurement or WB08 Fabrication depending on project type). Signing off sets projects.status = 'Fabrication Phase'.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Closure Metadata",
+          "fields": [
+            {
+              "name": "project_manager",
+              "label": "Project Manager",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "closure_date",
+              "label": "Closure Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "client_signoff_ref",
+              "label": "Client Sign-off Reference (D6.10 / T3.D6.10a)",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Phase Completion Checklist",
+          "fields": [
+            {
+              "name": "closure_checklist",
+              "label": "Closure Actions",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "task",
+                  "label": "Task / Action Item",
+                  "type": "text"
+                },
+                {
+                  "name": "assignee",
+                  "label": "Assignee",
+                  "type": "string"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Done",
+                    "Pending"
+                  ]
+                }
+              ],
+              "prefilled_rows": [
+                "All native CAD files locked to Read-Only to prevent accidental edits",
+                "Final Bill of Materials (BOM) exported for Procurement",
+                "All design files backed up to project vault",
+                "D6.10 client acceptance form filed in project archive"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Phase Unlock Sign-off",
+          "fields": [
+            {
+              "name": "all_closure_items_done",
+              "label": "All closure actions completed?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "head_of_ops_signature",
+              "label": "Head of Operations Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

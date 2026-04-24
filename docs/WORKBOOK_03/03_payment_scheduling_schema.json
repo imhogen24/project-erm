@@ -1,0 +1,635 @@
+{
+  "workbook_id": 3,
+  "workbook_name": "Payment Scheduling and Fund Management Process",
+  "notes": "D3.1 and D3.2 are set up once per project. D3.3 through D3.10 form a repeating cycle that runs once per payment milestone (Advance, Fabrication Milestone, Final Handover). D3.11 is conditional — triggered if a payment is overdue.",
+  "tools": [
+    {
+      "tool_id": "D3.1",
+      "tool_title": "Payment Terms Extract",
+      "activity_name": "Financial Baseline Setup",
+      "tier": "both",
+      "notes": "Set up once per project immediately after D2.12 is completed. Extracts the agreed payment schedule from the executed contract to serve as Finance's baseline. All subsequent invoices must match these terms.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Contract Metadata",
+          "fields": [
+            { "name": "extracted_by", "label": "Extracted By (Admin)", "type": "string", "required": true },
+            { "name": "extraction_date", "label": "Extraction Date", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "link_to_executed_pdf", "label": "Link to Executed Contract PDF (D2.12)", "type": "file_link", "required": true, "inherited_from": "D2.12" },
+            { "name": "total_project_value_ghs", "label": "Total Project Value (GHS)", "type": "currency", "required": true, "inherited_from": "D2.12" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Approved Payment Schedule",
+          "description": "Extracted directly from the executed contract. Do not alter values — this is the contractual baseline.",
+          "fields": [
+            {
+              "name": "payment_schedule",
+              "label": "Milestone Payment Schedule",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "milestone_description", "label": "Milestone Description", "type": "string" },
+                { "name": "percentage", "label": "Percentage (%)", "type": "percentage" },
+                { "name": "amount_due_ghs", "label": "Amount Due (GHS)", "type": "currency" },
+                { "name": "contract_clause_ref", "label": "Contract Clause Ref", "type": "string" }
+              ],
+              "prefilled_rows": [
+                "Advance Payment (Contract Signing)",
+                "Fabrication Milestone (Design Approval)",
+                "Final Handover (System Delivery)"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Financial Compliance Rules",
+          "description": "Agreed terms extracted from the contract — governs all invoice generation in D3.4",
+          "fields": [
+            {
+              "name": "compliance_rules",
+              "label": "Compliance Terms",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "rule_category", "label": "Rule Category", "type": "string", "locked": true },
+                { "name": "agreed_term", "label": "Agreed Term", "type": "text" },
+                { "name": "contract_clause_ref", "label": "Contract Clause Ref", "type": "string" }
+              ],
+              "prefilled_rows": [
+                "Invoice Payment Window",
+                "Late Payment Penalty",
+                "Tax / VAT Obligations",
+                "Accepted Currency"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Finance Handoff Verification",
+          "fields": [
+            { "name": "finance_officer_accepted", "label": "Has the Finance Officer reviewed and accepted this extraction?", "type": "boolean", "required": true },
+            { "name": "finance_officer_signature", "label": "Finance Officer Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D3.2",
+      "tool_title": "Systems Payment Record",
+      "activity_name": "Payment Schedule Tracking",
+      "tier": "both",
+      "notes": "Live ledger updated as each milestone invoice is raised and cleared. Created once per project but updated throughout the project lifecycle. The overall_financial_health fields drive Finance dashboard reporting.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Tracking Metadata",
+          "fields": [
+            { "name": "tracking_officer", "label": "Tracking Officer", "type": "string", "required": true },
+            { "name": "date_initiated", "label": "Date Initiated", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "reference_terms", "label": "Reference Terms (D3.1)", "type": "string", "required": true, "inherited_from": "D3.1" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Milestone Payment Schedule — Expected vs Actual",
+          "description": "Updated each time a milestone cycle (D3.3 → D3.10) completes",
+          "fields": [
+            {
+              "name": "payment_tracking",
+              "label": "Milestone Payment Tracker",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "milestone_description", "label": "Milestone Description", "type": "string", "locked": true },
+                { "name": "expected_amount_ghs", "label": "Expected Amount (GHS)", "type": "currency", "inherited_from": "D3.1" },
+                { "name": "expected_trigger_date", "label": "Expected Trigger Date", "type": "date" },
+                { "name": "actual_invoice_date", "label": "Actual Invoice Date", "type": "date" },
+                { "name": "actual_clearance_date", "label": "Actual Clearance Date", "type": "date" },
+                { "name": "variance_status", "label": "Variance / Status", "type": "enum", "options": ["Pending", "Invoiced", "Cleared On Time", "Cleared Late", "Overdue"] }
+              ],
+              "prefilled_rows": [
+                "Advance Payment",
+                "Fabrication Milestone",
+                "Final Handover"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Overall Financial Health",
+          "fields": [
+            { "name": "total_project_value_ghs", "label": "Total Project Value (GHS)", "type": "currency", "required": true, "inherited_from": "D3.1" },
+            { "name": "total_amount_cleared_ghs", "label": "Total Amount Cleared (GHS)", "type": "currency", "required": true },
+            { "name": "outstanding_balance_ghs", "label": "Outstanding Balance (GHS)", "type": "currency", "required": true },
+            { "name": "financial_status", "label": "Financial Status", "type": "enum", "options": ["Healthy", "At Risk", "Overdue"], "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D3.3",
+      "tool_title": "Milestone Billing Trigger",
+      "activity_name": "Billing Trigger",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One instance per payment milestone. PM fills this when a technical milestone is achieved to authorize Finance to generate the next invoice.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Trigger Metadata",
+          "fields": [
+            { "name": "trigger_sent_by", "label": "Trigger Sent By (Project Manager)", "type": "string", "required": true },
+            { "name": "date_sent", "label": "Date Sent", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "recipient_finance_officer", "label": "Recipient (Finance Officer)", "type": "string", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Milestone Verification",
+          "fields": [
+            { "name": "milestone_achieved", "label": "Milestone Achieved", "type": "string", "required": true },
+            { "name": "proof_of_completion_link", "label": "Proof of Completion Link", "type": "file_link", "required": true },
+            { "name": "contractual_milestone_value", "label": "Contractual Milestone Value (GHS)", "type": "currency", "required": true, "inherited_from": "D3.1" }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Engineering Authorization",
+          "fields": [
+            { "name": "client_formally_accepted_milestone", "label": "Has the client formally accepted this milestone deliverable?", "type": "boolean", "required": true },
+            { "name": "outstanding_engineering_disputes", "label": "Are there any outstanding engineering disputes regarding this phase?", "type": "boolean", "required": true },
+            { "name": "pm_signature", "label": "Project Manager Signature", "type": "signature", "required": true }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Finance Receipt & Action",
+          "fields": [
+            { "name": "date_trigger_received", "label": "Date Trigger Received by Finance", "type": "date", "required": true },
+            { "name": "finance_officer", "label": "Finance Officer", "type": "string", "required": true },
+            { "name": "action_taken", "label": "Action Taken", "type": "enum", "options": ["Proceed to D3.4 Draft Invoice", "Rejected — returned to PM"], "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D3.4",
+      "tool_title": "Draft Invoice",
+      "activity_name": "Invoice Generation",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One instance per payment milestone. Finance generates after D3.3 is approved.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Invoice Metadata",
+          "fields": [
+            { "name": "generated_by", "label": "Generated By (Finance Officer)", "type": "string", "required": true },
+            { "name": "date_drafted", "label": "Date Drafted", "type": "date", "required": true },
+            { "name": "invoice_number", "label": "Invoice Number", "type": "string", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "client_billing_address", "label": "Client Billing Address", "type": "text", "required": true, "inherited_from": "D1.3" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Invoice Line Items",
+          "fields": [
+            {
+              "name": "line_items",
+              "label": "Service Line Items",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "description", "label": "Description of Services / Milestone", "type": "text" },
+                { "name": "quantity", "label": "Quantity", "type": "number" },
+                { "name": "unit_price_ghs", "label": "Unit Price (GHS)", "type": "currency" },
+                { "name": "total_amount_ghs", "label": "Total Amount (GHS)", "type": "currency" }
+              ],
+              "has_subtotal": true,
+              "required": true
+            },
+            { "name": "vat_tax_ghs", "label": "VAT / Tax (if applicable)", "type": "currency", "required": false },
+            { "name": "total_amount_due_ghs", "label": "Total Amount Due (GHS)", "type": "currency", "required": true }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Payment Details & Terms",
+          "description": "Verified against D3.1 compliance rules — do not alter",
+          "fields": [
+            { "name": "bank_name", "label": "Bank Name", "type": "string", "required": true },
+            { "name": "account_name", "label": "Account Name", "type": "string", "required": true },
+            { "name": "account_number", "label": "Account Number", "type": "string", "required": true },
+            { "name": "branch", "label": "Branch", "type": "string", "required": true },
+            { "name": "payment_due_date", "label": "Payment Due Date", "type": "date", "required": true },
+            { "name": "late_penalty", "label": "Late Penalty", "type": "string", "required": true, "inherited_from": "D3.1" }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Draft Routing",
+          "fields": [
+            { "name": "draft_complete", "label": "Draft Complete and Ready for Head of Finance Approval (D3.5)?", "type": "boolean", "required": true },
+            { "name": "finance_officer_signature", "label": "Finance Officer Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D3.5",
+      "tool_title": "Approved Invoice",
+      "activity_name": "Invoice Approval",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One instance per payment milestone. Head of Finance locks the invoice before it is sent to the client.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Approval Metadata",
+          "fields": [
+            { "name": "reviewing_officer", "label": "Reviewing Officer (Head of Finance)", "type": "string", "required": true },
+            { "name": "date_received_for_review", "label": "Date Received for Review", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Financial Quality Control Checklist",
+          "fields": [
+            {
+              "name": "qc_checklist",
+              "label": "Invoice QC Points",
+              "type": "checklist",
+              "items": [
+                "Does the Total Amount perfectly match the milestone value in D3.1?",
+                "Are the VAT / Tax calculations legally compliant and accurate?",
+                "Are IMHOGEN's bank details correct?",
+                "Is the 21-day payment window explicitly stated?"
+              ],
+              "column_labels": { "status": "Status (Pass / Fail)", "finance_head_comments": "Finance Head Comments" },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Document Conversion & Lock",
+          "fields": [
+            {
+              "name": "pdf_lock_checklist",
+              "label": "PDF Lock Tasks",
+              "type": "checklist",
+              "items": [
+                "Has the approved invoice been exported as a static, non-editable PDF?",
+                "Is the locked PDF named per standard convention (e.g. IMHO_INV26_002_ClientName)?"
+              ],
+              "column_labels": { "assignee": "Assignee", "status": "Status (Pending / Done)" },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Approval Routing",
+          "fields": [
+            { "name": "invoice_authorized_for_transmittal", "label": "Invoice Locked and Authorized for Client Transmittal (D3.6)?", "type": "boolean", "required": true },
+            { "name": "head_of_finance_signature", "label": "Head of Finance Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D3.6",
+      "tool_title": "Transmitted Invoice Record",
+      "activity_name": "Invoice Transmittal",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One instance per payment milestone. Dispatch log for sending the locked invoice PDF to the client. Starts the 21-day payment clock.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Dispatch Metadata",
+          "fields": [
+            { "name": "sent_to", "label": "Sent To (Client Billing Email)", "type": "email", "required": true, "inherited_from": "D1.3" },
+            { "name": "cc_bcc", "label": "CC / BCC (Project Manager)", "type": "string", "required": false },
+            { "name": "date_sent", "label": "Date Sent", "type": "date", "required": true },
+            { "name": "time_sent", "label": "Time Sent", "type": "time", "required": true },
+            { "name": "subject_line", "label": "Subject Line", "type": "string", "required": true },
+            { "name": "file_attached", "label": "File Attached (Filename from D3.5)", "type": "string", "required": true, "inherited_from": "D3.5" },
+            { "name": "payment_due_date", "label": "Payment Due Date", "type": "date", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Standard Invoice Transmittal Script",
+          "description": "Copy and paste to client",
+          "fields": [
+            {
+              "name": "transmittal_script",
+              "label": "Email Script",
+              "type": "instruction",
+              "content": "Dear [Client Name],\n\nWe are pleased to inform you that [Insert Milestone, e.g., Phase 1 Engineering] has been successfully completed and approved.\n\nPlease find attached Invoice [Insert Inv #] for the amount of [Insert Amount GHS] covering this milestone. As per our Engineering Services Agreement, payment is due within 21 days of this notice (by [Payment Due Date]).\n\nFunds can be transferred to our Fidelity Bank account as detailed on the attached invoice. Please reply to this email with a copy of the payment transfer receipt once completed so we can promptly reconcile the account and authorize the engineering team to begin the next phase.\n\nThank you for your continued partnership.\n\nBest regards,\nIMHOGEN Finance Department"
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Tracking & Follow-Up",
+          "fields": [
+            { "name": "email_link", "label": "Link to Sent Email (CRM / Workspace)", "type": "file_link", "required": false },
+            { "name": "payment_clock_started", "label": "Payment Clock Started? (Day 1 of 21)", "type": "boolean", "required": true },
+            { "name": "seven_day_reminder_scheduled", "label": "7-Day Reminder Scheduled?", "type": "boolean", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D3.7",
+      "tool_title": "Daily Bank Statement Log",
+      "activity_name": "Payment Detection",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One instance per payment milestone. Finance checks daily until payment is detected.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Audit Metadata",
+          "fields": [
+            { "name": "checking_officer", "label": "Checking Officer", "type": "string", "required": true },
+            { "name": "date_of_check", "label": "Date of Check", "type": "date", "required": true },
+            { "name": "time_of_check", "label": "Time of Check", "type": "time", "required": true },
+            { "name": "account_checked", "label": "Account Checked", "type": "string", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Incoming Funds Detection",
+          "fields": [
+            { "name": "funds_deposited", "label": "Were any funds deposited by this client in the last 24 hours?", "type": "boolean", "required": true },
+            { "name": "amount_deposited_ghs", "label": "Amount Deposited (GHS)", "type": "currency", "required": false },
+            { "name": "transaction_reference", "label": "Transaction Reference / Narration", "type": "string", "required": false },
+            { "name": "value_date", "label": "Value Date (Date funds actually cleared)", "type": "date", "required": false }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Discrepancy Check",
+          "fields": [
+            { "name": "amount_matches_expected", "label": "Does the deposited amount exactly match the Expected Amount in D3.6?", "type": "boolean", "required": false },
+            { "name": "variance_ghs", "label": "Variance (GHS) — e.g. bank fee shortfall", "type": "currency", "required": false }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Routing Directive",
+          "fields": [
+            { "name": "routing_action", "label": "Action Required", "type": "enum", "options": ["Funds arrived — proceed to D3.8 Reconciled Payment Log", "No funds — continue monitoring", "Partial payment — escalate to Head of Finance"], "required": true },
+            { "name": "checking_officer_signature", "label": "Checking Officer Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D3.8",
+      "tool_title": "Reconciled Payment Log",
+      "activity_name": "Payment Reconciliation",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One instance per payment milestone. Formally matches the bank transfer to the invoice and updates the internal ledger.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Reconciliation Metadata",
+          "fields": [
+            { "name": "reconciling_officer", "label": "Reconciling Officer", "type": "string", "required": true },
+            { "name": "date_reconciled", "label": "Date Reconciled", "type": "date", "required": true },
+            { "name": "reference_invoice", "label": "Reference Invoice Number", "type": "string", "required": true, "inherited_from": "D3.4" },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Matching & Verification",
+          "description": "Connects the bank credit (D3.7) to the invoice (D3.5)",
+          "fields": [
+            { "name": "expected_invoice_amount_ghs", "label": "Expected Invoice Amount (GHS)", "type": "currency", "required": true, "inherited_from": "D3.5" },
+            { "name": "actual_amount_cleared_ghs", "label": "Actual Amount Cleared (GHS)", "type": "currency", "required": true, "inherited_from": "D3.7" },
+            { "name": "date_cleared_in_bank", "label": "Date Cleared in Bank", "type": "date", "required": true, "inherited_from": "D3.7" },
+            { "name": "variance_ghs", "label": "Variance — Bank Fees / Shortage (GHS)", "type": "currency", "required": false },
+            { "name": "funds_fully_accounted", "label": "Are the funds fully accounted for and legally belonging to IMHOGEN?", "type": "boolean", "required": true }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Accounting System Update",
+          "fields": [
+            {
+              "name": "accounting_update_checklist",
+              "label": "Accounting Tasks",
+              "type": "checklist",
+              "items": [
+                "Has the invoice status been changed to 'PAID' in the central database?",
+                "Has the revenue been officially logged against the specific project ledger?"
+              ],
+              "column_labels": { "assignee": "Assignee", "status": "Status (Pending / Done)" },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Reconciliation Approval",
+          "fields": [
+            { "name": "reconciliation_complete", "label": "Reconciliation Complete and Ready for Receipt Generation (D3.9)?", "type": "boolean", "required": true },
+            { "name": "finance_officer_signature", "label": "Finance Officer Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D3.9",
+      "tool_title": "Payment Receipt",
+      "activity_name": "Receipt Issuance",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One instance per payment milestone. Client-facing confirmation that funds were received.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Receipt Metadata",
+          "fields": [
+            { "name": "receipt_number", "label": "Receipt Number", "type": "string", "required": true },
+            { "name": "date_issued", "label": "Date Issued", "type": "date", "required": true },
+            { "name": "received_from", "label": "Received From (Client)", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "paid_against_invoice", "label": "Paid Against Invoice", "type": "string", "required": true, "inherited_from": "D3.4" },
+            { "name": "payment_method", "label": "Payment Method", "type": "enum", "options": ["Bank Transfer", "Cheque", "Cash", "Other"], "required": true },
+            { "name": "amount_received_ghs", "label": "Amount Received (GHS)", "type": "currency", "required": true, "inherited_from": "D3.8" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Standard Receipt Script",
+          "description": "Copy and paste to client",
+          "fields": [
+            {
+              "name": "receipt_script",
+              "label": "Receipt Email Script",
+              "type": "instruction",
+              "content": "Dear [Client Name],\n\nThis email serves as official confirmation that IMHOGEN LTD has successfully received your payment of [Insert Amount GHS] regarding Invoice [Insert Inv #].\n\nPlease find your official payment receipt attached for your accounting records.\n\nWith this milestone financially cleared, we are immediately issuing a Phase Unblock Notice to our engineering team to commence the next stage of development. Your Project Manager will be in touch shortly with technical updates.\n\nThank you for your prompt payment and continued trust in our services.\n\nBest regards,\nIMHOGEN Finance Department"
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Dispatch Tracking",
+          "fields": [
+            { "name": "receipt_pdf_generated", "label": "Receipt PDF Generated and Attached?", "type": "boolean", "required": true },
+            { "name": "time_sent", "label": "Time Sent", "type": "time", "required": true },
+            { "name": "email_link", "label": "Link to Sent Email", "type": "file_link", "required": false }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D3.10",
+      "tool_title": "Phase Unblock Notice",
+      "activity_name": "Engineering Phase Unblock",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One instance per payment milestone. Finance formally notifies Engineering that the next phase is financially cleared to begin. Completing this tool updates projects.advance_cleared or the relevant phase_unblocked flag.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Unblock Metadata",
+          "fields": [
+            { "name": "notice_date", "label": "Notice Date", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "assigned_pm", "label": "Assigned Project Manager", "type": "string", "required": true, "inherited_from": "D1.16" },
+            { "name": "issuing_finance_officer", "label": "Issuing Finance Officer", "type": "string", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Financial Clearance Confirmation",
+          "fields": [
+            { "name": "invoice_cleared", "label": "Invoice Cleared", "type": "string", "required": true, "inherited_from": "D3.4" },
+            { "name": "amount_secured_ghs", "label": "Amount Secured (GHS)", "type": "currency", "required": true, "inherited_from": "D3.8" },
+            { "name": "financial_holds_remaining", "label": "Are there any financial holds remaining on this project?", "type": "boolean", "required": true }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Engineering Launch Directive",
+          "fields": [
+            { "name": "phase_authorized_to_begin", "label": "Phase Authorized to Begin", "type": "string", "required": true },
+            { "name": "total_phase_budget_available_ghs", "label": "Total Phase Budget Available (GHS)", "type": "currency", "required": false }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Internal Routing",
+          "fields": [
+            {
+              "name": "routing_checklist",
+              "label": "Routing Tasks",
+              "type": "checklist",
+              "items": [
+                "Has the central tracking database been updated to 'Active Engineering Phase'?",
+                "Has the Project Manager formally acknowledged receipt of this Unblock Notice?"
+              ],
+              "column_labels": { "assignee": "Assignee", "status": "Status (Pending / Done)" },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "title": "Final Authorization",
+          "fields": [
+            { "name": "engineering_team_authorized", "label": "Is the Engineering Team officially authorized to resume billable work?", "type": "boolean", "required": true },
+            { "name": "head_of_finance_signature", "label": "Head of Finance Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D3.11",
+      "tool_title": "Overdue Accounts Report",
+      "activity_name": "Overdue Escalation",
+      "tier": "both",
+      "conditional": true,
+      "condition": "Triggered when a payment has not cleared within 21 days of D3.6 transmittal. Runs parallel to the D3.7 monitoring loop.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Overdue Metadata",
+          "fields": [
+            { "name": "overdue_invoice_number", "label": "Overdue Invoice Number", "type": "string", "required": true, "inherited_from": "D3.4" },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "original_due_date", "label": "Original Due Date", "type": "date", "required": true, "inherited_from": "D3.6" },
+            { "name": "days_overdue", "label": "Days Overdue", "type": "number", "required": true },
+            { "name": "outstanding_balance_ghs", "label": "Outstanding Balance (GHS)", "type": "currency", "required": true, "inherited_from": "D3.5" },
+            { "name": "assigned_pm", "label": "Assigned PM", "type": "string", "required": true, "inherited_from": "D1.16" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Escalation Log",
+          "fields": [
+            {
+              "name": "escalation_log",
+              "label": "Collection Actions Taken",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "action_taken", "label": "Action Taken", "type": "string", "locked": true },
+                { "name": "date_executed", "label": "Date Executed", "type": "date" },
+                { "name": "client_response", "label": "Client Response / Notes", "type": "text" }
+              ],
+              "prefilled_rows": [
+                "7-Day Courtesy Email Reminder (Before Due Date)",
+                "Day 1 Overdue Notice (Formal Warning)",
+                "Day 7 Overdue Phone Call",
+                "Day 14 Overdue Work Stoppage Notice"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Late Penalty Calculation",
+          "description": "Per the compliance rules in D3.1",
+          "fields": [
+            { "name": "applicable_penalty_rate", "label": "Applicable Penalty Rate", "type": "string", "required": true, "inherited_from": "D3.1" },
+            { "name": "penalty_amount_accrued_ghs", "label": "Penalty Amount Accrued (GHS)", "type": "currency", "required": true },
+            { "name": "revised_invoice_issued", "label": "Has a revised invoice including penalties been issued?", "type": "boolean", "required": true },
+            { "name": "revised_invoice_date", "label": "Date Revised Invoice Issued", "type": "date", "required": false }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Management Routing & Work Stoppage",
+          "fields": [
+            { "name": "escalated_to_head_of_ops", "label": "Is this account being escalated to the Head of Operations for legal / collection action?", "type": "boolean", "required": true },
+            { "name": "pm_notified_to_halt_work", "label": "Has the PM been notified to immediately halt all engineering work?", "type": "boolean", "required": true },
+            { "name": "head_of_finance_signature", "label": "Head of Finance Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,513 @@
+{
+  "workbook_id": 12,
+  "workbook_name": "Training and Post-Delivery Support Process",
+  "tools": [
+    {
+      "tool_id": "D12.1",
+      "tool_title": "Operator Training Syllabus",
+      "activity_name": "Training Plan",
+      "tier": "both",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Syllabus Metadata",
+          "fields": [
+            {
+              "name": "lead_trainer",
+              "label": "Lead Trainer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "training_date",
+              "label": "Training Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Training Modules",
+          "fields": [
+            {
+              "name": "modules",
+              "label": "Training Modules",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "module_title",
+                  "label": "Module Title",
+                  "type": "string"
+                },
+                {
+                  "name": "duration_hrs",
+                  "label": "Duration (Hrs)",
+                  "type": "number"
+                },
+                {
+                  "name": "delivery_method",
+                  "label": "Delivery Method",
+                  "type": "string"
+                },
+                {
+                  "name": "materials_link",
+                  "label": "Materials Link",
+                  "type": "file_link"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "lead_trainer_signature",
+              "label": "Lead Trainer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D12.2",
+      "tool_title": "Operator Competency Log",
+      "activity_name": "Competency Assessment",
+      "tier": "both",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Assessment Metadata",
+          "fields": [
+            {
+              "name": "assessor",
+              "label": "Assessor",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "assessment_date",
+              "label": "Assessment Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Operator Competency Results",
+          "fields": [
+            {
+              "name": "competency_log",
+              "label": "Operator Assessments",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "operator_name",
+                  "label": "Operator Name",
+                  "type": "string"
+                },
+                {
+                  "name": "module",
+                  "label": "Module Assessed",
+                  "type": "string"
+                },
+                {
+                  "name": "score",
+                  "label": "Score / Result",
+                  "type": "string"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Competent",
+                    "Requires Re-training"
+                  ]
+                },
+                {
+                  "name": "signature",
+                  "label": "Operator Signature",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "all_operators_competent",
+              "label": "All operators assessed as competent?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "assessor_signature",
+              "label": "Assessor Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D12.3",
+      "tool_title": "Post-Delivery Support Tracker",
+      "activity_name": "Warranty Support",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One entry per support incident raised during the warranty period.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Support Incident Metadata",
+          "fields": [
+            {
+              "name": "support_officer",
+              "label": "Support Officer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "incident_date",
+              "label": "Incident Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "client_contact",
+              "label": "Client Contact",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Incident Log",
+          "fields": [
+            {
+              "name": "incidents",
+              "label": "Support Incidents",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "issue_description",
+                  "label": "Issue Description",
+                  "type": "text"
+                },
+                {
+                  "name": "priority",
+                  "label": "Priority",
+                  "type": "enum",
+                  "options": [
+                    "Critical",
+                    "High",
+                    "Low"
+                  ]
+                },
+                {
+                  "name": "action_taken",
+                  "label": "Action Taken",
+                  "type": "text"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Open",
+                    "Resolved"
+                  ]
+                },
+                {
+                  "name": "resolution_date",
+                  "label": "Resolution Date",
+                  "type": "date"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "support_officer_signature",
+              "label": "Support Officer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D12.4",
+      "tool_title": "Final Operational Audit Report",
+      "activity_name": "End-of-Warranty Audit",
+      "tier": "both",
+      "notes": "Conducted at end of warranty period. Assesses unit performance in the field against original design specifications.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Audit Metadata",
+          "fields": [
+            {
+              "name": "lead_engineer",
+              "label": "Lead Engineer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "audit_date",
+              "label": "Audit Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "warranty_end_date",
+              "label": "Warranty End Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Operational Performance Assessment",
+          "fields": [
+            {
+              "name": "performance",
+              "label": "Performance vs. Design Spec",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "kpi",
+                  "label": "KPI / Design Requirement",
+                  "type": "text"
+                },
+                {
+                  "name": "target",
+                  "label": "Target",
+                  "type": "string"
+                },
+                {
+                  "name": "actual",
+                  "label": "Actual Performance",
+                  "type": "string"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Met",
+                    "Not Met"
+                  ]
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "lead_engineer_signature",
+              "label": "Lead Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D12.5",
+      "tool_title": "Project Ledger Closure Record",
+      "activity_name": "Project Financial Closure",
+      "tier": "both",
+      "notes": "Final tool in WB12 and in the IMHOGEN QMS. Closes the project ledger \u2014 confirms all payments received, all costs accounted, and project formally closed. Sets projects.status = 'Closed'.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Closure Metadata",
+          "fields": [
+            {
+              "name": "project_manager",
+              "label": "Project Manager",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "closure_date",
+              "label": "Closure Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Financial Summary",
+          "fields": [
+            {
+              "name": "total_contract_value_ghs",
+              "label": "Total Contract Value (GHS)",
+              "type": "currency",
+              "required": true
+            },
+            {
+              "name": "total_received_ghs",
+              "label": "Total Received (GHS)",
+              "type": "currency",
+              "required": true
+            },
+            {
+              "name": "outstanding_balance_ghs",
+              "label": "Outstanding Balance (GHS)",
+              "type": "currency",
+              "required": true
+            },
+            {
+              "name": "all_payments_received",
+              "label": "All payments received and reconciled?",
+              "type": "boolean",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Final Closure Sign-off",
+          "fields": [
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "head_of_ops_signature",
+              "label": "Head of Operations Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "head_of_finance_signature",
+              "label": "Head of Finance Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

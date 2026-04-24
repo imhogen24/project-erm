@@ -1,0 +1,601 @@
+{
+  "workbook_id": 10,
+  "workbook_name": "Engineering Documentation and Archiving Process",
+  "tools": [
+    {
+      "tool_id": "D10.1",
+      "tool_title": "As-Built Modification Record",
+      "activity_name": "As-Built Documentation",
+      "tier": "both",
+      "notes": "Records any deviations between the approved CAD design and the actual fabricated unit. Must be completed before final TDP compilation.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Record Metadata",
+          "fields": [
+            {
+              "name": "lead_engineer",
+              "label": "Lead Engineer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "As-Built Deviations",
+          "fields": [
+            {
+              "name": "deviations",
+              "label": "Deviations from CAD Design",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "feature",
+                  "label": "Feature / Component",
+                  "type": "string"
+                },
+                {
+                  "name": "approved_spec",
+                  "label": "Approved Spec (CAD)",
+                  "type": "text"
+                },
+                {
+                  "name": "as_built_actual",
+                  "label": "As-Built Actual",
+                  "type": "text"
+                },
+                {
+                  "name": "reason",
+                  "label": "Reason for Deviation",
+                  "type": "text"
+                },
+                {
+                  "name": "impact",
+                  "label": "Impact Assessment",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "no_deviations",
+              "label": "No deviations from approved design?",
+              "type": "boolean",
+              "required": false
+            },
+            {
+              "name": "lead_engineer_signature",
+              "label": "Lead Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D10.2",
+      "tool_title": "Technical Authoring Tracker",
+      "activity_name": "Documentation Authoring",
+      "tier": "both",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Authoring Metadata",
+          "fields": [
+            {
+              "name": "document_controller",
+              "label": "Document Controller",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Document Status Tracker",
+          "fields": [
+            {
+              "name": "documents",
+              "label": "Technical Documents",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "doc_id",
+                  "label": "Doc ID",
+                  "type": "string"
+                },
+                {
+                  "name": "document_title",
+                  "label": "Document Title",
+                  "type": "string"
+                },
+                {
+                  "name": "author",
+                  "label": "Author",
+                  "type": "string"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Draft",
+                    "Under Review",
+                    "Approved",
+                    "Archived"
+                  ]
+                },
+                {
+                  "name": "version",
+                  "label": "Version",
+                  "type": "string"
+                },
+                {
+                  "name": "file_link",
+                  "label": "File Link",
+                  "type": "file_link"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "all_docs_approved",
+              "label": "All technical documents approved?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "document_controller_signature",
+              "label": "Document Controller Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D10.3",
+      "tool_title": "Final TDP Manifest",
+      "activity_name": "TDP Compilation",
+      "tier": "both",
+      "notes": "Complete manifest of all deliverable documents in the final Technical Data Package. Version-controlled and approved before archiving.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "TDP Metadata",
+          "fields": [
+            {
+              "name": "compiled_by",
+              "label": "Compiled By",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "compilation_date",
+              "label": "Compilation Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "tdp_version",
+              "label": "TDP Version",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "TDP Contents",
+          "fields": [
+            {
+              "name": "tdp_files",
+              "label": "TDP Files",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "document_title",
+                  "label": "Document Title",
+                  "type": "string"
+                },
+                {
+                  "name": "file_format",
+                  "label": "File Format",
+                  "type": "string"
+                },
+                {
+                  "name": "version",
+                  "label": "Version",
+                  "type": "string"
+                },
+                {
+                  "name": "vault_link",
+                  "label": "Vault Link",
+                  "type": "file_link"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Included",
+                    "Pending",
+                    "N/A"
+                  ]
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "tdp_complete",
+              "label": "TDP complete and all files verified?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "lead_engineer_signature",
+              "label": "Lead Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D10.4",
+      "tool_title": "Digital Archiving & Vault Lock",
+      "activity_name": "Archive Lock",
+      "tier": "both",
+      "notes": "Locks the project vault. All files are set to read-only after this tool is signed. Provides permanent archive reference for future warranty or reorder work.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Archive Metadata",
+          "fields": [
+            {
+              "name": "archiving_officer",
+              "label": "Archiving Officer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "archive_date",
+              "label": "Archive Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "vault_root_path",
+              "label": "Vault Root Path / URL",
+              "type": "file_link",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Archive Checklist",
+          "fields": [
+            {
+              "name": "archive_checklist",
+              "label": "Archive Actions",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "task",
+                  "label": "Task",
+                  "type": "text"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Done",
+                    "Pending"
+                  ]
+                }
+              ],
+              "prefilled_rows": [
+                "All CAD files set to read-only in vault",
+                "TDP manifest (D10.3) filed in project root",
+                "As-built record (D10.1) filed",
+                "QA certificates (D9.7) filed",
+                "Backup created to secondary storage"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Vault Lock Sign-off",
+          "fields": [
+            {
+              "name": "vault_locked",
+              "label": "Vault locked and backup confirmed?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "archiving_officer_signature",
+              "label": "Archiving Officer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D10.5",
+      "tool_title": "R&D Lessons Learned Log",
+      "activity_name": "Knowledge Capture",
+      "tier": "both",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Log Metadata",
+          "fields": [
+            {
+              "name": "lead_engineer",
+              "label": "Lead Engineer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Lessons Learned",
+          "fields": [
+            {
+              "name": "lessons",
+              "label": "Lessons Learned Entries",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "category",
+                  "label": "Category",
+                  "type": "enum",
+                  "options": [
+                    "Design",
+                    "Fabrication",
+                    "Procurement",
+                    "Client Management",
+                    "Process"
+                  ]
+                },
+                {
+                  "name": "what_happened",
+                  "label": "What Happened",
+                  "type": "text"
+                },
+                {
+                  "name": "root_cause",
+                  "label": "Root Cause",
+                  "type": "text"
+                },
+                {
+                  "name": "recommendation",
+                  "label": "Recommendation for Future Projects",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "lead_engineer_signature",
+              "label": "Lead Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D10.6",
+      "tool_title": "Delivery & Handover Notice",
+      "activity_name": "Documentation Handover",
+      "tier": "both",
+      "notes": "Final tool in WB10. Confirms all documentation is archived and TDP has been delivered to the client. Sign-off closes the documentation phase.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Handover Metadata",
+          "fields": [
+            {
+              "name": "project_manager",
+              "label": "Project Manager",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "handover_date",
+              "label": "Handover Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Handover Confirmation",
+          "fields": [
+            {
+              "name": "handover_items",
+              "label": "Handover Items",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "item",
+                  "label": "Item",
+                  "type": "text"
+                },
+                {
+                  "name": "delivered_to",
+                  "label": "Delivered To",
+                  "type": "string"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Delivered",
+                    "Pending"
+                  ]
+                }
+              ],
+              "prefilled_rows": [
+                "Final TDP (D10.3) delivered to client",
+                "Digital vault link shared with client",
+                "Lessons learned (D10.5) filed in R&D database"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

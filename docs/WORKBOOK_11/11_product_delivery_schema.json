@@ -1,0 +1,514 @@
+{
+  "workbook_id": 11,
+  "workbook_name": "Product / Process Delivery Process",
+  "tools": [
+    {
+      "tool_id": "D11.1",
+      "tool_title": "Transport Waybill",
+      "activity_name": "Logistics & Dispatch",
+      "tier": "both",
+      "notes": "Issued when the fabricated unit leaves the IMHOGEN facility. Records vehicle, driver, cargo details and route. Travels with the unit.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Dispatch Metadata",
+          "fields": [
+            {
+              "name": "dispatched_by",
+              "label": "Dispatched By",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "dispatch_date",
+              "label": "Dispatch Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "destination_address",
+              "label": "Destination Address",
+              "type": "text",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Transport Details",
+          "fields": [
+            {
+              "name": "transport_details",
+              "label": "Vehicle & Driver Details",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "item",
+                  "label": "Item",
+                  "type": "string"
+                },
+                {
+                  "name": "value",
+                  "label": "Value",
+                  "type": "string"
+                }
+              ],
+              "prefilled_rows": [
+                "Vehicle Registration",
+                "Driver Name",
+                "Driver Phone",
+                "Transport Company",
+                "Estimated Arrival Date"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Cargo Manifest",
+          "fields": [
+            {
+              "name": "cargo",
+              "label": "Items Dispatched",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "item_description",
+                  "label": "Item Description",
+                  "type": "string"
+                },
+                {
+                  "name": "qty",
+                  "label": "Qty",
+                  "type": "number"
+                },
+                {
+                  "name": "condition",
+                  "label": "Condition at Dispatch",
+                  "type": "enum",
+                  "options": [
+                    "Good",
+                    "Damaged"
+                  ]
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "supervisor_signature",
+              "label": "Dispatching Supervisor Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D11.2",
+      "tool_title": "Post-Transit Inspection Log",
+      "activity_name": "Delivery Inspection",
+      "tier": "both",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Receiving Metadata",
+          "fields": [
+            {
+              "name": "receiving_officer",
+              "label": "Receiving Officer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_received",
+              "label": "Date Received",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "ref_waybill",
+              "label": "Reference Waybill (D11.1)",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Transit Inspection",
+          "fields": [
+            {
+              "name": "inspection",
+              "label": "Post-Transit Checks",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "item",
+                  "label": "Item",
+                  "type": "string"
+                },
+                {
+                  "name": "condition",
+                  "label": "Condition",
+                  "type": "enum",
+                  "options": [
+                    "Good",
+                    "Damaged",
+                    "Missing"
+                  ]
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Outcome",
+          "fields": [
+            {
+              "name": "all_items_intact",
+              "label": "All items received in good condition?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "receiving_officer_signature",
+              "label": "Receiving Officer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D11.3",
+      "tool_title": "Site Acceptance & Training Record",
+      "activity_name": "Site Handover & Training",
+      "tier": "both",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Site Acceptance Metadata",
+          "fields": [
+            {
+              "name": "lead_engineer",
+              "label": "Lead Engineer (IMHOGEN)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "client_site_contact",
+              "label": "Client Site Contact",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Site Acceptance Checks",
+          "fields": [
+            {
+              "name": "site_checks",
+              "label": "Acceptance Criteria",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "check_item",
+                  "label": "Check Item",
+                  "type": "text"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Pass",
+                    "Fail",
+                    "N/A"
+                  ]
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Training Record",
+          "fields": [
+            {
+              "name": "training_log",
+              "label": "Operators Trained",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "operator_name",
+                  "label": "Operator Name",
+                  "type": "string"
+                },
+                {
+                  "name": "role",
+                  "label": "Role",
+                  "type": "string"
+                },
+                {
+                  "name": "topics_covered",
+                  "label": "Topics Covered",
+                  "type": "text"
+                },
+                {
+                  "name": "signature",
+                  "label": "Operator Signature",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Sign-off",
+          "fields": [
+            {
+              "name": "client_accepts_unit",
+              "label": "Client accepts unit at site?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "lead_engineer_signature",
+              "label": "Lead Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D11.4",
+      "tool_title": "Final Handover Certificate",
+      "activity_name": "Formal Handover",
+      "tier": "both",
+      "notes": "Formal certificate of project completion signed by both parties. Triggers final billing authorization (D11.5) and starts the warranty period.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Handover Metadata",
+          "fields": [
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "client_organization",
+              "label": "Client Organization",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "handover_date",
+              "label": "Handover Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Formal Declaration",
+          "fields": [
+            {
+              "name": "handover_declaration",
+              "label": "Handover Terms",
+              "type": "instruction",
+              "content": "By signing, the Client confirms full acceptance of the delivered product/system. IMHOGEN LTD confirms all contractual deliverables have been met. Warranty period commences from the handover date."
+            },
+            {
+              "name": "client_satisfied",
+              "label": "Client confirms full acceptance of all deliverables?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "client_signature",
+              "label": "Authorized Client Signatory Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "client_date",
+              "label": "Client Sign Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "pm_signature",
+              "label": "IMHOGEN Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "pm_date",
+              "label": "PM Sign Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D11.5",
+      "tool_title": "Final Billing Authorization",
+      "activity_name": "Final Invoice Release",
+      "tier": "both",
+      "notes": "Authorizes release of the final invoice to the client. References D11.4 signed handover certificate. Unlocks WB12.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Billing Metadata",
+          "fields": [
+            {
+              "name": "project_manager",
+              "label": "Project Manager",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "authorization_date",
+              "label": "Authorization Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "ref_handover_certificate",
+              "label": "Reference Handover Certificate (D11.4)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "final_invoice_value_ghs",
+              "label": "Final Invoice Value (GHS)",
+              "type": "currency",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Authorization",
+          "fields": [
+            {
+              "name": "invoice_authorized",
+              "label": "Final invoice authorized for release?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "head_of_ops_signature",
+              "label": "Head of Operations Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

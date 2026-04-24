@@ -1,0 +1,705 @@
+{
+  "workbook_id": 8,
+  "workbook_name": "Fabrication and Construction Process",
+  "tools": [
+    {
+      "tool_id": "D8.1",
+      "tool_title": "Job Process Sheet",
+      "activity_name": "Daily Work Order",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One sheet per shift/day. Created by supervisor each morning to allocate tasks across the fabrication team.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Work Order Metadata",
+          "fields": [
+            {
+              "name": "supervisor",
+              "label": "Supervisor",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_of_work",
+              "label": "Date of Work",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "target_output_for_shift",
+              "label": "Target Output for Shift",
+              "type": "text",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Task Allocation & Routing",
+          "fields": [
+            {
+              "name": "task_allocation",
+              "label": "Shift Tasks",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "task_description",
+                  "label": "Task Description",
+                  "type": "text"
+                },
+                {
+                  "name": "ref_drawing",
+                  "label": "Reference Drawing #",
+                  "type": "string"
+                },
+                {
+                  "name": "assigned_technician",
+                  "label": "Assigned Technician / Welder",
+                  "type": "string"
+                },
+                {
+                  "name": "required_machinery",
+                  "label": "Required Machinery",
+                  "type": "string"
+                },
+                {
+                  "name": "allocated_time_hrs",
+                  "label": "Allocated Time (Hrs)",
+                  "type": "number"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Done",
+                    "Pending",
+                    "Blocked"
+                  ]
+                },
+                {
+                  "name": "supervisor_signoff",
+                  "label": "Supervisor Sign-off",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "End-of-Shift Summary",
+          "fields": [
+            {
+              "name": "target_achieved",
+              "label": "Shift target achieved?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "carryover_tasks",
+              "label": "Carryover Tasks (if any)",
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "supervisor_signature",
+              "label": "Supervisor Signature",
+              "type": "signature",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D8.2",
+      "tool_title": "Tooling & Setup Checklist",
+      "activity_name": "Pre-Shift Verification",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "Completed at the start of each shift before fabrication begins. Any Fail must be resolved before work starts.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Setup Metadata",
+          "fields": [
+            {
+              "name": "executing_supervisor",
+              "label": "Executing Supervisor",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_time_of_check",
+              "label": "Date & Time of Check",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "project_cell_area",
+              "label": "Project / Cell Area",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "shift",
+              "label": "Shift",
+              "type": "enum",
+              "options": [
+                "Morning",
+                "Afternoon"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Machinery & Tooling Verification",
+          "fields": [
+            {
+              "name": "tooling_checklist",
+              "label": "Equipment Checks",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "equipment_category",
+                  "label": "Equipment Category",
+                  "type": "string"
+                },
+                {
+                  "name": "specific_check",
+                  "label": "Specific Check Required",
+                  "type": "text"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Pass",
+                    "Fail",
+                    "N/A"
+                  ]
+                },
+                {
+                  "name": "corrective_action",
+                  "label": "Corrective Action Taken",
+                  "type": "text"
+                },
+                {
+                  "name": "checked_by",
+                  "label": "Checked By",
+                  "type": "string"
+                }
+              ],
+              "prefilled_rows": [
+                "Welding Stations \u2014 Shielding gas, electrode, ground clamp",
+                "Cutting Equipment \u2014 Blade condition, guard, coolant",
+                "Measuring Instruments \u2014 Calibration status",
+                "Lifting & Handling \u2014 Sling load rating, hook condition",
+                "Work Area \u2014 Clear of hazards, adequate lighting"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Clearance",
+          "fields": [
+            {
+              "name": "all_checks_pass",
+              "label": "All checks passed \u2014 shop floor cleared for shift start?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "supervisor_signature",
+              "label": "Supervisor Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D8.3",
+      "tool_title": "Safety Briefing & PPE Log",
+      "activity_name": "Toolbox Talk",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One log per shift briefing. Each technician signs to confirm attendance and PPE compliance before work begins.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Briefing Metadata",
+          "fields": [
+            {
+              "name": "lead_supervisor",
+              "label": "Lead Supervisor / HSE Officer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_of_briefing",
+              "label": "Date of Briefing",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "briefing_time",
+              "label": "Time",
+              "type": "time",
+              "required": true
+            },
+            {
+              "name": "briefing_topic_primary_risk",
+              "label": "Briefing Topic / Primary Risk",
+              "type": "text",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Attendance & PPE Issuance Record",
+          "description": "Each technician confirms attendance and PPE compliance by signing",
+          "fields": [
+            {
+              "name": "attendance_pppe",
+              "label": "Attendance Register",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "technician_name",
+                  "label": "Technician Name",
+                  "type": "string"
+                },
+                {
+                  "name": "role",
+                  "label": "Role / Trade",
+                  "type": "string"
+                },
+                {
+                  "name": "ppe_items_issued",
+                  "label": "PPE Items Issued",
+                  "type": "string"
+                },
+                {
+                  "name": "understood_risk",
+                  "label": "Understood Briefing & Wearing PPE?",
+                  "type": "enum",
+                  "options": [
+                    "Yes",
+                    "No"
+                  ]
+                },
+                {
+                  "name": "signature",
+                  "label": "Signature",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Supervisor Sign-off",
+          "fields": [
+            {
+              "name": "all_technicians_briefed",
+              "label": "All technicians briefed and PPE confirmed?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "supervisor_signature",
+              "label": "Supervisor Signature",
+              "type": "signature",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D8.4",
+      "tool_title": "Fabrication Routing Traveler",
+      "activity_name": "Physical Batch Tracking",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One traveler per batch or major assembly (e.g. Main Chassis Frame). Travels physically with the part through each manufacturing stage. Stages must be signed sequentially.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Batch Metadata",
+          "fields": [
+            {
+              "name": "batch_assembly_name",
+              "label": "Batch / Assembly Name",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "ref_drawing",
+              "label": "Reference Drawing #",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "traveler_issued_by",
+              "label": "Traveler Issued By",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_issued",
+              "label": "Date Issued",
+              "type": "date",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Routing Stages",
+          "description": "Must be signed sequentially \u2014 each stage gate blocks the next",
+          "fields": [
+            {
+              "name": "routing_stages",
+              "label": "Manufacturing Stages",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "stage_sequence",
+                  "label": "Stage",
+                  "type": "string"
+                },
+                {
+                  "name": "process_description",
+                  "label": "Process Description",
+                  "type": "text"
+                },
+                {
+                  "name": "required_tools_machinery",
+                  "label": "Required Tools / Machinery",
+                  "type": "string"
+                },
+                {
+                  "name": "assigned_to",
+                  "label": "Assigned To",
+                  "type": "string"
+                },
+                {
+                  "name": "date_completed",
+                  "label": "Date Completed",
+                  "type": "date"
+                },
+                {
+                  "name": "supervisor_signoff",
+                  "label": "Supervisor Sign-off",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Traveler Completion",
+          "fields": [
+            {
+              "name": "all_stages_complete",
+              "label": "All routing stages signed off?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "supervisor_signature",
+              "label": "Supervisor Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_completed",
+              "label": "Date Completed",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D8.5",
+      "tool_title": "In-Process QC Log",
+      "activity_name": "Dimensional & Structural Check",
+      "tier": "both",
+      "repeating": true,
+      "repeat_note": "One log per inspection point (e.g. Post-Welding, Pre-Paint, Post-Assembly). Any FAIL or REWORK result blocks progression to the next fabrication stage.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Inspection Metadata",
+          "fields": [
+            {
+              "name": "qa_officer",
+              "label": "QA Officer",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "inspection_date",
+              "label": "Inspection Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "reference_traveler",
+              "label": "Reference Traveler",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "fabrication_stage",
+              "label": "Fabrication Stage",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Critical Inspection Points",
+          "fields": [
+            {
+              "name": "inspection_points",
+              "label": "Dimensional & Structural Checks",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "sn",
+                  "label": "SN",
+                  "type": "string"
+                },
+                {
+                  "name": "inspection_parameter",
+                  "label": "Inspection Parameter",
+                  "type": "string"
+                },
+                {
+                  "name": "tolerance_spec",
+                  "label": "Tolerance / Spec",
+                  "type": "string"
+                },
+                {
+                  "name": "actual_measured_value",
+                  "label": "Actual Measured Value",
+                  "type": "string"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "PASS",
+                    "FAIL",
+                    "REWORK"
+                  ]
+                },
+                {
+                  "name": "qa_notes",
+                  "label": "QA Notes",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "QC Outcome",
+          "fields": [
+            {
+              "name": "all_checks_pass",
+              "label": "All inspection points passed?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "rework_required",
+              "label": "Rework Required?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "rework_description",
+              "label": "Rework Description (if any)",
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "qa_officer_signature",
+              "label": "QA Officer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D8.6",
+      "tool_title": "Fabrication Completion Notice",
+      "activity_name": "Handover to Testing",
+      "tier": "both",
+      "notes": "Final tool in WB08. Confirms all fabrication travelers are signed off, all in-process QC checks passed, and the fabricated unit is ready for testing/QA phase. Sign-off sets projects.status = 'Testing Phase' and unlocks WB09.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Closure Metadata",
+          "fields": [
+            {
+              "name": "shop_floor_supervisor",
+              "label": "Shop Floor Supervisor",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "notice_date",
+              "label": "Notice Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "project_name",
+              "label": "Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "receiving_pm",
+              "label": "Receiving PM",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Final Visual & Administrative Verification",
+          "fields": [
+            {
+              "name": "completion_checklist",
+              "label": "Closure Actions",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "task",
+                  "label": "Task / Action Item",
+                  "type": "text"
+                },
+                {
+                  "name": "assignee",
+                  "label": "Assignee",
+                  "type": "string"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Done",
+                    "Pending"
+                  ]
+                }
+              ],
+              "prefilled_rows": [
+                "All D8.4 Fabrication Travelers signed off and collected",
+                "All D8.5 In-Process QC Logs passed with no outstanding rework",
+                "Fabricated unit visually inspected \u2014 no surface defects or incomplete welds",
+                "Work area cleaned and materials returned to inventory",
+                "Final photographs / documentation captured and filed"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Phase Unlock Sign-off",
+          "fields": [
+            {
+              "name": "fabrication_complete",
+              "label": "Fabrication complete and unit ready for testing?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "supervisor_signature",
+              "label": "Shop Floor Supervisor Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "pm_signature",
+              "label": "Project Manager Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date_signed",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

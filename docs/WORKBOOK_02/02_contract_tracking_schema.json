@@ -1,0 +1,1024 @@
+{
+  "workbook_id": 2,
+  "workbook_name": "Contract Tracking and Administration Process",
+  "tools": [
+    {
+      "tool_id": "D2.1",
+      "tool_title": "Standard Contract Template",
+      "activity_name": "Boilerplate Clause Management",
+      "tier": "both",
+      "tool_scope": "system",
+      "notes": "System-level tool. Not per-project. Managed by Contract Admin. Clauses from this tool are pulled into D2.2 for every project. Maps to a contract_clauses table, not tool_instances.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Template Metadata",
+          "fields": [
+            { "name": "last_legal_review_date", "label": "Last Legal Review Date", "type": "date", "required": true },
+            { "name": "reviewed_by", "label": "Reviewed By (Legal / Executive)", "type": "string", "required": true },
+            { "name": "governing_jurisdiction", "label": "Governing Jurisdiction", "type": "string", "required": true },
+            { "name": "default_currency", "label": "Default Currency", "type": "string", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Standard Legal Clauses",
+          "description": "Boilerplate clauses. Do not alter without executive approval. These populate D2.2 variable slots.",
+          "fields": [
+            {
+              "name": "standard_clauses",
+              "label": "Standard Clauses",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "clause_category", "label": "Clause Category", "type": "string" },
+                { "name": "standard_clause_text", "label": "Standard Clause Text", "type": "text" },
+                { "name": "status", "label": "Status", "type": "enum", "options": ["Active", "Archived"] }
+              ],
+              "prefilled_rows": [
+                "Parties & Definitions",
+                "Scope of Services",
+                "Payment Terms",
+                "Intellectual Property (IP)",
+                "Limitation of Liability",
+                "Termination",
+                "Force Majeure",
+                "Governing Law & Dispute"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Standard Appendices",
+          "description": "These must be attached to every D2.2 draft",
+          "fields": [
+            {
+              "name": "standard_appendices",
+              "label": "Required Appendices",
+              "type": "static_list",
+              "items": [
+                "Appendix A: D1.15 Project Brief & Draft Budget",
+                "Appendix B: D1.13 Scope of Work (Exclusions)",
+                "Appendix C: D1.11 Risk Mitigation Directives",
+                "Appendix D: IMHOGEN Standard Service Level Agreement (SLA)"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D2.2",
+      "tool_title": "Initial Draft Contract",
+      "activity_name": "Contract Drafting",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Draft Metadata",
+          "fields": [
+            { "name": "drafted_by", "label": "Drafted By (Contract Admin)", "type": "string", "required": true },
+            { "name": "date_of_initial_draft", "label": "Date of Initial Draft", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "reference_handoff", "label": "Reference Handoff (D1.16)", "type": "string", "required": true, "inherited_from": "D1.16" },
+            { "name": "assigned_pm", "label": "Assigned Project Manager", "type": "string", "required": true, "inherited_from": "D1.16" },
+            { "name": "overall_project_value", "label": "Overall Project Value (GHS)", "type": "currency", "required": true, "inherited_from": "D1.15" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Core Contract Variables",
+          "description": "Fill-in-the-blanks that map into the D2.1 boilerplate clauses",
+          "fields": [
+            {
+              "name": "contract_variables",
+              "label": "Contract Variable Mapping",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "variable_required", "label": "Variable Required", "type": "string" },
+                { "name": "value_input", "label": "Value / Input to Map into Contract", "type": "text" },
+                { "name": "source_reference", "label": "Source Reference", "type": "string" }
+              ],
+              "prefilled_rows": [
+                "Client Legal Entity Name",
+                "Primary Client Signatory",
+                "Total Contract Value (GHS)",
+                "Project Duration / Timeline",
+                "Payment Milestone 1",
+                "Payment Milestone 2",
+                "Payment Milestone 3"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Project-Specific Legal Directives",
+          "description": "Extracted from D1.16 Handoff — risk clauses that must be added to this contract",
+          "fields": [
+            {
+              "name": "legal_directives",
+              "label": "Risk / Exclusion Clauses to Insert",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "risk_exclusion_category", "label": "Risk / Exclusion Category", "type": "enum", "options": ["Scope Exclusion", "Timeline Risk", "Financial Risk", "Other"] },
+                { "name": "specific_clause_added", "label": "Specific Clause Added to Draft Contract", "type": "text" },
+                { "name": "clause_location", "label": "Clause Location (Section #)", "type": "string" }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Appendix Attachment Verification",
+          "fields": [
+            {
+              "name": "appendix_verification",
+              "label": "Required Attachments",
+              "type": "checklist",
+              "items": [
+                "Appendix A: D1.15 Project Brief & Draft Budget",
+                "Appendix B: D1.13 Scope of Work (Exclusions)",
+                "Appendix C: IMHOGEN Standard SLA"
+              ],
+              "column_labels": { "status": "Status (Attached / Missing)", "notes": "Notes" },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "title": "Draft Routing",
+          "fields": [
+            { "name": "initial_draft_complete", "label": "Initial Draft Complete?", "type": "boolean", "required": true },
+            { "name": "ready_for_pm_review", "label": "Ready for PM Review (D2.3)?", "type": "boolean", "required": true },
+            { "name": "contract_admin_signature", "label": "Contract Admin Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "T3.D2.2a",
+      "tool_title": "T3 Drafting Contract Mapping",
+      "activity_name": "T3 Contract Drafting",
+      "tier": 3,
+      "notes": "Replaces D2.2 for Tier 3 projects. Handles IP election and liability waiver specific to drafting/reverse engineering work.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Intellectual Property Election",
+          "fields": [
+            {
+              "name": "ip_election",
+              "label": "IP Option Selected",
+              "type": "enum",
+              "options": ["Standard Release — IMHOGEN retains Native CAD; Client receives PDF / STEP only", "Full IP Transfer — Client purchases Native Source Files (CAD Assets)"],
+              "required": true
+            },
+            { "name": "ip_transfer_fee_ghs", "label": "IP Transfer Fee (GHS) — if Full IP Transfer selected", "type": "currency", "required": false }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Source Data Liability Waiver",
+          "description": "Pre-defined acknowledgements — not editable",
+          "fields": [
+            {
+              "name": "liability_waiver_acknowledgements",
+              "label": "Client Acknowledgements",
+              "type": "static_list",
+              "items": [
+                "The Client acknowledges that IMHOGEN is modeling based on PROVIDED DATA.",
+                "IMHOGEN is not responsible for fitment issues arising from inaccuracies in the client's original source model or measurements."
+              ]
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Approval Routing",
+          "fields": [
+            { "name": "pm_signature", "label": "Project Manager Signature", "type": "signature", "required": true },
+            { "name": "pm_date", "label": "Date", "type": "date", "required": true },
+            { "name": "finance_officer_signature", "label": "Finance Officer Signature", "type": "signature", "required": true },
+            { "name": "finance_date", "label": "Date", "type": "date", "required": true },
+            { "name": "client_signatory_signature", "label": "Client Signatory Signature", "type": "signature", "required": true },
+            { "name": "client_date", "label": "Date", "type": "date", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D2.3",
+      "tool_title": "PM Review Draft",
+      "activity_name": "PM Contract Review",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Review Metadata",
+          "fields": [
+            { "name": "assigned_pm", "label": "Assigned Project Manager", "type": "string", "required": true, "inherited_from": "D2.2" },
+            { "name": "date_received_for_review", "label": "Date Received for Review", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "reference_draft", "label": "Reference Draft", "type": "string", "required": true },
+            { "name": "link_to_d2_2", "label": "Link to D2.2", "type": "file_link", "required": true },
+            { "name": "date_review_completed", "label": "Date Review Completed", "type": "date", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Scope & Deliverables Verification",
+          "fields": [
+            {
+              "name": "scope_verification",
+              "label": "Scope Accuracy Check",
+              "type": "table",
+              "columns": [
+                { "name": "deliverable_category", "label": "Deliverable Category", "type": "string", "locked": true },
+                { "name": "contract_clause_ref", "label": "Contract Clause Ref", "type": "string" },
+                { "name": "status", "label": "Status", "type": "enum", "options": ["Accurate", "Mismatch"] },
+                { "name": "pm_comments", "label": "PM Comments / Required Edits", "type": "text" }
+              ],
+              "prefilled_rows": [
+                "Engineering Design",
+                "Physical Fabrication",
+                "Technical Documentation",
+                "Excluded Scope / Boundary Limits"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Timeline Feasibility",
+          "fields": [
+            {
+              "name": "timeline_feasibility",
+              "label": "Timeline Feasibility Check",
+              "type": "table",
+              "columns": [
+                { "name": "project_milestone", "label": "Project Milestone", "type": "string", "locked": true },
+                { "name": "contracted_timeline", "label": "Contracted Timeline", "type": "string" },
+                { "name": "workshop_feasible", "label": "Workshop Feasible?", "type": "enum", "options": ["Yes", "No"] },
+                { "name": "justification", "label": "Justification / Required Adjustment", "type": "text" }
+              ],
+              "prefilled_rows": [
+                "Phase 1 (Concept & Design)",
+                "Phase 2 (Procurement & Fabrication)",
+                "Phase 3 (Testing & Handover)",
+                "Overall Delivery Date"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Critical Client Dependencies",
+          "fields": [
+            {
+              "name": "client_dependencies",
+              "label": "Client Obligations Check",
+              "type": "table",
+              "columns": [
+                { "name": "client_dependency", "label": "Client Dependency Required for Timeline", "type": "text" },
+                { "name": "contract_clause_ref", "label": "Contract Clause Ref", "type": "string" },
+                { "name": "adequately_protected", "label": "Adequately Protected?", "type": "enum", "options": ["Yes", "No"] },
+                { "name": "pm_comments", "label": "PM Comments", "type": "text" }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "title": "PM Review Conclusion",
+          "fields": [
+            { "name": "operational_verification_status", "label": "Operational Verification Status", "type": "enum", "options": ["Approved", "Revisions Required"], "required": true },
+            { "name": "next_step_directive", "label": "Next Step Directive", "type": "enum", "options": ["Proceed to Finance Review (D2.4)", "Return to Contract Admin for Edits"], "required": true },
+            { "name": "pm_signature", "label": "PM Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D2.4",
+      "tool_title": "Finance Review Draft",
+      "activity_name": "Finance Contract Review",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Review Metadata",
+          "fields": [
+            { "name": "assigned_finance_officer", "label": "Assigned Finance Officer", "type": "string", "required": true },
+            { "name": "date_received_for_review", "label": "Date Received for Review", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "link_to_draft", "label": "Link to Draft (D2.2 + D2.3 edits)", "type": "file_link", "required": true },
+            { "name": "date_review_completed", "label": "Date Review Completed", "type": "date", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Project Value & Margin Verification",
+          "fields": [
+            {
+              "name": "value_verification",
+              "label": "Financial Accuracy Check",
+              "type": "table",
+              "columns": [
+                { "name": "financial_element", "label": "Financial Element", "type": "string", "locked": true },
+                { "name": "contract_clause_ref", "label": "Contract Clause Ref", "type": "string" },
+                { "name": "status", "label": "Status", "type": "enum", "options": ["Accurate", "Mismatch"] },
+                { "name": "finance_comments", "label": "Finance Comments / Required Edits", "type": "text" }
+              ],
+              "prefilled_rows": [
+                "Total Contract Value (GHS) matches D1.15",
+                "Minimum institutional overhead is recovered",
+                "Currency and Tax (VAT / WHT) clearly stated"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Payment Schedule & Cash Flow Verification",
+          "fields": [
+            {
+              "name": "payment_schedule_verification",
+              "label": "Cash Flow Safety Check",
+              "type": "table",
+              "columns": [
+                { "name": "payment_milestone", "label": "Payment Milestone", "type": "string", "locked": true },
+                { "name": "contract_clause_ref", "label": "Contract Clause Ref", "type": "string" },
+                { "name": "cash_flow_safe", "label": "Cash Flow Safe?", "type": "enum", "options": ["Yes", "No"] },
+                { "name": "finance_comments", "label": "Finance Comments", "type": "text" }
+              ],
+              "prefilled_rows": [
+                "Advance Payment (covers design / initial BOM)",
+                "Fabrication Milestone (before ordering parts)",
+                "Final Handover (margin realization)",
+                "Invoice payment terms stated (e.g. Net 21 Days)"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Financial Risk & Compliance Clauses",
+          "fields": [
+            {
+              "name": "financial_risk_clauses",
+              "label": "Risk Protection Check",
+              "type": "table",
+              "columns": [
+                { "name": "risk_protection_required", "label": "Risk Protection Required", "type": "string", "locked": true },
+                { "name": "contract_clause_ref", "label": "Contract Clause Ref", "type": "string" },
+                { "name": "adequately_protected", "label": "Adequately Protected?", "type": "enum", "options": ["Yes", "No"] },
+                { "name": "finance_comments", "label": "Finance Comments", "type": "text" }
+              ],
+              "prefilled_rows": [
+                "Quote Validity Period (e.g. 21 days due to material pricing)",
+                "Late Payment Penalties (e.g. 2% monthly interest)",
+                "Termination Liability (client pays for hours / BOM if cancelled)"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "title": "Finance Review Conclusion",
+          "fields": [
+            { "name": "commercial_verification_status", "label": "Commercial Verification Status", "type": "enum", "options": ["Approved", "Revisions Required"], "required": true },
+            { "name": "next_step_directive", "label": "Next Step Directive", "type": "enum", "options": ["Proceed to Executive Review (D2.5)", "Return to Contract Admin for Edits"], "required": true },
+            { "name": "finance_officer_signature", "label": "Finance Officer Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D2.5",
+      "tool_title": "Executive Review Draft",
+      "activity_name": "Executive Contract Authorization",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Review Metadata",
+          "fields": [
+            { "name": "reviewing_executive", "label": "Reviewing Executive", "type": "string", "required": true },
+            { "name": "date_received_for_review", "label": "Date Received for Review", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "overall_project_value", "label": "Overall Project Value (GHS)", "type": "currency", "required": true, "inherited_from": "D1.15" },
+            { "name": "link_to_draft", "label": "Link to Draft (Finance Approved)", "type": "file_link", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Departmental Sign-Off Verification",
+          "fields": [
+            {
+              "name": "departmental_signoffs",
+              "label": "Sign-Off Checklist",
+              "type": "checklist",
+              "items": [
+                "PM Operational Approval (D2.3) complete and attached",
+                "Finance Commercial Approval (D2.4) complete and attached",
+                "All requested edits from PM and Finance applied to current draft"
+              ],
+              "column_labels": { "status": "Status (Verified / Missing)", "executive_notes": "Executive Notes / Overrides" },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Macro Risk Assessment",
+          "fields": [
+            {
+              "name": "macro_risk_assessment",
+              "label": "Executive Risk Review",
+              "type": "table",
+              "columns": [
+                { "name": "risk_category", "label": "Risk Category", "type": "string", "locked": true },
+                { "name": "assessment_question", "label": "Executive Assessment Question", "type": "string", "locked": true },
+                { "name": "status", "label": "Status", "type": "enum", "options": ["Yes", "No"] },
+                { "name": "remarks", "label": "Remarks / Accepted Liabilities", "type": "text" }
+              ],
+              "prefilled_rows": [
+                "Technical & Scope Risk",
+                "Operational Risk",
+                "Commercial Risk",
+                "Legal & IP Risk"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Strategic Alignment",
+          "fields": [
+            { "name": "strategic_alignment", "label": "Does this project align with IMHOGEN's long-term strategic objectives?", "type": "boolean", "required": true },
+            { "name": "executive_justification", "label": "Executive Justification for Acceptance", "type": "text", "required": true }
+          ]
+        },
+        {
+          "id": "s5",
+          "title": "Executive Authorization",
+          "fields": [
+            { "name": "executive_decision", "label": "Executive Decision", "type": "enum", "options": ["Approved for Client Transmission", "Rejected", "Hold for Revision"], "required": true },
+            { "name": "head_of_rd_ops_signature", "label": "Head of R&D / Ops Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D2.6",
+      "tool_title": "Internally Approved Draft",
+      "activity_name": "Baseline Lock",
+      "tier": 1,
+      "notes": "Creates the immutable baseline — the walk-away limits used during negotiation. Must not be edited after lock.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Draft Lock Metadata",
+          "fields": [
+            { "name": "lock_executed_by", "label": "Lock Executed By (Admin)", "type": "string", "required": true },
+            { "name": "date_locked", "label": "Date Locked", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "executive_approval_ref", "label": "Executive Approval Reference (D2.5)", "type": "string", "required": true, "inherited_from": "D2.5" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Immutable Baseline Record",
+          "description": "Pre-negotiation values and absolute walk-away limits. Read-only once locked.",
+          "fields": [
+            {
+              "name": "baseline_record",
+              "label": "Contract Baseline & Walk-Away Limits",
+              "type": "table",
+              "columns": [
+                { "name": "contract_variable", "label": "Contract Variable", "type": "string", "locked": true },
+                { "name": "baseline_value", "label": "Baseline Value (Approved in D2.5)", "type": "text" },
+                { "name": "absolute_limit", "label": "Absolute Limit (Walk-away point during negotiation)", "type": "text" }
+              ],
+              "prefilled_rows": [
+                "Total Contract Value (GHS)",
+                "Advance Payment %",
+                "Total Project Timeline",
+                "Warranty / Support SLA"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Document Conversion & Archive",
+          "description": "Lock the draft as a static PDF before transmitting to client",
+          "fields": [
+            {
+              "name": "conversion_checklist",
+              "label": "PDF Lock Tasks",
+              "type": "checklist",
+              "items": [
+                "Has the contract draft been exported as a static, non-editable PDF?",
+                "Is the locked PDF named per standard convention (e.g. IMHO_Contract_V1_ClientName)?",
+                "Is the locked PDF saved in the permanent client folder?"
+              ],
+              "column_labels": { "assignee": "Assignee", "status": "Status (Pending / Done)" },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Lock Verification",
+          "fields": [
+            { "name": "baseline_locked", "label": "Baseline Locked and Ready for Transmittal (D2.7)?", "type": "boolean", "required": true },
+            { "name": "contract_admin_signature", "label": "Contract Admin Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D2.7",
+      "tool_title": "Client Transmitted Record",
+      "activity_name": "Contract Transmittal",
+      "tier": 1,
+      "notes": "Dispatch log for sending the locked PDF to the client. initial_client_response drives the conditional path: 'Accepted as-is' skips D2.8-D2.10 and goes to D2.11; 'Requested Negotiation' routes through D2.8 → D2.9 → D2.10.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Dispatch Metadata",
+          "fields": [
+            { "name": "sent_to", "label": "Sent To (Client Email)", "type": "email", "required": true, "inherited_from": "D1.3" },
+            { "name": "sent_by", "label": "Sent By (IMHOGEN Representative)", "type": "string", "required": true },
+            { "name": "date_sent", "label": "Date Sent", "type": "date", "required": true },
+            { "name": "time_sent", "label": "Time Sent", "type": "time", "required": true },
+            { "name": "subject_line", "label": "Subject Line", "type": "string", "required": true },
+            { "name": "file_attached", "label": "File Attached (Exact filename from D2.6)", "type": "string", "required": true, "inherited_from": "D2.6" },
+            { "name": "quote_expiry_date", "label": "Quote Expiry Date", "type": "date", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Standard Transmittal Email Script",
+          "description": "Copy and paste to send to client",
+          "fields": [
+            {
+              "name": "transmittal_script",
+              "label": "Email Script",
+              "type": "instruction",
+              "content": "Dear [Client Name],\n\nFollowing our discussions and the approved Project Brief, please find attached the Draft Engineering Services Agreement for [Project Name].\n\nThis document outlines the formal technical scope and payment schedules we have agreed upon. We encourage you and your legal team to review the terms carefully. Due to current fluctuations in material supply chains, please note that this quote is valid for [X] days from the date of this email.\n\nIf the terms meet your expectations, we are happy to schedule a brief alignment meeting.\n\nWe look forward to officially kicking off this phase of engineering.\n\nBest regards,\n[Your Name] | IMHOGEN LTD"
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "CRM & Follow-Up Tracking",
+          "fields": [
+            { "name": "email_link", "label": "Link to Sent Email (CRM / Workspace)", "type": "file_link", "required": false },
+            { "name": "auto_followup_scheduled", "label": "Auto Follow-Up Scheduled? (3 days post-send)", "type": "boolean", "required": true },
+            { "name": "followup_date", "label": "Follow-Up Date", "type": "date", "required": false },
+            { "name": "initial_client_response", "label": "Initial Client Response", "type": "enum", "options": ["Pending", "Accepted as-is — proceed to D2.11", "Requested Negotiation — proceed to D2.8"], "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D2.8",
+      "tool_title": "Negotiation Meeting Invite",
+      "activity_name": "Negotiation Scheduling",
+      "tier": 1,
+      "conditional": true,
+      "condition": "Only unlocked if D2.7 initial_client_response = 'Requested Negotiation'. Skip to D2.11 if client accepted as-is.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Meeting Scheduling Metadata",
+          "fields": [
+            { "name": "proposed_date", "label": "Proposed Date", "type": "date", "required": true },
+            { "name": "meeting_time", "label": "Meeting Time (Zone)", "type": "string", "required": true },
+            { "name": "platform_location", "label": "Platform / Location", "type": "string", "required": true },
+            { "name": "meeting_link", "label": "Meeting Link / PIN", "type": "file_link", "required": false },
+            { "name": "imhogen_reps", "label": "Required IMHOGEN Representatives", "type": "string", "required": true },
+            { "name": "client_reps", "label": "Client Representatives", "type": "string", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Pre-Meeting Strategy Alignment",
+          "fields": [
+            { "name": "link_to_d2_6", "label": "Link to D2.6 Baseline (Negotiators' reference)", "type": "file_link", "required": true, "inherited_from": "D2.6" },
+            { "name": "client_stated_concerns", "label": "Client's Stated Concerns", "type": "text", "required": true },
+            { "name": "imhogen_hard_limits", "label": "IMHOGEN Hard Limits (from D2.6 walk-away points)", "type": "text", "required": true, "inherited_from": "D2.6" }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Standard Invite Script",
+          "description": "Copy and paste to client",
+          "fields": [
+            {
+              "name": "invite_script",
+              "label": "Meeting Invite Script",
+              "type": "instruction",
+              "content": "Dear [Client Name],\n\nThank you for reviewing the Draft Engineering Services Agreement for [Project Name]. We appreciate your feedback regarding [Insert 1-2 words on their concern].\n\nTo ensure we are perfectly aligned and to finalize the terms efficiently, we would like to schedule a brief 30-minute Contract Alignment Meeting with our Lead Project Manager and Engineering Director.\n\nPlease let us know if [Proposed Date & Time] works for your team. Our proposed agenda is as follows:\n1. Review of requested amendments to the Draft Contract.\n2. Discussion of operational / timeline impacts.\n3. Finalizing terms for the Pending Signature Draft.\n\nWe look forward to a productive discussion.\n\nBest regards,\n[Your Name] | IMHOGEN LTD"
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Calendar Verification",
+          "fields": [
+            { "name": "calendar_invite_sent", "label": "Calendar Invite Sent to Client?", "type": "boolean", "required": true },
+            { "name": "client_rsvp_confirmed", "label": "Client Confirmed / RSVP?", "type": "boolean", "required": true },
+            { "name": "internal_premeet_held", "label": "Internal Pre-Meet Held with Negotiators?", "type": "boolean", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D2.9",
+      "tool_title": "Negotiation Meeting Notes",
+      "activity_name": "Contract Negotiation",
+      "tier": 1,
+      "conditional": true,
+      "condition": "Only unlocked if D2.7 initial_client_response = 'Requested Negotiation'.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Meeting Execution Metadata",
+          "fields": [
+            { "name": "actual_date", "label": "Actual Date", "type": "date", "required": true },
+            { "name": "start_time", "label": "Start Time", "type": "time", "required": true },
+            { "name": "end_time", "label": "End Time", "type": "time", "required": true },
+            { "name": "lead_imhogen_negotiator", "label": "Lead IMHOGEN Negotiator", "type": "string", "required": true },
+            { "name": "primary_client_negotiator", "label": "Primary Client Negotiator", "type": "string", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Live Redline & Negotiation Tracker",
+          "fields": [
+            {
+              "name": "redline_tracker",
+              "label": "Clause-by-Clause Negotiation Record",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "contract_clause", "label": "Contract Clause in Question", "type": "string" },
+                { "name": "client_requested_change", "label": "Client's Requested Change", "type": "text" },
+                { "name": "imhogen_baseline_limit", "label": "IMHOGEN's Baseline Limit (from D2.6)", "type": "text" },
+                { "name": "final_agreed_resolution", "label": "Final Agreed Resolution / Concession", "type": "text" }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Parking Lot",
+          "description": "Unresolved items requiring follow-up",
+          "fields": [
+            {
+              "name": "parking_lot",
+              "label": "Unresolved Contract Items",
+              "type": "table",
+              "columns": [
+                { "name": "item_description", "label": "Item Description", "type": "text" },
+                { "name": "responsible_party", "label": "Who is Responsible for Resolving?", "type": "string" },
+                { "name": "resolution_deadline", "label": "Deadline for Resolution", "type": "date" }
+              ],
+              "required": false
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Negotiation Outcome",
+          "fields": [
+            { "name": "meeting_outcome", "label": "Meeting Outcome", "type": "enum", "options": ["Terms Agreed — proceed to D2.10", "Deadlock — escalate to Head of R&D", "Client Withdrawn"], "required": true },
+            { "name": "summary_next_steps", "label": "Summary of Next Steps", "type": "text", "required": true },
+            { "name": "lead_negotiator_signature", "label": "Lead Negotiator Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D2.10",
+      "tool_title": "Finalized Contract",
+      "activity_name": "Post-Negotiation Amendment",
+      "tier": 1,
+      "conditional": true,
+      "condition": "Only unlocked if D2.7 initial_client_response = 'Requested Negotiation' and D2.9 meeting_outcome = 'Terms Agreed'.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Final Edit Metadata",
+          "fields": [
+            { "name": "edited_by", "label": "Edited By (Contract Admin)", "type": "string", "required": true },
+            { "name": "date_of_final_edit", "label": "Date of Final Edit", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "reference_meeting_notes", "label": "Reference Meeting Notes (D2.9)", "type": "string", "required": true, "inherited_from": "D2.9" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Negotiation Amendment Tracker",
+          "description": "Every concession from D2.9 must be logged here before the contract is finalized",
+          "fields": [
+            {
+              "name": "amendment_tracker",
+              "label": "Applied Amendments",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "agreed_concession", "label": "Agreed Concession (from D2.9)", "type": "text" },
+                { "name": "contract_section_updated", "label": "Contract Section Updated", "type": "string" },
+                { "name": "new_contract_text", "label": "New Contract Text Inserted (Exact Wording)", "type": "text" },
+                { "name": "status", "label": "Status", "type": "enum", "options": ["Updated", "Pending"] }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Financial Re-Verification",
+          "description": "Required only if pricing changed during negotiation",
+          "fields": [
+            { "name": "pricing_changed_during_negotiation", "label": "Did pricing change during negotiation?", "type": "boolean", "required": true },
+            { "name": "overhead_still_met", "label": "Is minimum overhead recovery still met at new price?", "type": "boolean", "required": false },
+            { "name": "finance_rep_signature", "label": "Finance Rep Signature", "type": "signature", "required": false }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Document Conversion & Lock",
+          "fields": [
+            {
+              "name": "final_pdf_lock_checklist",
+              "label": "Final PDF Lock Tasks",
+              "type": "checklist",
+              "items": [
+                "Has the finalized contract been exported as the FINAL static PDF?",
+                "Is the locked PDF named per standard convention (e.g. IMHO_FinalContract_ClientName)?"
+              ],
+              "column_labels": { "assignee": "Assignee", "status": "Status (Pending / Done)" },
+              "required": true
+            },
+            { "name": "contract_finalized", "label": "Contract Finalized and Ready for Signature Routing (D2.11)?", "type": "boolean", "required": true },
+            { "name": "contract_admin_signature", "label": "Contract Admin Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D2.11",
+      "tool_title": "Pending Signature Contract",
+      "activity_name": "Signature Execution",
+      "tier": 1,
+      "notes": "Unlocked either directly from D2.7 (accepted as-is) or from D2.10 (post-negotiation). This is where DocuSign or physical signing happens.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Dispatch Metadata",
+          "fields": [
+            { "name": "routing_method", "label": "Routing Method", "type": "enum", "options": ["Digital Signature (DocuSign)", "Physical Courier"], "required": true },
+            { "name": "date_dispatched", "label": "Date Dispatched", "type": "date", "required": true },
+            { "name": "client_signatory", "label": "Sent To (Client Signatory — Name & Email)", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "imhogen_signatory", "label": "IMHOGEN Signatory (Name & Title)", "type": "string", "required": true },
+            { "name": "signature_platform_link", "label": "Link to Signature Platform", "type": "file_link", "required": false },
+            { "name": "auto_reminder_set", "label": "Auto-Reminder Set?", "type": "boolean", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Standard Signature Request Script",
+          "description": "Copy and paste to client",
+          "fields": [
+            {
+              "name": "signature_request_script",
+              "label": "Signature Request Script",
+              "type": "instruction",
+              "content": "Dear [Client Name],\n\nThank you for a highly productive alignment meeting. We have updated the Engineering Services Agreement to reflect the exact terms we agreed upon.\n\nPlease find the finalized contract attached for your signature. [If using DocuSign: 'You can click the link below to review and sign the document digitally.']\n\nOnce executed by both parties, our Finance team will issue the invoice for the advance payment, and our Engineering team will formally initiate Phase 1.\n\nWe are excited to begin this development journey with you.\n\nBest regards,\n[Your Name] | IMHOGEN LTD"
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Signature Status Tracker",
+          "fields": [
+            {
+              "name": "signature_tracker",
+              "label": "Signatory Status",
+              "type": "table",
+              "columns": [
+                { "name": "signatory", "label": "Signatory", "type": "string", "locked": true },
+                { "name": "role", "label": "Role", "type": "string", "locked": true },
+                { "name": "date_viewed", "label": "Date Viewed", "type": "date" },
+                { "name": "date_signed", "label": "Date Signed", "type": "date" },
+                { "name": "status", "label": "Status", "type": "enum", "options": ["Pending", "Signed"] }
+              ],
+              "prefilled_rows": [
+                "Client Representative",
+                "IMHOGEN Representative"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Escalation",
+          "fields": [
+            { "name": "pending_over_7_days", "label": "Has the contract been pending signature for more than 7 days?", "type": "boolean", "required": true },
+            { "name": "escalation_action_taken", "label": "Action Taken", "type": "text", "required": false }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D2.12",
+      "tool_title": "Executed Contract & Audit Trail",
+      "activity_name": "Contract Execution Record",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Execution Metadata",
+          "fields": [
+            { "name": "date_fully_executed", "label": "Date Fully Executed", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "client_signatory", "label": "Client Signatory", "type": "string", "required": true, "inherited_from": "D2.11" },
+            { "name": "imhogen_signatory", "label": "IMHOGEN Signatory", "type": "string", "required": true, "inherited_from": "D2.11" },
+            { "name": "total_contract_value", "label": "Total Contract Value (GHS)", "type": "currency", "required": true, "inherited_from": "D1.15" },
+            { "name": "advance_payment_due", "label": "Advance Payment Due (GHS)", "type": "currency", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Digital Audit Record",
+          "fields": [
+            { "name": "document_platform", "label": "Document Platform Used", "type": "enum", "options": ["DocuSign", "Adobe Sign", "Physical Scan / Scan Upload"], "required": true },
+            { "name": "link_to_executed_pdf", "label": "Link to Executed PDF", "type": "file_link", "required": true },
+            { "name": "link_to_audit_certificate", "label": "Link to Digital Audit Certificate", "type": "file_link", "required": true }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Initial Financial Trigger",
+          "description": "Triggers Finance to generate the advance payment invoice",
+          "fields": [
+            {
+              "name": "financial_trigger_checklist",
+              "label": "Financial Trigger Tasks",
+              "type": "checklist",
+              "items": [
+                "Has the executed contract been emailed to the Finance Department?",
+                "Has Finance generated and issued the Advance Payment Invoice?"
+              ],
+              "column_labels": { "assignee": "Assignee", "status": "Status (Pending / Done)" },
+              "required": true
+            },
+            { "name": "invoice_number", "label": "Invoice Number Issued", "type": "string", "required": true },
+            { "name": "invoice_date_issued", "label": "Invoice Date Issued", "type": "date", "required": true }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Execution Routing",
+          "fields": [
+            { "name": "contract_executed_and_invoice_sent", "label": "Is the contract fully executed and the first invoice sent?", "type": "boolean", "required": true },
+            { "name": "contract_admin_signature", "label": "Contract Admin Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D2.13",
+      "tool_title": "Archived Contract Record",
+      "activity_name": "Contract Archival",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Archive Metadata",
+          "fields": [
+            { "name": "archived_by", "label": "Archived By (Admin)", "type": "string", "required": true },
+            { "name": "archive_date", "label": "Archive Date", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "permanent_vault_folder_link", "label": "Permanent Vault Folder Link", "type": "file_link", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Permanent Vault Checklist",
+          "fields": [
+            {
+              "name": "vault_checklist",
+              "label": "Required Documents in Vault",
+              "type": "checklist",
+              "items": [
+                "D1.15 Project Brief & Draft Budget (IMHO_Brief_ClientName.pdf)",
+                "D2.6 Internally Approved Draft / Baseline (IMHO_Contract_V1_ClientName.pdf)",
+                "D2.9 Negotiation Meeting Notes (IMHO_NegNotes_ClientName.pdf)",
+                "D2.12 Fully Executed Contract PDF (IMHO_ExecutedContract_ClientName.pdf)",
+                "Digital Audit Certificate (IMHO_AuditCert_ClientName.pdf)"
+              ],
+              "column_labels": { "status": "Status (Verified in Vault)", "file_naming_check": "File Naming Convention Check" },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Vault Lock Verification",
+          "fields": [
+            { "name": "all_documents_in_vault", "label": "Are all documents present in the secure cloud vault?", "type": "boolean", "required": true },
+            { "name": "contract_admin_signature", "label": "Contract Admin Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D2.14",
+      "tool_title": "Phase Initiation Notice",
+      "activity_name": "Engineering Green Light",
+      "tier": 1,
+      "notes": "This is the trigger that unlocks WB03 (Finance & Resource Management). Completing the financial clearance section sets projects.advance_cleared = true and projects.status = 'Active Engineering Phase'.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Initiation Metadata",
+          "fields": [
+            { "name": "notice_date", "label": "Notice Date", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "assigned_pm", "label": "Assigned Project Manager", "type": "string", "required": true, "inherited_from": "D1.16" },
+            { "name": "total_project_timeline", "label": "Total Project Timeline", "type": "string", "required": true, "inherited_from": "D1.15" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Financial Clearance",
+          "description": "The advance payment must be confirmed cleared before engineering work begins. Triggers projects.advance_cleared = true.",
+          "fields": [
+            { "name": "advance_invoice_number", "label": "Advance Invoice Number", "type": "string", "required": true, "inherited_from": "D2.12" },
+            { "name": "amount_expected_ghs", "label": "Amount Expected (GHS)", "type": "currency", "required": true, "inherited_from": "D2.12" },
+            { "name": "date_payment_cleared", "label": "Date Payment Cleared IMHOGEN Bank Account", "type": "date", "required": true },
+            { "name": "finance_clearance_signature", "label": "Finance Clearance Signature", "type": "signature", "required": true }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Engineering Launch Directive",
+          "fields": [
+            { "name": "official_project_start_date", "label": "Official Project Start Date (Day 1)", "type": "date", "required": true },
+            { "name": "target_delivery_date", "label": "Target Delivery Date", "type": "date", "required": true },
+            { "name": "link_to_executed_contract", "label": "Link to Executed Contract (For PM Reference)", "type": "file_link", "required": true, "inherited_from": "D2.12" }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Launch Confirmation Checklist",
+          "fields": [
+            {
+              "name": "launch_checklist",
+              "label": "Launch Tasks",
+              "type": "checklist",
+              "items": [
+                "Has the central tracking database been updated to 'Active Engineering Phase'?",
+                "Has the Project Manager formally received this Initiation Notice?"
+              ],
+              "column_labels": { "assignee": "Assignee", "status": "Status (Pending / Done)" },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "title": "Final Authorization",
+          "fields": [
+            { "name": "engineering_team_authorized", "label": "Is the Engineering Team officially authorized to begin billable work?", "type": "boolean", "required": true },
+            { "name": "head_of_ops_signature", "label": "Head of Operations / R&D Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    }
+  ]
+}

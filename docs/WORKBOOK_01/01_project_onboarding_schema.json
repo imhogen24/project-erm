@@ -1,0 +1,2788 @@
+{
+  "workbook_id": 1,
+  "workbook_name": "Project Onboarding and Definition Process",
+  "tools": [
+    {
+      "tool_id": "D1.1",
+      "tool_title": "Web Forms",
+      "activity_name": "Web Form Submission Logging",
+      "tier": "both",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Client Submission Reference",
+          "fields": [
+            {
+              "name": "submission_log",
+              "label": "Client Submission Log",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "form_type",
+                  "label": "Form Type",
+                  "type": "enum",
+                  "options": [
+                    "Product Development Form",
+                    "CAD Request Form",
+                    "Process Development Form",
+                    "Engineering Support / Consultancy",
+                    "Others"
+                  ]
+                },
+                {
+                  "name": "date_submitted",
+                  "label": "Date Submitted",
+                  "type": "date"
+                },
+                {
+                  "name": "client_org_name",
+                  "label": "Client / Org Name",
+                  "type": "string"
+                },
+                {
+                  "name": "submission_link",
+                  "label": "Direct Link",
+                  "type": "file_link"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Submitted",
+                    "Reviewed",
+                    "Processed"
+                  ]
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Supplementary Uploads",
+          "fields": [
+            {
+              "name": "supplementary_uploads",
+              "label": "Supplementary Documents",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "document_type",
+                  "label": "Document Type",
+                  "type": "string"
+                },
+                {
+                  "name": "date_uploaded",
+                  "label": "Date Uploaded",
+                  "type": "date"
+                },
+                {
+                  "name": "provided_by",
+                  "label": "Provided By",
+                  "type": "string"
+                },
+                {
+                  "name": "file_link",
+                  "label": "Direct Link to File",
+                  "type": "file_link"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Pending",
+                    "Received",
+                    "Reviewed"
+                  ]
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "string"
+                }
+              ],
+              "required": false
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Confidential Notice",
+          "fields": [
+            {
+              "name": "client_name",
+              "label": "Client Name / Organization",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "org_activities_description",
+              "label": "Description of Primary Activities of Organization",
+              "type": "text",
+              "required": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.2",
+      "tool_title": "Initial Inquiry Notification",
+      "activity_name": "Inquiry Receipt",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Notification Metadata",
+          "fields": [
+            {
+              "name": "notification_source",
+              "label": "Notification Source",
+              "type": "enum",
+              "options": [
+                "Web Form",
+                "Direct Email",
+                "Phone",
+                "Walk-in",
+                "Other"
+              ],
+              "required": true
+            },
+            {
+              "name": "date_received",
+              "label": "Date Received",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "time_received",
+              "label": "Time Received",
+              "type": "time",
+              "required": true
+            },
+            {
+              "name": "sender_email",
+              "label": "Sender Email Address",
+              "type": "email",
+              "required": true
+            },
+            {
+              "name": "recipient_email",
+              "label": "Recipient (IMHOGEN) Address",
+              "type": "email",
+              "required": true
+            },
+            {
+              "name": "subject_line",
+              "label": "Subject Line",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Digital Records Reference",
+          "fields": [
+            {
+              "name": "digital_records",
+              "label": "Attached / Referenced Files",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "document_type",
+                  "label": "Document Type",
+                  "type": "string"
+                },
+                {
+                  "name": "file_name",
+                  "label": "File Name / Description",
+                  "type": "string"
+                },
+                {
+                  "name": "file_link",
+                  "label": "Direct Link to File",
+                  "type": "file_link"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Pending",
+                    "Received",
+                    "Reviewed"
+                  ]
+                }
+              ],
+              "required": false
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Preliminary Triage",
+          "description": "Spam and relevance filter \u2014 PID 1.1.2",
+          "fields": [
+            {
+              "name": "triage_checklist",
+              "label": "Triage Checklist",
+              "type": "checklist",
+              "items": [
+                "Is the notification readable and free of malicious links?",
+                "Does the request broadly align with IMHOGEN's services?",
+                "Is the contact information apparently valid and legible?"
+              ],
+              "column_labels": {
+                "status": "Status (Pass / Fail)",
+                "reviewer_notes": "Reviewer Notes"
+              },
+              "required": true
+            },
+            {
+              "name": "triage_decision",
+              "label": "Triage Decision",
+              "type": "enum",
+              "options": [
+                "Proceed to D1.3",
+                "Reject as Spam"
+              ],
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.3",
+      "tool_title": "Received Request Record",
+      "activity_name": "Request Logging",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Client & Project Metadata",
+          "fields": [
+            {
+              "name": "request_source_form",
+              "label": "Request Source Form",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.1"
+            },
+            {
+              "name": "client_name",
+              "label": "Client Name",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "company_name",
+              "label": "Company Name",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "contact_info",
+              "label": "Contact Info",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "physical_address",
+              "label": "Physical Address",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "project_product_name",
+              "label": "Project / Product Name",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "target_budget",
+              "label": "Target Budget (if stated)",
+              "type": "currency",
+              "required": false
+            },
+            {
+              "name": "target_timeline",
+              "label": "Target Timeline",
+              "type": "string",
+              "required": false
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Core Objectives & Scope",
+          "description": "Client's stated vision",
+          "fields": [
+            {
+              "name": "primary_purpose",
+              "label": "Primary Purpose / Business Goal",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "main_deliverables",
+              "label": "Main Deliverables Requested",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "specific_constraints",
+              "label": "Specific Constraints Noted",
+              "type": "text",
+              "required": false
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Systems Engineering Translation",
+          "description": "Translate client request into engineering operands. Fill N/A if not applicable.",
+          "fields": [
+            {
+              "name": "operands",
+              "label": "Input / Output Operands",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "operand_type",
+                  "label": "Operand",
+                  "type": "enum",
+                  "options": [
+                    "M (Material)",
+                    "E (Energy)",
+                    "I (Information)",
+                    "L (Living thing)"
+                  ],
+                  "locked": true
+                },
+                {
+                  "name": "input",
+                  "label": "Input Operand",
+                  "type": "text"
+                },
+                {
+                  "name": "output",
+                  "label": "Output Operand",
+                  "type": "text"
+                }
+              ],
+              "required": false
+            },
+            {
+              "name": "operators",
+              "label": "Operators (The System Environment)",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "operator_type",
+                  "label": "Operator",
+                  "type": "enum",
+                  "options": [
+                    "Human System",
+                    "Technical System",
+                    "Active Environment",
+                    "Information System",
+                    "Management System"
+                  ],
+                  "locked": true
+                },
+                {
+                  "name": "description",
+                  "label": "Description",
+                  "type": "text"
+                }
+              ],
+              "required": false
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Missing Information",
+          "description": "Items to clarify during Discovery Meeting",
+          "fields": [
+            {
+              "name": "missing_information",
+              "label": "Identified Missing Information",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "item_description",
+                  "label": "Item to Clarify",
+                  "type": "text"
+                },
+                {
+                  "name": "assignee",
+                  "label": "Assignee",
+                  "type": "string"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Open",
+                    "Resolved"
+                  ]
+                }
+              ],
+              "required": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "T3.D1.3a",
+      "tool_title": "T3 Technical Intake (Drafting)",
+      "activity_name": "Technical Intake",
+      "tier": 3,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Source Asset Evaluation",
+          "description": "Evaluate what the client has provided as input",
+          "fields": [
+            {
+              "name": "source_assets",
+              "label": "Source Assets",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "asset_type",
+                  "label": "Asset Type",
+                  "type": "enum",
+                  "options": [
+                    "Existing 3D Model",
+                    "Physical Part",
+                    "2D Legacy PDF",
+                    "Other"
+                  ]
+                },
+                {
+                  "name": "format_description",
+                  "label": "Format / Description",
+                  "type": "string"
+                },
+                {
+                  "name": "condition",
+                  "label": "Condition",
+                  "type": "string"
+                },
+                {
+                  "name": "action_required",
+                  "label": "Action Required",
+                  "type": "string"
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Drafting Specifications",
+          "description": "Define the required output",
+          "fields": [
+            {
+              "name": "drafting_specs",
+              "label": "Drafting Requirements",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "requirement",
+                  "label": "Requirement",
+                  "type": "enum",
+                  "options": [
+                    "Manufacturing Drawings",
+                    "Assembly Drawings",
+                    "3D Model Output",
+                    "Other"
+                  ]
+                },
+                {
+                  "name": "standard",
+                  "label": "Standard (ISO / ASME)",
+                  "type": "string"
+                },
+                {
+                  "name": "tolerance_class",
+                  "label": "Tolerance Class",
+                  "type": "string"
+                },
+                {
+                  "name": "file_format",
+                  "label": "File Format",
+                  "type": "string"
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Quality Gate: Data Sufficiency",
+          "fields": [
+            {
+              "name": "data_sufficient_for_tolerances",
+              "label": "Does the provided source data allow for the requested tolerances?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "site_visit_required",
+              "label": "Is a site visit required for manual measurements?",
+              "type": "boolean",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.4",
+      "tool_title": "Acknowledgement Email",
+      "activity_name": "Client Communication",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Dispatch Metadata",
+          "fields": [
+            {
+              "name": "sent_to",
+              "label": "Sent To (Client Email)",
+              "type": "email",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "cc_bcc",
+              "label": "CC / BCC",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "subject_line",
+              "label": "Subject Line",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_sent",
+              "label": "Date Sent",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "time_sent",
+              "label": "Time Sent",
+              "type": "time",
+              "required": true
+            },
+            {
+              "name": "sent_by",
+              "label": "Sent By (IMHOGEN Representative)",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "CRM Record",
+          "fields": [
+            {
+              "name": "email_link",
+              "label": "Link to Sent Email",
+              "type": "file_link",
+              "required": false
+            },
+            {
+              "name": "delivery_status",
+              "label": "Delivery Status",
+              "type": "enum",
+              "options": [
+                "Delivered",
+                "Bounced",
+                "Pending"
+              ],
+              "required": true
+            },
+            {
+              "name": "notes_replies",
+              "label": "Notes / Replies",
+              "type": "text",
+              "required": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.5",
+      "tool_title": "Meeting Time Proposal",
+      "activity_name": "Meeting Scheduling",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Proposed Meeting Slots",
+          "fields": [
+            {
+              "name": "proposed_slots",
+              "label": "Time Slot Options",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "slot_number",
+                  "label": "Slot No.",
+                  "type": "string"
+                },
+                {
+                  "name": "date",
+                  "label": "Date",
+                  "type": "date"
+                },
+                {
+                  "name": "time_zone",
+                  "label": "Time (Zone)",
+                  "type": "string"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Pending",
+                    "Accepted",
+                    "Declined"
+                  ]
+                },
+                {
+                  "name": "client_comments",
+                  "label": "Client Comments",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Final Meeting Confirmation",
+          "fields": [
+            {
+              "name": "agreed_date",
+              "label": "Agreed Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "agreed_time",
+              "label": "Agreed Time",
+              "type": "time",
+              "required": true
+            },
+            {
+              "name": "meeting_platform",
+              "label": "Meeting Platform / Location",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "direct_meeting_link",
+              "label": "Direct Meeting Link",
+              "type": "file_link",
+              "required": false
+            },
+            {
+              "name": "calendar_invite_sent",
+              "label": "Calendar Invite Sent?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "client_confirmed",
+              "label": "Client Confirmed?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "notes",
+              "label": "Notes",
+              "type": "text",
+              "required": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.6",
+      "tool_title": "Calendar Invite & Agenda",
+      "activity_name": "Meeting Preparation",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Finalized Meeting Details",
+          "fields": [
+            {
+              "name": "meeting_date",
+              "label": "Meeting Date",
+              "type": "date",
+              "required": true,
+              "inherited_from": "D1.5"
+            },
+            {
+              "name": "meeting_time",
+              "label": "Meeting Time (Zone)",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.5"
+            },
+            {
+              "name": "platform_location",
+              "label": "Platform / Location",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.5"
+            },
+            {
+              "name": "meeting_id_pin",
+              "label": "Meeting ID / PIN",
+              "type": "string",
+              "required": false
+            },
+            {
+              "name": "imhogen_attendees",
+              "label": "IMHOGEN Attendees",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "client_attendees",
+              "label": "Client Attendees",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Meeting Agenda",
+          "description": "Standard agenda \u2014 pre-defined, not editable",
+          "fields": [
+            {
+              "name": "agenda",
+              "label": "Agenda Items",
+              "type": "checklist",
+              "items": [
+                "Introductions & Project Overview (05 mins) \u2014 Project Manager",
+                "Technical Requirements: Inputs / Outputs (15 mins) \u2014 Lead Engineer",
+                "Operational Environment & Constraints (10 mins) \u2014 Lead Engineer",
+                "Commercial Expectations: Timeline / Budget (05 mins) \u2014 Project Manager",
+                "Next Steps & Q&A (05 mins) \u2014 Project Manager"
+              ],
+              "column_labels": {
+                "status": "Covered (Y/N)",
+                "notes": "Notes"
+              },
+              "required": false
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Pre-Meeting Checklist",
+          "fields": [
+            {
+              "name": "pre_meeting_checklist",
+              "label": "Pre-Meeting Checklist",
+              "type": "checklist",
+              "items": [
+                "Has the Lead Engineer reviewed D1.3 (Received Request Record)?",
+                "Is the meeting recording software / consent prepared?",
+                "Have reference documents (D1.1) been opened for screen sharing?"
+              ],
+              "column_labels": {
+                "assignee": "Assignee",
+                "status": "Status"
+              },
+              "required": true
+            },
+            {
+              "name": "notes",
+              "label": "Notes",
+              "type": "text",
+              "required": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.7",
+      "tool_title": "Raw Meeting Notes",
+      "activity_name": "Discovery Meeting",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Meeting Execution Metadata",
+          "fields": [
+            {
+              "name": "actual_date",
+              "label": "Actual Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "actual_start_time",
+              "label": "Actual Start Time",
+              "type": "time",
+              "required": true
+            },
+            {
+              "name": "actual_end_time",
+              "label": "Actual End Time",
+              "type": "time",
+              "required": true
+            },
+            {
+              "name": "recording_link",
+              "label": "Recording Link (if applicable)",
+              "type": "file_link",
+              "required": false
+            },
+            {
+              "name": "imhogen_attendees_present",
+              "label": "IMHOGEN Attendees Present",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "client_attendees_present",
+              "label": "Client Attendees Present",
+              "type": "string",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Live Discussion Capture",
+          "description": "Aligned with D1.6 agenda items",
+          "fields": [
+            {
+              "name": "discussion_capture",
+              "label": "Meeting Notes per Agenda Item",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "agenda_topic",
+                  "label": "Agenda Topic",
+                  "type": "string",
+                  "locked": true
+                },
+                {
+                  "name": "raw_notes",
+                  "label": "Raw Notes / Direct Client Statements",
+                  "type": "text"
+                },
+                {
+                  "name": "imhogen_remarks",
+                  "label": "IMHOGEN Clarifications / Immediate Remarks",
+                  "type": "text"
+                }
+              ],
+              "prefilled_rows": [
+                "Introductions & Project Overview",
+                "Technical Requirements (Inputs / Outputs)",
+                "Operational Environment & Constraints",
+                "Commercial Expectations (Timeline / Budget)",
+                "Next Steps & Q&A"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Parking Lot",
+          "description": "Unresolved questions or out-of-scope requests",
+          "fields": [
+            {
+              "name": "parking_lot",
+              "label": "Parking Lot Items",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "item_description",
+                  "label": "Item Description",
+                  "type": "text"
+                },
+                {
+                  "name": "action_required",
+                  "label": "Action Required / Who to Resolve",
+                  "type": "text"
+                }
+              ],
+              "required": false
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Meeting Close-Out",
+          "fields": [
+            {
+              "name": "primary_outcome",
+              "label": "Primary Outcome",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "client_next_step",
+              "label": "Client Next Step",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "imhogen_next_step",
+              "label": "IMHOGEN Next Step",
+              "type": "text",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.8",
+      "tool_title": "Needs Assessment Notes",
+      "activity_name": "Engineering Synthesis",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Synthesis Metadata",
+          "fields": [
+            {
+              "name": "synthesized_by",
+              "label": "Synthesized By (Lead Engineer)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "date_of_synthesis",
+              "label": "Date of Synthesis",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "reference_raw_notes_id",
+              "label": "Reference Raw Notes ID",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.7"
+            },
+            {
+              "name": "client_project_name",
+              "label": "Client / Project Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Engineering Operands & Operators",
+          "description": "Confirmed constraints and specifications from discovery meeting",
+          "fields": [
+            {
+              "name": "operands_operators",
+              "label": "Confirmed Constraints by Category",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "category",
+                  "label": "Category",
+                  "type": "string",
+                  "locked": true
+                },
+                {
+                  "name": "confirmed_constraints",
+                  "label": "Confirmed Constraints / Specifications",
+                  "type": "text"
+                },
+                {
+                  "name": "engineering_remarks",
+                  "label": "Engineering Remarks (Risks / Clarifications)",
+                  "type": "text"
+                }
+              ],
+              "prefilled_rows": [
+                "INPUT: Material",
+                "INPUT: Energy",
+                "INPUT: Information",
+                "INPUT: Living thing",
+                "OUTPUT: Material",
+                "OUTPUT: Energy",
+                "OUTPUT: Information",
+                "OUTPUT: Living thing",
+                "OPERATOR: Human System",
+                "OPERATOR: Technical System",
+                "OPERATOR: Active Environment",
+                "OPERATOR: Management System",
+                "OPERATOR: Information System"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Preliminary Design Specifications (Draft Pr-Set)",
+          "fields": [
+            {
+              "name": "design_specs",
+              "label": "Requirement Categories",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "requirement_category",
+                  "label": "Requirement Category",
+                  "type": "string"
+                },
+                {
+                  "name": "specific_requirement",
+                  "label": "Specific Requirement / Tolerance",
+                  "type": "text"
+                },
+                {
+                  "name": "priority",
+                  "label": "Priority",
+                  "type": "enum",
+                  "options": [
+                    "Fixed",
+                    "Wish"
+                  ]
+                }
+              ],
+              "prefilled_rows": [
+                "Function Properties",
+                "Operational Properties",
+                "Manufacturing Properties",
+                "Environmental Properties",
+                "Distribution Properties"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Synthesis Approval & Routing",
+          "fields": [
+            {
+              "name": "synthesis_complete",
+              "label": "Synthesis Complete?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "date_complete",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "lead_engineer_signature",
+              "label": "Lead Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "ready_for_internal_review",
+              "label": "Ready for Internal Review (D1.9)?",
+              "type": "boolean",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "T3.D1.8a",
+      "tool_title": "T3 Physical Metrology Log",
+      "activity_name": "Physical Measurement",
+      "tier": 3,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Measurement Equipment Verification",
+          "fields": [
+            {
+              "name": "equipment_log",
+              "label": "Measurement Tools Used",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "tool_used",
+                  "label": "Tool Used",
+                  "type": "string"
+                },
+                {
+                  "name": "serial_id",
+                  "label": "Serial # / ID",
+                  "type": "string"
+                },
+                {
+                  "name": "calibration_status",
+                  "label": "Calibration Status",
+                  "type": "enum",
+                  "options": [
+                    "Valid",
+                    "Expired",
+                    "Unknown"
+                  ]
+                },
+                {
+                  "name": "accuracy_range",
+                  "label": "Accuracy Range",
+                  "type": "string"
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Critical Dimension Capture",
+          "fields": [
+            {
+              "name": "dimensions",
+              "label": "Measured Dimensions",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "feature_name",
+                  "label": "Feature Name",
+                  "type": "string"
+                },
+                {
+                  "name": "measurement_method",
+                  "label": "Measurement Method",
+                  "type": "string"
+                },
+                {
+                  "name": "measured_value_mm",
+                  "label": "Measured Value (mm)",
+                  "type": "number"
+                },
+                {
+                  "name": "ref_photo_id",
+                  "label": "Reference Photo ID",
+                  "type": "string"
+                },
+                {
+                  "name": "confidence",
+                  "label": "Confidence",
+                  "type": "enum",
+                  "options": [
+                    "High",
+                    "Medium",
+                    "Low"
+                  ]
+                },
+                {
+                  "name": "notes",
+                  "label": "Notes",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Photographic Evidence Checklist",
+          "fields": [
+            {
+              "name": "photo_checklist",
+              "label": "Required Views",
+              "type": "checklist",
+              "items": [
+                "Isometric / 3/4 View \u2014 Must show overall machine context",
+                "Nameplate / Specs \u2014 Serial numbers and motor ratings",
+                "Complex Interfaces \u2014 Close-ups of gears, splines, connectors"
+              ],
+              "column_labels": {
+                "captured": "Captured? (Y/N)",
+                "file_link": "File Link / Folder",
+                "quality_note": "Quality Note"
+              },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Field Sign-Off",
+          "fields": [
+            {
+              "name": "lead_measurer_signature",
+              "label": "Lead Measurer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.9",
+      "tool_title": "Internal Review Request",
+      "activity_name": "Feasibility Review Initiation",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Review Initiation Metadata",
+          "fields": [
+            {
+              "name": "requested_by",
+              "label": "Requested By (Lead Engineer / PM)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "project_client_name",
+              "label": "Project / Client Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "date_of_request",
+              "label": "Date of Request",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "required_completion_date",
+              "label": "Required Completion Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "primary_review_objective",
+              "label": "Primary Review Objective",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "priority_level",
+              "label": "Priority Level",
+              "type": "enum",
+              "options": [
+                "High",
+                "Medium",
+                "Low"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Context & Reference Material",
+          "fields": [
+            {
+              "name": "reference_documents",
+              "label": "Required Reading Documents",
+              "type": "checklist",
+              "items": [
+                "D1.3 Received Request Record",
+                "D1.8 Needs Assessment Notes",
+                "Client Supplementary Uploads (D1.1)"
+              ],
+              "column_labels": {
+                "link": "Direct Link",
+                "status": "Status"
+              },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Review Directives & Assignments",
+          "fields": [
+            {
+              "name": "review_directives",
+              "label": "Review Assignments",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "review_category",
+                  "label": "Review Category",
+                  "type": "string"
+                },
+                {
+                  "name": "assigned_reviewer",
+                  "label": "Assigned Reviewer",
+                  "type": "string"
+                },
+                {
+                  "name": "specific_focus",
+                  "label": "Specific Focus / Question for Reviewer",
+                  "type": "text"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Pending",
+                    "In Progress",
+                    "Submitted"
+                  ]
+                }
+              ],
+              "prefilled_rows": [
+                "Technical Feasibility",
+                "Resource Availability",
+                "Commercial & Scope Alignment",
+                "Specialist Review (if required)"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Review Completion Tracking",
+          "fields": [
+            {
+              "name": "all_reviews_submitted",
+              "label": "Are all reviews submitted?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "date_complete",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "lead_engineer_signature",
+              "label": "Lead Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "ready_for_capability_assessment",
+              "label": "Ready for Capability Assessment (D1.10)?",
+              "type": "boolean",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.10",
+      "tool_title": "Capability Assessment Sheet",
+      "activity_name": "Capability Assessment",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Assessment Metadata",
+          "fields": [
+            {
+              "name": "assessor",
+              "label": "Assessor (Head of Ops / Lead Engineer)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "project_client_name",
+              "label": "Project / Client Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "date_of_assessment",
+              "label": "Date of Assessment",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "primary_review_objective",
+              "label": "Primary Review Objective",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "reference_request_id",
+              "label": "Reference Request ID",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.9"
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Technical Capability",
+          "fields": [
+            {
+              "name": "technical_capability",
+              "label": "Technical Capability Checklist",
+              "type": "checklist",
+              "items": [
+                "Does IMHOGEN possess the core engineering expertise for this design?",
+                "Can the physical product be fabricated using our standard workshop tools?",
+                "Are the required raw materials reliably accessible in our local supply chain?",
+                "Do we have the software / computing capability to run necessary simulations?"
+              ],
+              "column_labels": {
+                "status": "Status (Yes / No / Partial)",
+                "justification": "Justification / Identified Gaps"
+              },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Commercial Alignment",
+          "fields": [
+            {
+              "name": "commercial_alignment",
+              "label": "Commercial Alignment Checklist",
+              "type": "checklist",
+              "items": [
+                "Does the client's estimated budget align with the scale of work?",
+                "Is this project aligned with IMHOGEN's long-term strategic goals?"
+              ],
+              "column_labels": {
+                "status": "Status (Yes / No / Partial)",
+                "justification": "Justification / Identified Gaps"
+              },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Capability Conclusion",
+          "fields": [
+            {
+              "name": "overall_capability_status",
+              "label": "Overall Capability Status",
+              "type": "enum",
+              "options": [
+                "Capable",
+                "Partially Capable",
+                "Not Capable"
+              ],
+              "required": true
+            },
+            {
+              "name": "date",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "primary_bottleneck",
+              "label": "Primary Bottleneck (if any)",
+              "type": "text",
+              "required": false
+            },
+            {
+              "name": "assessor_signature",
+              "label": "Assessor Signature",
+              "type": "signature",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.11",
+      "tool_title": "Risk Assessment Sheet",
+      "activity_name": "Risk Assessment",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Assessment Metadata",
+          "fields": [
+            {
+              "name": "assessor",
+              "label": "Assessor (Head of Ops / Lead Engineer)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "project_client_name",
+              "label": "Project / Client Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "date_of_assessment",
+              "label": "Date of Assessment",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "overall_capability_status",
+              "label": "Overall Capability Status",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.10"
+            },
+            {
+              "name": "reference_request_id",
+              "label": "Reference Request ID",
+              "type": "string",
+              "required": true,
+              "auto_generated": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Risk Register",
+          "fields": [
+            {
+              "name": "risks",
+              "label": "Identified Risks",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "risk_category",
+                  "label": "Risk Category",
+                  "type": "enum",
+                  "options": [
+                    "Technical Risk",
+                    "Commercial Risk",
+                    "Supply Chain Risk",
+                    "Operational Risk",
+                    "Other"
+                  ]
+                },
+                {
+                  "name": "specific_risk_description",
+                  "label": "Specific Risk Description",
+                  "type": "text"
+                },
+                {
+                  "name": "probability",
+                  "label": "Probability",
+                  "type": "enum",
+                  "options": [
+                    "High",
+                    "Medium",
+                    "Low"
+                  ]
+                },
+                {
+                  "name": "impact",
+                  "label": "Impact",
+                  "type": "enum",
+                  "options": [
+                    "High",
+                    "Medium",
+                    "Low"
+                  ]
+                },
+                {
+                  "name": "mitigation_strategy",
+                  "label": "Proposed Mitigation Strategy",
+                  "type": "text"
+                },
+                {
+                  "name": "risk_owner",
+                  "label": "Risk Owner",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Risk Conclusion & Go / No-Go Decision",
+          "fields": [
+            {
+              "name": "risk_conclusion_checklist",
+              "label": "Risk Evaluation",
+              "type": "checklist",
+              "items": [
+                "Are there any High Probability / High Impact risks that cannot be mitigated?",
+                "Does the mitigation of these risks push the project over the client's budget?",
+                "Is IMHOGEN willing to accept the residual risk of this project?"
+              ],
+              "column_labels": {
+                "status": "Status (Yes / No / Partial)",
+                "remarks": "Remarks / Conditions"
+              },
+              "required": true
+            },
+            {
+              "name": "overall_risk_profile",
+              "label": "Overall Risk Profile",
+              "type": "enum",
+              "options": [
+                "Low",
+                "Medium",
+                "High"
+              ],
+              "required": true
+            },
+            {
+              "name": "go_no_go_decision",
+              "label": "Project Go / No-Go Decision",
+              "type": "enum",
+              "options": [
+                "Go",
+                "No-Go",
+                "Conditional Go"
+              ],
+              "required": true
+            },
+            {
+              "name": "date",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "assessor_signature",
+              "label": "Assessor Signature",
+              "type": "signature",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.12",
+      "tool_title": "Feasibility Report",
+      "activity_name": "Feasibility Reporting",
+      "tier": "both",
+      "notes": "Used as Fast-Track Feasibility in Tier 3",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Report Metadata",
+          "fields": [
+            {
+              "name": "assessor",
+              "label": "Assessor (Head of Ops / Lead Engineer)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "project_client_name",
+              "label": "Project / Client Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "date_of_assessment",
+              "label": "Date of Assessment",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "overall_capability_status",
+              "label": "Overall Capability Status",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.10"
+            },
+            {
+              "name": "reference_request_id",
+              "label": "Reference Request ID",
+              "type": "string",
+              "required": true,
+              "auto_generated": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Technical Capability Summary",
+          "fields": [
+            {
+              "name": "capability_domains",
+              "label": "Capability by Domain",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "capability_domain",
+                  "label": "Capability Domain",
+                  "type": "string",
+                  "locked": true
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Capable",
+                    "Partial",
+                    "Not Capable"
+                  ]
+                },
+                {
+                  "name": "key_findings",
+                  "label": "Key Findings / Gaps to Bridge",
+                  "type": "text"
+                }
+              ],
+              "prefilled_rows": [
+                "Engineering & Design",
+                "Manufacturing & Tools",
+                "Supply Chain & Materials",
+                "Resource Bandwidth"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Critical Risks & Required Mitigations",
+          "description": "Sourced from D1.11",
+          "fields": [
+            {
+              "name": "critical_risks",
+              "label": "Top Risks and Mandatory Mitigations",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "primary_risk",
+                  "label": "Primary Risk Identified",
+                  "type": "text"
+                },
+                {
+                  "name": "impact_level",
+                  "label": "Impact Level",
+                  "type": "enum",
+                  "options": [
+                    "High",
+                    "Medium",
+                    "Low"
+                  ]
+                },
+                {
+                  "name": "mandatory_mitigation",
+                  "label": "Mandatory Mitigation Strategy (Must be in Contract)",
+                  "type": "text"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Commercial Feasibility",
+          "fields": [
+            {
+              "name": "client_target_timeline",
+              "label": "Client's Target Timeline",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "imhogen_realistic_timeline",
+              "label": "IMHOGEN Realistic Timeline",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "client_estimated_budget",
+              "label": "Client's Estimated Budget (GHS)",
+              "type": "currency",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "imhogen_cost_floor",
+              "label": "IMHOGEN Estimated Cost Floor (GHS)",
+              "type": "currency",
+              "required": true
+            },
+            {
+              "name": "commercial_alignment_notes",
+              "label": "Commercial Alignment Notes",
+              "type": "text",
+              "required": false
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "title": "Final Recommendation & Routing",
+          "fields": [
+            {
+              "name": "recommendation",
+              "label": "Recommendation",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "head_of_rd_signature",
+              "label": "Head of R&D Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.13",
+      "tool_title": "Draft Scope of Work",
+      "activity_name": "Scope Definition",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "SOW Metadata",
+          "fields": [
+            {
+              "name": "drafted_by",
+              "label": "Drafted By (Lead Engineer / PM)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "project_client_name",
+              "label": "Project / Client Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "date_of_draft",
+              "label": "Date of Draft",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "reference_request_id",
+              "label": "Reference Request ID",
+              "type": "string",
+              "required": true,
+              "auto_generated": true
+            },
+            {
+              "name": "project_vision",
+              "label": "Project Vision / Primary Goal",
+              "type": "text",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Included Scope",
+          "fields": [
+            {
+              "name": "included_scope",
+              "label": "Deliverables Included",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "deliverable_category",
+                  "label": "Deliverable Category",
+                  "type": "string"
+                },
+                {
+                  "name": "description",
+                  "label": "Detailed Description",
+                  "type": "text"
+                },
+                {
+                  "name": "format_quantity",
+                  "label": "Format / Quantity",
+                  "type": "string"
+                },
+                {
+                  "name": "delivery_phase",
+                  "label": "Delivery Phase",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Excluded Scope",
+          "description": "Out of scope \u2014 to prevent scope creep",
+          "fields": [
+            {
+              "name": "excluded_scope",
+              "label": "Deliverables Excluded",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "exclusion_category",
+                  "label": "Exclusion Category",
+                  "type": "string"
+                },
+                {
+                  "name": "description",
+                  "label": "Description of Excluded Work",
+                  "type": "text"
+                },
+                {
+                  "name": "reasoning",
+                  "label": "Reasoning (Optional)",
+                  "type": "string"
+                }
+              ],
+              "required": false
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Phased Timeline & Milestones",
+          "fields": [
+            {
+              "name": "phases",
+              "label": "Project Phases",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "phase_number",
+                  "label": "Phase",
+                  "type": "string"
+                },
+                {
+                  "name": "phase_name",
+                  "label": "Phase Name",
+                  "type": "string"
+                },
+                {
+                  "name": "key_activities",
+                  "label": "Key Activities / Milestones",
+                  "type": "text"
+                },
+                {
+                  "name": "estimated_duration",
+                  "label": "Estimated Duration",
+                  "type": "string"
+                },
+                {
+                  "name": "target_completion",
+                  "label": "Target Completion",
+                  "type": "date"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "title": "Client Responsibilities & Dependencies",
+          "fields": [
+            {
+              "name": "client_responsibilities",
+              "label": "Client Requirements",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "requirement",
+                  "label": "Requirement",
+                  "type": "string"
+                },
+                {
+                  "name": "description",
+                  "label": "Description",
+                  "type": "text"
+                },
+                {
+                  "name": "due_date",
+                  "label": "Due Date",
+                  "type": "date"
+                },
+                {
+                  "name": "status",
+                  "label": "Status",
+                  "type": "enum",
+                  "options": [
+                    "Pending",
+                    "Received",
+                    "Overdue"
+                  ]
+                }
+              ],
+              "required": false
+            }
+          ]
+        },
+        {
+          "id": "s6",
+          "title": "SOW Routing",
+          "fields": [
+            {
+              "name": "scope_locked",
+              "label": "Scope Locked?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "date",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "pm_lead_engineer_signature",
+              "label": "PM / Lead Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "ready_for_cost_estimation",
+              "label": "Ready for Cost Estimation (D1.14)?",
+              "type": "boolean",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.14",
+      "tool_title": "Cost Estimation Sheet",
+      "activity_name": "Cost Estimation",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Base Technical Labor Cost",
+          "fields": [
+            {
+              "name": "labor_cost",
+              "label": "Engineering Labor Breakdown",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "engineering_module",
+                  "label": "Engineering Module",
+                  "type": "string"
+                },
+                {
+                  "name": "estimated_days",
+                  "label": "Estimated Days",
+                  "type": "number"
+                },
+                {
+                  "name": "daily_rate_ghs",
+                  "label": "Daily Rate (GHS)",
+                  "type": "currency"
+                },
+                {
+                  "name": "total_labor_cost_ghs",
+                  "label": "Total Labor Cost (GHS)",
+                  "type": "currency"
+                }
+              ],
+              "has_subtotal": true,
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Direct Project Costs",
+          "description": "Prototypes, materials, equipment",
+          "fields": [
+            {
+              "name": "direct_costs",
+              "label": "Direct Cost Items",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "item_description",
+                  "label": "Item Description",
+                  "type": "string"
+                },
+                {
+                  "name": "quantity",
+                  "label": "Quantity",
+                  "type": "number"
+                },
+                {
+                  "name": "unit_cost_ghs",
+                  "label": "Unit Cost (GHS)",
+                  "type": "currency"
+                },
+                {
+                  "name": "total_cost_ghs",
+                  "label": "Total Cost (GHS)",
+                  "type": "currency"
+                }
+              ],
+              "has_subtotal": true,
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Institutional Markup Layers",
+          "description": "Protecting the business margin",
+          "fields": [
+            {
+              "name": "markup_layers",
+              "label": "Markup Breakdown",
+              "type": "checklist",
+              "items": [
+                "Project Management & QC",
+                "Administrative Overhead",
+                "Sustainability / Risk Margin"
+              ],
+              "column_labels": {
+                "applied_rate": "Applied Rate (%)",
+                "calculated_value": "Calculated Value (GHS)",
+                "notes": "Notes / Justification"
+              },
+              "required": true
+            },
+            {
+              "name": "total_project_value",
+              "label": "Total Project Value (GHS)",
+              "type": "currency",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Final Allocated Budget",
+          "description": "Client-facing cost breakdown \u2014 must match SOW D1.13 deliverables",
+          "fields": [
+            {
+              "name": "allocated_budget",
+              "label": "Budget Allocation by Deliverable",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "deliverable_category",
+                  "label": "Deliverable Category",
+                  "type": "string",
+                  "inherited_from": "D1.13"
+                },
+                {
+                  "name": "allocated_cost_ghs",
+                  "label": "Fully Loaded Allocated Cost (GHS)",
+                  "type": "currency"
+                },
+                {
+                  "name": "allocation_check",
+                  "label": "Allocation Check",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "title": "Financial Routing & Approval",
+          "fields": [
+            {
+              "name": "minimum_overhead_met",
+              "label": "Is the minimum overhead recovery met?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "ready_for_project_brief",
+              "label": "Ready for Project Brief (D1.15)?",
+              "type": "boolean",
+              "required": true
+            },
+            {
+              "name": "lead_engineer_signature",
+              "label": "Lead Engineer Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "head_of_rd_finance_signature",
+              "label": "Head of R&D / Finance Signature",
+              "type": "signature",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.15",
+      "tool_title": "Project Brief & Draft Budget",
+      "activity_name": "Client Briefing",
+      "tier": 1,
+      "notes": "Client-facing document \u2014 shared with client for review and comment",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Project & Client Overview",
+          "fields": [
+            {
+              "name": "client_org_name",
+              "label": "Client / Organization Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "project_title",
+              "label": "Project Title",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "primary_contact_person",
+              "label": "Primary Contact Person",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "contact_email_phone",
+              "label": "Contact Email / Phone",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "estimated_project_duration",
+              "label": "Estimated Project Duration",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.13"
+            },
+            {
+              "name": "target_start_date",
+              "label": "Target Start Date",
+              "type": "date",
+              "required": true,
+              "inherited_from": "D1.13"
+            },
+            {
+              "name": "reference_request_id",
+              "label": "Reference Request ID",
+              "type": "string",
+              "required": true,
+              "auto_generated": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Executive Summary & Core Objectives",
+          "fields": [
+            {
+              "name": "project_vision",
+              "label": "Project Vision",
+              "type": "text",
+              "required": true,
+              "inherited_from": "D1.13"
+            },
+            {
+              "name": "primary_objectives",
+              "label": "Primary Objectives",
+              "type": "text",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Phased Deliverables & Timeline",
+          "description": "Abstracted from D1.13 SOW",
+          "fields": [
+            {
+              "name": "phased_deliverables",
+              "label": "Project Phases",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "phase_number",
+                  "label": "Phase No.",
+                  "type": "string",
+                  "inherited_from": "D1.13"
+                },
+                {
+                  "name": "phase_name",
+                  "label": "Phase Name",
+                  "type": "string",
+                  "inherited_from": "D1.13"
+                },
+                {
+                  "name": "key_deliverables",
+                  "label": "Key Deliverables Included",
+                  "type": "text",
+                  "inherited_from": "D1.13"
+                },
+                {
+                  "name": "estimated_duration",
+                  "label": "Estimated Duration",
+                  "type": "string",
+                  "inherited_from": "D1.13"
+                },
+                {
+                  "name": "target_completion",
+                  "label": "Target Completion",
+                  "type": "date",
+                  "inherited_from": "D1.13"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Project Budget Summary",
+          "description": "Value-based pricing \u2014 sourced from D1.14",
+          "fields": [
+            {
+              "name": "budget_summary",
+              "label": "Budget by Deliverable",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "deliverable_component",
+                  "label": "Project Deliverable / Component",
+                  "type": "string",
+                  "inherited_from": "D1.14"
+                },
+                {
+                  "name": "allocated_value_ghs",
+                  "label": "Allocated Value (GHS)",
+                  "type": "currency",
+                  "inherited_from": "D1.14"
+                },
+                {
+                  "name": "payment_schedule",
+                  "label": "Payment Schedule",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            },
+            {
+              "name": "total_estimated_investment",
+              "label": "Total Estimated Investment (GHS)",
+              "type": "currency",
+              "required": true,
+              "inherited_from": "D1.14"
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "title": "Key Exclusions & Client Responsibilities",
+          "fields": [
+            {
+              "name": "out_of_scope",
+              "label": "Out of Scope (Not Included)",
+              "type": "text",
+              "required": true,
+              "inherited_from": "D1.13"
+            },
+            {
+              "name": "client_dependencies",
+              "label": "Client Dependencies",
+              "type": "text",
+              "required": false,
+              "inherited_from": "D1.13"
+            }
+          ]
+        },
+        {
+          "id": "s6",
+          "title": "Approval & Next Steps",
+          "fields": [
+            {
+              "name": "head_of_rd_signature",
+              "label": "Head of R&D Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "T3.D1.15a",
+      "tool_title": "T3 Drafting SOW & Quote",
+      "activity_name": "Drafting Quoting",
+      "tier": 3,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Scope of Deliverables",
+          "fields": [
+            {
+              "name": "scope_of_deliverables",
+              "label": "Service Items",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "service_item",
+                  "label": "Service Item",
+                  "type": "enum",
+                  "options": [
+                    "3D Modeling",
+                    "Drafting Package",
+                    "BOM Extraction",
+                    "Other"
+                  ]
+                },
+                {
+                  "name": "technical_description",
+                  "label": "Technical Description",
+                  "type": "text"
+                },
+                {
+                  "name": "quantity",
+                  "label": "Qty",
+                  "type": "number"
+                },
+                {
+                  "name": "delivery_timeline",
+                  "label": "Delivery Timeline",
+                  "type": "string"
+                },
+                {
+                  "name": "file_format",
+                  "label": "Format",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Pricing Summary",
+          "fields": [
+            {
+              "name": "pricing",
+              "label": "Cost Breakdown (GHS)",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "description",
+                  "label": "Description",
+                  "type": "enum",
+                  "options": [
+                    "Engineering Man-Hours (Drafting)",
+                    "Reverse Engineering / Scanning Fee",
+                    "Markup / Admin Fee"
+                  ]
+                },
+                {
+                  "name": "rate",
+                  "label": "Rate",
+                  "type": "currency"
+                },
+                {
+                  "name": "quantity",
+                  "label": "Qty",
+                  "type": "number"
+                },
+                {
+                  "name": "subtotal",
+                  "label": "Subtotal (GHS)",
+                  "type": "currency"
+                },
+                {
+                  "name": "finance_notes",
+                  "label": "Finance Notes",
+                  "type": "string"
+                }
+              ],
+              "has_subtotal": true,
+              "required": true
+            },
+            {
+              "name": "total_t3_project_value",
+              "label": "Total T3 Project Value (GHS)",
+              "type": "currency",
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Mandatory Exclusions",
+          "description": "Pre-defined \u2014 not editable",
+          "fields": [
+            {
+              "name": "mandatory_exclusions",
+              "label": "Exclusions",
+              "type": "static_list",
+              "items": [
+                "No Structural Analysis or FEA included.",
+                "No Material Selection Advice.",
+                "No Fabrication Liability."
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D1.16",
+      "tool_title": "Handoff Meeting Minutes",
+      "activity_name": "Internal Onboarding Handoff",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Handoff Metadata",
+          "fields": [
+            {
+              "name": "meeting_date",
+              "label": "Meeting Date",
+              "type": "date",
+              "required": true
+            },
+            {
+              "name": "meeting_time",
+              "label": "Meeting Time",
+              "type": "time",
+              "required": true
+            },
+            {
+              "name": "lead_engineer_name",
+              "label": "Lead Engineer (Handing Off)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "contract_admin_name",
+              "label": "Contract Admin (Receiving)",
+              "type": "string",
+              "required": true
+            },
+            {
+              "name": "project_client_name",
+              "label": "Project / Client Name",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.3"
+            },
+            {
+              "name": "project_value_ghs",
+              "label": "Project Value (GHS)",
+              "type": "currency",
+              "required": true,
+              "inherited_from": "D1.15"
+            },
+            {
+              "name": "reference_request_id",
+              "label": "Reference Request ID",
+              "type": "string",
+              "required": true,
+              "auto_generated": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Project Brief & Budget Transfer",
+          "fields": [
+            {
+              "name": "d1_15_link",
+              "label": "Link to D1.15 Project Brief & Budget",
+              "type": "file_link",
+              "required": true
+            },
+            {
+              "name": "scope_summary",
+              "label": "Scope Summary (2-sentence max)",
+              "type": "text",
+              "required": true
+            },
+            {
+              "name": "payment_terms_agreed",
+              "label": "Payment Terms Agreed",
+              "type": "string",
+              "required": true,
+              "inherited_from": "D1.15"
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Contracting Directives",
+          "description": "Critical risks and exclusions to enforce in the contract",
+          "fields": [
+            {
+              "name": "contracting_directives",
+              "label": "Directives for Contract Admin",
+              "type": "table",
+              "columns": [
+                {
+                  "name": "risk_exclusion_category",
+                  "label": "Risk / Exclusion Category",
+                  "type": "enum",
+                  "options": [
+                    "Scope Exclusion",
+                    "Timeline Risk",
+                    "Financial Risk",
+                    "Other"
+                  ]
+                },
+                {
+                  "name": "specific_directive",
+                  "label": "Specific Directive for Contract Admin",
+                  "type": "text"
+                },
+                {
+                  "name": "source_reference",
+                  "label": "Source Reference",
+                  "type": "string"
+                }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "System Handoff & Archival Checklist",
+          "fields": [
+            {
+              "name": "handoff_checklist",
+              "label": "Handoff Tasks",
+              "type": "checklist",
+              "items": [
+                "Has the central database status been updated to 'Contracting Phase'?",
+                "Have all D1.1 to D1.15 documents been moved to the permanent digital folder?",
+                "Is the Contract Admin fully clear on the technical deliverables to be billed?"
+              ],
+              "column_labels": {
+                "assignee": "Assignee",
+                "status": "Status (Pending / Done)"
+              },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "title": "Final Sign-Off",
+          "fields": [
+            {
+              "name": "engineering_release_signature",
+              "label": "Engineering Release Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "contracting_acceptance_signature",
+              "label": "Contracting Acceptance Signature",
+              "type": "signature",
+              "required": true
+            },
+            {
+              "name": "date",
+              "label": "Date",
+              "type": "date",
+              "required": true
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

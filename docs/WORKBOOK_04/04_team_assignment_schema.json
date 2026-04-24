@@ -1,0 +1,572 @@
+{
+  "workbook_id": 4,
+  "workbook_name": "Team Assignment and Capacity Planning Process",
+  "tools": [
+    {
+      "tool_id": "D4.1",
+      "tool_title": "Technical Requirement Notes",
+      "activity_name": "Scope Translation",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Breakdown Metadata",
+          "fields": [
+            { "name": "project_manager", "label": "Project Manager", "type": "string", "required": true },
+            { "name": "date_of_breakdown", "label": "Date of Breakdown", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "reference_contract_link", "label": "Reference Contract Link (D2.12)", "type": "file_link", "required": true, "inherited_from": "D2.12" },
+            { "name": "target_project_start_date", "label": "Target Project Start Date", "type": "date", "required": true, "inherited_from": "D2.14" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Skill & Labor Requirements",
+          "fields": [
+            {
+              "name": "labor_requirements",
+              "label": "Engineering Modules & Required Skills",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "engineering_module", "label": "Engineering Module (from Pricing Matrix)", "type": "string" },
+                { "name": "required_role_skill", "label": "Required Role / Skill Level", "type": "string" },
+                { "name": "estimated_effort_days", "label": "Estimated Effort (Days)", "type": "number" },
+                { "name": "specific_constraints", "label": "Specific Constraints / Notes", "type": "text" }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Software & Equipment Requirements",
+          "fields": [
+            {
+              "name": "resource_requirements",
+              "label": "Tools, Machines & Licenses Needed",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "resource_category", "label": "Resource Category", "type": "enum", "options": ["Software License", "Specialized Equipment", "Testing Apparatus", "Other"] },
+                { "name": "specific_tool_machine", "label": "Specific Tool / Machine Needed", "type": "string" },
+                { "name": "duration_required", "label": "Duration Required", "type": "string" },
+                { "name": "availability_status", "label": "Status", "type": "enum", "options": ["Available", "Needs Procurement"] }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Routing & Approval",
+          "fields": [
+            { "name": "breakdown_complete", "label": "Technical Breakdown Complete and Ready for Resource Request (D4.2)?", "type": "boolean", "required": true },
+            { "name": "pm_signature", "label": "Project Manager Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D4.2",
+      "tool_title": "Resource Request Form",
+      "activity_name": "Staffing Request",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Request Metadata",
+          "fields": [
+            { "name": "requesting_pm", "label": "Requesting PM", "type": "string", "required": true },
+            { "name": "date_of_request", "label": "Date of Request", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "total_budgeted_labor_ghs", "label": "Total Budgeted Labor (GHS)", "type": "currency", "required": true, "inherited_from": "D1.14" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Human Resource Request",
+          "fields": [
+            {
+              "name": "hr_request",
+              "label": "Roles & Engineers Requested",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "role_required", "label": "Role Required", "type": "string" },
+                { "name": "preferred_engineer", "label": "Preferred Engineer (Optional)", "type": "string" },
+                { "name": "dates_needed", "label": "Dates Needed (Start to End)", "type": "string" },
+                { "name": "total_days_requested", "label": "Total Days Requested", "type": "number" }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Conflict & Overlap Check",
+          "description": "Filled by Head of Engineering — collision check against skills_matrix and project_assignments",
+          "fields": [
+            {
+              "name": "conflict_check",
+              "label": "Availability & Conflict Resolution",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "requested_engineer", "label": "Requested Engineer", "type": "string" },
+                { "name": "current_utilization", "label": "Current Utilization Status", "type": "string" },
+                { "name": "approved", "label": "Approved for this Project?", "type": "enum", "options": ["Yes", "No"] },
+                { "name": "alternative_assignment", "label": "Alternative Assignment (if No)", "type": "string" }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Approval & Routing",
+          "fields": [
+            { "name": "all_roles_filled_and_approved", "label": "All Requested Roles Filled and Approved by Engineering Leadership?", "type": "boolean", "required": true },
+            { "name": "head_of_engineering_signature", "label": "Head of Engineering / R&D Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D4.3",
+      "tool_title": "Team Assignment & Provisioning Record",
+      "activity_name": "Official Team Roster Lock",
+      "tier": 1,
+      "notes": "Signing off this tool populates the project_assignments table. pm_id and lead_eng_id on the projects table are set here.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Assignment Metadata",
+          "fields": [
+            { "name": "project_manager", "label": "Project Manager", "type": "string", "required": true },
+            { "name": "project_client_name", "label": "Project Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "assignment_date", "label": "Assignment Date", "type": "date", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Official Project Roster",
+          "description": "Locked team. Populates project_assignments table.",
+          "fields": [
+            {
+              "name": "project_roster",
+              "label": "Assigned Engineers",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "role_discipline", "label": "Role / Discipline", "type": "string" },
+                { "name": "assigned_engineer", "label": "Assigned Engineer", "type": "string" },
+                { "name": "allocated_days", "label": "Allocated Days", "type": "number" },
+                { "name": "phase_involvement", "label": "Project Phase Involvement", "type": "string" }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Hardware & Software Provisioning Ticket",
+          "fields": [
+            {
+              "name": "provisioning_tickets",
+              "label": "Assets & Licenses to Provision",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "assigned_engineer", "label": "Assigned Engineer", "type": "string" },
+                { "name": "asset_license_required", "label": "Asset / License Required", "type": "string" },
+                { "name": "date_required", "label": "Date Required", "type": "date" },
+                { "name": "provisioning_status", "label": "Provisioning Status", "type": "enum", "options": ["Pending", "Provisioned"] }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Approval & Routing",
+          "fields": [
+            { "name": "engineers_in_capacity_tracker", "label": "All Engineers Locked in Master Capacity Tracker?", "type": "boolean", "required": true },
+            { "name": "head_of_engineering_signature", "label": "Head of Engineering Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D4.4",
+      "tool_title": "Access Confirmation Log",
+      "activity_name": "Digital Onboarding",
+      "tier": 1,
+      "notes": "Sets it_provisioned = true on the project_assignments table, unblocking the PM kick-off button.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Onboarding Metadata",
+          "fields": [
+            { "name": "executing_admin_it", "label": "Executing Admin / IT", "type": "string", "required": true },
+            { "name": "date_executed", "label": "Date Executed", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "total_team_size", "label": "Total Team Size", "type": "number", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Cloud & Server Access Checklist",
+          "fields": [
+            {
+              "name": "access_checklist",
+              "label": "Digital Workspace Access",
+              "type": "checklist",
+              "items": [
+                "Google Drive Workspace — Create Client Root Folder & Add Team",
+                "CAD Vault / Server — Create Project Repo & Grant Read/Write",
+                "Communication Channel — Create Group & Add Team (PM as Admin)",
+                "QMS Documentation Hub — Link Spoke to D4 Master Hub"
+              ],
+              "column_labels": { "verification_check": "Verification Check", "status": "Status (Done / Pending)" },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Engineer Confirmation",
+          "fields": [
+            { "name": "engineers_confirmed_access", "label": "Have all assigned engineers explicitly confirmed they can open the shared folders?", "type": "boolean", "required": true },
+            { "name": "admin_signature", "label": "Admin Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D4.5",
+      "tool_title": "Internal Kick-off Deck",
+      "activity_name": "Briefing Deck Preparation",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Deck Metadata",
+          "fields": [
+            { "name": "prepared_by", "label": "Prepared By (Project Manager)", "type": "string", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "link_to_presentation_deck", "label": "Link to Presentation Deck", "type": "file_link", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Mandatory Slide Inclusion Checklist",
+          "fields": [
+            {
+              "name": "slide_checklist",
+              "label": "Required Briefing Topics",
+              "type": "checklist",
+              "items": [
+                "Client Background & Ultimate Vision (source: D1.8 Needs Assessment)",
+                "Hard Scope Boundaries — what we are NOT doing (source: D1.13 Scope of Work)",
+                "Strict Timeline & Handover Dates (source: D2.12 Executed Contract)",
+                "Financial / Budget Constraints for Prototyping (source: D1.14 Cost Estimation)",
+                "Known Technical & Operational Risks (source: D1.11 Risk Matrix)"
+              ],
+              "column_labels": { "included": "Included in Deck? (Yes / No)", "pm_notes": "PM Notes" },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Routing",
+          "fields": [
+            { "name": "deck_complete", "label": "Deck Complete and Ready for Internal Kick-off Meeting?", "type": "boolean", "required": true },
+            { "name": "pm_signature", "label": "Project Manager Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D4.6",
+      "tool_title": "Kick-off Calendar Invite & Agenda",
+      "activity_name": "Kick-off Scheduling",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Meeting Metadata",
+          "fields": [
+            { "name": "meeting_date", "label": "Meeting Date", "type": "date", "required": true },
+            { "name": "meeting_time", "label": "Time", "type": "time", "required": true },
+            { "name": "location_link", "label": "Location / Link", "type": "string", "required": true },
+            { "name": "lead_facilitator", "label": "Lead Facilitator (PM)", "type": "string", "required": true },
+            { "name": "required_attendees", "label": "Required Attendees", "type": "string", "required": true, "inherited_from": "D4.3" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Standard Invite Script",
+          "description": "Send internally to all rostered engineers",
+          "fields": [
+            {
+              "name": "invite_script",
+              "label": "Invite Script",
+              "type": "instruction",
+              "content": "Team,\n\nWe are officially kicking off engineering execution for [Project Name]. The contract is signed, the advance payment has cleared (D3.10), and your time has been secured.\n\nPlease review the attached project documentation before the meeting. The agenda is as follows:\n1. Review of Client Objectives & Scope (10 mins)\n2. Timeline & Deliverable Breakdown (10 mins)\n3. Technical Risk Assessment & Brainstorming (15 mins)\n4. Day 1 Task Assignments (5 mins)\n\nAttendance is mandatory to establish our project baseline.\n\n[PM Name] | IMHOGEN LTD"
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Scheduling Verification",
+          "fields": [
+            { "name": "calendar_invite_sent", "label": "Calendar Invite Sent to All Rostered Engineers?", "type": "boolean", "required": true },
+            { "name": "room_platform_booked", "label": "Room / Platform Booked?", "type": "boolean", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D4.7",
+      "tool_title": "Kick-off Meeting Minutes",
+      "activity_name": "Kick-off Meeting",
+      "tier": 1,
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Meeting Execution Metadata",
+          "fields": [
+            { "name": "actual_meeting_date", "label": "Actual Meeting Date", "type": "date", "required": true },
+            { "name": "start_time", "label": "Start Time", "type": "time", "required": true },
+            { "name": "end_time", "label": "End Time", "type": "time", "required": true },
+            { "name": "lead_facilitator", "label": "Lead Facilitator (PM)", "type": "string", "required": true },
+            { "name": "note_taker", "label": "Note Taker", "type": "string", "required": true }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Attendance & Verification",
+          "fields": [
+            {
+              "name": "attendance",
+              "label": "Attendance Register",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "required_attendee", "label": "Required Attendee (from D4.3)", "type": "string" },
+                { "name": "role", "label": "Role", "type": "string" },
+                { "name": "present", "label": "Present?", "type": "enum", "options": ["Yes", "No"] },
+                { "name": "notes", "label": "Notes (if absent)", "type": "string" }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Technical Resolutions & Risks Identified",
+          "fields": [
+            {
+              "name": "technical_resolutions",
+              "label": "Discussion Points & Decisions",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "topic_discussed", "label": "Topic Discussed", "type": "string" },
+                { "name": "engineer_raising", "label": "Engineer Raising Point", "type": "string" },
+                { "name": "decision_resolution", "label": "Decision / Resolution Agreed", "type": "text" },
+                { "name": "action_required", "label": "Action Required", "type": "text" }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Day 1 Immediate Action Items",
+          "description": "Tasks to unblock the team from Day 1",
+          "fields": [
+            {
+              "name": "day1_actions",
+              "label": "Day 1 Tasks",
+              "type": "table",
+              "columns": [
+                { "name": "task_description", "label": "Task Description", "type": "text" },
+                { "name": "assigned_to", "label": "Assigned To", "type": "string" },
+                { "name": "deadline", "label": "Deadline", "type": "date" }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s5",
+          "title": "Routing",
+          "fields": [
+            { "name": "team_clear_on_phase1", "label": "Are all team members fully clear on their Phase 1 objectives?", "type": "boolean", "required": true },
+            { "name": "pm_signature", "label": "Project Manager Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "D4.8",
+      "tool_title": "Locked Project Baseline",
+      "activity_name": "Baseline Lock",
+      "tier": 1,
+      "notes": "The golden record. Signing off sets projects.baseline_start and projects.baseline_end. All future performance reporting measures against this. Must not be altered after lock.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Baseline Metadata",
+          "fields": [
+            { "name": "locked_by", "label": "Locked By (Project Manager)", "type": "string", "required": true },
+            { "name": "date_locked", "label": "Date Locked", "type": "date", "required": true },
+            { "name": "project_client_name", "label": "Project / Client Name", "type": "string", "required": true, "inherited_from": "D1.3" },
+            { "name": "total_approved_budget_ghs", "label": "Total Approved Budget (GHS)", "type": "currency", "required": true, "inherited_from": "D1.14" }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Schedule Baseline — Frozen Milestones",
+          "description": "Once locked, changes require a formal change order",
+          "fields": [
+            {
+              "name": "schedule_baseline",
+              "label": "Phase Schedule",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "major_phase", "label": "Major Project Phase", "type": "string" },
+                { "name": "baseline_start_date", "label": "Baseline Start Date", "type": "date" },
+                { "name": "baseline_end_date", "label": "Baseline End Date", "type": "date" },
+                { "name": "allocated_working_days", "label": "Allocated Working Days", "type": "number" }
+              ],
+              "prefilled_rows": [
+                "Phase 1: Conceptual Design & CAD",
+                "Phase 2: Client Review & Iteration",
+                "Phase 3: Prototype Fabrication"
+              ],
+              "required": true
+            },
+            { "name": "total_project_duration", "label": "Total Project Duration (Days)", "type": "number", "required": true }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Resource Baseline — Frozen Labor Hours",
+          "fields": [
+            {
+              "name": "resource_baseline",
+              "label": "Engineer Labor Allocation",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "assigned_engineer", "label": "Assigned Engineer", "type": "string", "inherited_from": "D4.3" },
+                { "name": "role", "label": "Role", "type": "string", "inherited_from": "D4.3" },
+                { "name": "total_baseline_days", "label": "Total Baseline Days Allocated", "type": "number" },
+                { "name": "cost_impact_buffer", "label": "Cost Impact Buffer", "type": "string" }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Baseline Lock Authorization",
+          "fields": [
+            { "name": "matches_contract_timeline", "label": "Does this baseline perfectly match the timeline promised in the Contract (D2.12)?", "type": "boolean", "required": true },
+            { "name": "head_of_ops_signature", "label": "Head of Operations / Engineering Signature", "type": "signature", "required": true }
+          ]
+        }
+      ]
+    },
+    {
+      "tool_id": "T3.D4.8a",
+      "tool_title": "T3 Drafting Assignment & Baseline",
+      "activity_name": "T3 Fast-Track Assignment",
+      "tier": 3,
+      "notes": "Replaces D4.1 through D4.8 entirely for Tier 3 jobs. No formal capacity review required for jobs under 5 days. Bypasses the kick-off process (D4.5–D4.7) with a single sign-off acknowledgement.",
+      "sections": [
+        {
+          "id": "s1",
+          "title": "Engineer Assignment",
+          "description": "Replaces D4.2 and D4.3 — direct assignment, no formal capacity review for jobs under 5 days",
+          "fields": [
+            {
+              "name": "engineer_assignment",
+              "label": "Assigned Drafter",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "assigned_engineer", "label": "Assigned Engineer", "type": "string" },
+                { "name": "primary_skillset", "label": "Primary Skillset", "type": "string" },
+                { "name": "allocated_hours", "label": "Allocated Hours", "type": "number" },
+                { "name": "start_date", "label": "Start Date", "type": "date" },
+                { "name": "target_delivery_date", "label": "Target Delivery Date", "type": "date" }
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s2",
+          "title": "Digital Access & Assets",
+          "description": "Replaces D4.4",
+          "fields": [
+            {
+              "name": "digital_access",
+              "label": "Required Resources",
+              "type": "checklist",
+              "items": [
+                "Client Source Data (link to D1.1 uploads)",
+                "Project CAD Folder (created and linked)",
+                "Software License (verified)"
+              ],
+              "column_labels": { "status": "Status (Ready / Missing)", "direct_link": "Direct Link / Asset ID", "notes": "Notes" },
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s3",
+          "title": "Technical Baseline & Standards",
+          "description": "Replaces D4.1 and D4.8",
+          "fields": [
+            {
+              "name": "technical_baseline",
+              "label": "Drafting Parameters",
+              "type": "table",
+              "columns": [
+                { "name": "sn", "label": "SN", "type": "string" },
+                { "name": "parameter", "label": "Parameter", "type": "string", "locked": true },
+                { "name": "requirement", "label": "Requirement", "type": "string" },
+                { "name": "reference_standard", "label": "Reference Standard", "type": "string" },
+                { "name": "notes", "label": "Notes", "type": "string" }
+              ],
+              "prefilled_rows": [
+                "Drafting Standard",
+                "Tolerance Class",
+                "Deliverable Format"
+              ],
+              "required": true
+            }
+          ]
+        },
+        {
+          "id": "s4",
+          "title": "Kick-off Bypass Acknowledgement",
+          "description": "Replaces D4.5, D4.6, D4.7. Lead Engineer confirms they have reviewed T3.D1.3a and need no further briefing.",
+          "fields": [
+            { "name": "pm_signature", "label": "Project Manager Signature", "type": "signature", "required": true },
+            { "name": "pm_date", "label": "Date", "type": "date", "required": true },
+            { "name": "assigned_engineer_signature", "label": "Assigned Engineer Signature", "type": "signature", "required": true },
+            { "name": "engineer_date", "label": "Date", "type": "date", "required": true }
+          ]
+        }
+      ]
+    }
+  ]
+}

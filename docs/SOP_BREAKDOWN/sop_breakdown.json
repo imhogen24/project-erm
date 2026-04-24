@@ -4349,6 +4349,335 @@
           ]
         }
       ]
+    },
+    {
+      "workbook_id": 13,
+      "name": "Marketing and Business Development",
+      "processes": [
+        {
+          "pid": "13.1",
+          "name": "Content Identification & Feed",
+          "activities": [
+            {
+              "pid": "13.1.1",
+              "main_process": "Content Identification & Feed",
+              "activity_description": "Identify project innovations and document client input vs IMHOGEN output per category using the Content Feed Tool.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [],
+              "operator_category": "Human System",
+              "tools": [
+                "MDS.1.1 Content Feed Tool"
+              ],
+              "information_systems": "Marketing Hub",
+              "documents_used": [
+                "D10.5"
+              ],
+              "documents_generated": [
+                "MDS.1.1"
+              ],
+              "management_policy": "Content Capture Protocol",
+              "quality_control_point": "Every content entry must be tied to a valid Project Request ID and have verified technical accuracy.",
+              "risk_considerations": "Releasing proprietary client data or unverified claims without clearance."
+            },
+            {
+              "pid": "13.1.2",
+              "main_process": "Content Identification & Feed",
+              "activity_description": "Document the process story milestones with plain-language descriptions and supporting QMS evidence references.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [
+                "CAD Engineer"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "MDS.1.1 Content Feed Tool"
+              ],
+              "information_systems": "Marketing Hub",
+              "documents_used": [
+                "D8.5",
+                "D9.4"
+              ],
+              "documents_generated": [
+                "MDS.1.1"
+              ],
+              "management_policy": "Process Story Documentation Policy",
+              "quality_control_point": "Each milestone must reference at least one QMS quality proof document.",
+              "risk_considerations": "Process story without evidence reduces credibility of marketing claims."
+            },
+            {
+              "pid": "13.1.3",
+              "main_process": "Content Identification & Feed",
+              "activity_description": "Map distribution channels and define call-to-action links ensuring every channel routes back to the IMHOGEN inquiry form.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [
+                "Marketing Hub"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "MDS.1.1 Content Feed Tool"
+              ],
+              "information_systems": "Marketing Hub",
+              "documents_used": [
+                "MDS.1.1"
+              ],
+              "documents_generated": [
+                "MDS.1.1"
+              ],
+              "management_policy": "Channel Mapping and Call to Action Policy",
+              "quality_control_point": "All channels must include the mandatory inquiry link before the feed is submitted.",
+              "risk_considerations": "Content distributed without CTA breaks the QMS lead-generation cycle."
+            },
+            {
+              "pid": "13.1.4",
+              "main_process": "Content Identification & Feed",
+              "activity_description": "R&D Lead certifies technical accuracy and client confidentiality clearance; marketing hub formally acknowledges receipt.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [
+                "Marketing Hub"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "MDS.1.1 Content Feed Tool"
+              ],
+              "information_systems": "Marketing Hub",
+              "documents_used": [
+                "MDS.1.1"
+              ],
+              "documents_generated": [
+                "MDS.1.1"
+              ],
+              "management_policy": "Content Approval and Transmittal Policy",
+              "quality_control_point": "Both R&D Lead signature and Marketing Hub acknowledgment must be recorded before any external release.",
+              "risk_considerations": "Unsigned content transmitted to marketing creates liability and audit gaps."
+            }
+          ]
+        },
+        {
+          "pid": "13.2",
+          "name": "Asset Brief & Campaign Strategy",
+          "activities": [
+            {
+              "pid": "13.2.1",
+              "main_process": "Asset Brief & Campaign Strategy",
+              "activity_description": "Define campaign theme and key message translating engineering outputs into client-facing benefit statements.",
+              "activity_owner": "Marketing Hub",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "MDS.1.2 Asset Marketing Brief"
+              ],
+              "information_systems": "Marketing Hub",
+              "documents_used": [
+                "MDS.1.1"
+              ],
+              "documents_generated": [
+                "MDS.1.2"
+              ],
+              "management_policy": "Campaign Strategy Policy",
+              "quality_control_point": "Campaign theme must reflect IMHOGEN engineering identity and be documented before any creative production begins.",
+              "risk_considerations": "Vague or off-brand campaign theme produces content that misrepresents the company."
+            },
+            {
+              "pid": "13.2.2",
+              "main_process": "Asset Brief & Campaign Strategy",
+              "activity_description": "List technical features with client-facing benefit statements and source document references for copywriting.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [
+                "Marketing Hub"
+              ],
+              "operator_category": "Human System",
+              "tools": [
+                "MDS.1.2 Asset Marketing Brief"
+              ],
+              "information_systems": "Marketing Hub",
+              "documents_used": [
+                "MDS.1.1",
+                "D1.8",
+                "D9.4"
+              ],
+              "documents_generated": [
+                "MDS.1.2"
+              ],
+              "management_policy": "Technical Content Accuracy Policy",
+              "quality_control_point": "Every technical claim must cite a source document before the brief is issued.",
+              "risk_considerations": "Unverified technical claims in marketing copy create reputational and legal exposure."
+            },
+            {
+              "pid": "13.2.3",
+              "main_process": "Asset Brief & Campaign Strategy",
+              "activity_description": "Specify mandatory CTA link, button text, and hub creative instructions; issue completed brief to marketing hub for execution.",
+              "activity_owner": "Marketing Hub",
+              "supporting_roles": [],
+              "operator_category": "Information System",
+              "tools": [
+                "MDS.1.2 Asset Marketing Brief"
+              ],
+              "information_systems": "Marketing Hub",
+              "documents_used": [
+                "MDS.1.2"
+              ],
+              "documents_generated": [
+                "MDS.1.2"
+              ],
+              "management_policy": "Call to Action Enforcement Policy",
+              "quality_control_point": "Mandatory inquiry link must be present in every asset before brief is approved for production.",
+              "risk_considerations": "Assets without CTA break the lead-generation loop and waste marketing spend."
+            }
+          ]
+        },
+        {
+          "pid": "13.3",
+          "name": "Visual Asset Curation",
+          "activities": [
+            {
+              "pid": "13.3.1",
+              "main_process": "Visual Asset Curation",
+              "activity_description": "Catalogue all image assets with asset name, type, file path, and view description in the Visual Content Manifest.",
+              "activity_owner": "CAD Engineer",
+              "supporting_roles": [
+                "Marketing Hub"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "MDS.1.3 Visual Content Manifest"
+              ],
+              "information_systems": "Marketing Hub",
+              "documents_used": [
+                "D6.8",
+                "D8.6"
+              ],
+              "documents_generated": [
+                "MDS.1.3"
+              ],
+              "management_policy": "Image Asset Curation Policy",
+              "quality_control_point": "All image assets must have a confirmed file link before being marked marketing-ready.",
+              "risk_considerations": "Broken or missing file links block campaign production."
+            },
+            {
+              "pid": "13.3.2",
+              "main_process": "Visual Asset Curation",
+              "activity_description": "Log all video and motion assets with duration, file path, and marketing purpose.",
+              "activity_owner": "CAD Engineer",
+              "supporting_roles": [
+                "Marketing Hub"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "MDS.1.3 Visual Content Manifest"
+              ],
+              "information_systems": "Marketing Hub",
+              "documents_used": [
+                "D9.4"
+              ],
+              "documents_generated": [
+                "MDS.1.3"
+              ],
+              "management_policy": "Video and Motion Asset Policy",
+              "quality_control_point": "No video asset may be released without a confirmed file link and documented marketing purpose.",
+              "risk_considerations": "Unverified video assets may contain safety violations or expose proprietary data."
+            },
+            {
+              "pid": "13.3.3",
+              "main_process": "Visual Asset Curation",
+              "activity_description": "Conduct brand compliance check: verify IMHOGEN watermark is applied and no safety violations are visible in any asset.",
+              "activity_owner": "Marketing Hub",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "MDS.1.3 Visual Content Manifest"
+              ],
+              "information_systems": "Marketing Hub",
+              "documents_used": [
+                "MDS.1.3"
+              ],
+              "documents_generated": [
+                "MDS.1.3"
+              ],
+              "management_policy": "Brand Compliance Policy",
+              "quality_control_point": "Watermark confirmed and zero safety violations present before assets are cleared for distribution.",
+              "risk_considerations": "Unmarked or non-compliant assets published externally damage brand integrity and create liability."
+            },
+            {
+              "pid": "13.3.4",
+              "main_process": "Visual Asset Curation",
+              "activity_description": "R&D Lead authorizes visual assets for public distribution and records signature with approval date.",
+              "activity_owner": "Lead Engineer",
+              "supporting_roles": [],
+              "operator_category": "Management System",
+              "tools": [
+                "MDS.1.3 Visual Content Manifest"
+              ],
+              "information_systems": "Marketing Hub",
+              "documents_used": [
+                "MDS.1.3"
+              ],
+              "documents_generated": [
+                "MDS.1.3"
+              ],
+              "management_policy": "Authorization and Distribution Policy",
+              "quality_control_point": "R&D Lead signature and date must be recorded in the manifest before any asset is released externally.",
+              "risk_considerations": "Unauthorized asset distribution exposes confidential client information."
+            }
+          ]
+        },
+        {
+          "pid": "13.4",
+          "name": "Hub Synchronization & Release",
+          "activities": [
+            {
+              "pid": "13.4.1",
+              "main_process": "Hub Synchronization & Release",
+              "activity_description": "Marketing hub compiles all approved MDS documents into a campaign package ready for publication.",
+              "activity_owner": "Marketing Hub",
+              "supporting_roles": [
+                "CAD Engineer"
+              ],
+              "operator_category": "Information System",
+              "tools": [
+                "MDS.1.4 Hub Synchronization"
+              ],
+              "information_systems": "Marketing Hub",
+              "documents_used": [
+                "MDS.1.1",
+                "MDS.1.2",
+                "MDS.1.3"
+              ],
+              "documents_generated": [
+                "MDS.1.4"
+              ],
+              "management_policy": "QMS-Linked Marketing Policy",
+              "quality_control_point": "All three MDS documents must be in approved state before hub synchronization can proceed.",
+              "risk_considerations": "Publishing an incomplete campaign package damages professional credibility."
+            },
+            {
+              "pid": "13.4.2",
+              "main_process": "Hub Synchronization & Release",
+              "activity_description": "PM reviews the final campaign package and provides confidentiality clearance signature on MDS.1.4 before public release.",
+              "activity_owner": "Project Manager",
+              "supporting_roles": [
+                "Lead Engineer"
+              ],
+              "operator_category": "Management System",
+              "tools": [
+                "MDS.1.4 Hub Synchronization"
+              ],
+              "information_systems": "Marketing Hub",
+              "documents_used": [
+                "MDS.1.4"
+              ],
+              "documents_generated": [
+                "MDS.1.4"
+              ],
+              "management_policy": "Confidentiality and Data Governance Policy",
+              "quality_control_point": "PM must confirm no proprietary client information is present before final release approval.",
+              "risk_considerations": "Client confidentiality breach through marketing content creates legal liability and loss of trust."
+            }
+          ]
+        }
+      ]
     }
   ]
 }

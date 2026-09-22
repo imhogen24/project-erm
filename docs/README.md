@@ -17,12 +17,12 @@ The very first step for any project occurs in **Workbook 01 (Onboarding)**. Use 
 
 | Project Type | Complexity | Routing Instructions |
 |---|---|---|
-| New Product / Custom Machine | High | Follow **Tier 1** (Sequence PID 1.1 through 12.5). |
-| Drafting / Reverse Engineering | Medium | Follow **Tier 3** (Use bypass sheets labeled **T3.DX.XX**). |
+| New Product / Custom Machine | High | **Tier 1** |
+| Drafting / Reverse Engineering | Medium | **Tier 3** |
 
 ---
 
-## 3. Workbook Architecture (The 12 Pillars)
+## 3. Workbook Architecture
 
 The system is spread across 12 functional workbooks. Each workbook is a "Gate"; a project cannot proceed to the next workbook until the mandatory "Lock" documents are signed.
 

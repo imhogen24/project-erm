@@ -14,9 +14,7 @@ This phase starts when a client submits an inquiry and ends when D1.16 (Handoff 
 Sequential lock order:
 
 ```
-D1.1 → D1.2 → D1.3 / T3.D1.3a → D1.4 → D1.5 → D1.6 → D1.7
-     → D1.8 / T3.D1.8a → D1.9 → D1.10 → D1.11 → D1.12
-     → D1.13 → D1.14 → D1.15 / T3.D1.15a → D1.16
+D1.1 → D1.2 → D1.3 / T3.D1.3a → D1.4 → D1.5 → D1.6 → D1.7 → D1.8 / T3.D1.8a → D1.9 → D1.10 → D1.11 → D1.12 → D1.13 → D1.14 → D1.15 / T3.D1.15a → D1.16
 ```
 
 Each tool is locked read-only once the PM approves it. The next tool in the chain is only unlocked after that approval.

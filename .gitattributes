@@ -1,0 +1,1 @@
+.env.development filter=dotenvx.protect

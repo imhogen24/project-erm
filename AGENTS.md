@@ -1,38 +1,29 @@
 <!-- BEGIN:nextjs-agent-rules -->
+
 # This is NOT the Next.js you know
 
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` before writing any code. Heed deprecation notices.
+This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
+
+This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
+
 <!-- END:nextjs-agent-rules -->
 
-## Application Building Context
 
-Read the following files in order before implementing
-or making any architectural decision:
+IMPORTANT RULES: 
+- Put all docs in the `docs/` directory. 
+- All `.md` naming conventions should follow `docs/[name]/_.md`. 
+- Always run the neccesary linters and typecheckers before committing.
+- Run `coderabbit review` before committing your changes.
+- NEVER push directly to the main branch.
+- always use `bun` instead of `npm` or `pnpm`.
+- when implementing a new feature, check if the skill needed to complete the task is available.
+- In documentation, avoid phase 1, phase 2, and avoid indicating timelines on project stages.
+- Do NOT add `Co-Authored-By`, `Claude-Session`, "Generated with Claude Code", or any similar AI-attribution trailer or line to commit messages or PR bodies. Keep commit messages simple, eg. "feat(db): write db schema".
 
-1. `context/PROJECT_OVERVIEW.md` — product definition,
-   goals, features, and scope
-2. `context/ARCHITECTURE.md` — system structure,
-   boundaries, storage model, and invariants
-3. `context/UI_CONTEXT.md` — theme, colors, typography,
-   and component conventions
-4. `context/CODE_STANDARDS.md` — implementation rules
-   and conventions
-5. `context/AI_WORKFLOW_RULES.md` — development workflow,
-   scoping rules, and delivery approach
-6. `context/PROGRESS_TRACKER.md` — current phase,
-   completed work, open questions, and next steps
 
-Update `context/PROGRESS_TRACKER.md` after each
-meaningful implementation change.
+Do not begin a second workstream's branch before the previous one is merged.
 
-If implementation changes the architecture, scope, or
-standards documented in the context files, update the
-relevant file before continuing.
-
-## File Naming Conventions
-
-- **Context/documentation markdown files** (`context/`, `docs/CRITICAL_DATA_STRUCTURE/`):
-  use `SCREAMING_SNAKE_CASE.md` (e.g. `AGENT_ROLES.md`, `CODE_STANDARDS.md`)
-- **Workbook JSON files** (`docs/WORKBOOK_XX/`):
-  use `XX_lowercase_snake_case.json` (e.g. `01_project_onboarding.json`)
-- `README.md` is always `README.md` regardless of location
+## UI Rules
+- Use stritcly shadcn ui components.
+- Use mobile first approach.
+- Never mark a page (`app/**/page.tsx`) as a Client Component. Pages stay Server Components; push `"use client"` down into the specific leaf component that actually needs interactivity.

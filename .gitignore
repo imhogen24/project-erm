@@ -30,6 +30,7 @@ pnpm-debug.log*
 
 # env files
 .env*.local
+.env.keys
 
 # typescript
 *.tsbuildinfo
@@ -41,3 +42,9 @@ OVERVIEW.md
 TEMP.md
 PHASE1_DIAGRAM_PROMPTS.md
 PROJECT_PLAN.md
+
+
+#lock files
+pnpm-lock.yaml
+package-lock.json
+yarn.lock

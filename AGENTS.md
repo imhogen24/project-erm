@@ -21,7 +21,7 @@ IMPORTANT RULES:
 - Do NOT add `Co-Authored-By`, `Claude-Session`, "Generated with Claude Code", or any similar AI-attribution trailer or line to commit messages or PR bodies. Keep commit messages simple, eg. "feat(db): write db schema".
 
 
-Do not begin a second workstream's branch before the previous one is merged.
+Within one agent session, do not begin a second workstream's branch before the previous one is merged. This applies per session, not repo-wide: different engineers and their agents work in parallel on separate branches.
 
 ## UI Rules
 - Use stritcly shadcn ui components.

@@ -34,7 +34,7 @@ export const toolRecords = pgTable(
     id: uuid().primaryKey().defaultRandom(),
     projectId: uuid("project_id")
       .notNull()
-      .references(() => projects.id, { onDelete: "cascade" }),
+      .references(() => projects.id, { onDelete: "restrict" }),
     toolId: text("tool_id").notNull(),
     state: recordStateEnum().notNull().default("draft"),
     payload: jsonb().$type<JsonObject>().notNull().default({}),

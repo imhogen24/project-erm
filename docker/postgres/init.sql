@@ -1,0 +1,1 @@
+CREATE DATABASE erm_test;

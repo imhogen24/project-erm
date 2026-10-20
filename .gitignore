@@ -48,3 +48,7 @@ PROJECT_PLAN.md
 pnpm-lock.yaml
 package-lock.json
 yarn.lock
+
+# playwright
+/test-results/
+/playwright-report/

@@ -1,0 +1,21 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: erm-postgres
+    environment:
+      POSTGRES_USER: erm
+      POSTGRES_PASSWORD: erm
+      POSTGRES_DB: erm_dev
+    ports:
+      - "5433:5432"
+    volumes:
+      - erm_pgdata:/var/lib/postgresql/data
+      - ./docker/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U erm -d erm_dev"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+volumes:
+  erm_pgdata:

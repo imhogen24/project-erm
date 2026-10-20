@@ -15,29 +15,47 @@ Those docs describe the business. This README is about the codebase.
 |---|---|
 | Framework | Next.js 16, React 19 |
 | UI | Tailwind v4, shadcn/ui |
+| Hosting | Vercel |
 | Database | Postgres (Neon) |
 | ORM | Drizzle |
 | Auth | Better-Auth |
 | File storage | Cloudflare R2 |
 | Email | Resend |
 | Background jobs | Inngest |
+| Data fetching | Server Actions + RSC |
 | Forms | Zod, React Hook Form |
 | PDFs | React-PDF, pdf-lib |
+| Contract signing | Internal approve/sign flow |
 | Testing | Vitest, Playwright |
 | Linting | ESLint, Prettier, Oxlint, @shadcn/lint |
 | Env vars | dotenvx (`.env.development`, encrypted) |
+| Git hooks | Lefthook |
+| CI | GitHub Actions |
+| Observability | Sentry |
 | Package manager | bun |
 
 
 
 ## Running it locally
 
+Requires [Docker](https://docs.docker.com/get-docker/) and [bun](https://bun.sh).
+
 ```bash
 bun install
-bun dev
+bun dev   # starts the database, applies new migrations, runs the app
 ```
 
-The app runs at `localhost:3000`.
+The app uses a Postgres database in Docker. `bun dev` starts it if needed, applies any new migrations, and runs the seed script. Production uses Neon. The database runs on port 5433 so it does not clash with a Postgres you already have.
+
+| Command | What it does |
+|---|---|
+| `bun run db:down` | Stop the Docker database (`bun dev` starts it) |
+| `bun run db:generate` | Generate a migration from schema changes |
+| `bun run db:migrate` | Apply migrations to `erm_dev` |
+| `bun run db:seed` | Run the seed script |
+| `bun run db:reset` | Wipe `erm_dev`, then migrate and seed it again |
+| `bun run test` | Run the tests against `erm_test` |
+| `bun run test:e2e` | Run the Playwright browser tests |
 
 `.env.development` is encrypted and safe to have in git. To decrypt it locally you need the private key — ask a teammate for it (it's not in git) and either let dotenvx store it in your OS keychain on first use, or drop it into a local `.env.keys` file as `DOTENV_PRIVATE_KEY_DEVELOPMENT=...`.
 
@@ -45,6 +63,9 @@ The app runs at `localhost:3000`.
 
 - `bun run lint`
 - `bun run typecheck`
+- `bun run build`
+- `bun run test`
+- `bun run test:e2e`
 - `coderabbit review`
 
 The full set of rules for how we work in this repo — docs conventions, what "always use bun" actually means, how skills get picked up, branch/commit rules — lives in `AGENTS.md`. Read it. It's short and it's enforced.

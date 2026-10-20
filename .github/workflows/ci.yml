@@ -30,3 +30,54 @@ jobs:
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: bun run build
+
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: erm
+          POSTGRES_PASSWORD: erm
+          POSTGRES_DB: erm_test
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U erm -d erm_test"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgres://erm:erm@localhost:5433/erm_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run test
+
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: erm
+          POSTGRES_PASSWORD: erm
+          POSTGRES_DB: erm_dev
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U erm -d erm_dev"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://erm:erm@localhost:5433/erm_dev
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run db:migrate
+      - run: bun run db:seed
+      - run: bunx playwright install --with-deps chromium
+      - run: bun run test:e2e

@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button"
-import { KeyIcon } from "@phosphor-icons/react"
+import { KeyIcon } from "@phosphor-icons/react/ssr"
 
 export default function Page() {
   return (

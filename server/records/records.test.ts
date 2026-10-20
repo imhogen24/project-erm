@@ -136,3 +136,14 @@ describe("editing a record", () => {
     }
   )
 })
+
+describe("deleting a project", () => {
+  it("is refused while the project still has records", async () => {
+    const record = await newRecord("locked")
+
+    await expect(
+      database.pool.query("DELETE FROM projects WHERE id = $1", [projectId])
+    ).rejects.toThrow()
+    expect((await getRecord(database, record.id)).state).toBe("locked")
+  })
+})

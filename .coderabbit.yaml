@@ -1,0 +1,26 @@
+language: en-US
+reviews:
+  profile: chill
+  high_level_summary: true
+  path_filters:
+    - "!bun.lock"
+    - "!.agents/**"
+    - "!.claude/**"
+    - "!tools/oxlint/anti-slop/**"
+    - "!docs/dev_docs/**"
+    - "!docs/WIREFRAMES/**"
+  path_instructions:
+    - path: "server/**"
+      instructions: >-
+        Check against the rules in docs/ARCHITECTURE/_.md: gate order is never
+        bypassed, permissions are checked here and never in components, locked
+        records are immutable, every write is audited, inherited fields are never
+        written by users.
+    - path: "workbooks/**"
+      instructions: >-
+        A workbook never imports another workbook. Check that changes follow the
+        Linear issue and the part of docs/dev_docs it links to.
+    - path: "app/**/page.tsx"
+      instructions: Pages must stay Server Components. Flag any "use client".
+    - path: "**/*.test.ts"
+      instructions: Tests must use the Docker Postgres test database, never a mock.

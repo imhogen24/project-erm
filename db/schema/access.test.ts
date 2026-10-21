@@ -4,7 +4,7 @@ import { createTestDatabase, resetTestData } from "../testing"
 
 const database = createTestDatabase()
 
-// The 19 roles in docs/dev_docs/CRITICAL_DATA_STRUCTURE/PERMISSIONS.md.
+// The 19 roles.
 const ROLES = [
   "Client",
   "OM",
@@ -70,7 +70,7 @@ afterAll(async () => {
 })
 
 describe("roles", () => {
-  it("holds exactly the 19 roles in PERMISSIONS.md", async () => {
+  it("holds exactly the 19 roles", async () => {
     const { rows } = await database.pool.query<{ role: string }>(
       "SELECT unnest(enum_range(NULL::role))::text AS role"
     )

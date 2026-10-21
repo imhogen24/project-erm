@@ -42,9 +42,7 @@
         "people_email_unique": {
           "name": "people_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -97,12 +95,8 @@
           "name": "person_project_roles_person_id_people_id_fk",
           "tableFrom": "person_project_roles",
           "tableTo": "people",
-          "columnsFrom": [
-            "person_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["person_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -110,12 +104,8 @@
           "name": "person_project_roles_project_id_projects_id_fk",
           "tableFrom": "person_project_roles",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -123,11 +113,7 @@
       "compositePrimaryKeys": {
         "person_project_roles_person_id_project_id_role_pk": {
           "name": "person_project_roles_person_id_project_id_role_pk",
-          "columns": [
-            "person_id",
-            "project_id",
-            "role"
-          ]
+          "columns": ["person_id", "project_id", "role"]
         }
       },
       "uniqueConstraints": {},

@@ -14,7 +14,7 @@ export default defineConfig({
   webServer: {
     // In CI the database is a service container, so skip the Docker step in `predev`.
     command: process.env.CI ? "bunx next dev --turbopack" : "bun run dev",
-    url: "http://localhost:3000",
+    url: "http://localhost:3000/api/auth/ok",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
   },

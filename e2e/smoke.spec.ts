@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test"
 
-test("home page loads", async ({ page }) => {
-  const response = await page.goto("/")
+test("a signed-out visitor is sent to /sign-in", async ({ page }) => {
+  await page.goto("/")
 
-  expect(response?.ok()).toBe(true)
+  expect(new URL(page.url()).pathname).toBe("/sign-in")
 })

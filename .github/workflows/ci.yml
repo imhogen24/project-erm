@@ -73,6 +73,8 @@ jobs:
           --health-retries 20
     env:
       DATABASE_URL: postgres://erm:erm@localhost:5433/erm_dev
+      BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
+      BETTER_AUTH_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2

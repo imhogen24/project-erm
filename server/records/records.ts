@@ -7,6 +7,7 @@ import {
   type JsonObject,
   type RecordState,
 } from "@/db/schema"
+import { assertCan, type Action } from "@/server/permissions/permissions"
 
 export { recordStates }
 
@@ -50,8 +51,11 @@ const columns = {
 
 export async function createRecord(
   database: Database,
+  actor: string,
   input: NewRecord
 ): Promise<ToolRecord> {
+  await assertCan(database, actor, input.projectId, input.toolId, "write")
+
   const [record] = await database
     .insert(toolRecords)
     .values({
@@ -64,7 +68,9 @@ export async function createRecord(
   return record!
 }
 
-export async function getRecord(
+// Loads the record without a permission check, for the operations below that
+// need its project and tool before they can check.
+async function loadRecord(
   database: Database,
   recordId: string
 ): Promise<ToolRecord> {
@@ -80,13 +86,44 @@ export async function getRecord(
   return record
 }
 
+export async function getRecord(
+  database: Database,
+  actor: string,
+  recordId: string
+): Promise<ToolRecord> {
+  const record = await loadRecord(database, recordId)
+
+  await assertCan(database, actor, record.projectId, record.toolId, "read")
+
+  return record
+}
+
+// Sending a record forward or back is writing; approving and locking are approving.
+const actionForMove: Record<RecordState, Action> = {
+  draft: "write",
+  submitted: "write",
+  approved: "approve",
+  locked: "approve",
+}
+
 // The state check sits inside the UPDATE, so two simultaneous calls cannot
 // both move the same record.
 export async function transitionRecord(
   database: Database,
+  actor: string,
   recordId: string,
   to: RecordState
 ): Promise<ToolRecord> {
+  const record = await loadRecord(database, recordId)
+
+  await assertCan(
+    database,
+    actor,
+    record.projectId,
+    record.toolId,
+    actionForMove[to]
+  )
+
   const allowedFrom = recordStates.filter((from) =>
     allowedTransitions[from].includes(to)
   )
@@ -109,7 +146,7 @@ export async function transitionRecord(
     return moved
   }
 
-  const current = await getRecord(database, recordId)
+  const current = await loadRecord(database, recordId)
 
   throw new InvalidTransitionError(
     `A ${current.state} record cannot move to ${to}`
@@ -118,9 +155,14 @@ export async function transitionRecord(
 
 export async function updateRecord(
   database: Database,
+  actor: string,
   recordId: string,
   payload: JsonObject
 ): Promise<ToolRecord> {
+  const record = await loadRecord(database, recordId)
+
+  await assertCan(database, actor, record.projectId, record.toolId, "write")
+
   const [updated] = await database
     .update(toolRecords)
     .set({ payload, updatedAt: new Date() })
@@ -131,7 +173,7 @@ export async function updateRecord(
     return updated
   }
 
-  const current = await getRecord(database, recordId)
+  const current = await loadRecord(database, recordId)
 
   throw new RecordNotEditableError(`A ${current.state} record cannot be edited`)
 }

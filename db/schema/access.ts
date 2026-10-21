@@ -8,7 +8,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core"
 
-// The 19 roles in docs/dev_docs/CRITICAL_DATA_STRUCTURE/PERMISSIONS.md.
+// The 19 roles.
 export const roles = [
   "Client",
   "OM",
@@ -52,7 +52,7 @@ export const projects = pgTable("projects", {
     .defaultNow(),
 })
 
-// A person can hold several roles on a project, and none on another.
+// A person can hold several roles on a project
 export const personProjectRoles = pgTable(
   "person_project_roles",
   {

@@ -14,6 +14,7 @@ export type Gate = {
 
 export const gates: readonly Gate[] = [
   { tool: "D1.15", opens: ["D2."] },
+  { tool: "D2.12", opens: ["D3."] },
   { tool: "D3.10", opens: ["D4."] },
   { tool: "D4.8", opens: ["D5.", "P5."] },
 ]

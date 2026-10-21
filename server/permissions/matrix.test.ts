@@ -49,4 +49,15 @@ describe("permission matrix", () => {
       CR: "RO",
     })
   })
+
+  it("lets the Project Manager approve the executed contract, D2.12", () => {
+    expect(permissionMatrix["D2.12"]).toEqual({
+      Client: "RO",
+      PM: "RA",
+      FO: "RO",
+      CA: "RW",
+      HE: "RO",
+      CR: "RO",
+    })
+  })
 })

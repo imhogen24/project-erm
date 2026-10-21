@@ -174,6 +174,7 @@ describe("every gate", () => {
   // One guarded tool per gate that the permissions table lets `actor` write.
   const guarded = new Map([
     ["D1.15", "D2.1"],
+    ["D2.12", "D3.1"],
     ["D3.10", "D4.1"],
     ["D4.8", "P5.2"],
   ])
@@ -181,6 +182,8 @@ describe("every gate", () => {
   for (const gate of gates) {
     it(`${gate.tool} keeps ${guarded.get(gate.tool)} closed until it is locked`, async () => {
       const toolId = guarded.get(gate.tool)!
+
+      expect(toolId).toBeDefined()
 
       expect(gateFor(toolId)?.tool).toBe(gate.tool)
 
@@ -203,7 +206,7 @@ describe("gates in a chain", () => {
       createRecord(database, actor, { projectId, toolId: "D4.8" })
     ).rejects.toBeInstanceOf(GateClosedError)
 
-    await recordIn("locked", "D3.10")
+    await lockWithPrerequisites("D3.10")
 
     const record = await createRecord(database, actor, {
       projectId,
@@ -211,6 +214,46 @@ describe("gates in a chain", () => {
     })
 
     expect(record.toolId).toBe("D4.8")
+  })
+})
+
+describe("the contract gate", () => {
+  it("keeps the finance tools closed until the executed contract is locked", async () => {
+    expect(gateFor("D3.1")?.tool).toBe("D2.12")
+
+    await expect(
+      createRecord(database, actor, { projectId, toolId: "D3.1" })
+    ).rejects.toBeInstanceOf(GateClosedError)
+
+    await lockWithPrerequisites("D2.12")
+
+    const record = await createRecord(database, actor, {
+      projectId,
+      toolId: "D3.1",
+    })
+
+    expect(record.toolId).toBe("D3.1")
+  })
+
+  it("lets the Project Manager lock the executed contract", async () => {
+    await lockWithPrerequisites("D1.15")
+    const record = await recordIn("approved", "D2.12")
+    const pm = await addActor(projectId, ["PM"])
+
+    const locked = await transitionRecord(database, pm, record.id, "locked")
+
+    expect(locked.state).toBe("locked")
+  })
+
+  it("does not let the Contract Administrator lock it", async () => {
+    await lockWithPrerequisites("D1.15")
+
+    const record = await recordIn("approved", "D2.12")
+    const ca = await addActor(projectId, ["CA"])
+
+    await expect(
+      transitionRecord(database, ca, record.id, "locked")
+    ).rejects.toBeInstanceOf(PermissionDeniedError)
   })
 })
 

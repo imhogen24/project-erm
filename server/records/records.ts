@@ -7,6 +7,7 @@ import {
   type JsonObject,
   type RecordState,
 } from "@/db/schema"
+import { assertGateOpen } from "@/server/gates/gates"
 import { assertCan, type Action } from "@/server/permissions/permissions"
 
 export { recordStates }
@@ -55,6 +56,7 @@ export async function createRecord(
   input: NewRecord
 ): Promise<ToolRecord> {
   await assertCan(database, actor, input.projectId, input.toolId, "write")
+  await assertGateOpen(database, input.projectId, input.toolId)
 
   const [record] = await database
     .insert(toolRecords)

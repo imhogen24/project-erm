@@ -81,7 +81,7 @@ export const permissionMatrix = {
   "D2.9": { Client: "RO", PM: "RO", CA: "RW", HE: "RO", CR: "RO" },
   "D2.10": { Client: "RO", PM: "RO", FO: "RO", CA: "RW", HE: "RO", CR: "RO" },
   "D2.11": { Client: "RW", PM: "RO", CA: "RW", HE: "RW", CR: "RO" },
-  "D2.12": { Client: "RO", PM: "RO", FO: "RO", CA: "RW", HE: "RO", CR: "RO" },
+  "D2.12": { Client: "RO", PM: "RA", FO: "RO", CA: "RW", HE: "RO", CR: "RO" },
   "D2.13": { PM: "RO", CA: "RW", CR: "RO" },
   "D2.14": { PM: "RA", FO: "RO", CA: "RW", CR: "RO" },
   D2: { PM: "RO", FO: "RO", CA: "RW", CR: "RO" },

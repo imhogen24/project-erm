@@ -20,7 +20,8 @@ import type { ToolDefinition } from "@/server/tools/define-tool"
 
 export type ProjectSummary = { id: string; name: string; roles: Role[] }
 
-export type ToolState = RecordState | "notStarted"
+// A void record never shows; a tool with only void records is not started.
+export type ToolState = Exclude<RecordState, "void"> | "notStarted"
 
 export type ProjectOverview = {
   id: string
@@ -102,10 +103,11 @@ export async function getProjectOverview(
           .orderBy(desc(toolRecords.createdAt), desc(toolRecords.id))
 
   // Newest first, so the first record seen for a tool is the one that counts.
-  const newest = new Map<string, RecordState>()
+  // Void records are kept only for reference after a workbook rollback.
+  const newest = new Map<string, Exclude<RecordState, "void">>()
 
   for (const record of records) {
-    if (!newest.has(record.toolId)) {
+    if (record.state !== "void" && !newest.has(record.toolId)) {
       newest.set(record.toolId, record.state)
     }
   }

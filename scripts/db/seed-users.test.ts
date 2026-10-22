@@ -119,6 +119,34 @@ describe("seeding again", () => {
   })
 })
 
+describe("seeding a user who lost their password or role", () => {
+  it("gives them back without adding a second person", async () => {
+    await seed(url)
+
+    await database.pool.query(
+      "DELETE FROM accounts WHERE person_id = (SELECT id FROM people WHERE email = 'qa@example.com')"
+    )
+    await database.pool.query(
+      "DELETE FROM person_project_roles WHERE person_id = (SELECT id FROM people WHERE email = 'qa@example.com')"
+    )
+
+    const created = await seed(url)
+
+    expect(created).toEqual([])
+    expect(await count("people")).toBe(19)
+    expect(await rolesOnDemoProject()).toContainEqual({
+      email: "qa@example.com",
+      role: "QA",
+    })
+
+    const result = await auth.api.signInEmail({
+      body: { email: "qa@example.com", password: "password" },
+    })
+
+    expect(result.user.email).toBe("qa@example.com")
+  })
+})
+
 describe("signing in as a seed user", () => {
   it("works for every role with the password `password`", async () => {
     await seed(url)

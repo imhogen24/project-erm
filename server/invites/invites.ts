@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto"
 
 import { hashPassword } from "better-auth/crypto"
-import { and, eq, sql } from "drizzle-orm"
+import { and, eq, isNotNull, sql } from "drizzle-orm"
 import { z } from "zod"
 
 import type { Database } from "@/db"
@@ -13,6 +13,7 @@ import {
   roles as knownRoles,
   type Role,
 } from "@/db/schema"
+import type { Transaction } from "@/server/audit/audit"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 
 export class InvalidInviteInputError extends Error {}
@@ -108,6 +109,54 @@ async function findPerson(database: Database, address: string) {
   return person
 }
 
+// A person can exist without being able to sign in. What counts is a password.
+async function hasPassword(
+  database: Pick<Database, "select">,
+  personId: string
+) {
+  const [account] = await database
+    .select({ id: accounts.id })
+    .from(accounts)
+    .where(
+      and(
+        eq(accounts.personId, personId),
+        eq(accounts.providerId, "credential"),
+        isNotNull(accounts.password)
+      )
+    )
+    .limit(1)
+
+  return account !== undefined
+}
+
+// Fills in the password of a person who has an empty credential account, or
+// makes the account if they have none.
+async function setPassword(
+  transaction: Transaction,
+  personId: string,
+  passwordHash: string
+) {
+  const [updated] = await transaction
+    .update(accounts)
+    .set({ password: passwordHash, updatedAt: new Date() })
+    .where(
+      and(
+        eq(accounts.personId, personId),
+        eq(accounts.providerId, "credential")
+      )
+    )
+    .returning({ id: accounts.id })
+
+  if (!updated) {
+    await transaction.insert(accounts).values({
+      personId,
+      accountId: personId,
+      providerId: "credential",
+      password: passwordHash,
+    })
+  }
+}
+
 async function giveRoles(
   database: Database,
   personId: string,
@@ -139,7 +188,7 @@ export async function createInvite(
 
   const existing = await findPerson(database, address)
 
-  if (existing) {
+  if (existing && (await hasPassword(database, existing.id))) {
     await giveRoles(database, existing.id, input.projectId, held)
 
     return { status: "added", personId: existing.id }
@@ -163,8 +212,9 @@ export async function createInvite(
 }
 
 // The invite row is locked while it is checked, so two simultaneous accepts
-// cannot both use it. A person who made an account since the invite was sent
-// gets the roles added, and their password is left alone.
+// cannot both use it. A person who already has a password gets the roles added
+// and keeps that password. A person who exists without one gets the password
+// they choose here.
 export async function acceptInvite(
   database: Database,
   token: string,
@@ -212,12 +262,9 @@ export async function acceptInvite(
 
       personId = created!.id
 
-      await transaction.insert(accounts).values({
-        personId,
-        accountId: personId,
-        providerId: "credential",
-        password: passwordHash,
-      })
+      await setPassword(transaction, personId, passwordHash)
+    } else if (!(await hasPassword(transaction, personId))) {
+      await setPassword(transaction, personId, passwordHash)
     }
 
     await transaction

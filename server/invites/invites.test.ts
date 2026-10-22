@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto"
 
+import { hashPassword } from "better-auth/crypto"
 import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
 import type { Role } from "@/db/schema"
@@ -58,6 +59,14 @@ async function addPerson(email: string, held: [string, Role][] = []) {
   }
 
   return rows[0]!.id
+}
+
+// Gives a person a password account, so they can sign in.
+async function addPassword(personId: string, password = PASSWORD) {
+  await database.pool.query(
+    "INSERT INTO accounts (person_id, account_id, provider_id, password) VALUES ($1, $2, 'credential', $3)",
+    [personId, personId, await hashPassword(password)]
+  )
 }
 
 function newInvite(overrides: Partial<InviteInput> = {}) {
@@ -425,6 +434,8 @@ describe("inviting someone who already has an account", () => {
   it("adds the roles straight away and creates no second person", async () => {
     const existing = await addPerson("kofi@example.com", [[projectId, "LE"]])
 
+    await addPassword(existing)
+
     const created = await newInvite({
       projectId: otherProjectId,
       roles: ["PM"],
@@ -437,7 +448,7 @@ describe("inviting someone who already has an account", () => {
   })
 
   it("finds the person whatever capital letters the email has", async () => {
-    await addPerson("kofi@example.com")
+    await addPassword(await addPerson("kofi@example.com"))
 
     const created = await newInvite({
       email: "KOFI@example.com",
@@ -449,7 +460,7 @@ describe("inviting someone who already has an account", () => {
   })
 
   it("does not fail when the person already holds the role", async () => {
-    await addPerson("kofi@example.com", [[projectId, "PM"]])
+    await addPassword(await addPerson("kofi@example.com", [[projectId, "PM"]]))
 
     await newInvite({ roles: ["PM", "LE"] })
 
@@ -475,5 +486,61 @@ describe("inviting someone who already has an account", () => {
       )
     ).rejects.toBeInstanceOf(PermissionDeniedError)
     expect(await rolesOf("kofi@example.com", projectId)).toEqual([])
+  })
+})
+
+describe("a person who exists but has no password", () => {
+  it("gets an invite link, and the roles wait until they accept", async () => {
+    await addPerson("kofi@example.com")
+
+    const created = await newInvite()
+
+    expect(created.status).toBe("invited")
+    expect(await rolesOf("kofi@example.com", projectId)).toEqual([])
+    expect(await count("invitations")).toBe(1)
+    expect(await count("people")).toBe(2)
+  })
+
+  it("is treated the same when their account has no password in it", async () => {
+    const person = await addPerson("kofi@example.com")
+
+    await database.pool.query(
+      "INSERT INTO accounts (person_id, account_id, provider_id, password) VALUES ($1, $2, 'credential', NULL)",
+      [person, person]
+    )
+
+    const created = await newInvite()
+
+    expect(created.status).toBe("invited")
+  })
+
+  it("gets a password and the roles when they accept, without a second person", async () => {
+    const existing = await addPerson("kofi@example.com", [
+      [otherProjectId, "LE"],
+    ])
+
+    const token = await invitedToken({ roles: ["PM"] })
+
+    const { personId } = await acceptInvite(database, token, PASSWORD)
+
+    expect(personId).toBe(existing)
+    expect(await count("people")).toBe(2)
+    expect(await rolesOf("kofi@example.com", projectId)).toEqual(["PM"])
+    expect(await rolesOf("kofi@example.com", otherProjectId)).toEqual(["LE"])
+    expect((await signIn("kofi@example.com", PASSWORD)).user.id).toBe(existing)
+  })
+
+  it("keeps the old person's name when they accept", async () => {
+    await addPerson("kofi@example.com")
+
+    const token = await invitedToken({ name: "Kofi Boateng" })
+
+    await acceptInvite(database, token, PASSWORD)
+
+    const { rows } = await database.pool.query<{ name: string }>(
+      "SELECT name FROM people WHERE email = 'kofi@example.com'"
+    )
+
+    expect(rows[0]!.name).toBe("Existing")
   })
 })

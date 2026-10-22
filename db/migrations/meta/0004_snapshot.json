@@ -62,9 +62,7 @@
         "people_email_unique": {
           "name": "people_email_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "email"
-          ]
+          "columns": ["email"]
         }
       },
       "policies": {},
@@ -117,12 +115,8 @@
           "name": "person_project_roles_person_id_people_id_fk",
           "tableFrom": "person_project_roles",
           "tableTo": "people",
-          "columnsFrom": [
-            "person_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["person_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         },
@@ -130,12 +124,8 @@
           "name": "person_project_roles_project_id_projects_id_fk",
           "tableFrom": "person_project_roles",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -143,11 +133,7 @@
       "compositePrimaryKeys": {
         "person_project_roles_person_id_project_id_role_pk": {
           "name": "person_project_roles_person_id_project_id_role_pk",
-          "columns": [
-            "person_id",
-            "project_id",
-            "role"
-          ]
+          "columns": ["person_id", "project_id", "role"]
         }
       },
       "uniqueConstraints": {},
@@ -272,12 +258,8 @@
           "name": "audit_log_record_id_tool_records_id_fk",
           "tableFrom": "audit_log",
           "tableTo": "tool_records",
-          "columnsFrom": [
-            "record_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["record_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -285,12 +267,8 @@
           "name": "audit_log_project_id_projects_id_fk",
           "tableFrom": "audit_log",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         },
@@ -298,12 +276,8 @@
           "name": "audit_log_actor_id_people_id_fk",
           "tableFrom": "audit_log",
           "tableTo": "people",
-          "columnsFrom": [
-            "actor_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["actor_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -422,12 +396,8 @@
           "name": "accounts_person_id_people_id_fk",
           "tableFrom": "accounts",
           "tableTo": "people",
-          "columnsFrom": [
-            "person_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["person_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -516,12 +486,8 @@
           "name": "sessions_person_id_people_id_fk",
           "tableFrom": "sessions",
           "tableTo": "people",
-          "columnsFrom": [
-            "person_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["person_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -531,9 +497,7 @@
         "sessions_token_unique": {
           "name": "sessions_token_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "token"
-          ]
+          "columns": ["token"]
         }
       },
       "policies": {},
@@ -689,12 +653,8 @@
           "name": "tool_records_project_id_projects_id_fk",
           "tableFrom": "tool_records",
           "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["project_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -735,21 +695,12 @@
     "public.audit_action": {
       "name": "audit_action",
       "schema": "public",
-      "values": [
-        "created",
-        "updated",
-        "transitioned"
-      ]
+      "values": ["created", "updated", "transitioned"]
     },
     "public.record_state": {
       "name": "record_state",
       "schema": "public",
-      "values": [
-        "draft",
-        "submitted",
-        "approved",
-        "locked"
-      ]
+      "values": ["draft", "submitted", "approved", "locked"]
     }
   },
   "schemas": {},

@@ -57,6 +57,32 @@ The app uses a Postgres database in Docker. `bun dev` starts it if needed, appli
 | `bun run test` | Run the tests against `erm_test` |
 | `bun run test:e2e` | Run the Playwright browser tests |
 
+### Seed users
+
+The seed script adds a project named "Demo Project" and one person per role, each holding only that role on it. Every account uses the password `password`. This is for local development only: the script refuses to run against a database that is not on localhost. Running it again adds back only the users that are missing.
+
+| Role | Email |
+|---|---|
+| Client | `client@example.com` |
+| OM | `om@example.com` |
+| PM | `pm@example.com` |
+| LE | `le@example.com` |
+| AE | `ae@example.com` |
+| LD | `ld@example.com` |
+| FO | `fo@example.com` |
+| CA | `ca@example.com` |
+| HE | `he@example.com` |
+| PO | `po@example.com` |
+| IO | `io@example.com` |
+| WS | `ws@example.com` |
+| T | `t@example.com` |
+| QA | `qa@example.com` |
+| LFE | `lfe@example.com` |
+| LO | `lo@example.com` |
+| CR | `cr@example.com` |
+| IT/Admin | `it-admin@example.com` |
+| MKT | `mkt@example.com` |
+
 `.env.development` is encrypted and safe to have in git. To decrypt it locally you need the private key — ask a teammate for it (it's not in git) and either let dotenvx store it in your OS keychain on first use, or drop it into a local `.env.keys` file as `DOTENV_PRIVATE_KEY_DEVELOPMENT=...`.
 
 ## Before you open a PR

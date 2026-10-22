@@ -35,13 +35,13 @@ export function roleAllows(
   })
 }
 
-export async function can(
+// The roles a person holds on a project. Empty when they hold none, or the
+// project does not exist.
+export async function rolesOn(
   database: Database,
   actor: string,
-  projectId: string,
-  toolId: string,
-  action: Action
-): Promise<boolean> {
+  projectId: string
+): Promise<Role[]> {
   const held = await database
     .select({ role: personProjectRoles.role })
     .from(personProjectRoles)
@@ -52,11 +52,17 @@ export async function can(
       )
     )
 
-  return roleAllows(
-    held.map((row) => row.role),
-    toolId,
-    action
-  )
+  return held.map((row) => row.role)
+}
+
+export async function can(
+  database: Database,
+  actor: string,
+  projectId: string,
+  toolId: string,
+  action: Action
+): Promise<boolean> {
+  return roleAllows(await rolesOn(database, actor, projectId), toolId, action)
 }
 
 export async function assertCan(

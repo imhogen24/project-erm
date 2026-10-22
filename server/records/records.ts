@@ -16,6 +16,10 @@ import {
 import { assertGateOpen } from "@/server/gates/gates"
 import { assertCan, type Action } from "@/server/permissions/permissions"
 
+import { assertValid } from "./validate"
+
+export { UnknownToolError, ValidationError } from "./validate"
+
 export { recordStates }
 
 export type { JsonObject, RecordState }
@@ -64,13 +68,18 @@ export async function createRecord(
   await assertCan(database, actor, input.projectId, input.toolId, "write")
   await assertGateOpen(database, input.projectId, input.toolId)
 
+  // A new record is a draft, so required fields are not checked yet.
+  const payload = assertValid(input.toolId, input.payload ?? {}, {
+    forSubmit: false,
+  })
+
   return database.transaction(async (transaction) => {
     const [record] = await transaction
       .insert(toolRecords)
       .values({
         projectId: input.projectId,
         toolId: input.toolId,
-        payload: input.payload ?? {},
+        payload,
       })
       .returning(columns)
 
@@ -173,6 +182,11 @@ export async function transitionRecord(
       )
     }
 
+    // Submitting is when a draft must be complete.
+    if (current.state === "draft" && to === "submitted") {
+      assertValid(current.toolId, current.payload, { forSubmit: true })
+    }
+
     const [moved] = await transaction
       .update(toolRecords)
       .set({ state: to, updatedAt: new Date() })
@@ -204,6 +218,9 @@ export async function updateRecord(
 
   await assertCan(database, actor, record.projectId, record.toolId, "write")
 
+  // Only a draft can be edited, so required fields are not checked here.
+  const checked = assertValid(record.toolId, payload, { forSubmit: false })
+
   return database.transaction(async (transaction) => {
     const current = await lockRecord(transaction, recordId)
 
@@ -215,7 +232,7 @@ export async function updateRecord(
 
     const [updated] = await transaction
       .update(toolRecords)
-      .set({ payload, updatedAt: new Date() })
+      .set({ payload: checked, updatedAt: new Date() })
       .where(eq(toolRecords.id, recordId))
       .returning(columns)
 
@@ -227,7 +244,7 @@ export async function updateRecord(
         actor,
         action: "updated",
       },
-      payloadChanges(current.payload, payload)
+      payloadChanges(current.payload, checked)
     )
 
     return updated!

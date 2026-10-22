@@ -6,6 +6,7 @@ import { z } from "zod"
 
 import type { Database } from "@/db"
 import {
+  accessLog,
   accounts,
   invitations,
   people,
@@ -158,12 +159,12 @@ async function setPassword(
 }
 
 async function giveRoles(
-  database: Database,
+  transaction: Transaction,
   personId: string,
   projectId: string,
   held: Role[]
 ) {
-  await database
+  await transaction
     .insert(personProjectRoles)
     .values(held.map((role) => ({ personId, projectId, role })))
     .onConflictDoNothing()
@@ -188,22 +189,45 @@ export async function createInvite(
 
   const existing = await findPerson(database, address)
 
+  // Each change is written in one transaction with its access_log line, so a
+  // failed log line undoes the change.
   if (existing && (await hasPassword(database, existing.id))) {
-    await giveRoles(database, existing.id, input.projectId, held)
+    await database.transaction(async (transaction) => {
+      await giveRoles(transaction, existing.id, input.projectId, held)
+
+      await transaction.insert(accessLog).values({
+        actorId: actor,
+        action: "roles_added",
+        personId: existing.id,
+        email: address,
+        projectId: input.projectId,
+        roles: held,
+      })
+    })
 
     return { status: "added", personId: existing.id }
   }
 
   const token = randomBytes(32).toString("base64url")
 
-  await database.insert(invitations).values({
-    email: address,
-    name,
-    projectId: input.projectId,
-    roles: held,
-    tokenHash: hashToken(token),
-    expiresAt: new Date(Date.now() + INVITE_DAYS * 24 * 60 * 60 * 1000),
-    invitedBy: actor,
+  await database.transaction(async (transaction) => {
+    await transaction.insert(invitations).values({
+      email: address,
+      name,
+      projectId: input.projectId,
+      roles: held,
+      tokenHash: hashToken(token),
+      expiresAt: new Date(Date.now() + INVITE_DAYS * 24 * 60 * 60 * 1000),
+      invitedBy: actor,
+    })
+
+    await transaction.insert(accessLog).values({
+      actorId: actor,
+      action: "invited",
+      email: address,
+      projectId: input.projectId,
+      roles: held,
+    })
   })
 
   const base = options.baseURL.replace(/\/+$/, "")
@@ -282,6 +306,15 @@ export async function acceptInvite(
       .update(invitations)
       .set({ acceptedAt: new Date() })
       .where(eq(invitations.id, invite.id))
+
+    await transaction.insert(accessLog).values({
+      actorId: personId,
+      action: "invite_accepted",
+      personId,
+      email: invite.email,
+      projectId: invite.projectId,
+      roles: invite.roles,
+    })
 
     return { personId }
   })

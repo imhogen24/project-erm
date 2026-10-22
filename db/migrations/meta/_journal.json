@@ -43,6 +43,13 @@
       "when": 1792657264316,
       "tag": "0005_flat_otto_octavius",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792699188792,
+      "tag": "0006_icy_red_hulk",
+      "breakpoints": true
     }
   ]
 }

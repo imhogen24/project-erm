@@ -1,4 +1,4 @@
-import { and, eq, inArray } from "drizzle-orm"
+import { eq } from "drizzle-orm"
 
 import type { Database } from "@/db"
 import {
@@ -7,6 +7,12 @@ import {
   type JsonObject,
   type RecordState,
 } from "@/db/schema"
+import {
+  payloadChanges,
+  stateChange,
+  writeAudit,
+  type Transaction,
+} from "@/server/audit/audit"
 import { assertGateOpen } from "@/server/gates/gates"
 import { assertCan, type Action } from "@/server/permissions/permissions"
 
@@ -58,16 +64,48 @@ export async function createRecord(
   await assertCan(database, actor, input.projectId, input.toolId, "write")
   await assertGateOpen(database, input.projectId, input.toolId)
 
-  const [record] = await database
-    .insert(toolRecords)
-    .values({
-      projectId: input.projectId,
-      toolId: input.toolId,
-      payload: input.payload ?? {},
-    })
-    .returning(columns)
+  return database.transaction(async (transaction) => {
+    const [record] = await transaction
+      .insert(toolRecords)
+      .values({
+        projectId: input.projectId,
+        toolId: input.toolId,
+        payload: input.payload ?? {},
+      })
+      .returning(columns)
 
-  return record!
+    await writeAudit(
+      transaction,
+      {
+        recordId: record!.id,
+        projectId: input.projectId,
+        actor,
+        action: "created",
+      },
+      [stateChange(null, "draft"), ...payloadChanges({}, record!.payload)]
+    )
+
+    return record!
+  })
+}
+
+// Reads the record and holds its row until the transaction ends, so a second
+// call waits and then sees what the first one did.
+async function lockRecord(
+  transaction: Transaction,
+  recordId: string
+): Promise<ToolRecord> {
+  const [record] = await transaction
+    .select(columns)
+    .from(toolRecords)
+    .where(eq(toolRecords.id, recordId))
+    .for("update")
+
+  if (!record) {
+    throw new RecordNotFoundError(`No record with id ${recordId}`)
+  }
+
+  return record
 }
 
 // Loads the record without a permission check, for the operations below that
@@ -108,8 +146,8 @@ const actionForMove: Record<RecordState, Action> = {
   locked: "approve",
 }
 
-// The state check sits inside the UPDATE, so two simultaneous calls cannot
-// both move the same record.
+// The record is locked while it is checked and moved, so two simultaneous
+// calls cannot both move it.
 export async function transitionRecord(
   database: Database,
   actor: string,
@@ -126,33 +164,34 @@ export async function transitionRecord(
     actionForMove[to]
   )
 
-  const allowedFrom = recordStates.filter((from) =>
-    allowedTransitions[from].includes(to)
-  )
+  return database.transaction(async (transaction) => {
+    const current = await lockRecord(transaction, recordId)
 
-  const [moved] =
-    allowedFrom.length === 0
-      ? []
-      : await database
-          .update(toolRecords)
-          .set({ state: to, updatedAt: new Date() })
-          .where(
-            and(
-              eq(toolRecords.id, recordId),
-              inArray(toolRecords.state, allowedFrom)
-            )
-          )
-          .returning(columns)
+    if (!allowedTransitions[current.state].includes(to)) {
+      throw new InvalidTransitionError(
+        `A ${current.state} record cannot move to ${to}`
+      )
+    }
 
-  if (moved) {
-    return moved
-  }
+    const [moved] = await transaction
+      .update(toolRecords)
+      .set({ state: to, updatedAt: new Date() })
+      .where(eq(toolRecords.id, recordId))
+      .returning(columns)
 
-  const current = await loadRecord(database, recordId)
+    await writeAudit(
+      transaction,
+      {
+        recordId,
+        projectId: current.projectId,
+        actor,
+        action: "transitioned",
+      },
+      [stateChange(current.state, to)]
+    )
 
-  throw new InvalidTransitionError(
-    `A ${current.state} record cannot move to ${to}`
-  )
+    return moved!
+  })
 }
 
 export async function updateRecord(
@@ -165,17 +204,32 @@ export async function updateRecord(
 
   await assertCan(database, actor, record.projectId, record.toolId, "write")
 
-  const [updated] = await database
-    .update(toolRecords)
-    .set({ payload, updatedAt: new Date() })
-    .where(and(eq(toolRecords.id, recordId), eq(toolRecords.state, "draft")))
-    .returning(columns)
+  return database.transaction(async (transaction) => {
+    const current = await lockRecord(transaction, recordId)
 
-  if (updated) {
-    return updated
-  }
+    if (current.state !== "draft") {
+      throw new RecordNotEditableError(
+        `A ${current.state} record cannot be edited`
+      )
+    }
 
-  const current = await loadRecord(database, recordId)
+    const [updated] = await transaction
+      .update(toolRecords)
+      .set({ payload, updatedAt: new Date() })
+      .where(eq(toolRecords.id, recordId))
+      .returning(columns)
 
-  throw new RecordNotEditableError(`A ${current.state} record cannot be edited`)
+    await writeAudit(
+      transaction,
+      {
+        recordId,
+        projectId: current.projectId,
+        actor,
+        action: "updated",
+      },
+      payloadChanges(current.payload, payload)
+    )
+
+    return updated!
+  })
 }

@@ -270,7 +270,7 @@ describe("which tools a gate guards", () => {
 })
 
 describe("records that already exist", () => {
-  it("can still be edited and moved after the gate record is gone", async () => {
+  it("can still be edited and moved after the gate closes again", async () => {
     await recordIn("locked", "D1.15")
 
     const record = await createRecord(database, actor, {
@@ -278,8 +278,10 @@ describe("records that already exist", () => {
       toolId: "D2.1",
     })
 
+    // The audit log keeps every record, so the gate is closed by moving its
+    // record back to draft instead of deleting it.
     await database.pool.query(
-      "DELETE FROM tool_records WHERE tool_id = 'D1.15'"
+      "UPDATE tool_records SET state = 'draft' WHERE tool_id = 'D1.15'"
     )
 
     await updateRecord(database, actor, record.id, { note: "changed" })

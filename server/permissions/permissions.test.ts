@@ -7,6 +7,7 @@ import { accessRow, permissionMatrix } from "./matrix"
 import {
   PermissionDeniedError,
   assertCan,
+  assertHoldsRole,
   can,
   roleAllows,
   type Action,
@@ -170,6 +171,35 @@ describe("assertCan", () => {
 
     await expect(
       assertCan(database, person, projectId, "D1.8", "write")
+    ).rejects.toBeInstanceOf(PermissionDeniedError)
+  })
+})
+
+describe("assertHoldsRole", () => {
+  it("returns quietly for a person who holds the role on the project", async () => {
+    const person = await addPerson(projectId, ["LE", "PM"])
+
+    await expect(
+      assertHoldsRole(database, person, projectId, "PM")
+    ).resolves.toBeUndefined()
+  })
+
+  it("throws PermissionDeniedError for every other role", async () => {
+    const person = await addPerson(
+      projectId,
+      roles.filter((role) => role !== "PM")
+    )
+
+    await expect(
+      assertHoldsRole(database, person, projectId, "PM")
+    ).rejects.toBeInstanceOf(PermissionDeniedError)
+  })
+
+  it("throws PermissionDeniedError for the role on another project", async () => {
+    const person = await addPerson(await addProject("Kiln"), ["PM"])
+
+    await expect(
+      assertHoldsRole(database, person, projectId, "PM")
     ).rejects.toBeInstanceOf(PermissionDeniedError)
   })
 })

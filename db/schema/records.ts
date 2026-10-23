@@ -15,6 +15,7 @@ export const recordStates = [
   "submitted",
   "approved",
   "locked",
+  "void",
 ] as const
 
 export type RecordState = (typeof recordStates)[number]

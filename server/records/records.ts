@@ -34,12 +34,14 @@ export class RecordNotEditableError extends Error {}
 
 export class RecordNotFoundError extends Error {}
 
-// Unlocking a locked record is a change request, which is a separate issue.
+// A locked record leaves locked only through a workbook rollback, which reopens
+// it as draft or voids it. A void record never moves again.
 const allowedTransitions: Record<RecordState, readonly RecordState[]> = {
   draft: ["submitted"],
   submitted: ["approved", "draft"],
   approved: ["locked"],
   locked: [],
+  void: [],
 }
 
 type NewRecord = {
@@ -139,7 +141,8 @@ export async function getRecord(
 }
 
 // Sending a record forward or back is writing; approving and locking are approving.
-const actionForMove: Record<RecordState, Action> = {
+// There is no move into void: only a workbook rollback voids a record.
+const actionForMove: Record<Exclude<RecordState, "void">, Action> = {
   draft: "write",
   submitted: "write",
   approved: "approve",
@@ -154,6 +157,12 @@ export async function transitionRecord(
   recordId: string,
   to: RecordState
 ): Promise<ToolRecord> {
+  if (to === "void") {
+    throw new InvalidTransitionError(
+      "A record becomes void only through a workbook rollback"
+    )
+  }
+
   const record = await loadRecord(database, recordId)
 
   await assertCan(

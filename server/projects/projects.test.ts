@@ -194,6 +194,30 @@ describe("getProjectOverview", () => {
     expect(result.tools).toEqual([shown("D1.3", "draft")])
   })
 
+  it("skips void records when it picks the newest", async () => {
+    await grant(person, project, "OM")
+    // D1.3 restarted after a rollback, D1.8 was voided last, D1.9 was only voided.
+    await addRecord(project, "D1.3", "void", new Date("2026-01-01"))
+    await addRecord(project, "D1.3", "draft", new Date("2026-02-01"))
+    await addRecord(project, "D1.8", "locked", new Date("2026-01-01"))
+    await addRecord(project, "D1.8", "void", new Date("2026-02-01"))
+    await addRecord(project, "D1.9", "void")
+
+    const result = await getProjectOverview(
+      database,
+      person,
+      project,
+      fourTools
+    )
+
+    expect(result.tools).toEqual([
+      shown("D1.3", "draft"),
+      shown("D1.4", "notStarted"),
+      shown("D1.8", "locked"),
+      shown("D1.9", "notStarted"),
+    ])
+  })
+
   it("hides the tools the person's roles may not read", async () => {
     await grant(person, project, "LE")
 

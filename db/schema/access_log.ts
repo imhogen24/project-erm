@@ -5,6 +5,8 @@ export const accessActions = [
   "invited",
   "roles_added",
   "invite_accepted",
+  "signed_in",
+  "signed_out",
 ] as const
 
 export type AccessAction = (typeof accessActions)[number]
@@ -21,10 +23,11 @@ export const accessLog = pgTable("access_log", {
     onDelete: "restrict",
   }),
   email: text().notNull(),
-  projectId: uuid("project_id")
-    .notNull()
-    .references(() => projects.id, { onDelete: "restrict" }),
-  roles: roleEnum().array().notNull(),
+  // Signing in or out belongs to no project, so these two stay empty then.
+  projectId: uuid("project_id").references(() => projects.id, {
+    onDelete: "restrict",
+  }),
+  roles: roleEnum().array(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

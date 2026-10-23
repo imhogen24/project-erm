@@ -57,6 +57,13 @@
       "when": 1792739428950,
       "tag": "0007_magical_mother_askani",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1792741750087,
+      "tag": "0008_happy_miss_america",
+      "breakpoints": true
     }
   ]
 }

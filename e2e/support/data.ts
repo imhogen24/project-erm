@@ -4,6 +4,7 @@ import { expect, type Page } from "@playwright/test"
 import { hashPassword } from "better-auth/crypto"
 
 import { createDatabase } from "@/db"
+import { acceptInvite, createInvite } from "@/server/invites/invites"
 import {
   accounts,
   people,
@@ -116,4 +117,52 @@ export async function sidewaysScroll(page: Page) {
       document.documentElement.scrollWidth -
       document.documentElement.clientWidth
   )
+}
+
+// An invite made through the real invite logic, so its token and hash are real.
+export async function makeInvite(
+  adminId: string,
+  projectId: string,
+  input: { email?: string; name?: string; roles?: Role[] } = {}
+) {
+  const email = input.email ?? `${tag()}-${tag()}@example.com`
+  const name = input.name ?? `Invitee ${tag()}`
+
+  const created = await withDatabase((database) =>
+    createInvite(
+      database,
+      adminId,
+      { email, name, projectId, roles: input.roles ?? ["PM"] },
+      { baseURL: "http://localhost:3000" }
+    )
+  )
+
+  if (created.status !== "invited") {
+    throw new Error("Expected an invite, not an added person")
+  }
+
+  return { email, name, token: created.link.split("/invite/")[1]! }
+}
+
+export async function expireInvite(email: string) {
+  await withDatabase((database) =>
+    database.pool.query(
+      "UPDATE invitations SET expires_at = now() - interval '1 minute' WHERE email = $1",
+      [email]
+    )
+  )
+}
+
+export async function useUpInvite(token: string) {
+  await withDatabase((database) =>
+    acceptInvite(database, token, "some-other-password")
+  )
+}
+
+export async function makeAdmin(projectId: string, name?: string) {
+  const person = await makePerson(name)
+
+  await giveRoles(person.id, projectId, ["IT/Admin"])
+
+  return person
 }

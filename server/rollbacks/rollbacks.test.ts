@@ -14,6 +14,7 @@ import {
   type RecordState,
 } from "@/server/records/records"
 import { defineTool } from "@/server/tools/define-tool"
+import { registerTestTools } from "@/server/tools/testing"
 
 import {
   RollbackNotAllowedError,
@@ -41,6 +42,8 @@ const gateTools = ["D1.15", "D2.12", "D3.10", "D4.8"]
 // One more record in each workbook, from workbook 1 to 5, so there is data to
 // compare.
 const extraTools = ["D1.8", "D2.14", "D3.1", "D4.1", "P5.2"]
+
+registerTestTools([...gateTools, ...extraTools, "D1.3"])
 
 type Row = {
   id: string

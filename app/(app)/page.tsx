@@ -5,6 +5,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { Grain } from "@/components/grain"
 import { MobileBar } from "@/components/mobile-bar"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
 import { getDatabase } from "@/server/database"
 import { listProjectsFor } from "@/server/projects/projects"
@@ -19,9 +20,9 @@ export default async function Page() {
 
   return (
     <>
-      <MobileBar className="xl:hidden" />
+      <MobileBar className="xl:hidden" canInvite={isItAdmin(projects)} />
       <div className="drafting-grid min-h-svh py-[var(--cell)]">
-        <AppSidebar name={session.user.name} />
+        <AppSidebar name={session.user.name} canInvite={isItAdmin(projects)} />
         <main className="table-project table-home">
           <div>
             <div

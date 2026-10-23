@@ -124,4 +124,20 @@ describe("route protection", () => {
   it("does not open a path that only starts like /sign-in", async () => {
     expect(redirectsToSignIn(await proxy(request("/sign-in-admin")))).toBe(true)
   })
+
+  it("leaves invite links open, since the person has no account yet", async () => {
+    const response = await proxy(request("/invite/some-token"))
+
+    expect(redirectsToSignIn(response)).toBe(false)
+    expect(response.headers.get("x-middleware-next")).toBe("1")
+  })
+
+  it("does not open a path that only starts like /invite", async () => {
+    expect(redirectsToSignIn(await proxy(request("/invite-admin")))).toBe(true)
+    expect(redirectsToSignIn(await proxy(request("/invites")))).toBe(true)
+  })
+
+  it("keeps the invite admin page behind a sign-in", async () => {
+    expect(redirectsToSignIn(await proxy(request("/admin/invites")))).toBe(true)
+  })
 })

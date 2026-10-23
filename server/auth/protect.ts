@@ -7,9 +7,16 @@ const SIGN_IN_PATH = "/sign-in"
 // Better-Auth's own routes must stay open, or nobody could sign in.
 const AUTH_ROUTES = "/api/auth/"
 
+// Someone with an invite link has no account yet, so invite links stay open.
+const INVITE_ROUTES = "/invite/"
+
 // Everything not named here needs a session.
 function isPublic(pathname: string) {
-  return pathname === SIGN_IN_PATH || pathname.startsWith(AUTH_ROUTES)
+  return (
+    pathname === SIGN_IN_PATH ||
+    pathname.startsWith(AUTH_ROUTES) ||
+    pathname.startsWith(INVITE_ROUTES)
+  )
 }
 
 export function createProxy(auth: Auth) {

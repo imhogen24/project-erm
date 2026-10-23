@@ -249,6 +249,37 @@ export async function createInvite(
   return { status: "invited", link: `${base}/invite/${token}` }
 }
 
+// What the accept page shows: who the invite is for. Reading it uses nothing
+// up, and it gives back only the name and email.
+export async function getInvite(
+  database: Database,
+  token: string
+): Promise<{ name: string; email: string }> {
+  const [invite] = await database
+    .select({
+      name: invitations.name,
+      email: invitations.email,
+      acceptedAt: invitations.acceptedAt,
+      expiresAt: invitations.expiresAt,
+    })
+    .from(invitations)
+    .where(eq(invitations.tokenHash, hashToken(token)))
+
+  if (!invite) {
+    throw new InviteNotFoundError("This invite does not exist")
+  }
+
+  if (invite.acceptedAt) {
+    throw new InviteUsedError("This invite has already been used")
+  }
+
+  if (invite.expiresAt.getTime() <= Date.now()) {
+    throw new InviteExpiredError("This invite has expired")
+  }
+
+  return { name: invite.name, email: invite.email }
+}
+
 // The invite row is locked while it is checked, so two simultaneous accepts
 // cannot both use it. A person who already has a password gets the roles added
 // and keeps that password. A person who exists without one gets the password

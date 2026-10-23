@@ -4,11 +4,16 @@ import Link from "next/link"
 import { BackLink } from "@/components/back-link"
 import { Sheet } from "@/components/sheet"
 import { SignOutButton } from "@/components/sign-out-button"
+import { cn } from "@/lib/utils"
 
 type Props = {
   name: string
   // Set inside a project: its name and the workbooks to jump to.
   project?: { name: string; workbooks: { id: string; label: string }[] }
+  // Which page the person is on, outside a project, and whether to offer the
+  // invite page.
+  current?: "projects" | "invites"
+  canInvite?: boolean
 }
 
 const linkClass =
@@ -17,7 +22,12 @@ const linkClass =
 // Floats over the drafting table on wide screens, with its edges on the grid:
 // one square in, three squares wide. Inside a project it is that project's
 // navigation. On narrower screens the top bar is shown instead.
-export function AppSidebar({ name, project }: Props) {
+export function AppSidebar({
+  name,
+  project,
+  current = "projects",
+  canInvite = false,
+}: Props) {
   return (
     <Sheet className="fixed top-[var(--cell)] bottom-[var(--cell)] left-[var(--cell)] z-20 hidden w-[calc(var(--cell)*3)] flex-col shadow-xl shadow-foreground/10 xl:flex">
       <aside aria-label="Sidebar" className="flex min-h-0 flex-1 flex-col">
@@ -57,13 +67,34 @@ export function AppSidebar({ name, project }: Props) {
               </ul>
             </>
           ) : (
-            <Link
-              href="/"
-              aria-current="page"
-              className={`${linkClass} border-primary bg-primary/10 py-3 font-medium text-foreground`}
-            >
-              Your projects
-            </Link>
+            <>
+              <Link
+                href="/"
+                aria-current={current === "projects" ? "page" : undefined}
+                className={cn(
+                  linkClass,
+                  "py-3",
+                  current === "projects" &&
+                    "border-primary bg-primary/10 font-medium text-foreground"
+                )}
+              >
+                Your projects
+              </Link>
+              {canInvite && (
+                <Link
+                  href="/admin/invites"
+                  aria-current={current === "invites" ? "page" : undefined}
+                  className={cn(
+                    linkClass,
+                    "py-3",
+                    current === "invites" &&
+                      "border-primary bg-primary/10 font-medium text-foreground"
+                  )}
+                >
+                  Invite people
+                </Link>
+              )}
+            </>
           )}
         </nav>
         <div className="flex shrink-0 flex-col gap-3 border-t p-4">

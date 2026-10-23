@@ -16,6 +16,7 @@ import {
   WeakPasswordError,
   acceptInvite,
   createInvite,
+  getInvite,
   type InviteInput,
 } from "./invites"
 
@@ -853,5 +854,77 @@ describe("protecting the access log", () => {
       database.pool.query("DELETE FROM access_log")
     ).rejects.toThrow()
     expect(await logLines()).toHaveLength(1)
+  })
+})
+
+describe("reading an invite before accepting it", () => {
+  it("gives the name and email the invite was made for", async () => {
+    const token = await invitedToken()
+
+    expect(await getInvite(database, token)).toEqual({
+      name: "Kofi Boateng",
+      email: "kofi@example.com",
+    })
+  })
+
+  it("gives nothing else, so the token hash and roles stay private", async () => {
+    const token = await invitedToken()
+
+    expect(Object.keys(await getInvite(database, token)).sort()).toEqual([
+      "email",
+      "name",
+    ])
+  })
+
+  it("does not use the invite up", async () => {
+    const token = await invitedToken()
+
+    await getInvite(database, token)
+    await getInvite(database, token)
+
+    await expect(acceptInvite(database, token, PASSWORD)).resolves.toEqual({
+      personId: expect.any(String),
+    })
+  })
+
+  it("refuses a token that does not exist", async () => {
+    await expect(
+      getInvite(database, "not-a-real-token")
+    ).rejects.toBeInstanceOf(InviteNotFoundError)
+  })
+
+  it("refuses an expired invite", async () => {
+    const token = await invitedToken()
+
+    await database.pool.query(
+      "UPDATE invitations SET expires_at = now() - interval '1 minute'"
+    )
+
+    await expect(getInvite(database, token)).rejects.toBeInstanceOf(
+      InviteExpiredError
+    )
+  })
+
+  it("refuses an invite that was already accepted", async () => {
+    const token = await invitedToken()
+
+    await acceptInvite(database, token, PASSWORD)
+
+    await expect(getInvite(database, token)).rejects.toBeInstanceOf(
+      InviteUsedError
+    )
+  })
+
+  it("says used, not expired, for an accepted invite that has since expired", async () => {
+    const token = await invitedToken()
+
+    await acceptInvite(database, token, PASSWORD)
+    await database.pool.query(
+      "UPDATE invitations SET expires_at = now() - interval '1 minute'"
+    )
+
+    await expect(getInvite(database, token)).rejects.toBeInstanceOf(
+      InviteUsedError
+    )
   })
 })

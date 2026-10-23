@@ -7,11 +7,12 @@ import { Grain } from "@/components/grain"
 import { MobileBar } from "@/components/mobile-bar"
 import { StateBadge, stateFrame, stateSquare } from "@/components/state-badge"
 import { cn } from "@/lib/utils"
+import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
 import { registeredTools } from "@/lib/tools"
 import { getDatabase } from "@/server/database"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
-import { getProjectOverview } from "@/server/projects/projects"
+import { getProjectOverview, listProjectsFor } from "@/server/projects/projects"
 
 // Every box is a whole number of grid squares and shares its lines.
 const square = "grid-square relative isolate bg-background"
@@ -57,6 +58,11 @@ export default async function Page({
     throw error
   }
 
+  // Only to decide whether the top bar offers the invite page.
+  const canInvite = isItAdmin(
+    await listProjectsFor(getDatabase(), session.user.id)
+  )
+
   const workbooks = new Map<string, typeof overview.tools>()
 
   for (const tool of overview.tools) {
@@ -68,7 +74,7 @@ export default async function Page({
 
   return (
     <>
-      <MobileBar className="xl:hidden" />
+      <MobileBar className="xl:hidden" canInvite={canInvite} />
       <div className="drafting-grid min-h-svh py-[var(--cell)]">
         <AppSidebar
           name={session.user.name}

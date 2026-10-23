@@ -141,3 +141,49 @@ describe("route protection", () => {
     expect(redirectsToSignIn(await proxy(request("/admin/invites")))).toBe(true)
   })
 })
+
+describe("development-only pages", () => {
+  const production = createProxy(auth, { production: true })
+
+  it("answers not found in production, even for a signed-in person", async () => {
+    const cookie = await signedInCookie()
+
+    for (const path of ["/dev/form-preview", "/dev/anything"]) {
+      const response = await production(request(path, cookie))
+
+      expect(response.headers.get("x-middleware-rewrite")).toContain("/404")
+    }
+  })
+
+  it("answers not found in production without sending a visitor to sign in", async () => {
+    const response = await production(request("/dev/form-preview"))
+
+    expect(redirectsToSignIn(response)).toBe(false)
+    expect(response.headers.get("x-middleware-rewrite")).toContain("/404")
+  })
+
+  it("still needs a sign-in outside production", async () => {
+    const development = createProxy(auth, { production: false })
+
+    expect(
+      redirectsToSignIn(await development(request("/dev/form-preview")))
+    ).toBe(true)
+  })
+
+  it("lets a signed-in person through outside production", async () => {
+    const cookie = await signedInCookie()
+    const development = createProxy(auth, { production: false })
+
+    const response = await development(request("/dev/form-preview", cookie))
+
+    expect(response.headers.get("x-middleware-next")).toBe("1")
+  })
+
+  it("does not hide a path that only starts like /dev", async () => {
+    const cookie = await signedInCookie()
+
+    const response = await production(request("/developers", cookie))
+
+    expect(response.headers.get("x-middleware-rewrite")).toBeNull()
+  })
+})

@@ -65,6 +65,21 @@ export async function can(
   return roleAllows(await rolesOn(database, actor, projectId), toolId, action)
 }
 
+// For the few actions that belong to one role on the project rather than to a
+// tool, such as a PM rolling back a workbook.
+export async function assertHoldsRole(
+  database: Database,
+  actor: string,
+  projectId: string,
+  role: Role
+): Promise<void> {
+  if (!(await rolesOn(database, actor, projectId)).includes(role)) {
+    throw new PermissionDeniedError(
+      `Only the ${role} of this project may do this`
+    )
+  }
+}
+
 export async function assertCan(
   database: Database,
   actor: string,

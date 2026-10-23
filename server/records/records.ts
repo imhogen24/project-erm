@@ -16,6 +16,10 @@ import {
 import { assertGateOpen } from "@/server/gates/gates"
 import { assertCan, type Action } from "@/server/permissions/permissions"
 
+import { assertValid } from "./validate"
+
+export { UnknownToolError, ValidationError } from "./validate"
+
 export { recordStates }
 
 export type { JsonObject, RecordState }
@@ -34,12 +38,14 @@ export class RecordNotEditableError extends Error {}
 
 export class RecordNotFoundError extends Error {}
 
-// Unlocking a locked record is a change request, which is a separate issue.
+// A locked record leaves locked only through a workbook rollback, which reopens
+// it as draft or voids it. A void record never moves again.
 const allowedTransitions: Record<RecordState, readonly RecordState[]> = {
   draft: ["submitted"],
   submitted: ["approved", "draft"],
   approved: ["locked"],
   locked: [],
+  void: [],
 }
 
 type NewRecord = {
@@ -64,13 +70,18 @@ export async function createRecord(
   await assertCan(database, actor, input.projectId, input.toolId, "write")
   await assertGateOpen(database, input.projectId, input.toolId)
 
+  // A new record is a draft, so required fields are not checked yet.
+  const payload = assertValid(input.toolId, input.payload ?? {}, {
+    forSubmit: false,
+  })
+
   return database.transaction(async (transaction) => {
     const [record] = await transaction
       .insert(toolRecords)
       .values({
         projectId: input.projectId,
         toolId: input.toolId,
-        payload: input.payload ?? {},
+        payload,
       })
       .returning(columns)
 
@@ -139,7 +150,8 @@ export async function getRecord(
 }
 
 // Sending a record forward or back is writing; approving and locking are approving.
-const actionForMove: Record<RecordState, Action> = {
+// There is no move into void: only a workbook rollback voids a record.
+const actionForMove: Record<Exclude<RecordState, "void">, Action> = {
   draft: "write",
   submitted: "write",
   approved: "approve",
@@ -154,6 +166,12 @@ export async function transitionRecord(
   recordId: string,
   to: RecordState
 ): Promise<ToolRecord> {
+  if (to === "void") {
+    throw new InvalidTransitionError(
+      "A record becomes void only through a workbook rollback"
+    )
+  }
+
   const record = await loadRecord(database, recordId)
 
   await assertCan(
@@ -171,6 +189,11 @@ export async function transitionRecord(
       throw new InvalidTransitionError(
         `A ${current.state} record cannot move to ${to}`
       )
+    }
+
+    // Submitting is when a draft must be complete.
+    if (current.state === "draft" && to === "submitted") {
+      assertValid(current.toolId, current.payload, { forSubmit: true })
     }
 
     const [moved] = await transaction
@@ -204,6 +227,9 @@ export async function updateRecord(
 
   await assertCan(database, actor, record.projectId, record.toolId, "write")
 
+  // Only a draft can be edited, so required fields are not checked here.
+  const checked = assertValid(record.toolId, payload, { forSubmit: false })
+
   return database.transaction(async (transaction) => {
     const current = await lockRecord(transaction, recordId)
 
@@ -215,7 +241,7 @@ export async function updateRecord(
 
     const [updated] = await transaction
       .update(toolRecords)
-      .set({ payload, updatedAt: new Date() })
+      .set({ payload: checked, updatedAt: new Date() })
       .where(eq(toolRecords.id, recordId))
       .returning(columns)
 
@@ -227,7 +253,7 @@ export async function updateRecord(
         actor,
         action: "updated",
       },
-      payloadChanges(current.payload, payload)
+      payloadChanges(current.payload, checked)
     )
 
     return updated!

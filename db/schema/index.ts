@@ -8,4 +8,6 @@ export * from "./invitations"
 
 export * from "./records"
 
+export * from "./rollbacks"
+
 export * from "./access_log"

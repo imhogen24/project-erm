@@ -26,7 +26,12 @@ export function createToolRegistry(): ToolRegistry {
   }
 }
 
-export const { registerTool, getTool, listTools } = createToolRegistry()
+// The registry records are checked against. server/ cannot import workbooks,
+// so each workbook's tools are registered into it from outside, with
+// `registerAllTools(tools)` in workbooks/index.ts.
+export const tools = createToolRegistry()
+
+export const { registerTool, getTool, listTools } = tools
 
 // Describes every `inherited` link whose tool or field does not exist.
 export function brokenInheritedLinks(tools: ToolDefinition[]): string[] {

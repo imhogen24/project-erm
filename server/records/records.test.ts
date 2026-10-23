@@ -3,6 +3,8 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 import type { Role } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
+import { defineTool } from "@/server/tools/define-tool"
+import { tools } from "@/server/tools/registry"
 
 import {
   InvalidTransitionError,
@@ -11,10 +13,55 @@ import {
   getRecord,
   transitionRecord,
   updateRecord,
+  type JsonObject,
   type RecordState,
+  type ToolRecord,
 } from "./records"
+import { UnknownToolError, ValidationError } from "./validate"
 
 const database = createTestDatabase()
+
+// The fields of the example D1.1 definition (workbooks/wb01/tools/d1-1.ts),
+// copied because server/ cannot import a workbook. No one can approve D1.1,
+// so they are tested under D1.3, where OM writes and PM approves. A select
+// and an inherited field are added for the checks that need them.
+tools.registerTool(
+  defineTool({
+    id: "D1.3",
+    name: "Test D1.3",
+    workbook: "wb01",
+    fields: [
+      { key: "clientName", label: "Client name", type: "text", required: true },
+      {
+        key: "clientEmail",
+        label: "Client email",
+        type: "text",
+        required: true,
+      },
+      {
+        key: "requestDescription",
+        label: "Request description",
+        type: "longText",
+      },
+      {
+        key: "urgency",
+        label: "Urgency",
+        type: "select",
+        options: ["Low", "High"],
+      },
+      {
+        key: "clientReference",
+        label: "Client reference",
+        type: "text",
+        inherited: { tool: "D1.1", field: "clientName" },
+      },
+    ],
+  })
+)
+
+const ACME = { clientName: "Acme", clientEmail: "ops@acme.com" }
+
+const BETA = { clientName: "Beta", clientEmail: "ops@beta.com" }
 
 let projectId: string
 
@@ -41,7 +88,7 @@ async function newRecord(state: RecordState = "draft") {
   const record = await createRecord(database, actor, {
     projectId,
     toolId: "D1.3",
-    payload: { client: "Acme" },
+    payload: ACME,
   })
 
   // Walk the record forward through the allowed steps to reach `state`.
@@ -76,13 +123,13 @@ describe("creating a record", () => {
     const record = await createRecord(database, actor, {
       projectId,
       toolId: "D1.3",
-      payload: { client: "Acme" },
+      payload: ACME,
     })
 
     expect(record.state).toBe("draft")
     expect(record.projectId).toBe(projectId)
     expect(record.toolId).toBe("D1.3")
-    expect(record.payload).toEqual({ client: "Acme" })
+    expect(record.payload).toEqual(ACME)
   })
 
   it("can be read back", async () => {
@@ -144,11 +191,9 @@ describe("editing a record", () => {
   it("changes the payload while the record is a draft", async () => {
     const record = await newRecord()
 
-    const updated = await updateRecord(database, actor, record.id, {
-      client: "Beta",
-    })
+    const updated = await updateRecord(database, actor, record.id, BETA)
 
-    expect(updated.payload).toEqual({ client: "Beta" })
+    expect(updated.payload).toEqual(BETA)
   })
 
   it.each(["submitted", "approved", "locked"] as const)(
@@ -157,13 +202,174 @@ describe("editing a record", () => {
       const record = await newRecord(state)
 
       await expect(
-        updateRecord(database, actor, record.id, { client: "Beta" })
+        updateRecord(database, actor, record.id, BETA)
       ).rejects.toBeInstanceOf(RecordNotEditableError)
-      expect((await getRecord(database, actor, record.id)).payload).toEqual({
-        client: "Acme",
-      })
+      expect((await getRecord(database, actor, record.id)).payload).toEqual(
+        ACME
+      )
     }
   )
+})
+
+// The fields named by the ValidationError the write was refused with.
+async function refusedFields(write: Promise<ToolRecord>) {
+  try {
+    await write
+  } catch (error) {
+    if (error instanceof ValidationError) {
+      return error.errors.map((entry) => entry.field).sort()
+    }
+
+    throw error
+  }
+
+  throw new Error("The write was saved, but it should have been refused")
+}
+
+function create(payload: JsonObject, toolId = "D1.3") {
+  return createRecord(database, actor, { projectId, toolId, payload })
+}
+
+async function count(table: "tool_records" | "audit_log") {
+  const { rows } = await database.pool.query<{ n: string }>(
+    `SELECT count(*) AS n FROM ${table}`
+  )
+
+  return Number(rows[0]!.n)
+}
+
+describe("checking a payload against the tool definition", () => {
+  it("saves a payload that matches the definition", async () => {
+    const payload = {
+      ...ACME,
+      requestDescription: "A new boiler",
+      urgency: "High",
+    }
+
+    const record = await create(payload)
+
+    expect(record.payload).toEqual(payload)
+  })
+
+  it("saves a draft that is missing a required field", async () => {
+    const record = await create({ clientEmail: "ops@acme.com" })
+
+    expect(record.state).toBe("draft")
+  })
+
+  it("refuses to submit a draft missing a required field, and keeps it a draft", async () => {
+    const record = await create({ clientEmail: "ops@acme.com" })
+
+    expect(
+      await refusedFields(
+        transitionRecord(database, actor, record.id, "submitted")
+      )
+    ).toEqual(["clientName"])
+    expect((await getRecord(database, actor, record.id)).state).toBe("draft")
+  })
+
+  it("counts an empty required text field as missing at submit", async () => {
+    const record = await create({ clientName: "  ", clientEmail: "a@b.com" })
+
+    expect(
+      await refusedFields(
+        transitionRecord(database, actor, record.id, "submitted")
+      )
+    ).toEqual(["clientName"])
+  })
+
+  it("submits once the required field is filled", async () => {
+    const record = await create({ clientEmail: "ops@acme.com" })
+
+    await updateRecord(database, actor, record.id, ACME)
+
+    const moved = await transitionRecord(
+      database,
+      actor,
+      record.id,
+      "submitted"
+    )
+
+    expect(moved.state).toBe("submitted")
+  })
+
+  it("refuses a value of the wrong type", async () => {
+    expect(await refusedFields(create({ clientName: 42 }))).toEqual([
+      "clientName",
+    ])
+  })
+
+  it("refuses a field the definition does not have", async () => {
+    expect(await refusedFields(create({ ...ACME, budget: 100 }))).toEqual([
+      "budget",
+    ])
+  })
+
+  it("refuses a value for an inherited field", async () => {
+    expect(
+      await refusedFields(create({ ...ACME, clientReference: "Acme" }))
+    ).toEqual(["clientReference"])
+  })
+
+  it("refuses a select value that is not one of its options", async () => {
+    expect(await refusedFields(create({ ...ACME, urgency: "Medium" }))).toEqual(
+      ["urgency"]
+    )
+  })
+
+  it("returns every problem together", async () => {
+    expect(
+      await refusedFields(
+        create({ clientName: 42, budget: 100, urgency: "Medium" })
+      )
+    ).toEqual(["budget", "clientName", "urgency"])
+  })
+
+  it("checks an update the same way", async () => {
+    const record = await newRecord()
+
+    expect(
+      await refusedFields(
+        updateRecord(database, actor, record.id, { ...ACME, urgency: "Soon" })
+      )
+    ).toEqual(["urgency"])
+  })
+
+  it("refuses a record for a tool with no definition", async () => {
+    // OM can write D1.2, but D1.2 has no definition yet.
+    await expect(create(ACME, "D1.2")).rejects.toBeInstanceOf(UnknownToolError)
+    expect(await count("tool_records")).toBe(0)
+  })
+
+  it("stores nothing when a create is refused", async () => {
+    await refusedFields(create({ clientName: 42 }))
+
+    expect(await count("tool_records")).toBe(0)
+    expect(await count("audit_log")).toBe(0)
+  })
+
+  it("stores nothing when an update is refused", async () => {
+    const record = await newRecord()
+    const lines = await count("audit_log")
+
+    await refusedFields(
+      updateRecord(database, actor, record.id, { clientName: 42 })
+    )
+
+    expect((await getRecord(database, actor, record.id)).payload).toEqual(ACME)
+    expect(await count("audit_log")).toBe(lines)
+  })
+
+  it("stores nothing when a submit is refused", async () => {
+    const record = await create({ clientEmail: "ops@acme.com" })
+    const lines = await count("audit_log")
+
+    await refusedFields(
+      transitionRecord(database, actor, record.id, "submitted")
+    )
+
+    expect(await count("audit_log")).toBe(lines)
+  })
 })
 
 describe("deleting a project", () => {
@@ -183,11 +389,9 @@ describe("permissions", () => {
     const reader = await addActor(["Client"])
 
     await expect(
-      updateRecord(database, reader, record.id, { client: "Beta" })
+      updateRecord(database, reader, record.id, BETA)
     ).rejects.toBeInstanceOf(PermissionDeniedError)
-    expect((await getRecord(database, actor, record.id)).payload).toEqual({
-      client: "Acme",
-    })
+    expect((await getRecord(database, actor, record.id)).payload).toEqual(ACME)
   })
 
   it("refuses an approval from a role that can only write", async () => {

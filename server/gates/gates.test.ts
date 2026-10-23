@@ -11,10 +11,24 @@ import {
   updateRecord,
   type RecordState,
 } from "@/server/records/records"
+import { registerTestTools } from "@/server/tools/testing"
 
 import { GateClosedError, gateFor, gates } from "./gates"
 
 const database = createTestDatabase()
+
+registerTestTools([
+  "D1.3",
+  "D1.14",
+  "D1.15",
+  "D2.1",
+  "D2.12",
+  "D3.1",
+  "D3.10",
+  "D4.1",
+  "D4.8",
+  "P5.2",
+])
 
 let projectId: string
 

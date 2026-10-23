@@ -12,8 +12,29 @@ import {
   updateRecord,
   type JsonObject,
 } from "@/server/records/records"
+import { defineTool } from "@/server/tools/define-tool"
+import { tools } from "@/server/tools/registry"
+
+import { payloadChanges } from "./audit"
 
 const database = createTestDatabase()
+
+// `boom` is a field so a payload holding it passes the definition check and
+// reaches the log, where the test trigger refuses it.
+tools.registerTool(
+  defineTool({
+    id: "D1.3",
+    name: "Test D1.3",
+    workbook: "wb01",
+    fields: [
+      { key: "client", label: "Client", type: "text" },
+      { key: "site", label: "Site", type: "text" },
+      { key: "units", label: "Units", type: "number" },
+      { key: "urgent", label: "Urgent", type: "boolean" },
+      { key: "boom", label: "Boom", type: "number" },
+    ],
+  })
+)
 
 let projectId: string
 
@@ -223,15 +244,15 @@ describe("editing a record", () => {
     ])
   })
 
-  it("treats an unchanged nested value as unchanged", async () => {
-    const record = await newRecord({ contact: { name: "Ama", phone: "024" } })
-    const before = await totalLines()
-
-    await updateRecord(database, actor, record.id, {
-      contact: { name: "Ama", phone: "024" },
-    })
-
-    expect(await totalLines()).toBe(before)
+  // A tool definition has no nested fields, so this is checked on the diff
+  // itself rather than through a saved record.
+  it("treats an unchanged nested value as unchanged", () => {
+    expect(
+      payloadChanges(
+        { contact: { name: "Ama", phone: "024" } },
+        { contact: { name: "Ama", phone: "024" } }
+      )
+    ).toEqual([])
   })
 
   it("keeps numbers and booleans as they are", async () => {

@@ -158,16 +158,21 @@ async function setPassword(
   }
 }
 
+// Returns only the roles that were new, so the log never claims a change that
+// did not happen.
 async function giveRoles(
   transaction: Transaction,
   personId: string,
   projectId: string,
   held: Role[]
 ) {
-  await transaction
+  const added = await transaction
     .insert(personProjectRoles)
     .values(held.map((role) => ({ personId, projectId, role })))
     .onConflictDoNothing()
+    .returning({ role: personProjectRoles.role })
+
+  return added.map((row) => row.role)
 }
 
 export async function createInvite(
@@ -193,7 +198,16 @@ export async function createInvite(
   // failed log line undoes the change.
   if (existing && (await hasPassword(database, existing.id))) {
     await database.transaction(async (transaction) => {
-      await giveRoles(transaction, existing.id, input.projectId, held)
+      const added = await giveRoles(
+        transaction,
+        existing.id,
+        input.projectId,
+        held
+      )
+
+      if (added.length === 0) {
+        return
+      }
 
       await transaction.insert(accessLog).values({
         actorId: actor,
@@ -201,7 +215,7 @@ export async function createInvite(
         personId: existing.id,
         email: address,
         projectId: input.projectId,
-        roles: held,
+        roles: added,
       })
     })
 

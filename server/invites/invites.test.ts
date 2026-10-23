@@ -674,6 +674,29 @@ describe("the access log", () => {
     ])
   })
 
+  it("logs only the roles that were new when the person already holds some", async () => {
+    const existing = await addPerson("kofi@example.com", [[projectId, "PM"]])
+    await addPassword(existing)
+
+    await newInvite({ roles: ["PM", "LE"] })
+
+    expect((await logLines()).map((line) => line.roles)).toEqual([["LE"]])
+  })
+
+  it("writes no line when the person already holds every role", async () => {
+    const existing = await addPerson("kofi@example.com", [
+      [projectId, "PM"],
+      [projectId, "LE"],
+    ])
+
+    await addPassword(existing)
+
+    const created = await newInvite({ roles: ["PM", "LE"] })
+
+    expect(created.status).toBe("added")
+    expect(await logLines()).toEqual([])
+  })
+
   it("lists a role given twice once", async () => {
     await newInvite({ roles: ["PM", "PM", "LE"] })
 

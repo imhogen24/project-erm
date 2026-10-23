@@ -71,7 +71,7 @@
   --chart-3: oklch(0.666 0.179 58.318);
   --chart-4: oklch(0.555 0.163 48.998);
   --chart-5: oklch(0.473 0.137 46.201);
-  --radius: 0.625rem;
+  --radius: 0;
   --sidebar: oklch(0.985 0.001 106.423);
   --sidebar-foreground: oklch(0.147 0.004 49.25);
   --sidebar-primary: oklch(0.666 0.179 58.318);
@@ -139,4 +139,111 @@
   to {
     stroke-dashoffset: 0;
   }
+}
+
+/* A drafting table. One major square is --cell, and four small squares make
+   one. Every box on the page is sized in whole major squares and starts on a
+   line, so its edges sit exactly on the grid. */
+.drafting-grid {
+  --cell: calc(100vw / 4);
+  /* The colour of a drawn line, opaque so two lines on one pixel stay one line. */
+  --rule: color-mix(in oklab, var(--foreground) 60%, var(--background));
+  /* Rules on the sheet read as drawn lines, not faint dividers. */
+  --border: color-mix(in oklab, var(--foreground) 22%, transparent);
+  background-color: var(--muted);
+  background-image:
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--foreground) 14%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--foreground) 14%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to right,
+      color-mix(in oklab, var(--foreground) 5%, transparent) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      to bottom,
+      color-mix(in oklab, var(--foreground) 5%, transparent) 1px,
+      transparent 1px
+    );
+  background-position: 0 0;
+  background-size:
+    var(--cell) var(--cell),
+    var(--cell) var(--cell),
+    calc(var(--cell) / 4) calc(var(--cell) / 4),
+    calc(var(--cell) / 4) calc(var(--cell) / 4);
+}
+
+/* A box on the grid draws its left and top lines itself and lends its right
+   and bottom lines to the box beside and below, on the same pixel, so
+   neighbours share one line and the box keeps its exact size. */
+.grid-square {
+  border-left: 1px solid var(--rule);
+  border-top: 1px solid var(--rule);
+  box-shadow:
+    1px 0 0 0 var(--rule),
+    0 1px 0 0 var(--rule),
+    1px 1px 0 0 var(--rule);
+}
+
+/* From 640px up the squares are a fixed 96px. Below that the grid shrinks so
+   the screen is exactly four squares wide. */
+@media (min-width: 640px) {
+  .drafting-grid {
+    --cell: 96px;
+  }
+}
+
+/* Page content with no sidebar: as many 4-square columns as fit, up to three,
+   with a square of room at each side, centred on a line. */
+.table-home {
+  width: 100%;
+  margin-left: 0;
+}
+
+@media (min-width: 640px) {
+  .table-home {
+    --content-w: min(
+      calc(var(--cell) * 12),
+      round(down, calc(100% - var(--cell) * 2), calc(var(--cell) * 4))
+    );
+    width: var(--content-w);
+    margin-left: round(down, calc((100% - var(--content-w)) / 2), var(--cell));
+  }
+}
+
+/* Page content beside the floating sidebar: it starts 5 squares in, after the
+   sidebar (squares 1 to 4) and a square of gap. */
+@media (min-width: 1280px) {
+  .table-project {
+    width: min(
+      calc(var(--cell) * 12),
+      round(down, calc(100% - var(--cell) * 6), calc(var(--cell) * 4))
+    );
+    margin-left: calc(var(--cell) * 5);
+  }
+}
+
+/* A registration mark: a small cross drawn at a corner of the sheet. */
+.reg-mark {
+  width: 14px;
+  height: 14px;
+  background:
+    linear-gradient(var(--foreground), var(--foreground)) center / 100% 1px
+      no-repeat,
+    linear-gradient(var(--foreground), var(--foreground)) center / 1px 100%
+      no-repeat;
+}
+
+/* Drafting lettering: a figure drawn as an outline, not filled. */
+.outline-numeral {
+  color: transparent;
+  -webkit-text-stroke: 1.5px
+    color-mix(in oklab, var(--foreground) 55%, transparent);
 }

@@ -1,0 +1,159 @@
+import { notFound } from "next/navigation"
+import { z } from "zod"
+
+import { AppSidebar } from "@/components/app-sidebar"
+import { BackLink } from "@/components/back-link"
+import { Grain } from "@/components/grain"
+import { MobileBar } from "@/components/mobile-bar"
+import { StateBadge, stateFrame, stateSquare } from "@/components/state-badge"
+import { cn } from "@/lib/utils"
+import { requireSession } from "@/lib/session"
+import { registeredTools } from "@/lib/tools"
+import { getDatabase } from "@/server/database"
+import { PermissionDeniedError } from "@/server/permissions/permissions"
+import { getProjectOverview } from "@/server/projects/projects"
+
+// Every box is a whole number of grid squares and shares its lines.
+const square = "grid-square relative isolate bg-background"
+
+// "wb01" is shown as "Workbook 1", with the figure 1 drawn large beside it.
+function workbookNumber(workbook: string) {
+  return /^wb0*(\d+)$/.exec(workbook)?.[1]
+}
+
+function workbookTitle(workbook: string) {
+  const number = workbookNumber(workbook)
+
+  return number ? `Workbook ${number}` : workbook
+}
+
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ projectId: string }>
+}) {
+  const { projectId } = await params
+  const session = await requireSession()
+
+  // An id that cannot be a project looks the same as one that is not found.
+  if (!z.uuid().safeParse(projectId).success) {
+    notFound()
+  }
+
+  let overview
+
+  try {
+    overview = await getProjectOverview(
+      getDatabase(),
+      session.user.id,
+      projectId,
+      registeredTools
+    )
+  } catch (error) {
+    if (error instanceof PermissionDeniedError) {
+      notFound()
+    }
+
+    throw error
+  }
+
+  const workbooks = new Map<string, typeof overview.tools>()
+
+  for (const tool of overview.tools) {
+    workbooks.set(tool.workbook, [
+      ...(workbooks.get(tool.workbook) ?? []),
+      tool,
+    ])
+  }
+
+  return (
+    <>
+      <MobileBar className="xl:hidden" />
+      <div className="drafting-grid min-h-svh py-[var(--cell)]">
+        <AppSidebar
+          name={session.user.name}
+          project={{
+            name: overview.name,
+            workbooks: [...workbooks.keys()].map((workbook) => ({
+              id: workbook,
+              label: workbookTitle(workbook),
+            })),
+          }}
+        />
+        <main className="table-project table-home">
+          <div>
+            <div
+              className={`${square} flex min-h-[calc(var(--cell)*2)] flex-col justify-end gap-3 px-6 py-6`}
+            >
+              <Grain />
+              <BackLink
+                href="/"
+                className="-mx-6 -mt-6 mb-auto border-b xl:hidden"
+              >
+                Your projects
+              </BackLink>
+              <h1 className="text-4xl font-semibold tracking-tight break-words sm:text-5xl">
+                {overview.name}
+              </h1>
+            </div>
+          </div>
+          {[...workbooks].map(([workbook, tools]) => (
+            <section
+              key={workbook}
+              id={workbook}
+              className="mt-[var(--cell)] scroll-mt-[var(--cell)]"
+            >
+              <div className="grid grid-cols-[repeat(auto-fill,calc(var(--cell)*4))]">
+                <div
+                  className={`${square} flex h-[calc(var(--cell)*2)] items-end justify-between px-6 py-6 md:flex-col md:items-start`}
+                >
+                  <Grain />
+                  <h2 className="text-lg font-medium">
+                    {workbookTitle(workbook)}
+                  </h2>
+                  <span
+                    aria-hidden
+                    className="outline-numeral font-mono text-6xl leading-none font-bold md:text-8xl"
+                  >
+                    {workbookNumber(workbook)}
+                  </span>
+                </div>
+                <ul className="contents">
+                  {tools.map((tool) => (
+                    <li
+                      key={tool.toolId}
+                      className={cn(
+                        "grid-square relative isolate flex h-[calc(var(--cell)*2)] min-w-0 flex-col justify-between gap-4 p-6",
+                        stateSquare(tool.state)
+                      )}
+                    >
+                      <Grain />
+                      <span
+                        aria-hidden
+                        className={cn(
+                          "pointer-events-none absolute inset-3",
+                          stateFrame(tool.state)
+                        )}
+                      />
+                      <div className="relative flex min-w-0 flex-col gap-1 px-1">
+                        <span className="font-mono text-sm font-semibold tabular-nums">
+                          {tool.toolId}
+                        </span>
+                        <span className="text-sm leading-snug break-words">
+                          {tool.name}
+                        </span>
+                      </div>
+                      <div className="relative px-1">
+                        <StateBadge state={tool.state} />
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </section>
+          ))}
+        </main>
+      </div>
+    </>
+  )
+}

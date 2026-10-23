@@ -7,6 +7,12 @@
       "skillPath": "skills/brainstorming/SKILL.md",
       "computedHash": "b95dc657c5dd79caf7340ee6dead6faf2ce2d1cc613352a027fa8993966b41b7"
     },
+    "code-review": {
+      "source": "coderabbitai/skills",
+      "sourceType": "github",
+      "skillPath": "skills/code-review/SKILL.md",
+      "computedHash": "e5957fb21402cc25f6628ee2f70b4a205c0573de9821f0367f7a6e178291b1b3"
+    },
     "frontend-design": {
       "source": "anthropics/skills",
       "sourceType": "github",

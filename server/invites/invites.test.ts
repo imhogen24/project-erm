@@ -103,6 +103,48 @@ async function count(table: "people" | "invitations") {
   return Number(rows[0]!.n)
 }
 
+async function logLines() {
+  const { rows } = await database.pool.query<{
+    actor_id: string
+    action: string
+    person_id: string | null
+    email: string
+    project_id: string
+    roles: string[]
+  }>(
+    `SELECT actor_id, action, person_id, email, project_id, roles::text[] AS roles
+     FROM access_log
+     ORDER BY created_at`
+  )
+
+  return rows
+}
+
+// Makes the log refuse lines with this action, to prove that a failing log line
+// undoes the change next to it.
+async function refuseLogLines(action: string) {
+  await database.pool.query(`
+    CREATE OR REPLACE FUNCTION refuse_access_line() RETURNS trigger AS $$
+    BEGIN
+      RAISE EXCEPTION 'log line refused for the test';
+    END;
+    $$ LANGUAGE plpgsql
+  `)
+
+  await database.pool.query(`
+    CREATE TRIGGER refuse_access_line BEFORE INSERT ON access_log
+    FOR EACH ROW WHEN (NEW.action = '${action}')
+    EXECUTE FUNCTION refuse_access_line()
+  `)
+}
+
+async function allowLogLines() {
+  await database.pool.query(
+    "DROP TRIGGER IF EXISTS refuse_access_line ON access_log"
+  )
+  await database.pool.query("DROP FUNCTION IF EXISTS refuse_access_line()")
+}
+
 async function rolesOf(email: string, project: string) {
   const { rows } = await database.pool.query<{ role: string }>(
     `SELECT r.role FROM person_project_roles r
@@ -542,5 +584,274 @@ describe("a person who exists but has no password", () => {
     )
 
     expect(rows[0]!.name).toBe("Existing")
+  })
+})
+
+describe("the access log", () => {
+  it("logs an invite for a new person", async () => {
+    const created = await newInvite()
+
+    expect(created.status).toBe("invited")
+    expect(await logLines()).toEqual([
+      {
+        actor_id: admin,
+        action: "invited",
+        person_id: null,
+        email: "kofi@example.com",
+        project_id: projectId,
+        roles: ["PM", "LE"],
+      },
+    ])
+  })
+
+  it("logs roles added straight away to a person who has an account", async () => {
+    const existing = await addPerson("kofi@example.com")
+    await addPassword(existing)
+
+    await newInvite()
+
+    expect(await logLines()).toEqual([
+      {
+        actor_id: admin,
+        action: "roles_added",
+        person_id: existing,
+        email: "kofi@example.com",
+        project_id: projectId,
+        roles: ["PM", "LE"],
+      },
+    ])
+  })
+
+  it("logs an accepted invite with the new person as actor and person", async () => {
+    const token = await invitedToken()
+
+    const { personId } = await acceptInvite(database, token, PASSWORD)
+
+    expect((await logLines())[1]).toEqual({
+      actor_id: personId,
+      action: "invite_accepted",
+      person_id: personId,
+      email: "kofi@example.com",
+      project_id: projectId,
+      roles: ["PM", "LE"],
+    })
+  })
+
+  it("logs an accepted invite for a person who made an account since", async () => {
+    const first = await invitedToken({ roles: ["PM"] })
+
+    const second = await invitedToken({
+      projectId: otherProjectId,
+      roles: ["LE"],
+    })
+
+    const { personId } = await acceptInvite(database, first, PASSWORD)
+    const again = await acceptInvite(database, second, "another-password")
+
+    expect(again.personId).toBe(personId)
+
+    const accepted = (await logLines()).filter(
+      (line) => line.action === "invite_accepted"
+    )
+
+    expect(accepted).toEqual([
+      {
+        actor_id: personId,
+        action: "invite_accepted",
+        person_id: personId,
+        email: "kofi@example.com",
+        project_id: projectId,
+        roles: ["PM"],
+      },
+      {
+        actor_id: personId,
+        action: "invite_accepted",
+        person_id: personId,
+        email: "kofi@example.com",
+        project_id: otherProjectId,
+        roles: ["LE"],
+      },
+    ])
+  })
+
+  it("logs only the roles that were new when the person already holds some", async () => {
+    const existing = await addPerson("kofi@example.com", [[projectId, "PM"]])
+    await addPassword(existing)
+
+    await newInvite({ roles: ["PM", "LE"] })
+
+    expect((await logLines()).map((line) => line.roles)).toEqual([["LE"]])
+  })
+
+  it("writes no line when the person already holds every role", async () => {
+    const existing = await addPerson("kofi@example.com", [
+      [projectId, "PM"],
+      [projectId, "LE"],
+    ])
+
+    await addPassword(existing)
+
+    const created = await newInvite({ roles: ["PM", "LE"] })
+
+    expect(created.status).toBe("added")
+    expect(await logLines()).toEqual([])
+  })
+
+  it("lists a role given twice once", async () => {
+    await newInvite({ roles: ["PM", "PM", "LE"] })
+
+    expect((await logLines()).map((line) => line.roles)).toEqual([["PM", "LE"]])
+  })
+})
+
+describe("refused access changes write no log line", () => {
+  it("writes nothing when the inviter is not an IT/Admin", async () => {
+    const pm = await addPerson("pm@example.com", [[projectId, "PM"]])
+
+    await expect(
+      createInvite(
+        database,
+        pm,
+        { email: "kofi@example.com", name: "Kofi", projectId, roles: ["LE"] },
+        options
+      )
+    ).rejects.toBeInstanceOf(PermissionDeniedError)
+    expect(await logLines()).toEqual([])
+  })
+
+  it("writes nothing for bad input", async () => {
+    const bad: Partial<InviteInput>[] = [
+      { roles: [] },
+      { roles: ["Owner"] },
+      { name: "   " },
+      { email: "not-an-email" },
+    ]
+
+    for (const overrides of bad) {
+      await expect(newInvite(overrides)).rejects.toBeInstanceOf(
+        InvalidInviteInputError
+      )
+    }
+
+    expect(await logLines()).toEqual([])
+  })
+
+  it("writes nothing for a token that does not exist", async () => {
+    await invitedToken()
+
+    await expect(
+      acceptInvite(database, "not-a-real-token", PASSWORD)
+    ).rejects.toBeInstanceOf(InviteNotFoundError)
+    expect(await logLines()).toHaveLength(1)
+  })
+
+  it("writes nothing for an expired invite", async () => {
+    const token = await invitedToken()
+
+    await database.pool.query(
+      "UPDATE invitations SET created_at = now() - interval '8 days', expires_at = now() - interval '1 day'"
+    )
+
+    await expect(
+      acceptInvite(database, token, PASSWORD)
+    ).rejects.toBeInstanceOf(InviteExpiredError)
+    expect(await logLines()).toHaveLength(1)
+  })
+
+  it("writes nothing for an invite that was already used", async () => {
+    const token = await invitedToken()
+    await acceptInvite(database, token, PASSWORD)
+
+    await expect(
+      acceptInvite(database, token, PASSWORD)
+    ).rejects.toBeInstanceOf(InviteUsedError)
+    expect(await logLines()).toHaveLength(2)
+  })
+
+  it("writes nothing for a short password and keeps the invite usable", async () => {
+    const token = await invitedToken()
+
+    await expect(acceptInvite(database, token, "short")).rejects.toBeInstanceOf(
+      WeakPasswordError
+    )
+    expect(await logLines()).toHaveLength(1)
+
+    await acceptInvite(database, token, PASSWORD)
+
+    expect((await logLines()).map((line) => line.action)).toEqual([
+      "invited",
+      "invite_accepted",
+    ])
+  })
+})
+
+describe("the access change and its log line succeed or fail together", () => {
+  it("stores no invite when its log line fails", async () => {
+    await refuseLogLines("invited")
+
+    try {
+      await expect(newInvite()).rejects.toThrow()
+    } finally {
+      await allowLogLines()
+    }
+
+    expect(await count("invitations")).toBe(0)
+    expect(await logLines()).toEqual([])
+  })
+
+  it("adds no roles when the log line for a direct grant fails", async () => {
+    await addPassword(await addPerson("kofi@example.com"))
+
+    await refuseLogLines("roles_added")
+
+    try {
+      await expect(newInvite()).rejects.toThrow()
+    } finally {
+      await allowLogLines()
+    }
+
+    expect(await rolesOf("kofi@example.com", projectId)).toEqual([])
+    expect(await logLines()).toEqual([])
+  })
+
+  it("creates no person and keeps the invite unused when the accept line fails", async () => {
+    const token = await invitedToken()
+
+    await refuseLogLines("invite_accepted")
+
+    try {
+      await expect(acceptInvite(database, token, PASSWORD)).rejects.toThrow()
+    } finally {
+      await allowLogLines()
+    }
+
+    expect(await count("people")).toBe(1)
+
+    const { rows } = await database.pool.query(
+      "SELECT accepted_at FROM invitations"
+    )
+
+    expect(rows[0].accepted_at).toBeNull()
+    expect((await logLines()).map((line) => line.action)).toEqual(["invited"])
+  })
+})
+
+describe("protecting the access log", () => {
+  it("refuses an UPDATE of a log line", async () => {
+    await newInvite()
+
+    await expect(
+      database.pool.query("UPDATE access_log SET email = 'hacked@example.com'")
+    ).rejects.toThrow()
+    expect((await logLines())[0]!.email).toBe("kofi@example.com")
+  })
+
+  it("refuses a DELETE of a log line", async () => {
+    await newInvite()
+
+    await expect(
+      database.pool.query("DELETE FROM access_log")
+    ).rejects.toThrow()
+    expect(await logLines()).toHaveLength(1)
   })
 })

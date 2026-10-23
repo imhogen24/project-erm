@@ -5,7 +5,8 @@
       "Bash(mv 02_agent_roles.md AGENT_ROLES.md)",
       "Bash(mv 03_engineering_design_process_erm.md ENGINEERING_DESIGN_PROCESS_ERM.md)",
       "Bash(mv 04_permissions.md PERMISSIONS.md)",
-      "Bash(mv 05_ssot.md SSOT.md)"
+      "Bash(mv 05_ssot.md SSOT.md)",
+      "mcp__linear__get_issue"
     ]
   }
 }

@@ -1,10 +1,18 @@
-import { createToolRegistry } from "@/server/tools/registry"
-import { registerAllTools } from "@/workbooks"
+import { getTool, listTools, registerTool } from "@/server/tools/registry"
+import { allTools } from "@/workbooks"
 
-// Its own registry, filled once when this file first loads, so a page can ask
-// for the tools without registering them twice.
-const registry = createToolRegistry()
+// Puts every workbook tool into the registry that record writes are checked
+// against. server/ cannot import workbooks/, so the app side does it. It is safe
+// to call again: a tool already there is left alone, so a reload or a second
+// screen never registers one twice. Any screen that saves records calls it first.
+export function ensureToolsRegistered() {
+  for (const tool of allTools) {
+    if (!getTool(tool.id)) {
+      registerTool(tool)
+    }
+  }
+}
 
-registerAllTools(registry)
+ensureToolsRegistered()
 
-export const registeredTools = registry.listTools()
+export const registeredTools = listTools()

@@ -10,6 +10,9 @@ const AUTH_ROUTES = "/api/auth/"
 // Someone with an invite link has no account yet, so invite links stay open.
 const INVITE_ROUTES = "/invite/"
 
+// Pages for developers, such as the form preview. Production answers not found.
+const DEV_ROUTES = "/dev/"
+
 // Everything not named here needs a session.
 function isPublic(pathname: string) {
   return (
@@ -19,8 +22,21 @@ function isPublic(pathname: string) {
   )
 }
 
-export function createProxy(auth: Auth) {
+export type ProxyOptions = {
+  // Dev-only pages answer "not found" in production. Defaults to the build.
+  production?: boolean
+}
+
+export function createProxy(auth: Auth, options: ProxyOptions = {}) {
+  const production = options.production ?? process.env.NODE_ENV === "production"
+
   return async function proxy(request: NextRequest) {
+    // A page for developers does not exist in production, and says so to
+    // everyone, signed in or not.
+    if (production && request.nextUrl.pathname.startsWith(DEV_ROUTES)) {
+      return NextResponse.rewrite(new URL("/404", request.url))
+    }
+
     if (isPublic(request.nextUrl.pathname)) {
       return NextResponse.next()
     }

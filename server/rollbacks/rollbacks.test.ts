@@ -4,7 +4,10 @@ import { roles, type Role } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { GateClosedError } from "@/server/gates/gates"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
-import { getProjectOverview } from "@/server/projects/projects"
+import {
+  ProjectNotActiveError,
+  getProjectOverview,
+} from "@/server/projects/projects"
 import {
   InvalidTransitionError,
   RecordNotEditableError,
@@ -64,8 +67,8 @@ type Row = {
 
 async function addProject(name: string) {
   const { rows } = await database.pool.query<{ id: string }>(
-    "INSERT INTO projects (name) VALUES ($1) RETURNING id",
-    [name]
+    "INSERT INTO projects (name, request_id, service_track) VALUES ($1, $2, 'Tier_1') RETURNING id",
+    [name, `T1-${crypto.randomUUID()}`]
   )
 
   return rows[0]!.id
@@ -395,6 +398,20 @@ describe("who and why", () => {
     const otherPm = await addPerson(await addProject("Kiln"), ["PM"])
 
     await expect(rollBack(1, otherPm)).rejects.toThrow(PermissionDeniedError)
+  })
+
+  it("refuses a project that is not active, and changes nothing", async () => {
+    await buildUpTo(2)
+    const before = await rowsOf()
+
+    await database.pool.query(
+      "UPDATE projects SET status = 'closed' WHERE id = $1",
+      [projectId]
+    )
+
+    await expect(rollBack(1)).rejects.toThrow(ProjectNotActiveError)
+
+    expect(await rowsOf()).toEqual(before)
   })
 
   it.each(["", "   "])(

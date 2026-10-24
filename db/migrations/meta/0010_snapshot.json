@@ -1,5 +1,5 @@
 {
-  "id": "396a9726-6f2e-4255-a41c-4fcc51c8c657",
+  "id": "35b86dd3-0942-46bf-a144-f58626d81111",
   "prevId": "6f43bb87-233d-4df6-a9b9-1841af712576",
   "version": "7",
   "dialect": "postgresql",
@@ -225,6 +225,27 @@
           "primaryKey": false,
           "notNull": true
         },
+        "request_id": {
+          "name": "request_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "service_track": {
+          "name": "service_track",
+          "type": "service_track",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "status": {
+          "name": "status",
+          "type": "project_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'active'"
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -236,7 +257,15 @@
       "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
+      "uniqueConstraints": {
+        "projects_request_id_unique": {
+          "name": "projects_request_id_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "request_id"
+          ]
+        }
+      },
       "policies": {},
       "checkConstraints": {},
       "isRLSEnabled": false
@@ -256,7 +285,7 @@
           "name": "record_id",
           "type": "uuid",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "project_id": {
           "name": "project_id",
@@ -295,6 +324,12 @@
           "primaryKey": false,
           "notNull": false
         },
+        "reason": {
+          "name": "reason",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -309,6 +344,21 @@
           "columns": [
             {
               "expression": "record_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "audit_log_project_id_idx": {
+          "name": "audit_log_project_id_idx",
+          "columns": [
+            {
+              "expression": "project_id",
               "isExpression": false,
               "asc": true,
               "nulls": "last"
@@ -655,174 +705,6 @@
         }
       },
       "foreignKeys": {},
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {},
-      "isRLSEnabled": false
-    },
-    "public.change_requests": {
-      "name": "change_requests",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "record_id": {
-          "name": "record_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "reason": {
-          "name": "reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "requested_by": {
-          "name": "requested_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "status": {
-          "name": "status",
-          "type": "change_request_status",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "'requested'"
-        },
-        "decided_by": {
-          "name": "decided_by",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "decided_at": {
-          "name": "decided_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "rejection_reason": {
-          "name": "rejection_reason",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "applied_at": {
-          "name": "applied_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        }
-      },
-      "indexes": {
-        "change_requests_project_id_idx": {
-          "name": "change_requests_project_id_idx",
-          "columns": [
-            {
-              "expression": "project_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        },
-        "change_requests_one_open_per_record": {
-          "name": "change_requests_one_open_per_record",
-          "columns": [
-            {
-              "expression": "record_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "where": "\"change_requests\".\"status\" IN ('requested', 'approved')",
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "change_requests_project_id_projects_id_fk": {
-          "name": "change_requests_project_id_projects_id_fk",
-          "tableFrom": "change_requests",
-          "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        },
-        "change_requests_record_id_tool_records_id_fk": {
-          "name": "change_requests_record_id_tool_records_id_fk",
-          "tableFrom": "change_requests",
-          "tableTo": "tool_records",
-          "columnsFrom": [
-            "record_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        },
-        "change_requests_requested_by_people_id_fk": {
-          "name": "change_requests_requested_by_people_id_fk",
-          "tableFrom": "change_requests",
-          "tableTo": "people",
-          "columnsFrom": [
-            "requested_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        },
-        "change_requests_decided_by_people_id_fk": {
-          "name": "change_requests_decided_by_people_id_fk",
-          "tableFrom": "change_requests",
-          "tableTo": "people",
-          "columnsFrom": [
-            "decided_by"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        }
-      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
       "policies": {},
@@ -1249,6 +1131,17 @@
     }
   },
   "enums": {
+    "public.project_status": {
+      "name": "project_status",
+      "schema": "public",
+      "values": [
+        "active",
+        "on_hold",
+        "rejected",
+        "closed",
+        "completed"
+      ]
+    },
     "public.role": {
       "name": "role",
       "schema": "public",
@@ -1274,28 +1167,21 @@
         "MKT"
       ]
     },
+    "public.service_track": {
+      "name": "service_track",
+      "schema": "public",
+      "values": [
+        "Tier_1",
+        "Tier_3"
+      ]
+    },
     "public.audit_action": {
       "name": "audit_action",
       "schema": "public",
       "values": [
         "created",
         "updated",
-        "transitioned",
-        "change_requested",
-        "change_approved",
-        "change_rejected",
-        "change_applied",
-        "built_on_change"
-      ]
-    },
-    "public.change_request_status": {
-      "name": "change_request_status",
-      "schema": "public",
-      "values": [
-        "requested",
-        "approved",
-        "rejected",
-        "applied"
+        "transitioned"
       ]
     },
     "public.record_state": {

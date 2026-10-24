@@ -73,7 +73,7 @@ export async function makeProject(name = `Project ${tag()}`) {
   const id = await withDatabase(async (database) => {
     const [project] = await database
       .insert(projects)
-      .values({ name })
+      .values({ name, requestId: `T1-${randomUUID()}`, serviceTrack: "Tier_1" })
       .returning({ id: projects.id })
 
     return project!.id

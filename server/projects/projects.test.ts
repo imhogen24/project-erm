@@ -5,14 +5,25 @@ import { createTestDatabase, resetTestData } from "@/db/testing"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import { defineTool } from "@/server/tools/define-tool"
 
-import { getProjectOverview, listProjectsFor, type ToolState } from "./projects"
+import {
+  DuplicateRequestIdError,
+  InvalidProjectStatusError,
+  InvalidServiceTrackError,
+  ProjectStatusReasonMissingError,
+  createProject,
+  getProjectOverview,
+  listProjectsFor,
+  setProjectStatus,
+  type ToolState,
+} from "./projects"
 
 const database = createTestDatabase()
 
+// The request ID comes from the name, so a test can say what a project shows.
 async function addProject(name: string) {
   const { rows } = await database.pool.query<{ id: string }>(
-    "INSERT INTO projects (name) VALUES ($1) RETURNING id",
-    [name]
+    "INSERT INTO projects (name, request_id, service_track) VALUES ($1, $2, 'Tier_1') RETURNING id",
+    [name, `T1-${name}`]
   )
 
   return rows[0]!.id
@@ -68,6 +79,36 @@ function shown(id: string, state: ToolState) {
   return { toolId: id, name: `Tool ${id}`, workbook: "D1", state }
 }
 
+// What the project list shows for one project made by addProject.
+function listed(id: string, name: string, held: Role[]) {
+  return {
+    id,
+    name,
+    requestId: `T1-${name}`,
+    serviceTrack: "Tier_1",
+    status: "active",
+    roles: held,
+  }
+}
+
+async function projectLines(projectId: string) {
+  const { rows } = await database.pool.query(
+    "SELECT record_id, action, field, old_value, new_value, reason FROM audit_log WHERE project_id = $1 ORDER BY field",
+    [projectId]
+  )
+
+  return rows
+}
+
+async function statusOf(projectId: string) {
+  const { rows } = await database.pool.query<{ status: string }>(
+    "SELECT status FROM projects WHERE id = $1",
+    [projectId]
+  )
+
+  return rows[0]!.status
+}
+
 // OM can read all four.
 const fourTools = [tool("D1.3"), tool("D1.4"), tool("D1.8"), tool("D1.9")]
 
@@ -92,8 +133,8 @@ describe("listProjectsFor", () => {
     const result = await listProjectsFor(database, person)
 
     expect(result).toEqual([
-      { id: tryEkg, name: "tryEkg", roles: ["LO"] },
-      { id: useScalpel, name: "useScalpel", roles: ["PM"] },
+      listed(tryEkg, "tryEkg", ["LO"]),
+      listed(useScalpel, "useScalpel", ["PM"]),
     ])
   })
 
@@ -105,9 +146,7 @@ describe("listProjectsFor", () => {
 
     const result = await listProjectsFor(database, person)
 
-    expect(result).toEqual([
-      { id: project, name: "Project A", roles: ["OM", "PM"] },
-    ])
+    expect(result).toEqual([listed(project, "Project A", ["OM", "PM"])])
   })
 
   it("gives an empty list to a person with no roles anywhere", async () => {
@@ -126,10 +165,10 @@ describe("listProjectsFor", () => {
     await grant(kofi, projectB, "LE")
 
     expect(await listProjectsFor(database, ama)).toEqual([
-      { id: projectA, name: "Project A", roles: ["PM"] },
+      listed(projectA, "Project A", ["PM"]),
     ])
     expect(await listProjectsFor(database, kofi)).toEqual([
-      { id: projectB, name: "Project B", roles: ["LE"] },
+      listed(projectB, "Project B", ["LE"]),
     ])
   })
 })
@@ -142,8 +181,8 @@ describe("listProjectsFor, with company-wide roles", () => {
     await grantCompanyWide(om, "OM")
 
     expect(await listProjectsFor(database, om)).toEqual([
-      { id: projectA, name: "Project A", roles: ["OM"] },
-      { id: projectB, name: "Project B", roles: ["OM"] },
+      listed(projectA, "Project A", ["OM"]),
+      listed(projectB, "Project B", ["OM"]),
     ])
   })
 
@@ -153,7 +192,7 @@ describe("listProjectsFor, with company-wide roles", () => {
     const inquiry = await addProject("New inquiry")
 
     expect(await listProjectsFor(database, om)).toEqual([
-      { id: inquiry, name: "New inquiry", roles: ["OM"] },
+      listed(inquiry, "New inquiry", ["OM"]),
     ])
   })
 
@@ -165,8 +204,8 @@ describe("listProjectsFor, with company-wide roles", () => {
     await grant(person, projectA, "LE")
 
     expect(await listProjectsFor(database, person)).toEqual([
-      { id: projectA, name: "Project A", roles: ["OM", "LE"] },
-      { id: projectB, name: "Project B", roles: ["OM"] },
+      listed(projectA, "Project A", ["OM", "LE"]),
+      listed(projectB, "Project B", ["OM"]),
     ])
   })
 })
@@ -220,6 +259,9 @@ describe("getProjectOverview", () => {
     expect(result).toEqual({
       id: project,
       name: "Project A",
+      requestId: "T1-Project A",
+      serviceTrack: "Tier_1",
+      status: "active",
       tools: [
         shown("D1.3", "notStarted"),
         shown("D1.4", "notStarted"),
@@ -354,6 +396,185 @@ describe("getProjectOverview", () => {
       "D1.9",
       "D1.3",
       "D1.8",
+    ])
+  })
+})
+
+describe("createProject", () => {
+  it("stores the request ID and service track, and starts active", async () => {
+    const actor = await addPerson()
+
+    const project = await createProject(database, actor, {
+      name: "Boiler",
+      serviceTrack: "Tier_1",
+      requestId: "T1-1789787898386",
+    })
+
+    expect(project).toEqual({
+      id: expect.any(String),
+      name: "Boiler",
+      requestId: "T1-1789787898386",
+      serviceTrack: "Tier_1",
+      status: "active",
+    })
+  })
+
+  it("lets only one of two projects with the same request ID through", async () => {
+    const actor = await addPerson()
+
+    const input = {
+      name: "Boiler",
+      serviceTrack: "Tier_1",
+      requestId: "T1-1789787898386",
+    } as const
+
+    const results = await Promise.allSettled([
+      createProject(database, actor, input),
+      createProject(database, actor, input),
+    ])
+
+    const refused = results.filter(
+      (result): result is PromiseRejectedResult => result.status === "rejected"
+    )
+
+    expect(refused).toHaveLength(1)
+    expect(refused[0]!.reason).toBeInstanceOf(DuplicateRequestIdError)
+
+    const { rows } = await database.pool.query(
+      "SELECT 1 FROM projects WHERE request_id = $1",
+      [input.requestId]
+    )
+
+    expect(rows).toHaveLength(1)
+  })
+
+  it("refuses a project without a service track", async () => {
+    const actor = await addPerson()
+
+    await expect(
+      createProject(database, actor, {
+        name: "Boiler",
+        requestId: "T1-1789787898386",
+        // @ts-expect-error a caller outside TypeScript can still leave it out
+        serviceTrack: undefined,
+      })
+    ).rejects.toThrow(InvalidServiceTrackError)
+  })
+
+  it("writes a project line for each starting value", async () => {
+    const actor = await addPerson()
+
+    const project = await createProject(database, actor, {
+      name: "Boiler",
+      serviceTrack: "Tier_3",
+      requestId: "T3-1789788332380",
+    })
+
+    const line = (field: string, value: string) => ({
+      record_id: null,
+      action: "created",
+      field,
+      old_value: null,
+      new_value: value,
+      reason: null,
+    })
+
+    expect(await projectLines(project.id)).toEqual([
+      line("name", "Boiler"),
+      line("request_id", "T3-1789788332380"),
+      line("service_track", "Tier_3"),
+      line("status", "active"),
+    ])
+  })
+})
+
+describe("setProjectStatus", () => {
+  let project: string
+
+  let pm: string
+
+  beforeEach(async () => {
+    project = await addProject("Boiler")
+    pm = await addPerson("Kofi")
+    await grant(pm, project, "PM")
+  })
+
+  it("sets the status and logs the old status, the new status and the reason", async () => {
+    await setProjectStatus(database, pm, project, "rejected", "Not a fit")
+
+    expect(await statusOf(project)).toBe("rejected")
+    expect(await projectLines(project)).toEqual([
+      {
+        record_id: null,
+        action: "transitioned",
+        field: "status",
+        old_value: "active",
+        new_value: "rejected",
+        reason: "Not a fit",
+      },
+    ])
+  })
+
+  it.each(["", "   "])("refuses the reason %j", async (reason) => {
+    await expect(
+      setProjectStatus(database, pm, project, "rejected", reason)
+    ).rejects.toThrow(ProjectStatusReasonMissingError)
+    expect(await statusOf(project)).toBe("active")
+  })
+
+  it("refuses anyone but the PM, even one with every other role", async () => {
+    const notPm = await addPerson("Ama")
+
+    for (const role of roles.filter((role) => role !== "PM")) {
+      await grant(notPm, project, role)
+    }
+
+    await expect(
+      setProjectStatus(database, notPm, project, "rejected", "Not a fit")
+    ).rejects.toThrow(PermissionDeniedError)
+    expect(await statusOf(project)).toBe("active")
+  })
+
+  it("refuses the PM of another project", async () => {
+    const otherPm = await addPerson("Esi")
+    await grant(otherPm, await addProject("Kiln"), "PM")
+
+    await expect(
+      setProjectStatus(database, otherPm, project, "rejected", "Not a fit")
+    ).rejects.toThrow(PermissionDeniedError)
+  })
+
+  it("lets a company-wide PM set it", async () => {
+    const companyPm = await addPerson("Esi")
+    await grantCompanyWide(companyPm, "PM")
+
+    await setProjectStatus(database, companyPm, project, "on_hold", "Waiting")
+
+    expect(await statusOf(project)).toBe("on_hold")
+  })
+
+  it("refuses the status the project already has", async () => {
+    await expect(
+      setProjectStatus(database, pm, project, "active", "Still going")
+    ).rejects.toThrow(InvalidProjectStatusError)
+    expect(await projectLines(project)).toEqual([])
+  })
+
+  it("refuses a status that does not exist", async () => {
+    await expect(
+      // @ts-expect-error a caller outside TypeScript can still send one
+      setProjectStatus(database, pm, project, "paused", "Waiting")
+    ).rejects.toThrow(InvalidProjectStatusError)
+  })
+
+  it("shows the new status in the overview and the list", async () => {
+    await setProjectStatus(database, pm, project, "on_hold", "Waiting")
+
+    const overview = await getProjectOverview(database, pm, project, fourTools)
+
+    expect(overview.status).toBe("on_hold")
+    expect(await listProjectsFor(database, pm)).toEqual([
+      { ...listed(project, "Boiler", ["PM"]), status: "on_hold" },
     ])
   })
 })

@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test"
 import { z } from "zod"
 
 import { makePerson, sidewaysScroll, signIn } from "./support/data"
+import { pickDate } from "./support/pick-date"
 
 // The preview page draws one tool with a field of every type. The page shows
 // what the form sent, so a test can read it back.
@@ -14,10 +15,7 @@ async function openPreview(page: Page, query = "") {
 
 const sentSchema = z.object({
   action: z.string(),
-  values: z.record(
-    z.string(),
-    z.union([z.string(), z.number(), z.boolean(), z.null()])
-  ),
+  values: z.record(z.string(), z.json()),
 })
 
 async function lastSent(page: Page) {
@@ -32,7 +30,7 @@ test("each field type draws the matching input", async ({ page }) => {
   await expect(page.getByLabel("Project name")).toHaveAttribute("type", "text")
   await expect(page.getByLabel("Notes")).toHaveJSProperty("tagName", "TEXTAREA")
   await expect(page.getByLabel("Quantity")).toHaveAttribute("type", "number")
-  await expect(page.getByLabel("Due date")).toHaveAttribute("type", "date")
+  await expect(page.getByRole("button", { name: "Due date" })).toBeVisible()
   await expect(
     page.getByRole("checkbox", { name: "Client approved" })
   ).toBeVisible()
@@ -142,7 +140,7 @@ test("every type sends the value it was given", async ({ page }) => {
   await page.getByLabel("Project name").fill("Boiler retrofit")
   await page.getByLabel("Notes").fill("Two lines\nof notes")
   await page.getByLabel("Quantity").fill("12")
-  await page.getByLabel("Due date").fill("2026-12-01")
+  await pickDate(page, "Due date", "2026-12-01")
   await page.getByRole("checkbox", { name: "Client approved" }).click()
   await page.getByRole("combobox", { name: "Priority" }).click()
   await page.getByRole("option", { name: "High" }).click()
@@ -180,7 +178,7 @@ test("at 375px there is no sideways scroll and every input works", async ({
   await page.getByLabel("Project name").fill("Boiler retrofit")
   await page.getByLabel("Notes").fill("A note")
   await page.getByLabel("Quantity").fill("3")
-  await page.getByLabel("Due date").fill("2026-12-01")
+  await pickDate(page, "Due date", "2026-12-01")
   await page.getByRole("checkbox", { name: "Client approved" }).click()
   await page.getByRole("combobox", { name: "Priority" }).click()
   await page.getByRole("option", { name: "Low" }).click()

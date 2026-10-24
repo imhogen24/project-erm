@@ -21,8 +21,8 @@ const actions: Action[] = ["read", "write", "approve"]
 
 async function addProject(name: string) {
   const { rows } = await database.pool.query<{ id: string }>(
-    "INSERT INTO projects (name) VALUES ($1) RETURNING id",
-    [name]
+    "INSERT INTO projects (name, request_id, service_track) VALUES ($1, $2, 'Tier_1') RETURNING id",
+    [name, `T1-${crypto.randomUUID()}`]
   )
 
   return rows[0]!.id
@@ -327,5 +327,40 @@ describe("Tier 3 tools", () => {
       await answers(om, projectId, "D1.3")
     )
     expect(await can(database, om, projectId, "T3.D1.3a", "write")).toBe(true)
+  })
+})
+
+describe("the OM and PM on D1.1 to D1.6", () => {
+  it("lets an OM write D1.1", async () => {
+    const om = await addPerson(projectId, ["OM"])
+
+    expect(await can(database, om, projectId, "D1.1", "write")).toBe(true)
+  })
+
+  it("lets a PM approve D1.1 but not write it", async () => {
+    const pm = await addPerson(projectId, ["PM"])
+
+    expect(await answers(pm, projectId, "D1.1")).toEqual([true, false, true])
+  })
+
+  it.each(["D1.2", "D1.4", "D1.5", "D1.6"])(
+    "lets a PM approve %s",
+    async (toolId) => {
+      const pm = await addPerson(projectId, ["PM"])
+
+      expect(await can(database, pm, projectId, toolId, "approve")).toBe(true)
+    }
+  )
+
+  it("still refuses an LE on D1.2", async () => {
+    const le = await addPerson(projectId, ["LE"])
+
+    expect(await answers(le, projectId, "D1.2")).toEqual([false, false, false])
+  })
+
+  it("still lets a Client write D1.1", async () => {
+    const client = await addPerson(projectId, ["Client"])
+
+    expect(await can(database, client, projectId, "D1.1", "write")).toBe(true)
   })
 })

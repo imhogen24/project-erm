@@ -52,9 +52,35 @@ export const people = pgTable("people", {
     .defaultNow(),
 })
 
+export const serviceTracks = ["Tier_1", "Tier_3"] as const
+
+export type ServiceTrack = (typeof serviceTracks)[number]
+
+export const serviceTrackEnum = pgEnum("service_track", serviceTracks)
+
+// Only an active project can have records created or moved. The others are
+// read only.
+export const projectStatuses = [
+  "active",
+  "on_hold",
+  "rejected",
+  "closed",
+  "completed",
+] as const
+
+export type ProjectStatus = (typeof projectStatuses)[number]
+
+export const projectStatusEnum = pgEnum("project_status", projectStatuses)
+
+// The request ID is the one the website gave the client, stored exactly as it
+// wrote it, for example "T1-1789787898386". It and the service track are set
+// when the project is created and never change.
 export const projects = pgTable("projects", {
   id: uuid().primaryKey().defaultRandom(),
   name: text().notNull(),
+  requestId: text("request_id").notNull().unique(),
+  serviceTrack: serviceTrackEnum("service_track").notNull(),
+  status: projectStatusEnum().notNull().default("active"),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

@@ -38,8 +38,8 @@ async function addPerson(name: string) {
 
 async function addProject(name: string) {
   const { rows } = await database.pool.query<{ id: string }>(
-    "INSERT INTO projects (name) VALUES ($1) RETURNING id",
-    [name]
+    "INSERT INTO projects (name, request_id, service_track) VALUES ($1, $2, 'Tier_1') RETURNING id",
+    [name, `T1-${crypto.randomUUID()}`]
   )
 
   return rows[0]!.id

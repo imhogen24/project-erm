@@ -1,13 +1,15 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
-import type { Role } from "@/db/schema"
+import type { ProjectStatus, Role } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
+import { setProjectStatus } from "@/server/projects/projects"
 import { defineTool } from "@/server/tools/define-tool"
 import { tools } from "@/server/tools/registry"
 
 import {
   InvalidTransitionError,
+  ProjectNotActiveError,
   RecordNotEditableError,
   createRecord,
   getRecord,
@@ -105,7 +107,7 @@ beforeEach(async () => {
   await resetTestData(database)
 
   const { rows } = await database.pool.query<{ id: string }>(
-    "INSERT INTO projects (name) VALUES ('Boiler') RETURNING id"
+    "INSERT INTO projects (name, request_id, service_track) VALUES ('Boiler', 'T1-1789787898386', 'Tier_1') RETURNING id"
   )
 
   projectId = rows[0]!.id
@@ -439,5 +441,71 @@ describe("permissions", () => {
     await expect(
       transitionRecord(database, writer, record.id, "locked")
     ).rejects.toBeInstanceOf(PermissionDeniedError)
+  })
+})
+
+describe("a project that is not active", () => {
+  // Set directly, so these tests do not depend on who may change a status.
+  async function setStatus(status: ProjectStatus) {
+    await database.pool.query("UPDATE projects SET status = $1 WHERE id = $2", [
+      status,
+      projectId,
+    ])
+  }
+
+  it.each(["on_hold", "rejected", "closed", "completed"] as const)(
+    "refuses a new record when %s",
+    async (status) => {
+      await setStatus(status)
+
+      await expect(
+        createRecord(database, actor, {
+          projectId,
+          toolId: "D1.3",
+          payload: ACME,
+        })
+      ).rejects.toBeInstanceOf(ProjectNotActiveError)
+      expect(await count("tool_records")).toBe(0)
+    }
+  )
+
+  it("refuses to submit a draft when on hold", async () => {
+    const record = await newRecord()
+    await setStatus("on_hold")
+
+    await expect(
+      transitionRecord(database, actor, record.id, "submitted")
+    ).rejects.toBeInstanceOf(ProjectNotActiveError)
+    expect((await getRecord(database, actor, record.id)).state).toBe("draft")
+  })
+
+  it("refuses to edit a draft when closed", async () => {
+    const record = await newRecord()
+    await setStatus("closed")
+
+    await expect(
+      updateRecord(database, actor, record.id, BETA)
+    ).rejects.toBeInstanceOf(ProjectNotActiveError)
+    expect((await getRecord(database, actor, record.id)).payload).toEqual(ACME)
+  })
+
+  it("still lets its records be read", async () => {
+    const record = await newRecord()
+    await setStatus("rejected")
+
+    expect(await getRecord(database, actor, record.id)).toEqual(record)
+  })
+
+  it("takes new records again once the PM sets it back to active", async () => {
+    await setProjectStatus(database, actor, projectId, "on_hold", "Client away")
+    await setProjectStatus(database, actor, projectId, "active", "Client back")
+
+    const record = await createRecord(database, actor, {
+      projectId,
+      toolId: "D1.3",
+      payload: ACME,
+    })
+
+    expect(record.state).toBe("draft")
   })
 })

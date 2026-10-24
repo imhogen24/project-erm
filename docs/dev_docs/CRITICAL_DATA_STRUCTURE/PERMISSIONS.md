@@ -45,7 +45,7 @@ Agents: **Client · OM** (Onboarding Manager) **· PM** (Project Manager) **· L
 | D2.9 | Negotiation Meeting Notes | RO | - | RO | - | - | - | - | RW | RO | - | - | - | - | - | - | - | RO | - | |
 | D2.10 | Finalized Contract | RO | - | RO | - | - | - | RO | RW | RO | - | - | - | - | - | - | - | RO | - | |
 | D2.11 | Pending Signature Contract | RW | - | RO | - | - | - | - | RW | RW | - | - | - | - | - | - | - | RO | - | |
-| D2.12 | Executed Contract & Audit Trail | RO | - | RO | - | - | - | RO | RW | RO | - | - | - | - | - | - | - | RO | - | |
+| D2.12 | Executed Contract & Audit Trail | RO | - | RA | - | - | - | RO | RW | RO | - | - | - | - | - | - | - | RO | - | |
 | D2.13 | Archived Contract Record | - | - | RO | - | - | - | - | RW | - | - | - | - | - | - | - | - | RO | - | |
 | D2.14 | Phase Initiation Notice | - | - | RA | - | - | - | RO | RW | - | - | - | - | - | - | - | - | RO | - | |
 | D2 | Master Contract Database | - | - | RO | - | - | - | RO | RW | - | - | - | - | - | - | - | - | RO | - | |

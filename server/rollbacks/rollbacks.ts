@@ -9,6 +9,7 @@ import {
 } from "@/db/schema"
 import { stateChange, writeAudit } from "@/server/audit/audit"
 import { assertHoldsRole } from "@/server/permissions/permissions"
+import { ProjectNotActiveError } from "@/server/projects/projects"
 import { UnknownToolError } from "@/server/records/validate"
 import { getTool, workbookNumber } from "@/server/tools/registry"
 
@@ -98,11 +99,18 @@ export async function rollBackWorkbook(
   return database.transaction(async (transaction) => {
     // Holds the project until the transaction ends, so a second rollback waits
     // and then sees what this one did. Creating records is not blocked.
-    await transaction
-      .select({ id: projects.id })
+    const [project] = await transaction
+      .select({ status: projects.status })
       .from(projects)
       .where(eq(projects.id, input.projectId))
       .for("no key update")
+
+    // A rollback moves records, so a project that is not active refuses it.
+    if (project!.status !== "active") {
+      throw new ProjectNotActiveError(
+        `This project is ${project!.status}, so its records are read only`
+      )
+    }
 
     const live = await transaction
       .select({

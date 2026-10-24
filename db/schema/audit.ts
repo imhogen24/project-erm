@@ -11,7 +11,16 @@ import {
 import { people, projects } from "./access"
 import { toolRecords, type JsonValue } from "./records"
 
-export const auditActions = ["created", "updated", "transitioned"] as const
+export const auditActions = [
+  "created",
+  "updated",
+  "transitioned",
+  "change_requested",
+  "change_approved",
+  "change_rejected",
+  "change_applied",
+  "built_on_change",
+] as const
 
 export type AuditAction = (typeof auditActions)[number]
 

@@ -16,6 +16,8 @@ const database = createDatabase(url)
 
 await database.pool.query("DROP SCHEMA IF EXISTS drizzle CASCADE")
 
+await database.pool.query("DROP SCHEMA IF EXISTS erm_migrations CASCADE")
+
 await database.pool.query("DROP SCHEMA IF EXISTS public CASCADE")
 
 await database.pool.query("CREATE SCHEMA public")

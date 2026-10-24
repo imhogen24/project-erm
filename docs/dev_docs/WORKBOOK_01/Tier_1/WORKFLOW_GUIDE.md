@@ -9,13 +9,18 @@ what the client does, and what unlocks next. Full 16-step path.
 ### D1.1 — Web Forms
 
 - **Why:** capture the raw inquiry as the starting record.
-- **App does:** a webhook fires when the client submits on IMHOGEN's
-  website; the app creates the project record, generates the Project
-  Request ID, logs the submission and files, and routes to Tier 1.
-- **Staff does:** nothing — this is a read-only log the app creates
-  itself.
+- **App does:** reads the website's intake table in the shared
+  database; for each new submission it creates the project record,
+  generates the Project Request ID, logs the submission and files, and
+  routes to Tier 1. There is no webhook; the app queries the
+  database directly.
+- **Staff does:** the Onboarding Manager (OM) reviews what the client
+  sent and sets the status of each submission row and each supplementary
+  upload (in progress, then reviewed), adding a note when something is
+  unclear. The Project Manager (PM) then approves D1.1 with an explicit
+  click. Reviewing is not approving.
 - **Client does:** fills and submits the form on IMHOGEN's website.
-- **Unlocks:** D1.2, automatically.
+- **Unlocks:** D1.2, once the PM approves.
 
 ### D1.2 — Initial Inquiry Notification
 

@@ -71,6 +71,13 @@
       "when": 1792853131952,
       "tag": "0009_cute_joshua_kane",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1792866167086,
+      "tag": "0010_cheerful_the_stranger",
+      "breakpoints": true
     }
   ]
 }

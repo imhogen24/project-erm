@@ -5,6 +5,7 @@ import { createDatabase, type Database } from "@/db"
 import {
   accounts,
   people,
+  personCompanyRoles,
   personProjectRoles,
   projects,
   roles,
@@ -16,6 +17,10 @@ export type SeedUser = { role: Role; email: string }
 export const SEED_PASSWORD = "password"
 
 const PROJECT_NAME = "Demo Project"
+
+// These people work across every project, so the seed gives their role
+// company-wide instead of on Demo Project.
+const COMPANY_WIDE: readonly Role[] = ["OM", "PM", "HE", "FO", "IT/Admin"]
 
 // "IT/Admin" becomes "it-admin@example.com".
 export function seedEmail(role: Role) {
@@ -105,17 +110,25 @@ async function addPerson(
         .where(eq(accounts.id, account.id))
     }
 
-    await transaction
-      .insert(personProjectRoles)
-      .values({ personId, projectId, role })
-      .onConflictDoNothing()
+    if (COMPANY_WIDE.includes(role)) {
+      await transaction
+        .insert(personCompanyRoles)
+        .values({ personId, role })
+        .onConflictDoNothing()
+    } else {
+      await transaction
+        .insert(personProjectRoles)
+        .values({ personId, projectId, role })
+        .onConflictDoNothing()
+    }
 
     return !existing
   })
 }
 
-// Local development only: one person per role on "Demo Project", all with the
-// password `password`. Returns the people this run added.
+// Local development only: one person per role, all with the password
+// `password`. Each holds their role on "Demo Project", or company-wide for the
+// roles in COMPANY_WIDE. Returns the people this run added.
 export async function seed(url: string): Promise<SeedUser[]> {
   assertLocal(url)
 

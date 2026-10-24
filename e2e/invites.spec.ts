@@ -21,7 +21,7 @@ const MISMATCH = "The passwords do not match."
 
 async function setUp() {
   const project = await makeProject(`Boiler ${tag()}`)
-  const admin = await makeAdmin(project.id)
+  const admin = await makeAdmin()
 
   return { project, admin }
 }

@@ -1,7 +1,12 @@
-import { and, eq } from "drizzle-orm"
+import { and, asc, eq } from "drizzle-orm"
 
 import type { Database } from "@/db"
-import { personProjectRoles, type Role } from "@/db/schema"
+import {
+  personCompanyRoles,
+  personProjectRoles,
+  projects,
+  type Role,
+} from "@/db/schema"
 
 import { accessRow, type Access, type Action } from "./matrix"
 
@@ -35,24 +40,46 @@ export function roleAllows(
   })
 }
 
-// The roles a person holds on a project. Empty when they hold none, or the
-// project does not exist.
+// The roles a person holds on every project.
+export async function companyRolesOf(
+  database: Database,
+  actor: string
+): Promise<Role[]> {
+  const held = await database
+    .select({ role: personCompanyRoles.role })
+    .from(personCompanyRoles)
+    .where(eq(personCompanyRoles.personId, actor))
+    .orderBy(asc(personCompanyRoles.role))
+
+  return held.map((row) => row.role)
+}
+
+// The roles a person holds on a project: those given on it plus those given
+// company-wide, each once. Empty when they hold none, or the project does not
+// exist, so a company-wide role never reveals which projects exist.
 export async function rolesOn(
   database: Database,
   actor: string,
   projectId: string
 ): Promise<Role[]> {
-  const held = await database
-    .select({ role: personProjectRoles.role })
-    .from(personProjectRoles)
-    .where(
-      and(
-        eq(personProjectRoles.personId, actor),
-        eq(personProjectRoles.projectId, projectId)
-      )
-    )
+  const [onProject, companyWide] = await Promise.all([
+    database
+      .select({ role: personProjectRoles.role })
+      .from(personProjectRoles)
+      .where(
+        and(
+          eq(personProjectRoles.personId, actor),
+          eq(personProjectRoles.projectId, projectId)
+        )
+      ),
+    database
+      .select({ role: personCompanyRoles.role })
+      .from(personCompanyRoles)
+      .innerJoin(projects, eq(projects.id, projectId))
+      .where(eq(personCompanyRoles.personId, actor)),
+  ])
 
-  return held.map((row) => row.role)
+  return [...new Set([...onProject, ...companyWide].map((row) => row.role))]
 }
 
 export async function can(
@@ -91,5 +118,17 @@ export async function assertCan(
     throw new PermissionDeniedError(
       `This person may not ${action} ${toolId} on this project`
     )
+  }
+}
+
+// For the actions that belong to a role across the company rather than on one
+// project, such as an IT/Admin giving access.
+export async function assertCompanyRole(
+  database: Database,
+  actor: string,
+  role: Role
+): Promise<void> {
+  if (!(await companyRolesOf(database, actor)).includes(role)) {
+    throw new PermissionDeniedError(`Only a company-wide ${role} may do this`)
   }
 }

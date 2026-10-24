@@ -16,13 +16,17 @@ const square = "grid-square relative isolate bg-background"
 
 export default async function Page() {
   const session = await requireSession()
-  const projects = await listProjectsFor(getDatabase(), session.user.id)
+
+  const [projects, canInvite] = await Promise.all([
+    listProjectsFor(getDatabase(), session.user.id),
+    isItAdmin(session.user.id),
+  ])
 
   return (
     <>
-      <MobileBar className="xl:hidden" canInvite={isItAdmin(projects)} />
+      <MobileBar className="xl:hidden" canInvite={canInvite} />
       <div className="drafting-grid min-h-svh py-[var(--cell)]">
-        <AppSidebar name={session.user.name} canInvite={isItAdmin(projects)} />
+        <AppSidebar name={session.user.name} canInvite={canInvite} />
         <main className="table-project table-home">
           <div>
             <div

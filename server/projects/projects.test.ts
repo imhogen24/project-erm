@@ -34,6 +34,13 @@ async function grant(personId: string, projectId: string, role: Role) {
   )
 }
 
+async function grantCompanyWide(personId: string, role: Role) {
+  await database.pool.query(
+    "INSERT INTO person_company_roles (person_id, role) VALUES ($1, $2)",
+    [personId, role]
+  )
+}
+
 // Inserted directly, so a test can pick the state and the time.
 async function addRecord(
   projectId: string,
@@ -124,6 +131,69 @@ describe("listProjectsFor", () => {
     expect(await listProjectsFor(database, kofi)).toEqual([
       { id: projectB, name: "Project B", roles: ["LE"] },
     ])
+  })
+})
+
+describe("listProjectsFor, with company-wide roles", () => {
+  it("lists every project to a person with a company-wide role", async () => {
+    const projectA = await addProject("Project A")
+    const projectB = await addProject("Project B")
+    const om = await addPerson("Efua")
+    await grantCompanyWide(om, "OM")
+
+    expect(await listProjectsFor(database, om)).toEqual([
+      { id: projectA, name: "Project A", roles: ["OM"] },
+      { id: projectB, name: "Project B", roles: ["OM"] },
+    ])
+  })
+
+  it("lists a project created after the role was given", async () => {
+    const om = await addPerson("Efua")
+    await grantCompanyWide(om, "OM")
+    const inquiry = await addProject("New inquiry")
+
+    expect(await listProjectsFor(database, om)).toEqual([
+      { id: inquiry, name: "New inquiry", roles: ["OM"] },
+    ])
+  })
+
+  it("adds the project roles to the company-wide ones", async () => {
+    const projectA = await addProject("Project A")
+    const projectB = await addProject("Project B")
+    const person = await addPerson("Efua")
+    await grantCompanyWide(person, "OM")
+    await grant(person, projectA, "LE")
+
+    expect(await listProjectsFor(database, person)).toEqual([
+      { id: projectA, name: "Project A", roles: ["OM", "LE"] },
+      { id: projectB, name: "Project B", roles: ["OM"] },
+    ])
+  })
+})
+
+describe("getProjectOverview, with company-wide roles", () => {
+  it("shows a new project to a company-wide OM", async () => {
+    const project = await addProject("New inquiry")
+    const om = await addPerson("Efua")
+    await grantCompanyWide(om, "OM")
+
+    const overview = await getProjectOverview(database, om, project, fourTools)
+
+    expect(overview.tools).toHaveLength(4)
+  })
+
+  it("still refuses a project that does not exist", async () => {
+    const om = await addPerson("Efua")
+    await grantCompanyWide(om, "OM")
+
+    await expect(
+      getProjectOverview(
+        database,
+        om,
+        "00000000-0000-0000-0000-000000000000",
+        fourTools
+      )
+    ).rejects.toThrow(PermissionDeniedError)
   })
 })
 

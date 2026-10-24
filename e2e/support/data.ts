@@ -8,6 +8,7 @@ import { acceptInvite, createInvite } from "@/server/invites/invites"
 import {
   accounts,
   people,
+  personCompanyRoles,
   personProjectRoles,
   projects,
   toolRecords,
@@ -159,10 +160,15 @@ export async function useUpInvite(token: string) {
   )
 }
 
-export async function makeAdmin(projectId: string, name?: string) {
+// Only a company-wide IT/Admin may invite.
+export async function makeAdmin(name?: string) {
   const person = await makePerson(name)
 
-  await giveRoles(person.id, projectId, ["IT/Admin"])
+  await withDatabase((database) =>
+    database
+      .insert(personCompanyRoles)
+      .values({ personId: person.id, role: "IT/Admin" })
+  )
 
   return person
 }

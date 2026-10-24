@@ -15,7 +15,11 @@ import {
   type Role,
 } from "@/db/schema"
 import type { Transaction } from "@/server/audit/audit"
-import { PermissionDeniedError } from "@/server/permissions/permissions"
+import { addCompanyRoles } from "@/server/company-roles/company-roles"
+import {
+  PermissionDeniedError,
+  companyRolesOf,
+} from "@/server/permissions/permissions"
 
 export class InvalidInviteInputError extends Error {}
 
@@ -30,7 +34,8 @@ export class WeakPasswordError extends Error {}
 export type InviteInput = {
   email: string
   name: string
-  projectId: string
+  // No project gives the roles company-wide, on every project.
+  projectId: string | null
   roles: string[]
 }
 
@@ -63,7 +68,7 @@ function cleanEmail(value: string) {
   return lowered
 }
 
-function cleanRoles(values: string[]) {
+function cleanRoles(values: string[], projectId: string | null) {
   if (values.length === 0) {
     throw new InvalidInviteInputError("An invite needs at least one role")
   }
@@ -75,6 +80,12 @@ function cleanRoles(values: string[]) {
       throw new InvalidInviteInputError(`"${value}" is not a role`)
     }
 
+    if (value === "Client" && projectId === null) {
+      throw new InvalidInviteInputError(
+        "A Client is always tied to their own project"
+      )
+    }
+
     if (!cleaned.includes(value)) {
       cleaned.push(value)
     }
@@ -83,20 +94,10 @@ function cleanRoles(values: string[]) {
   return cleaned
 }
 
-// IT/Admin on any project counts as IT/Admin for the whole company.
+// Only a company-wide IT/Admin gives access. IT/Admin on one project is not
+// enough.
 async function assertItAdmin(database: Database, actor: string) {
-  const [held] = await database
-    .select({ role: personProjectRoles.role })
-    .from(personProjectRoles)
-    .where(
-      and(
-        eq(personProjectRoles.personId, actor),
-        eq(personProjectRoles.role, "IT/Admin")
-      )
-    )
-    .limit(1)
-
-  if (!held) {
+  if (!(await companyRolesOf(database, actor)).includes("IT/Admin")) {
     throw new PermissionDeniedError("Only an IT/Admin can invite people")
   }
 }
@@ -163,9 +164,13 @@ async function setPassword(
 async function giveRoles(
   transaction: Transaction,
   personId: string,
-  projectId: string,
+  projectId: string | null,
   held: Role[]
 ) {
+  if (projectId === null) {
+    return addCompanyRoles(transaction, personId, held)
+  }
+
   const added = await transaction
     .insert(personProjectRoles)
     .values(held.map((role) => ({ personId, projectId, role })))
@@ -190,7 +195,7 @@ export async function createInvite(
   }
 
   const address = cleanEmail(input.email)
-  const held = cleanRoles(input.roles)
+  const held = cleanRoles(input.roles, input.projectId)
 
   const existing = await findPerson(database, address)
 
@@ -336,16 +341,7 @@ export async function acceptInvite(
       await setPassword(transaction, personId, passwordHash)
     }
 
-    await transaction
-      .insert(personProjectRoles)
-      .values(
-        invite.roles.map((role) => ({
-          personId,
-          projectId: invite.projectId,
-          role,
-        }))
-      )
-      .onConflictDoNothing()
+    await giveRoles(transaction, personId, invite.projectId, invite.roles)
 
     await transaction
       .update(invitations)

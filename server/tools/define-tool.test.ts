@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
 
-import { defineTool } from "./define-tool"
+import { defineTool, type ToolInput } from "./define-tool"
 
 const client = { key: "client", label: "Client", type: "text" } as const
 
@@ -128,5 +128,255 @@ describe("defineTool", () => {
     ]) {
       expect(() => defineTool({ ...bad, fields: [client] })).toThrow()
     }
+  })
+})
+
+const operands: Extract<ToolInput["fields"][number], { type: "table" }> = {
+  key: "operands",
+  label: "Operands",
+  type: "table",
+  columns: [
+    {
+      key: "operand",
+      label: "Operand",
+      type: "select",
+      options: ["Material", "Energy", "Information", "Living thing"],
+    },
+    { key: "input", label: "Input", type: "text" },
+  ],
+  prefilledRows: ["Material", "Energy", "Information", "Living thing"],
+}
+
+function withFields(fields: ToolInput["fields"]) {
+  return defineTool({
+    id: "D1.3",
+    name: "Technical Intake",
+    workbook: "wb01",
+    fields,
+  })
+}
+
+describe("defineTool, the wider field types", () => {
+  it("accepts every new field type", () => {
+    const tool = withFields([
+      operands,
+      {
+        key: "triage",
+        label: "Triage",
+        type: "checklist",
+        items: ["Readable"],
+      },
+      { key: "pmSignature", label: "PM signature", type: "signature" },
+      { key: "budget", label: "Budget", type: "currency" },
+      { key: "share", label: "Share", type: "percentage" },
+      { key: "senderEmail", label: "Sender email", type: "email" },
+      { key: "timeReceived", label: "Time received", type: "time" },
+      { key: "emailLink", label: "Email link", type: "fileLink" },
+      {
+        key: "script",
+        label: "Script",
+        type: "instruction",
+        content: "Dear client",
+      },
+      {
+        key: "exclusions",
+        label: "Exclusions",
+        type: "staticList",
+        items: ["No FEA"],
+      },
+    ])
+
+    expect(tool.fields).toHaveLength(10)
+  })
+
+  it("refuses a table with two columns sharing a key", () => {
+    expect(() =>
+      withFields([
+        {
+          key: "log",
+          label: "Log",
+          type: "table",
+          columns: [
+            { key: "note", label: "Note", type: "text" },
+            { key: "note", label: "Note again", type: "longText" },
+          ],
+        },
+      ])
+    ).toThrow()
+  })
+
+  it("refuses a table with no columns", () => {
+    expect(() =>
+      withFields([{ key: "log", label: "Log", type: "table", columns: [] }])
+    ).toThrow()
+  })
+
+  it("refuses a table inside a table", () => {
+    expect(() =>
+      withFields([
+        {
+          key: "log",
+          label: "Log",
+          type: "table",
+          columns: [
+            // @ts-expect-error a table cell cannot hold a table
+            { key: "inner", label: "Inner", type: "table", columns: [] },
+          ],
+        },
+      ])
+    ).toThrow()
+  })
+
+  it("refuses prefilled rows that repeat a label", () => {
+    expect(() =>
+      withFields([{ ...operands, prefilledRows: ["Material", "Material"] }])
+    ).toThrow()
+  })
+
+  it("refuses a prefilled label that the first column's options do not allow", () => {
+    expect(() =>
+      withFields([{ ...operands, prefilledRows: ["Material", "Water"] }])
+    ).toThrow()
+  })
+
+  it("refuses prefilled rows when the first column cannot hold a label", () => {
+    expect(() =>
+      withFields([
+        {
+          key: "measures",
+          label: "Measures",
+          type: "table",
+          columns: [{ key: "value", label: "Value", type: "number" }],
+          prefilledRows: ["Length"],
+        },
+      ])
+    ).toThrow()
+  })
+
+  it("accepts a subtotal on a currency column", () => {
+    const tool = withFields([
+      {
+        key: "labour",
+        label: "Labour",
+        type: "table",
+        columns: [
+          { key: "module", label: "Module", type: "text" },
+          { key: "cost", label: "Cost", type: "currency" },
+        ],
+        subtotal: "cost",
+      },
+    ])
+
+    expect(tool.fields[0]).toMatchObject({ subtotal: "cost" })
+  })
+
+  it("refuses a subtotal on a column that is not currency, or not there", () => {
+    for (const subtotal of ["module", "nope"]) {
+      expect(() =>
+        withFields([
+          {
+            key: "labour",
+            label: "Labour",
+            type: "table",
+            columns: [
+              { key: "module", label: "Module", type: "text" },
+              { key: "cost", label: "Cost", type: "currency" },
+            ],
+            subtotal,
+          },
+        ])
+      ).toThrow()
+    }
+  })
+
+  it("refuses a checklist with no items, or a repeated item", () => {
+    for (const items of [[], ["Readable", "Readable"]]) {
+      expect(() =>
+        withFields([
+          { key: "triage", label: "Triage", type: "checklist", items },
+        ])
+      ).toThrow()
+    }
+  })
+
+  it("refuses a signature, instruction or static list marked required", () => {
+    const fields: ToolInput["fields"] = [
+      { key: "sig", label: "Sig", type: "signature", required: true },
+      {
+        key: "script",
+        label: "Script",
+        type: "instruction",
+        content: "Dear client",
+        required: true,
+      },
+      {
+        key: "exclusions",
+        label: "Exclusions",
+        type: "staticList",
+        items: ["No FEA"],
+        required: true,
+      },
+    ]
+
+    for (const field of fields) {
+      expect(() => withFields([field])).toThrow()
+    }
+  })
+})
+
+describe("defineTool, tier variants", () => {
+  it("serves both tiers unless it says otherwise", () => {
+    expect(withFields([client]).tier).toBe("both")
+  })
+
+  it("accepts a Tier 3 variant that names the tool it replaces", () => {
+    const tool = defineTool({
+      id: "T3.D1.3a",
+      name: "T3 Technical Intake",
+      workbook: "wb01",
+      tier: 3,
+      replaces: "D1.3",
+      fields: [client],
+    })
+
+    expect(tool).toMatchObject({ tier: 3, replaces: "D1.3" })
+  })
+
+  it("refuses a tool for both tiers that replaces another", () => {
+    expect(() =>
+      defineTool({
+        id: "T3.D1.3a",
+        name: "T3 Technical Intake",
+        workbook: "wb01",
+        replaces: "D1.3",
+        fields: [client],
+      })
+    ).toThrow()
+  })
+
+  it("refuses a tool that replaces itself", () => {
+    expect(() =>
+      defineTool({
+        id: "D1.3",
+        name: "Technical Intake",
+        workbook: "wb01",
+        tier: 3,
+        replaces: "D1.3",
+        fields: [client],
+      })
+    ).toThrow()
+  })
+
+  it("refuses a tier that does not exist", () => {
+    expect(() =>
+      defineTool({
+        id: "D1.3",
+        name: "Technical Intake",
+        workbook: "wb01",
+        // @ts-expect-error there is no Tier 2
+        tier: 2,
+        fields: [client],
+      })
+    ).toThrow()
   })
 })

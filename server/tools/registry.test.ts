@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { defineTool } from "./define-tool"
 import {
   brokenInheritedLinks,
+  brokenReplacements,
   createToolRegistry,
   type ToolRegistry,
 } from "./registry"
@@ -111,5 +112,114 @@ describe("brokenInheritedLinks", () => {
     const tools = [source, inheriting("D1.14", "nope")]
 
     expect(brokenInheritedLinks(tools)).toHaveLength(1)
+  })
+})
+
+describe("brokenInheritedLinks, for table columns", () => {
+  const source = defineTool({
+    id: "D1.13",
+    name: "Deliverables",
+    workbook: "wb01",
+    fields: [
+      {
+        key: "deliverables",
+        label: "Deliverables",
+        type: "table",
+        columns: [{ key: "category", label: "Category", type: "text" }],
+      },
+    ],
+  })
+
+  function inheritingColumn(link: {
+    tool: string
+    field: string
+    column?: string
+  }) {
+    return defineTool({
+      id: "D1.15",
+      name: "Project Brief & Budget",
+      workbook: "wb01",
+      fields: [
+        {
+          key: "allocation",
+          label: "Allocation",
+          type: "table",
+          columns: [
+            {
+              key: "category",
+              label: "Category",
+              type: "text",
+              inherited: link,
+            },
+            { key: "cost", label: "Cost", type: "currency" },
+          ],
+        },
+      ],
+    })
+  }
+
+  it("reports nothing when a column points at a real column", () => {
+    const tools = [
+      source,
+      inheritingColumn({
+        tool: "D1.13",
+        field: "deliverables",
+        column: "category",
+      }),
+    ]
+
+    expect(brokenInheritedLinks(tools)).toEqual([])
+  })
+
+  it.each([
+    { tool: "D9.9", field: "deliverables", column: "category" },
+    { tool: "D1.13", field: "nope", column: "category" },
+    { tool: "D1.13", field: "deliverables", column: "nope" },
+  ])("reports a column link to $tool.$field.$column", (link) => {
+    expect(brokenInheritedLinks([source, inheritingColumn(link)])).toHaveLength(
+      1
+    )
+  })
+
+  it("reports a link to a column of a field that is not a table", () => {
+    const plain = defineTool({
+      id: "D1.13",
+      name: "Deliverables",
+      workbook: "wb01",
+      fields: [{ key: "deliverables", label: "Deliverables", type: "text" }],
+    })
+
+    expect(
+      brokenInheritedLinks([
+        plain,
+        inheritingColumn({
+          tool: "D1.13",
+          field: "deliverables",
+          column: "category",
+        }),
+      ])
+    ).toHaveLength(1)
+  })
+})
+
+describe("brokenReplacements", () => {
+  const d13 = defineTool({ ...tool("D1.3"), tier: 1 })
+
+  function variant(replaces: string) {
+    return defineTool({ ...tool("T3.D1.3a"), tier: 3, replaces })
+  }
+
+  it("reports nothing when a variant replaces a real tool of the other tier", () => {
+    expect(brokenReplacements([d13, variant("D1.3")])).toEqual([])
+  })
+
+  it("reports a variant that replaces a tool that does not exist", () => {
+    expect(brokenReplacements([d13, variant("D9.9")])).toHaveLength(1)
+  })
+
+  it("reports a variant that replaces a tool of its own tier", () => {
+    const d13t3 = defineTool({ ...tool("D1.3"), tier: 3 })
+
+    expect(brokenReplacements([d13t3, variant("D1.3")])).toHaveLength(1)
   })
 })

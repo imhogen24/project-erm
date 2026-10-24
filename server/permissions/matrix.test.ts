@@ -22,7 +22,12 @@ function documentedRows() {
     const cells = line.split("|").map((cell) => cell.trim())
 
     // "| ID | Name | 19 roles |" splits into an empty first and last cell.
-    if (cells.length !== roles.length + 4 || !/^D?T3\./.test(cells[1]!)) {
+    // The header and the line under it are not rows.
+    if (
+      cells.length !== roles.length + 4 ||
+      cells[1] === "Tool ID" ||
+      /^:?-+:?$/.test(cells[1]!)
+    ) {
       continue
     }
 
@@ -73,12 +78,61 @@ describe("permission matrix", () => {
   })
 
   it("finds every Tier 3 row in PERMISSIONS.md", () => {
-    expect(Object.keys(documentedRows()).sort()).toEqual([...tier3Tools].sort())
+    expect(
+      Object.keys(documentedRows())
+        .filter((id) => /^D?T3\./.test(id))
+        .sort()
+    ).toEqual([...tier3Tools].sort())
   })
 
-  it.each(tier3Tools)("gives %s exactly the access in PERMISSIONS.md", (id) => {
+  // The two Tier 3 tools PERMISSIONS.md does not list copy the tool they
+  // replace, checked above. Workbooks the code has no rows for yet are added
+  // with their slices.
+  it.each(
+    Object.keys(permissionMatrix).filter(
+      (id) => id !== "T3.D1.3a" && id !== "T3.D1.15a"
+    )
+  )("gives %s exactly the access in PERMISSIONS.md", (id) => {
     expect(accessRow(id)).toEqual(documentedRows()[id])
   })
+
+  it.each([
+    ["D1.1", { Client: "RW", OM: "RW", PM: "RA", LO: "RO", CR: "RO" }],
+    ["D1.2", { OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" }],
+    [
+      "D1.4",
+      { Client: "RO", OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" },
+    ],
+    [
+      "D1.5",
+      {
+        Client: "RO",
+        OM: "RW",
+        PM: "RA",
+        LE: "RO",
+        CA: "RO",
+        LO: "RO",
+        CR: "RO",
+      },
+    ],
+    [
+      "D1.6",
+      {
+        Client: "RO",
+        OM: "RW",
+        PM: "RA",
+        LE: "RO",
+        CA: "RO",
+        LO: "RO",
+        CR: "RO",
+      },
+    ],
+  ])(
+    "gives %s the access agreed on the 24 Oct 2026 onboarding call",
+    (id, row) => {
+      expect(accessRow(id)).toEqual(row)
+    }
+  )
 
   it("gives T3.D1.3a the access of D1.3, which it replaces", () => {
     expect(accessRow("T3.D1.3a")).toEqual(permissionMatrix["D1.3"])

@@ -329,3 +329,38 @@ describe("Tier 3 tools", () => {
     expect(await can(database, om, projectId, "T3.D1.3a", "write")).toBe(true)
   })
 })
+
+describe("the OM and PM on D1.1 to D1.6", () => {
+  it("lets an OM write D1.1", async () => {
+    const om = await addPerson(projectId, ["OM"])
+
+    expect(await can(database, om, projectId, "D1.1", "write")).toBe(true)
+  })
+
+  it("lets a PM approve D1.1 but not write it", async () => {
+    const pm = await addPerson(projectId, ["PM"])
+
+    expect(await answers(pm, projectId, "D1.1")).toEqual([true, false, true])
+  })
+
+  it.each(["D1.2", "D1.4", "D1.5", "D1.6"])(
+    "lets a PM approve %s",
+    async (toolId) => {
+      const pm = await addPerson(projectId, ["PM"])
+
+      expect(await can(database, pm, projectId, toolId, "approve")).toBe(true)
+    }
+  )
+
+  it("still refuses an LE on D1.2", async () => {
+    const le = await addPerson(projectId, ["LE"])
+
+    expect(await answers(le, projectId, "D1.2")).toEqual([false, false, false])
+  })
+
+  it("still lets a Client write D1.1", async () => {
+    const client = await addPerson(projectId, ["Client"])
+
+    expect(await can(database, client, projectId, "D1.1", "write")).toBe(true)
+  })
+})

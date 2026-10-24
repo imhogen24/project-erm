@@ -1,7 +1,7 @@
 pre-commit:
   commands:
     encrypt-env:
-      glob: ".env.development"
+      glob: ".env.{development,production}"
       run: bun run encrypt
       stage_fixed: true
     protect-env:

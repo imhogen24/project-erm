@@ -20,8 +20,8 @@
     "lint": "oxlint && eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
-    "encrypt": "dotenvx encrypt -f .env.development",
-    "decrypt": "dotenvx decrypt -f .env.development"
+    "encrypt": "dotenvx encrypt -f .env.development -f .env.production",
+    "decrypt": "dotenvx decrypt -f .env.development -f .env.production"
   },
   "dependencies": {
     "@dotenvx/dotenvx": "^2.33.0",

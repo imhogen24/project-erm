@@ -6,6 +6,7 @@ import { PermissionDeniedError } from "@/server/permissions/permissions"
 import { setProjectStatus } from "@/server/projects/projects"
 import { defineTool } from "@/server/tools/define-tool"
 import { tools } from "@/server/tools/registry"
+import { loadUnorderedWorkflow } from "@/server/workflow/testing"
 
 import {
   InvalidTransitionError,
@@ -60,6 +61,8 @@ tools.registerTool(
     ],
   })
 )
+
+loadUnorderedWorkflow({ wb01: ["D1.3"] })
 
 const ACME = { clientName: "Acme", clientEmail: "ops@acme.com" }
 

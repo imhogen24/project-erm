@@ -52,16 +52,17 @@ async function grantCompanyWide(personId: string, role: Role) {
   )
 }
 
-// Inserted directly, so a test can pick the state and the time.
+// Inserted directly, so a test can pick the state, the time and the cycle.
 async function addRecord(
   projectId: string,
   toolId: string,
   state: RecordState,
-  createdAt = new Date()
+  createdAt = new Date(),
+  cycle = 1
 ) {
   await database.pool.query(
-    "INSERT INTO tool_records (project_id, tool_id, state, created_at) VALUES ($1, $2, $3, $4)",
-    [projectId, toolId, state, createdAt]
+    "INSERT INTO tool_records (project_id, tool_id, state, created_at, cycle) VALUES ($1, $2, $3, $4, $5)",
+    [projectId, toolId, state, createdAt, cycle]
   )
 }
 
@@ -295,8 +296,9 @@ describe("getProjectOverview", () => {
 
   it("shows the state of the newest record", async () => {
     await grant(person, project, "OM")
-    // Inserted newest first, so the order of insertion cannot decide it.
-    await addRecord(project, "D1.3", "draft", new Date("2026-02-01"))
+    // Inserted newest first, so the order of insertion cannot decide it. A
+    // tool has one live record per cycle, so the newer one is in cycle 2.
+    await addRecord(project, "D1.3", "draft", new Date("2026-02-01"), 2)
     await addRecord(project, "D1.3", "locked", new Date("2026-01-01"))
 
     const result = await getProjectOverview(database, person, project, [

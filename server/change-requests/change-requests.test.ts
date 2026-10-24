@@ -15,6 +15,7 @@ import {
 } from "@/server/records/records"
 import { rollBackWorkbook } from "@/server/rollbacks/rollbacks"
 import { registerTestTools } from "@/server/tools/testing"
+import { loadUnorderedWorkflow } from "@/server/workflow/testing"
 
 import {
   ChangeRequestNotAllowedError,
@@ -42,7 +43,9 @@ const reason = "The site survey date in D1.8 is wrong"
 
 const rejection = "The date matches the signed survey"
 
-registerTestTools({ wb01: ["D1.8", "D1.15"], wb02: ["D2.14"] })
+registerTestTools({ wb01: ["D1.8", "D1.16"], wb02: ["D2.14"] })
+
+loadUnorderedWorkflow({ wb01: ["D1.8", "D1.16"], wb02: ["D2.14"] })
 
 type Line = {
   recordId: string
@@ -406,7 +409,7 @@ describe("approving a change", () => {
 
   it("refuses to approve once a rollback has already reopened the record", async () => {
     const record = await recordIn("locked")
-    await recordIn("locked", "D1.15")
+    await recordIn("locked", "D1.16")
     await recordIn("draft", "D2.14")
     const request = await requestChange(database, writer, record.id, reason)
     await rollBackWorkbook(database, pm, {
@@ -423,7 +426,7 @@ describe("approving a change", () => {
 
   it("leaves later workbooks alone and marks them as built on a changed record", async () => {
     const record = await recordIn("locked")
-    const gate = await recordIn("locked", "D1.15")
+    const gate = await recordIn("locked", "D1.16")
     const later = await recordIn("draft", "D2.14")
     const request = await requestChange(database, writer, record.id, reason)
     const gateLines = (await lines(gate.id)).length
@@ -519,7 +522,7 @@ describe("applying a change", () => {
     const request = await requestChange(database, writer, record.id, reason)
     await reject(request.id)
 
-    const other = await recordIn("locked")
+    const other = await recordIn("locked", "D1.16")
 
     expect((await requests())[0]!.status).toBe("rejected")
     expect(

@@ -13,7 +13,7 @@ tools.registerTool(
   defineTool({
     id: "TEST.WIDE",
     name: "Every wider field type",
-    workbook: "test",
+    workbook: "wb01",
     fields: [
       {
         key: "submissions",

@@ -169,6 +169,26 @@ const field = z
     }
   )
 
+// The 13 workbooks. A registered tool belongs to one of them, and its workbook
+// is read only from here, never from the letters of its id.
+export const workbooks = [
+  "wb01",
+  "wb02",
+  "wb03",
+  "wb04",
+  "wb05",
+  "wb06",
+  "wb07",
+  "wb08",
+  "wb09",
+  "wb10",
+  "wb11",
+  "wb12",
+  "wb13",
+] as const
+
+export type Workbook = (typeof workbooks)[number]
+
 // A tool for one tier only can name the tool it takes the place of on that
 // tier's track. The project's service track picks which variants show.
 const toolDefinition = z

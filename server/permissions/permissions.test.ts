@@ -288,3 +288,44 @@ describe("companyRolesOf", () => {
     expect(await companyRolesOf(database, person)).toEqual(["FO"])
   })
 })
+
+describe("Tier 3 tools", () => {
+  it("lets an LE read and approve T3.D1.8a but not write it", async () => {
+    const le = await addPerson(projectId, ["LE"])
+
+    expect(await answers(le, projectId, "T3.D1.8a")).toEqual([
+      true,
+      false,
+      true,
+    ])
+  })
+
+  it("lets an AE write T3.D1.8a", async () => {
+    const ae = await addPerson(projectId, ["AE"])
+
+    expect(await answers(ae, projectId, "T3.D1.8a")).toEqual([
+      true,
+      true,
+      false,
+    ])
+  })
+
+  it("refuses a Client on T3.D1.8a", async () => {
+    const client = await addPerson(projectId, ["Client"])
+
+    expect(await answers(client, projectId, "T3.D1.8a")).toEqual([
+      false,
+      false,
+      false,
+    ])
+  })
+
+  it("lets an OM write T3.D1.3a, as for D1.3", async () => {
+    const om = await addPerson(projectId, ["OM"])
+
+    expect(await answers(om, projectId, "T3.D1.3a")).toEqual(
+      await answers(om, projectId, "D1.3")
+    )
+    expect(await can(database, om, projectId, "T3.D1.3a", "write")).toBe(true)
+  })
+})

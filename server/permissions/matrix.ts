@@ -163,6 +163,77 @@ export const permissionMatrix = {
   "P5.4": { LE: "RO", AE: "RW", LD: "RO", HE: "RO", CR: "RO" },
   "P5.4.1": { PM: "RO", LE: "RO", AE: "RW", LD: "RO", HE: "RA", CR: "RO" },
   P6: { PM: "RO", LE: "RO", AE: "RW", LD: "RO", HE: "RA", QA: "RO", CR: "RO" },
+  // Tier 3 tools, which a Tier 3 project uses in place of or next to the
+  // Tier 1 ones.
+  "T3.D1.8a": {
+    OM: "RO",
+    PM: "RO",
+    LE: "RA",
+    AE: "RW",
+    LD: "RO",
+    HE: "RO",
+    QA: "RO",
+    CR: "RO",
+  },
+  "T3.D2.2a": {
+    Client: "RO",
+    OM: "RW",
+    PM: "RA",
+    LE: "RO",
+    AE: "RO",
+    FO: "RO",
+    CA: "RO",
+    HE: "RO",
+    CR: "RO",
+  },
+  "T3.D4.8a": {
+    OM: "RO",
+    PM: "RA",
+    LE: "RO",
+    AE: "RW",
+    LD: "RO",
+    HE: "RO",
+    CR: "RO",
+  },
+  "DT3.D6.5.0a": {
+    PM: "RO",
+    LE: "RA",
+    AE: "RW",
+    LD: "RO",
+    HE: "RO",
+    QA: "RO",
+    CR: "RO",
+  },
+  "DT3.D6.5.1a": {
+    PM: "RO",
+    LE: "RA",
+    AE: "RW",
+    LD: "RO",
+    HE: "RO",
+    QA: "RO",
+    CR: "RO",
+  },
+  "T3.D6.10a": {
+    Client: "RO",
+    PM: "RO",
+    LE: "RA",
+    AE: "RW",
+    LD: "RO",
+    HE: "RA",
+    CR: "RO",
+  },
+  // PERMISSIONS.md has no rows for these two. Each has the access of the
+  // Tier 1 tool it replaces, D1.3 and D1.15.
+  "T3.D1.3a": { OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" },
+  "T3.D1.15a": {
+    Client: "RO",
+    OM: "RO",
+    PM: "RA",
+    LE: "RW",
+    FO: "RO",
+    CR: "RO",
+    "IT/Admin": "RO",
+  },
 } satisfies Record<string, Partial<Record<Role, Access>>>
 
 type Row = Partial<Record<Role, Access>>

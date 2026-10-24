@@ -3,8 +3,10 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { defineTool } from "./define-tool"
 import {
   brokenInheritedLinks,
+  UnknownWorkbookError,
   brokenReplacements,
   createToolRegistry,
+  workbookNumber,
   type ToolRegistry,
 } from "./registry"
 
@@ -64,6 +66,22 @@ describe("registry", () => {
   it("lists nothing when nothing is registered", () => {
     expect(registry.listTools()).toEqual([])
   })
+
+  it.each(["wb01", "wb05", "wb13"])("accepts the workbook %s", (workbook) => {
+    registry.registerTool(tool("D1.1", workbook))
+
+    expect(registry.getTool("D1.1")?.workbook).toBe(workbook)
+  })
+
+  it.each(["wb14", "wb00", "wb1", "WB01", "D1", "test", "wb01 "])(
+    "refuses the workbook %j",
+    (workbook) => {
+      expect(() => registry.registerTool(tool("D1.1", workbook))).toThrow(
+        UnknownWorkbookError
+      )
+      expect(registry.getTool("D1.1")).toBeUndefined()
+    }
+  )
 
   it("keeps separate registries separate", () => {
     registry.registerTool(tool("D1.1"))
@@ -221,5 +239,16 @@ describe("brokenReplacements", () => {
     const d13t3 = defineTool({ ...tool("D1.3"), tier: 3 })
 
     expect(brokenReplacements([d13t3, variant("D1.3")])).toHaveLength(1)
+  })
+})
+
+describe("workbookNumber", () => {
+  it.each([
+    ["wb01", 1],
+    ["wb04", 4],
+    ["wb10", 10],
+    ["wb13", 13],
+  ])("reads %s as workbook %i", (workbook, number) => {
+    expect(workbookNumber(tool("T3.X", workbook))).toBe(number)
   })
 })

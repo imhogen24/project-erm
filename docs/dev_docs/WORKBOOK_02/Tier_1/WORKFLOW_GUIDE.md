@@ -150,8 +150,8 @@ work cannot start until the advance payment is confirmed.
 
 > **Open item:** if signing runs through DocuSign, the executed PDF,
 > audit certificate, and completion event could be pulled in
-> automatically via DocuSign's API — the same pattern as D1.1's intake
-> webhook — instead of a human pasting links. Not decided.
+> automatically via DocuSign's API — the same idea as D1.1's intake,
+> which reads the database directly — instead of a human pasting links. Not decided.
 
 ### D2.13 — Archived Contract Record
 

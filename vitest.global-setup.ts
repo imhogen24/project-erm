@@ -3,6 +3,7 @@ import { existsSync } from "node:fs"
 import { migrate } from "drizzle-orm/node-postgres/migrator"
 
 import { createDatabase } from "./db"
+import { migrationsSchema, migrationsTable } from "./db/migration-history"
 
 export default async function setup() {
   const url = process.env.TEST_DATABASE_URL
@@ -25,7 +26,11 @@ export default async function setup() {
   }
 
   if (existsSync("./db/migrations")) {
-    await migrate(database, { migrationsFolder: "./db/migrations" })
+    await migrate(database, {
+      migrationsFolder: "./db/migrations",
+      migrationsSchema,
+      migrationsTable,
+    })
   }
 
   await database.pool.end()

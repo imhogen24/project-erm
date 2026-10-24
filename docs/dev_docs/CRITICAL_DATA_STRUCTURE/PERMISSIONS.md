@@ -10,12 +10,12 @@ Agents: **Client · OM** (Onboarding Manager) **· PM** (Project Manager) **· L
 
 | Tool ID | Tool Name | Client | OM | PM | LE | AE | LD | FO | CA | HE | PO | IO | WS | T | QA | LFE | LO | CR | IT/Admin | MKT |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| D1.1 | Client Email / Web Form | RW | RO | RO | - | - | - | - | - | - | - | - | - | - | - | - | RO | RO | - | |
-| D1.2 | Initial Inquiry Notification | - | RW | RO | - | - | - | - | RO | - | - | - | - | - | - | - | RO | RO | - | |
+| D1.1 | Client Email / Web Form | RW | RW | RA | - | - | - | - | - | - | - | - | - | - | - | - | RO | RO | - | |
+| D1.2 | Initial Inquiry Notification | - | RW | RA | - | - | - | - | RO | - | - | - | - | - | - | - | RO | RO | - | |
 | D1.3 | Received Request Record | - | RW | RA | - | - | - | - | RO | - | - | - | - | - | - | - | RO | RO | - | |
-| D1.4 | Acknowledgment Email | RO | RW | RO | - | - | - | - | RO | - | - | - | - | - | - | - | RO | RO | - | |
-| D1.5 | Meeting Proposal | RO | RW | RO | RO | - | - | - | RO | - | - | - | - | - | - | - | RO | RO | - | |
-| D1.6 | Calendar & Agenda | RO | RW | RO | RO | - | - | - | RO | - | - | - | - | - | - | - | RO | RO | - | |
+| D1.4 | Acknowledgment Email | RO | RW | RA | - | - | - | - | RO | - | - | - | - | - | - | - | RO | RO | - | |
+| D1.5 | Meeting Proposal | RO | RW | RA | RO | - | - | - | RO | - | - | - | - | - | - | - | RO | RO | - | |
+| D1.6 | Calendar & Agenda | RO | RW | RA | RO | - | - | - | RO | - | - | - | - | - | - | - | RO | RO | - | |
 | D1.7 | Raw Meeting Notes | RO | RW | RA | RO | - | - | - | - | - | - | - | - | - | - | - | - | RO | - | |
 | D1.8 | Needs Assessment | RO | RO | RA | RW | - | - | - | - | - | - | - | - | - | - | - | - | RO | - | |
 | T3.D1.8a | Tier 3 Drafting / Reverse Engineering | - | RO | RO | RA | RW | RO | - | - | RO | - | - | - | - | RO | - | - | RO | - | |

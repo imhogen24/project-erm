@@ -3,6 +3,7 @@ import { existsSync } from "node:fs"
 import { migrate } from "drizzle-orm/node-postgres/migrator"
 
 import { createDatabase } from "../../db"
+import { migrationsSchema, migrationsTable } from "../../db/migration-history"
 
 const migrationsFolder = "./db/migrations"
 
@@ -19,7 +20,7 @@ if (!existsSync(migrationsFolder)) {
 
 const database = createDatabase(url)
 
-await migrate(database, { migrationsFolder })
+await migrate(database, { migrationsFolder, migrationsSchema, migrationsTable })
 
 await database.pool.end()
 

@@ -1,70 +1,186 @@
 "use client"
 
 import { Controller, useForm } from "react-hook-form"
+import { z } from "zod"
 
+import {
+  FieldControl,
+  checklistFlags,
+  flagsOf,
+  textOf,
+  type RawCell,
+  type RawRow,
+  type RawValue,
+} from "@/components/field-control"
+import { TableEditor } from "@/components/table-editor"
 import { Button } from "@/components/ui/button"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   Field,
   FieldError,
   FieldGroup,
   FieldLabel,
+  FieldLegend,
+  FieldSet,
 } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import { Textarea } from "@/components/ui/textarea"
 import type {
+  CellValue,
+  Column,
   Field as ToolField,
   FieldError as ToolFieldError,
+  FieldValue,
   FormValues,
+  TableField,
   ToolDefinition,
 } from "@/lib/tool-definition"
 
 type Props = {
   tool: ToolDefinition
   values: FormValues
-  // What the server found wrong, one entry per field. The form only shows it.
+  // What the server found wrong. The form only shows it: one message under a
+  // field, or under the exact cell of a table.
   errors?: ToolFieldError[]
   onSave: (values: FormValues) => void
   onSubmit: (values: FormValues) => void
 }
 
-const controlClass =
-  "h-12 border-foreground/20 bg-background text-base md:text-base"
+// Shown in the form but never written, so they never leave it.
+const readOnlyTypes = ["instruction", "staticList", "signature"]
+
+const numeric = ["number", "currency", "percentage"]
+
+// These always send what they hold, even when it is empty.
+const plainTypes = ["text", "longText", "date", "boolean", "select"]
+
+const savedCell = z.union([
+  z.string(),
+  z.number(),
+  z.boolean(),
+  z.null(),
+  z.record(z.string(), z.boolean()),
+])
+
+const rowsSchema = z.array(z.record(z.string(), savedCell))
+
+function rawCell(
+  cell: ToolField | Column,
+  value: FieldValue | undefined
+): RawCell {
+  if (cell.type === "boolean") {
+    return value === true
+  }
+
+  if (cell.type === "checklist") {
+    return checklistFlags(value)
+  }
+
+  return value === null || value === undefined ? "" : String(value)
+}
+
+// A table with fixed rows always holds exactly those rows, in that order.
+function startingRows(
+  field: TableField,
+  value: FieldValue | undefined
+): RawRow[] {
+  const saved = rowsSchema.safeParse(value).data ?? []
+  const labels = field.prefilledRows
+
+  const rows = (labels ?? saved.map(() => undefined)).map((label, index) => {
+    const row = saved[index] ?? {}
+
+    return Object.fromEntries(
+      field.columns
+        .filter((column) => !readOnlyTypes.includes(column.type))
+        .map((column, position) => [
+          column.key,
+          label !== undefined && position === 0
+            ? label
+            : rawCell(column, row[column.key]),
+        ])
+    )
+  })
+
+  return rows
+}
+
+function startingValue(field: ToolField, value: FieldValue | undefined) {
+  if (field.type === "table") {
+    return startingRows(field, value)
+  }
+
+  return rawCell(field, value)
+}
+
+// A cell left empty is left out, so a draft can be saved half filled.
+function toCell(
+  cell: Column | ToolField,
+  raw: RawCell | undefined
+): CellValue | undefined {
+  const text = textOf(raw)
+
+  if (
+    readOnlyTypes.includes(cell.type) ||
+    cell.inherited ||
+    raw === undefined ||
+    text === ""
+  ) {
+    return undefined
+  }
+
+  const answers = flagsOf(raw)
+
+  if (answers) {
+    return Object.keys(answers).length === 0 ? undefined : answers
+  }
+
+  return text !== undefined && numeric.includes(cell.type) ? Number(text) : raw
+}
+
+function toRows(field: TableField, rows: RawRow[]) {
+  return rows.map((row) =>
+    Object.fromEntries(
+      field.columns.flatMap((column) => {
+        const value = toCell(column, row[column.key])
+
+        return value === undefined ? [] : [[column.key, value]]
+      })
+    )
+  )
+}
 
 // The inputs hold text, so a number is turned back into a number here. An empty
-// number is null, not zero.
-function toValues(tool: ToolDefinition, held: FormValues): FormValues {
+// number is null, not zero. The newer types leave out what is empty.
+function toValues(
+  tool: ToolDefinition,
+  held: Record<string, RawValue>
+): FormValues {
   const values: FormValues = {}
 
   for (const field of tool.fields) {
-    const value = held[field.key] ?? null
+    const raw = held[field.key]
 
-    if (field.type === "number") {
-      values[field.key] = value === "" || value === null ? null : Number(value)
+    if (field.type === "table") {
+      values[field.key] = toRows(field, Array.isArray(raw) ? raw : [])
+    } else if (Array.isArray(raw)) {
+      continue
+    } else if (field.inherited) {
+      values[field.key] = textOf(raw) ?? null
+    } else if (field.type === "number") {
+      const text = textOf(raw)
+
+      values[field.key] =
+        text === undefined || text === "" ? null : Number(text)
+    } else if (plainTypes.includes(field.type)) {
+      values[field.key] = raw ?? ""
     } else {
-      values[field.key] = value
+      const cell = toCell(field, raw)
+
+      if (cell !== undefined) {
+        values[field.key] = cell
+      }
     }
   }
 
   return values
-}
-
-function startingValue(
-  field: ToolField,
-  value: FormValues[string] | undefined
-) {
-  if (field.type === "boolean") {
-    return value === true
-  }
-
-  return value === null || value === undefined ? "" : String(value)
 }
 
 export function ToolForm({
@@ -74,16 +190,20 @@ export function ToolForm({
   onSave,
   onSubmit,
 }: Props) {
-  const form = useForm<Record<string, string | boolean>>({
+  const form = useForm<Record<string, RawValue>>({
     defaultValues: Object.fromEntries(
-      tool.fields.map((field) => [
-        field.key,
-        startingValue(field, values[field.key]),
-      ])
+      tool.fields
+        .filter((field) => !readOnlyTypes.includes(field.type))
+        .map((field) => [field.key, startingValue(field, values[field.key])])
     ),
   })
 
-  const messages = new Map(errors.map((error) => [error.field, error.message]))
+  // A message about the whole field. A message about one cell goes to the cell.
+  const messages = new Map(
+    errors
+      .filter((error) => error.row === undefined || error.column === undefined)
+      .map((error) => [error.field, error.message])
+  )
 
   function held(): FormValues {
     return toValues(tool, form.getValues())
@@ -106,19 +226,24 @@ export function ToolForm({
           // A true/false field reads best as a box with its label beside it.
           const isBox = field.type === "boolean" && !field.inherited
 
-          const label = (
-            <FieldLabel htmlFor={field.key} className="text-sm">
+          // These are drawn as a group under a title, not as one input.
+          const isGroup =
+            field.type === "table" ||
+            field.type === "checklist" ||
+            readOnlyTypes.includes(field.type)
+
+          const title = (
+            <>
               {field.label}
               {field.required && <span aria-hidden> *</span>}
-            </FieldLabel>
+            </>
           )
 
-          const shared = {
-            id: field.key,
-            "aria-required": field.required ? (true as const) : undefined,
-            "aria-invalid": message ? (true as const) : undefined,
-            "aria-describedby": message ? errorId : undefined,
-          }
+          const label = (
+            <FieldLabel htmlFor={field.key} className="text-sm">
+              {title}
+            </FieldLabel>
+          )
 
           return (
             <Controller
@@ -127,65 +252,79 @@ export function ToolForm({
               control={form.control}
               render={({ field: control }) => (
                 <Field data-invalid={Boolean(message)}>
-                  {!isBox && label}
-                  {field.inherited ? (
-                    <Input
-                      {...shared}
-                      readOnly
-                      value={String(control.value)}
-                      className={`${controlClass} bg-muted/50`}
-                    />
-                  ) : field.type === "longText" ? (
-                    <Textarea
-                      {...shared}
-                      value={String(control.value)}
-                      onChange={control.onChange}
-                      className="min-h-28 border-foreground/20 bg-background text-base md:text-base"
-                    />
-                  ) : field.type === "boolean" ? (
+                  {isGroup ? (
+                    <FieldSet className="gap-2">
+                      <FieldLegend
+                        variant="label"
+                        className="mb-0 data-[variant=label]:text-sm"
+                      >
+                        {title}
+                      </FieldLegend>
+                      {field.type === "table" ? (
+                        <TableEditor
+                          field={field}
+                          rows={
+                            Array.isArray(control.value) ? control.value : []
+                          }
+                          onChange={control.onChange}
+                          errors={errors.filter(
+                            (error) =>
+                              error.field === field.key &&
+                              error.row !== undefined &&
+                              error.column !== undefined
+                          )}
+                        />
+                      ) : (
+                        <FieldControl
+                          cell={field}
+                          id={field.key}
+                          value={
+                            readOnlyTypes.includes(field.type)
+                              ? values[field.key]
+                              : Array.isArray(control.value)
+                                ? undefined
+                                : control.value
+                          }
+                          onChange={control.onChange}
+                          invalid={Boolean(message)}
+                          describedBy={message ? errorId : undefined}
+                        />
+                      )}
+                    </FieldSet>
+                  ) : isBox ? (
                     <div className="flex items-center gap-3">
-                      <Checkbox
-                        {...shared}
-                        checked={control.value === true}
-                        onCheckedChange={(checked) =>
-                          control.onChange(checked === true)
+                      <FieldControl
+                        cell={field}
+                        id={field.key}
+                        value={
+                          Array.isArray(control.value)
+                            ? undefined
+                            : control.value
                         }
+                        onChange={control.onChange}
+                        required={field.required}
+                        invalid={Boolean(message)}
+                        describedBy={message ? errorId : undefined}
                       />
                       {label}
                     </div>
-                  ) : field.type === "select" ? (
-                    <Select
-                      value={String(control.value)}
-                      onValueChange={control.onChange}
-                    >
-                      <SelectTrigger
-                        {...shared}
-                        className={`${controlClass} w-full data-[size=default]:h-12`}
-                      >
-                        <SelectValue placeholder="Choose an option" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {field.options.map((option) => (
-                          <SelectItem key={option} value={option}>
-                            {option}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
                   ) : (
-                    <Input
-                      {...shared}
-                      type={
-                        field.type === "number"
-                          ? "number"
-                          : field.type === "date"
-                            ? "date"
-                            : "text"
-                      }
-                      value={String(control.value)}
-                      onChange={control.onChange}
-                      className={controlClass}
-                    />
+                    <>
+                      {label}
+                      <FieldControl
+                        cell={field}
+                        id={field.key}
+                        value={
+                          Array.isArray(control.value)
+                            ? undefined
+                            : control.value
+                        }
+                        onChange={control.onChange}
+                        required={field.required}
+                        invalid={Boolean(message)}
+                        describedBy={message ? errorId : undefined}
+                      />
+                    </>
                   )}
                   {message && <FieldError id={errorId}>{message}</FieldError>}
                 </Field>

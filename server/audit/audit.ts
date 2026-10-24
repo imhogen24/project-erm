@@ -16,11 +16,13 @@ export type Change = {
   newValue: JsonValue | null
 }
 
+// A line about the project itself has no record.
 type Entry = {
-  recordId: string
+  recordId: string | null
   projectId: string
   actor: string
   action: AuditAction
+  reason?: string
 }
 
 // One change for each payload field whose value differs. A field that exists
@@ -69,6 +71,7 @@ export async function writeAudit(
       field: change.field,
       oldValue: change.oldValue,
       newValue: change.newValue,
+      reason: entry.reason ?? null,
     }))
   )
 }

@@ -9,6 +9,8 @@ import {
 } from "@/db/schema"
 import { stateChange, writeAudit } from "@/server/audit/audit"
 import { assertHoldsRole } from "@/server/permissions/permissions"
+import { UnknownToolError } from "@/server/records/validate"
+import { getTool, workbookNumber } from "@/server/tools/registry"
 
 export class RollbackNotAllowedError extends Error {}
 
@@ -41,22 +43,16 @@ const reopenedStates: readonly RecordState[] = [
   "locked",
 ]
 
-// Every P tool belongs to the design process of workbook 5.
-const processWorkbook = 5
+// A tool's workbook comes from its definition. A record whose tool has none
+// stops the rollback, since there is no telling which workbook it is in.
+function workbookOfTool(toolId: string): number {
+  const tool = getTool(toolId)
 
-// D1.8 and D1 are workbook 1, D2.12 is workbook 2, and any P tool is workbook 5.
-export function workbookOf(toolId: string): number {
-  if (toolId.startsWith("P")) {
-    return processWorkbook
+  if (!tool) {
+    throw new UnknownToolError(`${toolId} has no tool definition`)
   }
 
-  const match = /^D(\d+)(\.|$)/.exec(toolId)
-
-  if (!match) {
-    throw new Error(`"${toolId}" is not a tool id`)
-  }
-
-  return Number(match[1])
+  return workbookNumber(tool)
 }
 
 export function canRollBack(from: number, to: number): boolean {
@@ -129,7 +125,9 @@ export async function rollBackWorkbook(
       )
     }
 
-    const current = Math.max(...live.map((record) => workbookOf(record.toolId)))
+    const current = Math.max(
+      ...live.map((record) => workbookOfTool(record.toolId))
+    )
 
     if (!canRollBack(current, input.toWorkbook)) {
       throw new RollbackNotAllowedError(
@@ -138,7 +136,7 @@ export async function rollBackWorkbook(
     }
 
     if (
-      !live.some((record) => workbookOf(record.toolId) === input.toWorkbook)
+      !live.some((record) => workbookOfTool(record.toolId) === input.toWorkbook)
     ) {
       throw new RollbackNotAllowedError(
         `Workbook ${input.toWorkbook} has no records to reopen`
@@ -163,7 +161,7 @@ export async function rollBackWorkbook(
 
     for (const record of live) {
       const to = stateAfterRollback(
-        workbookOf(record.toolId),
+        workbookOfTool(record.toolId),
         record.state,
         input.toWorkbook
       )

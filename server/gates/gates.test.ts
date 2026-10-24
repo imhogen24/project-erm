@@ -17,18 +17,13 @@ import { GateClosedError, gateFor, gates } from "./gates"
 
 const database = createTestDatabase()
 
-registerTestTools([
-  "D1.3",
-  "D1.14",
-  "D1.15",
-  "D2.1",
-  "D2.12",
-  "D3.1",
-  "D3.10",
-  "D4.1",
-  "D4.8",
-  "P5.2",
-])
+registerTestTools({
+  wb01: ["D1.3", "D1.14", "D1.15"],
+  wb02: ["D2.1", "D2.12"],
+  wb03: ["D3.1", "D3.10"],
+  wb04: ["D4.1", "D4.8"],
+  wb05: ["P5.2"],
+})
 
 let projectId: string
 

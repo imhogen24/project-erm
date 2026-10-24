@@ -1,4 +1,6 @@
-import type { Field, ToolDefinition } from "./define-tool"
+import { workbooks, type Field, type ToolDefinition } from "./define-tool"
+
+export class UnknownWorkbookError extends Error {}
 
 export type ToolRegistry = {
   registerTool: (tool: ToolDefinition) => void
@@ -11,6 +13,12 @@ export function createToolRegistry(): ToolRegistry {
 
   return {
     registerTool(tool) {
+      if (!workbooks.some((workbook) => workbook === tool.workbook)) {
+        throw new UnknownWorkbookError(
+          `${tool.id} is in workbook "${tool.workbook}", which is not one of wb01 to wb13`
+        )
+      }
+
       if (tools.has(tool.id)) {
         throw new Error(`A tool with id ${tool.id} is already registered`)
       }
@@ -24,6 +32,12 @@ export function createToolRegistry(): ToolRegistry {
           filter?.workbook === undefined || tool.workbook === filter.workbook
       ),
   }
+}
+
+// "wb04" is workbook 4. Only a registered tool is passed, so its workbook is
+// always one of the 13.
+export function workbookNumber(tool: ToolDefinition): number {
+  return workbooks.findIndex((workbook) => workbook === tool.workbook) + 1
 }
 
 // The registry records are checked against. server/ cannot import workbooks,

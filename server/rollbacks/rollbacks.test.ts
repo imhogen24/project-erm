@@ -13,7 +13,7 @@ import {
   updateRecord,
   type RecordState,
 } from "@/server/records/records"
-import { defineTool } from "@/server/tools/define-tool"
+import { getTool, workbookNumber } from "@/server/tools/registry"
 import { registerTestTools } from "@/server/tools/testing"
 
 import {
@@ -21,7 +21,6 @@ import {
   RollbackReasonMissingError,
   canRollBack,
   rollBackWorkbook,
-  workbookOf,
 } from "./rollbacks"
 
 const database = createTestDatabase()
@@ -43,7 +42,18 @@ const gateTools = ["D1.15", "D2.12", "D3.10", "D4.8"]
 // compare.
 const extraTools = ["D1.8", "D2.14", "D3.1", "D4.1", "P5.2"]
 
-registerTestTools([...gateTools, ...extraTools, "D1.3"])
+registerTestTools({
+  wb01: ["D1.15", "D1.8", "D1.3", "T3.D1.8a"],
+  wb02: ["D2.12", "D2.14"],
+  wb03: ["D3.10", "D3.1"],
+  wb04: ["D4.8", "D4.1", "X.FOUR"],
+  wb05: ["P5.2"],
+})
+
+// A tool's workbook, read from its definition as rollback does.
+function workbookOf(toolId: string) {
+  return workbookNumber(getTool(toolId)!)
+}
 
 type Row = {
   id: string
@@ -211,32 +221,6 @@ describe("canRollBack", () => {
   it("refuses a target before workbook 1", () => {
     expect(canRollBack(2, 0)).toBe(false)
   })
-})
-
-describe("workbookOf", () => {
-  it.each([
-    ["D1.8", 1],
-    ["D1.16", 1],
-    ["D2", 2],
-    ["D2.12", 2],
-    ["D4.8", 4],
-    ["P5.3", 5],
-    ["P5.1A", 5],
-    ["P5.4.1", 5],
-    ["P7.1", 5],
-    ["D6.1", 6],
-    ["D10.1", 10],
-    ["D12.5", 12],
-  ])("puts %s in workbook %i", (toolId, workbook) => {
-    expect(workbookOf(toolId)).toBe(workbook)
-  })
-
-  it.each(["X1.1", "D", "Dx.1", "D1x"])(
-    "refuses the tool id %j, which it cannot read",
-    (toolId) => {
-      expect(() => workbookOf(toolId)).toThrow()
-    }
-  )
 })
 
 describe("rolling back", () => {
@@ -589,14 +573,7 @@ describe("void and reopened records", () => {
 
     await createRecord(database, actor, { projectId, toolId: "D2.14" })
 
-    const tools = ["D2.14", "D3.1"].map((id) =>
-      defineTool({
-        id,
-        name: `Tool ${id}`,
-        workbook: `D${workbookOf(id)}`,
-        fields: [{ key: "note", label: "Note", type: "text" }],
-      })
-    )
+    const tools = ["D2.14", "D3.1"].map((id) => getTool(id)!)
 
     const overview = await getProjectOverview(database, actor, projectId, tools)
 
@@ -664,5 +641,56 @@ describe("void and reopened records", () => {
 
     expect(voidLines).toHaveLength(workbook2.length)
     expect(rollbacks).toHaveLength(1)
+  })
+})
+
+describe("finding a tool's workbook", () => {
+  async function insertRecord(toolId: string, state: RecordState) {
+    await database.pool.query(
+      "INSERT INTO tool_records (project_id, tool_id, state) VALUES ($1, $2, $3)",
+      [projectId, toolId, state]
+    )
+  }
+
+  it("rolls back a Tier 3 project to workbook 1 with no error", async () => {
+    await recordIn("locked", "D1.15")
+    const drafting = await recordIn("locked", "T3.D1.8a")
+    await recordIn("submitted", "D2.14")
+
+    await rollBack(1)
+
+    const states = Object.fromEntries(
+      (await rowsOf()).map((row) => [row.toolId, row.state])
+    )
+
+    expect(states).toEqual({
+      "D1.15": "draft",
+      "D2.14": "void",
+      "T3.D1.8a": "draft",
+    })
+    expect(
+      (await rowsOf()).find((row) => row.id === drafting.id)?.payload
+    ).toEqual({ note: `T3.D1.8a on ${projectId}` })
+  })
+
+  it("takes the workbook from the definition, whatever the id says", async () => {
+    await buildUpTo(3)
+    await insertRecord("X.FOUR", "submitted")
+
+    const rollback = await rollBack(3)
+
+    expect(rollback.fromWorkbook).toBe(4)
+    expect((await rowsOf()).find((row) => row.toolId === "X.FOUR")?.state).toBe(
+      "void"
+    )
+  })
+
+  it("refuses a record whose tool has no definition, and changes nothing", async () => {
+    await buildUpTo(2)
+    await insertRecord("D9.NOPE", "draft")
+    const before = await rowsOf()
+
+    await expect(rollBack(1)).rejects.toThrow(/D9\.NOPE/)
+    expect(await rowsOf()).toEqual(before)
   })
 })

@@ -15,8 +15,11 @@ import {
 } from "@/server/audit/audit"
 import { assertGateOpen } from "@/server/gates/gates"
 import { assertCan, type Action } from "@/server/permissions/permissions"
+import { assertProjectActive } from "@/server/projects/projects"
 
 import { assertValid } from "./validate"
+
+export { ProjectNotActiveError } from "@/server/projects/projects"
 
 export { UnknownToolError, ValidationError } from "./validate"
 
@@ -76,6 +79,8 @@ export async function createRecord(
   })
 
   return database.transaction(async (transaction) => {
+    await assertProjectActive(transaction, input.projectId)
+
     const [record] = await transaction
       .insert(toolRecords)
       .values({
@@ -183,6 +188,8 @@ export async function transitionRecord(
   )
 
   return database.transaction(async (transaction) => {
+    await assertProjectActive(transaction, record.projectId)
+
     const current = await lockRecord(transaction, recordId)
 
     if (!allowedTransitions[current.state].includes(to)) {
@@ -231,6 +238,8 @@ export async function updateRecord(
   const checked = assertValid(record.toolId, payload, { forSubmit: false })
 
   return database.transaction(async (transaction) => {
+    await assertProjectActive(transaction, record.projectId)
+
     const current = await lockRecord(transaction, recordId)
 
     if (current.state !== "draft") {

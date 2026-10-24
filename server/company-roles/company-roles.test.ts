@@ -67,7 +67,7 @@ beforeEach(async () => {
   await resetTestData(database)
 
   const { rows } = await database.pool.query<{ id: string }>(
-    "INSERT INTO projects (name) VALUES ('Boiler') RETURNING id"
+    "INSERT INTO projects (name, request_id, service_track) VALUES ('Boiler', 'T1-1789787898386', 'Tier_1') RETURNING id"
   )
 
   projectId = rows[0]!.id

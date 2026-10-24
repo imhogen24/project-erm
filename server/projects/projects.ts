@@ -1,18 +1,26 @@
-import { and, asc, desc, eq, inArray } from "drizzle-orm"
+import { DrizzleQueryError, and, asc, desc, eq, inArray } from "drizzle-orm"
+import { DatabaseError } from "pg"
 
 import type { Database } from "@/db"
 
 import {
   personProjectRoles,
+  projectStatuses,
   projects,
   roles,
+  serviceTracks,
   toolRecords,
+  type ProjectStatus,
   type RecordState,
   type Role,
+  type ServiceTrack,
 } from "@/db/schema"
+
+import { writeAudit, type Transaction } from "@/server/audit/audit"
 
 import {
   PermissionDeniedError,
+  assertHoldsRole,
   companyRolesOf,
   roleAllows,
   rolesOn,
@@ -20,15 +28,188 @@ import {
 
 import type { ToolDefinition } from "@/server/tools/define-tool"
 
-export type ProjectSummary = { id: string; name: string; roles: Role[] }
+export { projectStatuses, serviceTracks }
+
+export type { ProjectStatus, ServiceTrack }
+
+export class DuplicateRequestIdError extends Error {}
+
+export class InvalidServiceTrackError extends Error {}
+
+export class InvalidProjectStatusError extends Error {}
+
+export class ProjectNotActiveError extends Error {}
+
+export class ProjectStatusReasonMissingError extends Error {}
+
+export type Project = {
+  id: string
+  name: string
+  requestId: string
+  serviceTrack: ServiceTrack
+  status: ProjectStatus
+}
+
+export type ProjectSummary = Project & { roles: Role[] }
 
 // A void record never shows; a tool with only void records is not started.
 export type ToolState = Exclude<RecordState, "void"> | "notStarted"
 
-export type ProjectOverview = {
-  id: string
-  name: string
+export type ProjectOverview = Project & {
   tools: { toolId: string; name: string; workbook: string; state: ToolState }[]
+}
+
+type NewProject = {
+  name: string
+  serviceTrack: ServiceTrack
+  requestId: string
+}
+
+const columns = {
+  id: projects.id,
+  name: projects.name,
+  requestId: projects.requestId,
+  serviceTrack: projects.serviceTrack,
+  status: projects.status,
+}
+
+// The request ID is the website's, so the client and the team quote the same
+// one. The unique rule on the column refuses a second project with it, even
+// when both are created at the same moment. A new project is active.
+export async function createProject(
+  database: Database,
+  actor: string,
+  input: NewProject
+): Promise<Project> {
+  if (!serviceTracks.includes(input.serviceTrack)) {
+    throw new InvalidServiceTrackError(
+      `A project needs a service track: ${serviceTracks.join(" or ")}`
+    )
+  }
+
+  try {
+    return await database.transaction(async (transaction) => {
+      const [project] = await transaction
+        .insert(projects)
+        .values({
+          name: input.name,
+          requestId: input.requestId,
+          serviceTrack: input.serviceTrack,
+        })
+        .returning(columns)
+
+      await writeAudit(
+        transaction,
+        {
+          recordId: null,
+          projectId: project!.id,
+          actor,
+          action: "created",
+        },
+        [
+          { field: "name", oldValue: null, newValue: project!.name },
+          { field: "request_id", oldValue: null, newValue: project!.requestId },
+          {
+            field: "service_track",
+            oldValue: null,
+            newValue: project!.serviceTrack,
+          },
+          { field: "status", oldValue: null, newValue: project!.status },
+        ]
+      )
+
+      return project!
+    })
+  } catch (error) {
+    // Drizzle wraps the driver's error, so the broken rule is on its cause.
+    if (
+      error instanceof DrizzleQueryError &&
+      error.cause instanceof DatabaseError &&
+      error.cause.constraint === "projects_request_id_unique"
+    ) {
+      throw new DuplicateRequestIdError(
+        `Request ID ${input.requestId} is already used by another project`
+      )
+    }
+
+    throw error
+  }
+}
+
+// Only the project's PM can do it for now, and only with a reason. The row is
+// held until the transaction ends, so records being created or moved finish
+// first, and none start until the new status is saved.
+export async function setProjectStatus(
+  database: Database,
+  actor: string,
+  projectId: string,
+  status: ProjectStatus,
+  reason: string
+): Promise<Project> {
+  await assertHoldsRole(database, actor, projectId, "PM")
+
+  const trimmed = reason.trim()
+
+  if (trimmed === "") {
+    throw new ProjectStatusReasonMissingError("A status change needs a reason")
+  }
+
+  if (!projectStatuses.includes(status)) {
+    throw new InvalidProjectStatusError(`${status} is not a project status`)
+  }
+
+  return database.transaction(async (transaction) => {
+    const [current] = await transaction
+      .select({ status: projects.status })
+      .from(projects)
+      .where(eq(projects.id, projectId))
+      .for("update")
+
+    if (current!.status === status) {
+      throw new InvalidProjectStatusError(`This project is already ${status}`)
+    }
+
+    const [updated] = await transaction
+      .update(projects)
+      .set({ status })
+      .where(eq(projects.id, projectId))
+      .returning(columns)
+
+    await writeAudit(
+      transaction,
+      {
+        recordId: null,
+        projectId,
+        actor,
+        action: "transitioned",
+        reason: trimmed,
+      },
+      [{ field: "status", oldValue: current!.status, newValue: status }]
+    )
+
+    return updated!
+  })
+}
+
+// Runs inside the transaction that creates or moves records, after the
+// permission check has confirmed the project exists. The key share lock waits
+// for a status change in progress and holds one off until the transaction
+// ends, without blocking other records or a rollback.
+export async function assertProjectActive(
+  transaction: Transaction,
+  projectId: string
+): Promise<void> {
+  const [project] = await transaction
+    .select({ status: projects.status })
+    .from(projects)
+    .where(eq(projects.id, projectId))
+    .for("key share")
+
+  if (project!.status !== "active") {
+    throw new ProjectNotActiveError(
+      `This project is ${project!.status}, so its records are read only`
+    )
+  }
 }
 
 // The projects this person holds at least one role on, sorted by name. A
@@ -40,11 +221,7 @@ export async function listProjectsFor(
 ): Promise<ProjectSummary[]> {
   const [rows, companyWide] = await Promise.all([
     database
-      .select({
-        id: projects.id,
-        name: projects.name,
-        role: personProjectRoles.role,
-      })
+      .select({ ...columns, role: personProjectRoles.role })
       .from(personProjectRoles)
       .innerJoin(projects, eq(projects.id, personProjectRoles.projectId))
       .where(eq(personProjectRoles.personId, actor))
@@ -59,13 +236,13 @@ export async function listProjectsFor(
   // One row per role, so a person with two roles on a project gives two rows.
   const byProject = new Map<string, ProjectSummary>()
 
-  for (const row of rows) {
+  for (const { role, ...row } of rows) {
     const project = byProject.get(row.id)
 
     if (project) {
-      project.roles.push(row.role)
+      project.roles.push(role)
     } else {
-      byProject.set(row.id, { id: row.id, name: row.name, roles: [row.role] })
+      byProject.set(row.id, { ...row, roles: [role] })
     }
   }
 
@@ -74,7 +251,7 @@ export async function listProjectsFor(
   }
 
   const every = await database
-    .select({ id: projects.id, name: projects.name })
+    .select(columns)
     .from(projects)
     .orderBy(asc(projects.name), asc(projects.id))
 
@@ -106,7 +283,7 @@ export async function getProjectOverview(
   }
 
   const [project] = await database
-    .select({ id: projects.id, name: projects.name })
+    .select(columns)
     .from(projects)
     .where(eq(projects.id, projectId))
 
@@ -140,8 +317,7 @@ export async function getProjectOverview(
   }
 
   return {
-    id: project!.id,
-    name: project!.name,
+    ...project!,
     tools: readable.map((tool) => ({
       toolId: tool.id,
       name: tool.name,

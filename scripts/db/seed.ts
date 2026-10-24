@@ -13,7 +13,7 @@ const created = await seed(url)
 if (created.length === 0) {
   console.log("Seed users already exist.")
 } else {
-  console.log(`Added ${created.length} seed users on "Demo Project":`)
+  console.log(`Added ${created.length} seed users:`)
   console.table(
     created.map(({ role, email }) => ({ role, email, password: SEED_PASSWORD }))
   )

@@ -5,6 +5,7 @@ import type { Database } from "@/db"
 import {
   personProjectRoles,
   projects,
+  roles,
   toolRecords,
   type RecordState,
   type Role,
@@ -12,6 +13,7 @@ import {
 
 import {
   PermissionDeniedError,
+  companyRolesOf,
   roleAllows,
   rolesOn,
 } from "@/server/permissions/permissions"
@@ -29,21 +31,30 @@ export type ProjectOverview = {
   tools: { toolId: string; name: string; workbook: string; state: ToolState }[]
 }
 
-// The projects this person holds at least one role on, sorted by name.
+// The projects this person holds at least one role on, sorted by name. A
+// person with a company-wide role holds it on every project, so they see every
+// project, with their project roles added to the company-wide ones.
 export async function listProjectsFor(
   database: Database,
   actor: string
 ): Promise<ProjectSummary[]> {
-  const rows = await database
-    .select({
-      id: projects.id,
-      name: projects.name,
-      role: personProjectRoles.role,
-    })
-    .from(personProjectRoles)
-    .innerJoin(projects, eq(projects.id, personProjectRoles.projectId))
-    .where(eq(personProjectRoles.personId, actor))
-    .orderBy(asc(projects.name), asc(projects.id), asc(personProjectRoles.role))
+  const [rows, companyWide] = await Promise.all([
+    database
+      .select({
+        id: projects.id,
+        name: projects.name,
+        role: personProjectRoles.role,
+      })
+      .from(personProjectRoles)
+      .innerJoin(projects, eq(projects.id, personProjectRoles.projectId))
+      .where(eq(personProjectRoles.personId, actor))
+      .orderBy(
+        asc(projects.name),
+        asc(projects.id),
+        asc(personProjectRoles.role)
+      ),
+    companyRolesOf(database, actor),
+  ])
 
   // One row per role, so a person with two roles on a project gives two rows.
   const byProject = new Map<string, ProjectSummary>()
@@ -58,7 +69,23 @@ export async function listProjectsFor(
     }
   }
 
-  return [...byProject.values()]
+  if (companyWide.length === 0) {
+    return [...byProject.values()]
+  }
+
+  const every = await database
+    .select({ id: projects.id, name: projects.name })
+    .from(projects)
+    .orderBy(asc(projects.name), asc(projects.id))
+
+  return every.map((project) => {
+    const held = new Set([
+      ...companyWide,
+      ...(byProject.get(project.id)?.roles ?? []),
+    ])
+
+    return { ...project, roles: roles.filter((role) => held.has(role)) }
+  })
 }
 
 // The tools this person may read on the project, each with the state of its

@@ -62,6 +62,25 @@ async function addPerson(email: string, held: [string, Role][] = []) {
   return rows[0]!.id
 }
 
+async function holdCompanyWide(personId: string, role: Role) {
+  await database.pool.query(
+    "INSERT INTO person_company_roles (person_id, role) VALUES ($1, $2)",
+    [personId, role]
+  )
+}
+
+async function companyRolesOf(email: string) {
+  const { rows } = await database.pool.query<{ role: string }>(
+    `SELECT r.role FROM person_company_roles r
+     JOIN people p ON p.id = r.person_id
+     WHERE p.email = $1
+     ORDER BY r.role::text`,
+    [email]
+  )
+
+  return rows.map((row) => row.role)
+}
+
 // Gives a person a password account, so they can sign in.
 async function addPassword(personId: string, password = PASSWORD) {
   await database.pool.query(
@@ -110,7 +129,7 @@ async function logLines() {
     action: string
     person_id: string | null
     email: string
-    project_id: string
+    project_id: string | null
     roles: string[]
   }>(
     `SELECT actor_id, action, person_id, email, project_id, roles::text[] AS roles
@@ -168,7 +187,8 @@ beforeEach(async () => {
   projectId = await addProject("Boiler")
   otherProjectId = await addProject("Water Tank")
 
-  admin = await addPerson("admin@example.com", [[projectId, "IT/Admin"]])
+  admin = await addPerson("admin@example.com")
+  await holdCompanyWide(admin, "IT/Admin")
 })
 
 afterAll(async () => {
@@ -260,7 +280,7 @@ describe("creating an invite", () => {
     expect(rows[0]!.roles).toEqual(["PM", "LE"])
   })
 
-  it("lets an IT/Admin of one project invite someone to another", async () => {
+  it("lets a company-wide IT/Admin invite someone to any project", async () => {
     await newInvite({ projectId: otherProjectId })
 
     expect(await count("invitations")).toBe(1)
@@ -275,6 +295,27 @@ describe("who may invite", () => {
       createInvite(
         database,
         pm,
+        {
+          email: "kofi@example.com",
+          name: "Kofi",
+          projectId,
+          roles: ["LE"],
+        },
+        options
+      )
+    ).rejects.toBeInstanceOf(PermissionDeniedError)
+    expect(await count("invitations")).toBe(0)
+  })
+
+  it("refuses a person who holds IT/Admin on one project only", async () => {
+    const projectAdmin = await addPerson("project-admin@example.com", [
+      [projectId, "IT/Admin"],
+    ])
+
+    await expect(
+      createInvite(
+        database,
+        projectAdmin,
         {
           email: "kofi@example.com",
           name: "Kofi",
@@ -331,6 +372,80 @@ describe("what an invite may contain", () => {
     await expect(newInvite({ email: "not-an-email" })).rejects.toBeInstanceOf(
       InvalidInviteInputError
     )
+  })
+})
+
+describe("a company-wide invite", () => {
+  it("stores the invite with no project", async () => {
+    await newInvite({ projectId: null, roles: ["FO"] })
+
+    const { rows } = await database.pool.query(
+      "SELECT project_id, roles::text[] AS roles FROM invitations"
+    )
+
+    expect(rows).toEqual([{ project_id: null, roles: ["FO"] }])
+  })
+
+  it("gives the roles on every project once accepted", async () => {
+    const token = await invitedToken({ projectId: null, roles: ["FO"] })
+
+    await acceptInvite(database, token, PASSWORD)
+
+    expect(await companyRolesOf("kofi@example.com")).toEqual(["FO"])
+    expect(await rolesOf("kofi@example.com", projectId)).toEqual([])
+  })
+
+  it("logs the invite and the accept with no project", async () => {
+    const token = await invitedToken({ projectId: null, roles: ["FO"] })
+
+    await acceptInvite(database, token, PASSWORD)
+
+    const lines = await logLines()
+
+    expect(lines.map((line) => [line.action, line.project_id])).toEqual([
+      ["invited", null],
+      ["invite_accepted", null],
+    ])
+    expect(lines.every((line) => line.roles.join() === "FO")).toBe(true)
+  })
+
+  it("adds the roles straight away to a person who can already sign in", async () => {
+    const existing = await addPerson("kofi@example.com", [[projectId, "LE"]])
+    await addPassword(existing)
+
+    const created = await newInvite({ projectId: null, roles: ["FO", "PM"] })
+
+    expect(created).toEqual({ status: "added", personId: existing })
+    expect(await companyRolesOf("kofi@example.com")).toEqual(["FO", "PM"])
+    expect(await rolesOf("kofi@example.com", projectId)).toEqual(["LE"])
+    expect(await count("invitations")).toBe(0)
+
+    const [line] = await logLines()
+
+    expect(line).toMatchObject({
+      actor_id: admin,
+      action: "roles_added",
+      person_id: existing,
+      project_id: null,
+      roles: ["FO", "PM"],
+    })
+  })
+
+  it("refuses Client", async () => {
+    await expect(
+      newInvite({ projectId: null, roles: ["Client"] })
+    ).rejects.toBeInstanceOf(InvalidInviteInputError)
+    expect(await count("invitations")).toBe(0)
+  })
+
+  it("refuses Client for a person who can already sign in", async () => {
+    const existing = await addPerson("kofi@example.com")
+    await addPassword(existing)
+
+    await expect(
+      newInvite({ projectId: null, roles: ["PM", "Client"] })
+    ).rejects.toBeInstanceOf(InvalidInviteInputError)
+    expect(await companyRolesOf("kofi@example.com")).toEqual([])
   })
 })
 

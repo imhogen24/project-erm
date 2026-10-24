@@ -4,6 +4,7 @@ import { people, projects, roleEnum } from "./access"
 export const accessActions = [
   "invited",
   "roles_added",
+  "roles_removed",
   "invite_accepted",
   "signed_in",
   "signed_out",
@@ -24,6 +25,7 @@ export const accessLog = pgTable("access_log", {
   }),
   email: text().notNull(),
   // Signing in or out belongs to no project, so these two stay empty then.
+  // A role line with no project is a company-wide role.
   projectId: uuid("project_id").references(() => projects.id, {
     onDelete: "restrict",
   }),

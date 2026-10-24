@@ -12,7 +12,7 @@ import { requireSession } from "@/lib/session"
 import { registeredTools } from "@/lib/tools"
 import { getDatabase } from "@/server/database"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
-import { getProjectOverview, listProjectsFor } from "@/server/projects/projects"
+import { getProjectOverview } from "@/server/projects/projects"
 
 // Every box is a whole number of grid squares and shares its lines.
 const square = "grid-square relative isolate bg-background"
@@ -59,9 +59,7 @@ export default async function Page({
   }
 
   // Only to decide whether the top bar offers the invite page.
-  const canInvite = isItAdmin(
-    await listProjectsFor(getDatabase(), session.user.id)
-  )
+  const canInvite = await isItAdmin(session.user.id)
 
   const workbooks = new Map<string, typeof overview.tools>()
 

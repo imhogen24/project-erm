@@ -1,6 +1,7 @@
-import type { ProjectSummary } from "@/server/projects/projects"
+import { getDatabase } from "@/server/database"
+import { companyRolesOf } from "@/server/permissions/permissions"
 
-// IT/Admin on any project counts as IT/Admin for the whole company.
-export function isItAdmin(projects: ProjectSummary[]) {
-  return projects.some((project) => project.roles.includes("IT/Admin"))
+// Only a company-wide IT/Admin gives access, so only they see the invite page.
+export async function isItAdmin(personId: string) {
+  return (await companyRolesOf(getDatabase(), personId)).includes("IT/Admin")
 }

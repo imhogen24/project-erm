@@ -36,7 +36,17 @@ const EMAILS = [
   "mkt@example.com",
 ]
 
-async function count(table: "people" | "projects" | "person_project_roles") {
+const COMPANY_WIDE = [
+  { email: "fo@example.com", role: "FO" },
+  { email: "he@example.com", role: "HE" },
+  { email: "it-admin@example.com", role: "IT/Admin" },
+  { email: "om@example.com", role: "OM" },
+  { email: "pm@example.com", role: "PM" },
+]
+
+async function count(
+  table: "people" | "projects" | "person_project_roles" | "person_company_roles"
+) {
   const { rows } = await database.pool.query<{ n: string }>(
     `SELECT count(*) AS n FROM ${table}`
   )
@@ -57,6 +67,17 @@ async function rolesOnDemoProject() {
   return rows
 }
 
+async function companyWideRoles() {
+  const { rows } = await database.pool.query<{ email: string; role: string }>(
+    `SELECT people.email, person_company_roles.role
+       FROM person_company_roles
+       JOIN people ON people.id = person_company_roles.person_id
+      ORDER BY people.email`
+  )
+
+  return rows
+}
+
 beforeEach(async () => {
   await resetTestData(database)
 })
@@ -71,17 +92,23 @@ describe("seeding an empty database", () => {
 
     expect(await count("projects")).toBe(1)
     expect(await count("people")).toBe(19)
-    expect(await count("person_project_roles")).toBe(19)
+    expect(await count("person_project_roles")).toBe(14)
 
     const held = await rolesOnDemoProject()
 
-    expect(held).toContainEqual({ email: "pm@example.com", role: "PM" })
-    expect(held).toContainEqual({
-      email: "it-admin@example.com",
-      role: "IT/Admin",
-    })
+    expect(held).toContainEqual({ email: "le@example.com", role: "LE" })
     expect(held).toContainEqual({ email: "client@example.com", role: "Client" })
-    expect(held.map((row) => row.email).sort()).toEqual([...EMAILS].sort())
+    expect(held.map((row) => row.email).sort()).toEqual(
+      EMAILS.filter(
+        (email) => !COMPANY_WIDE.some((held) => held.email === email)
+      ).sort()
+    )
+  })
+
+  it("gives the OM, PM, HE, FO and IT/Admin users their role company-wide", async () => {
+    await seed(url)
+
+    expect(await companyWideRoles()).toEqual(COMPANY_WIDE)
   })
 
   it("returns every user it created", async () => {
@@ -101,7 +128,8 @@ describe("seeding again", () => {
     expect(created).toEqual([])
     expect(await count("projects")).toBe(1)
     expect(await count("people")).toBe(19)
-    expect(await count("person_project_roles")).toBe(19)
+    expect(await count("person_project_roles")).toBe(14)
+    expect(await count("person_company_roles")).toBe(5)
   })
 
   it("adds back only a user who was deleted", async () => {
@@ -115,7 +143,8 @@ describe("seeding again", () => {
 
     expect(created).toEqual([{ role: "QA", email: "qa@example.com" }])
     expect(await count("people")).toBe(19)
-    expect(await count("person_project_roles")).toBe(19)
+    expect(await count("person_project_roles")).toBe(14)
+    expect(await count("person_company_roles")).toBe(5)
   })
 })
 
@@ -171,5 +200,19 @@ describe("seeding a database that is not local", () => {
 
     expect(await count("people")).toBe(0)
     expect(await count("projects")).toBe(0)
+  })
+})
+
+describe("seeding a user who lost a company-wide role", () => {
+  it("gives it back", async () => {
+    await seed(url)
+
+    await database.pool.query(
+      "DELETE FROM person_company_roles WHERE person_id = (SELECT id FROM people WHERE email = 'om@example.com')"
+    )
+
+    await seed(url)
+
+    expect(await companyWideRoles()).toEqual(COMPANY_WIDE)
   })
 })

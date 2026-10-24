@@ -9,7 +9,9 @@ import {
   assertCan,
   assertHoldsRole,
   can,
+  companyRolesOf,
   roleAllows,
+  rolesOn,
   type Action,
 } from "./permissions"
 
@@ -201,5 +203,88 @@ describe("assertHoldsRole", () => {
     await expect(
       assertHoldsRole(database, person, projectId, "PM")
     ).rejects.toBeInstanceOf(PermissionDeniedError)
+  })
+})
+
+describe("company-wide roles", () => {
+  async function holdCompanyWide(personId: string, role: Role) {
+    await database.pool.query(
+      "INSERT INTO person_company_roles (person_id, role) VALUES ($1, $2)",
+      [personId, role]
+    )
+  }
+
+  it("counts on a project created after the role was given", async () => {
+    const om = await addPerson(projectId, [])
+    await holdCompanyWide(om, "OM")
+
+    const inquiry = await addProject("New inquiry")
+
+    expect(await answers(om, inquiry, "D1.2")).toEqual([true, true, false])
+  })
+
+  it("adds up with the roles held on the project", async () => {
+    const person = await addPerson(projectId, ["LE"])
+    await holdCompanyWide(person, "OM")
+
+    expect(await rolesOn(database, person, projectId)).toEqual(
+      expect.arrayContaining(["LE", "OM"])
+    )
+    expect(await can(database, person, projectId, "D1.2", "write")).toBe(true)
+    expect(await can(database, person, projectId, "D1.8", "write")).toBe(
+      roleAllows(["LE"], "D1.8", "write")
+    )
+  })
+
+  it("lists a role once when it is held both ways", async () => {
+    const person = await addPerson(projectId, ["PM"])
+    await holdCompanyWide(person, "PM")
+
+    expect(await rolesOn(database, person, projectId)).toEqual(["PM"])
+  })
+
+  it("gives nothing on a project that does not exist", async () => {
+    const person = await addPerson(projectId, [])
+    await holdCompanyWide(person, "OM")
+
+    expect(
+      await rolesOn(database, person, "00000000-0000-0000-0000-000000000000")
+    ).toEqual([])
+  })
+
+  it("satisfies assertHoldsRole on every project", async () => {
+    const person = await addPerson(projectId, [])
+    await holdCompanyWide(person, "PM")
+
+    await expect(
+      assertHoldsRole(database, person, await addProject("Kiln"), "PM")
+    ).resolves.toBeUndefined()
+  })
+
+  it("is gone on the next check once removed", async () => {
+    const om = await addPerson(projectId, [])
+    await holdCompanyWide(om, "OM")
+
+    expect(await can(database, om, projectId, "D1.2", "write")).toBe(true)
+
+    await database.pool.query(
+      "DELETE FROM person_company_roles WHERE person_id = $1",
+      [om]
+    )
+
+    expect(await can(database, om, projectId, "D1.2", "write")).toBe(false)
+  })
+})
+
+describe("companyRolesOf", () => {
+  it("returns only the roles held company-wide", async () => {
+    const person = await addPerson(projectId, ["LE"])
+
+    await database.pool.query(
+      "INSERT INTO person_company_roles (person_id, role) VALUES ($1, 'FO')",
+      [person]
+    )
+
+    expect(await companyRolesOf(database, person)).toEqual(["FO"])
   })
 })

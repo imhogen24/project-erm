@@ -16,11 +16,12 @@ const square = "grid-square relative isolate bg-background"
 
 export default async function Page() {
   const session = await requireSession()
-  const projects = await listProjectsFor(getDatabase(), session.user.id)
 
-  if (!isItAdmin(projects)) {
+  if (!(await isItAdmin(session.user.id))) {
     redirect("/")
   }
+
+  const projects = await listProjectsFor(getDatabase(), session.user.id)
 
   return (
     <>

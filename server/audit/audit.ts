@@ -4,6 +4,7 @@ import type { Database } from "@/db"
 import {
   auditLog,
   type AuditAction,
+  type ChangeRequestStatus,
   type JsonObject,
   type JsonValue,
 } from "@/db/schema"
@@ -47,6 +48,24 @@ export function payloadChanges(
 
 export function stateChange(oldState: string | null, newState: string): Change {
   return { field: "state", oldValue: oldState, newValue: newState }
+}
+
+// A change request moving from one status to the next, on the record it is
+// about. The request's id is kept on both sides so its lines can be found.
+export function changeRequestChange(
+  id: string,
+  oldStatus: ChangeRequestStatus | null,
+  newStatus: ChangeRequestStatus,
+  reason?: string
+): Change {
+  return {
+    field: "change_request",
+    oldValue: oldStatus === null ? null : { id, status: oldStatus },
+    newValue:
+      reason === undefined
+        ? { id, status: newStatus }
+        : { id, status: newStatus, reason },
+  }
 }
 
 // Runs inside the caller's transaction, so the lines and the change they

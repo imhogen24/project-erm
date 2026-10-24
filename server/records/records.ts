@@ -1,13 +1,15 @@
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 
 import type { Database } from "@/db"
 import {
+  changeRequests,
   recordStates,
   toolRecords,
   type JsonObject,
   type RecordState,
 } from "@/db/schema"
 import {
+  changeRequestChange,
   payloadChanges,
   stateChange,
   writeAudit,
@@ -38,8 +40,9 @@ export class RecordNotEditableError extends Error {}
 
 export class RecordNotFoundError extends Error {}
 
-// A locked record leaves locked only through a workbook rollback, which reopens
-// it as draft or voids it. A void record never moves again.
+// A locked record leaves locked only through an approved change request, which
+// reopens it as draft, or a workbook rollback, which reopens it as draft or
+// voids it. A void record never moves again.
 const allowedTransitions: Record<RecordState, readonly RecordState[]> = {
   draft: ["submitted"],
   submitted: ["approved", "draft"],
@@ -102,7 +105,7 @@ export async function createRecord(
 
 // Reads the record and holds its row until the transaction ends, so a second
 // call waits and then sees what the first one did.
-async function lockRecord(
+export async function lockRecord(
   transaction: Transaction,
   recordId: string
 ): Promise<ToolRecord> {
@@ -213,8 +216,46 @@ export async function transitionRecord(
       [stateChange(current.state, to)]
     )
 
+    if (to === "locked") {
+      await applyApprovedChange(transaction, actor, current)
+    }
+
     return moved!
   })
+}
+
+// Locking a record that an approved change request reopened completes that
+// request.
+async function applyApprovedChange(
+  transaction: Transaction,
+  actor: string,
+  record: ToolRecord
+): Promise<void> {
+  const [applied] = await transaction
+    .update(changeRequests)
+    .set({ status: "applied", appliedAt: new Date() })
+    .where(
+      and(
+        eq(changeRequests.recordId, record.id),
+        eq(changeRequests.status, "approved")
+      )
+    )
+    .returning({ id: changeRequests.id })
+
+  if (!applied) {
+    return
+  }
+
+  await writeAudit(
+    transaction,
+    {
+      recordId: record.id,
+      projectId: record.projectId,
+      actor,
+      action: "change_applied",
+    },
+    [changeRequestChange(applied.id, "approved", "applied")]
+  )
 }
 
 export async function updateRecord(

@@ -18,6 +18,9 @@ export const SEED_PASSWORD = "password"
 
 const PROJECT_NAME = "Demo Project"
 
+// Shaped like a website request ID, so screens show what a real one looks like.
+export const DEMO_REQUEST_ID = "T1-1789787898386"
+
 // These people work across every project, so the seed gives their role
 // company-wide instead of on Demo Project.
 const COMPANY_WIDE: readonly Role[] = ["OM", "PM", "HE", "FO", "IT/Admin"]
@@ -50,7 +53,11 @@ async function findOrCreateProject(database: Database) {
 
   const [created] = await database
     .insert(projects)
-    .values({ name: PROJECT_NAME })
+    .values({
+      name: PROJECT_NAME,
+      requestId: DEMO_REQUEST_ID,
+      serviceTrack: "Tier_1",
+    })
     .returning({ id: projects.id })
 
   return created!.id

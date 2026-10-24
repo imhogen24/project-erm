@@ -3,7 +3,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { createAuth } from "@/server/auth/auth"
 
-import { seed } from "./seed-users"
+import { DEMO_REQUEST_ID, seed } from "./seed-users"
 
 const database = createTestDatabase()
 
@@ -109,6 +109,22 @@ describe("seeding an empty database", () => {
     await seed(url)
 
     expect(await companyWideRoles()).toEqual(COMPANY_WIDE)
+  })
+
+  it("gives Demo Project a request ID and a service track, and leaves it active", async () => {
+    await seed(url)
+
+    const { rows } = await database.pool.query(
+      "SELECT request_id, service_track, status FROM projects WHERE name = 'Demo Project'"
+    )
+
+    expect(rows).toEqual([
+      {
+        request_id: DEMO_REQUEST_ID,
+        service_track: "Tier_1",
+        status: "active",
+      },
+    ])
   })
 
   it("returns every user it created", async () => {

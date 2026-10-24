@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 
 import {
   brokenInheritedLinks,
+  brokenReplacements,
   createToolRegistry,
 } from "@/server/tools/registry"
 
@@ -42,5 +43,13 @@ describe("registered tools", () => {
     registerAllTools(registry)
 
     expect(brokenInheritedLinks(registry.listTools())).toEqual([])
+  })
+
+  it("has no tier variant that replaces a tool that is not there", () => {
+    const registry = createToolRegistry()
+
+    registerAllTools(registry)
+
+    expect(brokenReplacements(registry.listTools())).toEqual([])
   })
 })

@@ -6,14 +6,16 @@ export type Action = "read" | "write" | "approve"
 
 // For each tool, the access each role has. A role that is missing has none.
 export const permissionMatrix = {
-  "D1.1": { Client: "RW", OM: "RO", PM: "RO", LO: "RO", CR: "RO" },
-  "D1.2": { OM: "RW", PM: "RO", CA: "RO", LO: "RO", CR: "RO" },
+  // The OM prepares D1.1 to D1.7 and the PM approves them, since reviewing is
+  // not approving.
+  "D1.1": { Client: "RW", OM: "RW", PM: "RA", LO: "RO", CR: "RO" },
+  "D1.2": { OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" },
   "D1.3": { OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" },
-  "D1.4": { Client: "RO", OM: "RW", PM: "RO", CA: "RO", LO: "RO", CR: "RO" },
+  "D1.4": { Client: "RO", OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" },
   "D1.5": {
     Client: "RO",
     OM: "RW",
-    PM: "RO",
+    PM: "RA",
     LE: "RO",
     CA: "RO",
     LO: "RO",
@@ -22,7 +24,7 @@ export const permissionMatrix = {
   "D1.6": {
     Client: "RO",
     OM: "RW",
-    PM: "RO",
+    PM: "RA",
     LE: "RO",
     CA: "RO",
     LO: "RO",

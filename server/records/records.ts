@@ -16,8 +16,13 @@ import {
   writeAudit,
   type Transaction,
 } from "@/server/audit/audit"
-import { assertCan, type Action } from "@/server/permissions/permissions"
+import {
+  PermissionDeniedError,
+  assertCan,
+  type Action,
+} from "@/server/permissions/permissions"
 import { assertProjectActive } from "@/server/projects/projects"
+import { systemActor } from "@/server/system/system"
 import {
   ToolNotAvailableError,
   applyHardStop,
@@ -80,6 +85,29 @@ const columns = {
   payload: toolRecords.payload,
 }
 
+// The system holds no roles, so it skips the permission check to read and
+// write, but it can never approve or lock. Every check after this one still
+// applies to it.
+async function assertMay(
+  database: Database,
+  actor: string,
+  projectId: string,
+  toolId: string,
+  action: Action
+): Promise<void> {
+  if (actor !== systemActor) {
+    await assertCan(database, actor, projectId, toolId, action)
+
+    return
+  }
+
+  if (action === "approve") {
+    throw new PermissionDeniedError(
+      `The system may not approve or lock ${toolId}`
+    )
+  }
+}
+
 // The workflow map must have the tool open on this project. Two simultaneous
 // creates both find it open, so the unique index on tool and cycle refuses the
 // second.
@@ -88,7 +116,7 @@ export async function createRecord(
   actor: string,
   input: NewRecord
 ): Promise<ToolRecord> {
-  await assertCan(database, actor, input.projectId, input.toolId, "write")
+  await assertMay(database, actor, input.projectId, input.toolId, "write")
 
   // A new record is a draft, so required fields are not checked yet.
   const payload = assertValid(input.toolId, input.payload ?? {}, {
@@ -189,7 +217,7 @@ export async function getRecord(
 ): Promise<ToolRecord> {
   const record = await loadRecord(database, recordId)
 
-  await assertCan(database, actor, record.projectId, record.toolId, "read")
+  await assertMay(database, actor, record.projectId, record.toolId, "read")
 
   return record
 }
@@ -219,7 +247,7 @@ export async function transitionRecord(
 
   const record = await loadRecord(database, recordId)
 
-  await assertCan(
+  await assertMay(
     database,
     actor,
     record.projectId,
@@ -311,7 +339,7 @@ export async function updateRecord(
 ): Promise<ToolRecord> {
   const record = await loadRecord(database, recordId)
 
-  await assertCan(database, actor, record.projectId, record.toolId, "write")
+  await assertMay(database, actor, record.projectId, record.toolId, "write")
 
   // Only a draft can be edited, so required fields are not checked here.
   const checked = assertValid(record.toolId, payload, { forSubmit: false })

@@ -9,6 +9,7 @@ import {
   text,
   timestamp,
   uuid,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core"
 
 // The 19 roles.
@@ -51,6 +52,20 @@ export const people = pgTable("people", {
     .notNull()
     .defaultNow(),
 })
+
+// The reserved person that automated jobs act as, such as the website intake
+// creating D1.1. A migration creates it in every database. It has no account,
+// holds no roles and cannot sign in: a check on each of those tables refuses it.
+export const systemPerson = {
+  id: "00000000-0000-4000-8000-000000000001",
+  name: "System",
+  email: "system@erm.invalid",
+} as const
+
+// For a check that refuses the system person in a person_id column.
+export function notSystemPerson(column: AnyPgColumn) {
+  return sql`${column} <> ${sql.raw(`'${systemPerson.id}'`)}`
+}
 
 export const serviceTracks = ["Tier_1", "Tier_3"] as const
 
@@ -101,6 +116,7 @@ export const personProjectRoles = pgTable(
   (table) => [
     primaryKey({ columns: [table.personId, table.projectId, table.role] }),
     index("person_project_roles_project_id_idx").on(table.projectId),
+    check("person_project_roles_not_system", notSystemPerson(table.personId)),
   ]
 )
 
@@ -117,5 +133,6 @@ export const personCompanyRoles = pgTable(
   (table) => [
     primaryKey({ columns: [table.personId, table.role] }),
     check("person_company_roles_not_client", sql`${table.role} <> 'Client'`),
+    check("person_company_roles_not_system", notSystemPerson(table.personId)),
   ]
 )

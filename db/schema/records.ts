@@ -12,7 +12,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core"
 
-import { projects } from "./access"
+import { people, projects } from "./access"
 
 export const recordStates = [
   "draft",
@@ -35,7 +35,8 @@ export const recordStateEnum = pgEnum("record_state", recordStates)
 // which fields the payload holds. A tool that repeats once per payment
 // milestone has one record per cycle; every other tool is always cycle 1. The
 // unique index allows one record that is not void per tool and cycle, so two
-// simultaneous creates cannot both succeed.
+// simultaneous creates cannot both succeed. Who submitted and who approved,
+// and when, are kept on the record; the audit log keeps every move.
 export const toolRecords = pgTable(
   "tool_records",
   {
@@ -53,6 +54,15 @@ export const toolRecords = pgTable(
     updatedAt: timestamp("updated_at", { withTimezone: true })
       .notNull()
       .defaultNow(),
+    submittedBy: uuid("submitted_by").references(() => people.id, {
+      onDelete: "restrict",
+    }),
+    submittedAt: timestamp("submitted_at", { withTimezone: true }),
+    approvedBy: uuid("approved_by").references(() => people.id, {
+      onDelete: "restrict",
+    }),
+    approvedAt: timestamp("approved_at", { withTimezone: true }),
+    lockedAt: timestamp("locked_at", { withTimezone: true }),
   },
   (table) => [
     index("tool_records_project_id_tool_id_idx").on(

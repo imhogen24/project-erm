@@ -10,7 +10,8 @@ import { PermissionDeniedError } from "@/server/permissions/permissions"
 const input = z.object({
   email: z.string(),
   name: z.string(),
-  projectId: z.uuid(),
+  // No project gives the roles as qualifications, on every project.
+  projectId: z.uuid().nullable(),
   roles: z.array(z.string()),
 })
 

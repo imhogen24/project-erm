@@ -37,8 +37,8 @@ export default async function Page() {
               Invite people
             </h1>
             <p className="text-sm text-muted-foreground">
-              Give someone a role on a project. New people get a link to set
-              their password.
+              Give someone a role on a project, or the roles they can be
+              assigned. New people get a link to set their password.
             </p>
           </div>
           <div className={`${square} mt-[var(--cell)] px-6 py-8`}>

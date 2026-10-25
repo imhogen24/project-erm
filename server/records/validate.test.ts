@@ -61,7 +61,12 @@ tools.registerTool(
       { key: "senderEmail", label: "Sender email", type: "email" },
       { key: "timeReceived", label: "Time received", type: "time" },
       { key: "emailLink", label: "Email link", type: "fileLink" },
-      { key: "pmSignature", label: "PM signature", type: "signature" },
+      {
+        key: "pmSignature",
+        label: "PM signature",
+        type: "signature",
+        signedBy: ["PM"],
+      },
       {
         key: "clientReference",
         label: "Client reference",

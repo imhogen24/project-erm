@@ -1,5 +1,7 @@
 import { z } from "zod"
 
+import { roles } from "@/db/schema"
+
 const fieldKey = z
   .string()
   .regex(/^[a-z][A-Za-z0-9]*$/, "A field key is a camelCase name")
@@ -24,8 +26,7 @@ const distinctTexts = z
     message: "Two entries cannot be the same",
   })
 
-// The types a field and a table cell share. A signature records who signed
-// and when, and is written by the approval step, never in the form.
+// The types a field and a table cell share.
 const plain = z.object({
   ...cellBase,
   type: z.enum([
@@ -39,8 +40,16 @@ const plain = z.object({
     "email",
     "time",
     "fileLink",
-    "signature",
   ]),
+})
+
+// Records who signed and when. It is written only by signing, never in the
+// form. `signedBy` names the roles that may sign it; the registry refuses a
+// signature field that names none.
+const signature = z.object({
+  ...cellBase,
+  type: z.literal("signature"),
+  signedBy: z.array(z.enum(roles)).min(1).optional(),
 })
 
 const select = z.object({
@@ -72,6 +81,7 @@ const staticList = z.object({
 
 const column = z.discriminatedUnion("type", [
   plain,
+  signature,
   select,
   checklist,
   instruction,
@@ -147,6 +157,7 @@ function holdsLabels(first: Column | undefined, labels: string[]) {
 const field = z
   .discriminatedUnion("type", [
     plain.extend(required),
+    signature.extend(required),
     select.extend(required),
     checklist.extend(required),
     instruction.extend(required),
@@ -224,6 +235,8 @@ export type Field = ToolDefinition["fields"][number]
 export type FieldType = Field["type"]
 
 export type TableField = Extract<Field, { type: "table" }>
+
+export type SignatureField = Extract<Field, { type: "signature" }>
 
 export type { Column }
 

@@ -2,6 +2,8 @@ import { workbooks, type Field, type ToolDefinition } from "./define-tool"
 
 export class UnknownWorkbookError extends Error {}
 
+export class SignatureWithoutSignersError extends Error {}
+
 export type ToolRegistry = {
   registerTool: (tool: ToolDefinition) => void
   getTool: (id: string) => ToolDefinition | undefined
@@ -21,6 +23,18 @@ export function createToolRegistry(): ToolRegistry {
 
       if (tools.has(tool.id)) {
         throw new Error(`A tool with id ${tool.id} is already registered`)
+      }
+
+      // Without `signedBy` no one could sign the field, so the record could
+      // never be approved.
+      const unsignable = tool.fields.filter(
+        (field) => field.type === "signature" && !field.signedBy
+      )
+
+      if (unsignable.length > 0) {
+        throw new SignatureWithoutSignersError(
+          `${tool.id} has signature fields with no signedBy roles: ${unsignable.map((field) => field.key).join(", ")}`
+        )
       }
 
       tools.set(tool.id, tool)

@@ -2,8 +2,11 @@ import { randomUUID } from "node:crypto"
 
 import { expect, type Page } from "@playwright/test"
 import { hashPassword } from "better-auth/crypto"
+import { eq } from "drizzle-orm"
 
 import { createDatabase } from "@/db"
+
+import { qualificationsOf } from "@/server/company-roles/company-roles"
 import { acceptInvite, createInvite } from "@/server/invites/invites"
 import {
   accounts,
@@ -171,4 +174,16 @@ export async function makeAdmin(name?: string) {
   )
 
   return person
+}
+
+// The roles a person has been qualified for, found by their email.
+export async function qualificationsFor(email: string) {
+  return withDatabase(async (database) => {
+    const [person] = await database
+      .select({ id: people.id })
+      .from(people)
+      .where(eq(people.email, email))
+
+    return person ? qualificationsOf(database, person.id) : []
+  })
 }

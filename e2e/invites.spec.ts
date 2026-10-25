@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test"
+import { expect, test, type Page } from "@playwright/test"
 
 import {
   expireInvite,
@@ -7,6 +7,7 @@ import {
   makeInvite,
   makePerson,
   makeProject,
+  qualificationsFor,
   sidewaysScroll,
   signIn,
   tag,
@@ -35,7 +36,7 @@ test("an IT/Admin sees the invite form", async ({ page }) => {
   await expect(page).toHaveURL(/\/admin\/invites$/)
   await expect(page.getByLabel("Email")).toBeVisible()
   await expect(page.getByLabel("Name")).toBeVisible()
-  await expect(page.getByLabel("Project")).toBeVisible()
+  await expect(page.getByLabel("Project", { exact: true })).toBeVisible()
   await expect(
     page.getByRole("checkbox", { name: "PM", exact: true })
   ).toBeVisible()
@@ -75,7 +76,7 @@ test("submitting the form shows the invite link, and Copy copies it", async ({
   await page.goto("/admin/invites")
   await page.getByLabel("Email").fill(`${tag()}@example.com`)
   await page.getByLabel("Name").fill("Kofi Boateng")
-  await page.getByLabel("Project").click()
+  await page.getByLabel("Project", { exact: true }).click()
   await page.getByRole("option", { name: project.name }).click()
   await page.getByRole("checkbox", { name: "PM", exact: true }).click()
   await page.getByRole("checkbox", { name: "LE", exact: true }).click()
@@ -108,7 +109,7 @@ test("the form asks for at least one role before sending anything", async ({
   await page.goto("/admin/invites")
   await page.getByLabel("Email").fill(`${tag()}@example.com`)
   await page.getByLabel("Name").fill("Kofi Boateng")
-  await page.getByLabel("Project").click()
+  await page.getByLabel("Project", { exact: true }).click()
   await page.getByRole("option", { name: project.name }).click()
   await page.getByRole("button", { name: "Create invite" }).click()
 
@@ -126,7 +127,7 @@ test("inviting someone who already has an account adds the roles instead", async
   await page.goto("/admin/invites")
   await page.getByLabel("Email").fill(existing.email)
   await page.getByLabel("Name").fill(existing.name)
-  await page.getByLabel("Project").click()
+  await page.getByLabel("Project", { exact: true }).click()
   await page.getByRole("option", { name: project.name }).click()
   await page.getByRole("checkbox", { name: "OM", exact: true }).click()
   await page.getByRole("button", { name: "Create invite" }).click()
@@ -276,4 +277,119 @@ test("on a phone a person who is not an IT/Admin has no invite link", async ({
   await signIn(page, pm.email)
 
   await expect(page.getByRole("link", { name: "Invite people" })).toHaveCount(0)
+})
+
+const QUALIFICATION_NOTE =
+  "These roles say what the person can be assigned. They give no access until an IT/Admin assigns the person to a project. IT/Admin is the exception: it applies to every project."
+
+const CLIENT_NOTE = "Client is only given on one project."
+
+async function openInvites(page: Page) {
+  const { project, admin } = await setUp()
+
+  await signIn(page, admin.email)
+  await page.goto("/admin/invites")
+
+  return { project, admin }
+}
+
+test("the access choice starts on One project, with the project field", async ({
+  page,
+}) => {
+  await openInvites(page)
+
+  await expect(page.getByRole("radio", { name: "One project" })).toBeChecked()
+  await expect(
+    page.getByRole("radio", { name: "All projects" })
+  ).not.toBeChecked()
+  await expect(page.getByLabel("Project", { exact: true })).toBeVisible()
+  await expect(page.getByText(QUALIFICATION_NOTE)).toHaveCount(0)
+  await expect(page.getByRole("checkbox", { name: "Client" })).toBeEnabled()
+})
+
+test("All projects hides the project field, shows the note and disables Client", async ({
+  page,
+}) => {
+  await openInvites(page)
+  await page.getByRole("radio", { name: "All projects" }).click()
+
+  await expect(page.getByLabel("Project", { exact: true })).toHaveCount(0)
+  await expect(page.getByText(QUALIFICATION_NOTE)).toBeVisible()
+  await expect(page.getByRole("checkbox", { name: "Client" })).toBeDisabled()
+  await expect(page.getByText(CLIENT_NOTE)).toBeVisible()
+})
+
+test("choosing All projects unticks Client", async ({ page }) => {
+  await openInvites(page)
+  await page.getByRole("checkbox", { name: "Client" }).click()
+  await expect(page.getByRole("checkbox", { name: "Client" })).toBeChecked()
+  await page.getByRole("radio", { name: "All projects" }).click()
+
+  await expect(page.getByRole("checkbox", { name: "Client" })).not.toBeChecked()
+  await expect(page.getByRole("checkbox", { name: "Client" })).toBeDisabled()
+})
+
+test("an invite for All projects makes the person qualified, with no access", async ({
+  page,
+}) => {
+  const { project } = await openInvites(page)
+  const email = `${tag()}@example.com`
+
+  await page.getByLabel("Email").fill(email)
+  await page.getByLabel("Name").fill("Esi Mensah")
+  await page.getByRole("radio", { name: "All projects" }).click()
+  await page.getByRole("checkbox", { name: "OM", exact: true }).click()
+  await page.getByRole("button", { name: "Create invite" }).click()
+
+  const link = page.getByRole("textbox", { name: "Invite link" })
+
+  await expect(link).toHaveValue(/\/invite\/[A-Za-z0-9_-]{20,}$/)
+
+  const url = await link.inputValue()
+
+  await page.context().clearCookies()
+  await page.goto(url)
+  await page.getByLabel("Password", { exact: true }).fill("a-good-password")
+  await page.getByLabel("Confirm password").fill("a-good-password")
+  await page.getByRole("button", { name: "Create account" }).click()
+
+  await expect(page).toHaveURL(/\/$/)
+  await expect(page.getByText(project.name)).toHaveCount(0)
+  expect(await qualificationsFor(email)).toEqual(["OM"])
+})
+
+test("going back to One project shows an empty project field and enables Client", async ({
+  page,
+}) => {
+  await openInvites(page)
+  await page.getByRole("radio", { name: "All projects" }).click()
+  await page.getByRole("radio", { name: "One project" }).click()
+
+  await expect(page.getByLabel("Project", { exact: true })).toBeVisible()
+  await expect(page.getByLabel("Project", { exact: true })).toContainText(
+    "Choose a project"
+  )
+  await expect(page.getByText(QUALIFICATION_NOTE)).toHaveCount(0)
+  await expect(page.getByRole("checkbox", { name: "Client" })).toBeEnabled()
+})
+
+test("at 375px All projects does not scroll sideways and every control works", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 375, height: 812 })
+  await openInvites(page)
+  await page.getByRole("radio", { name: "All projects" }).click()
+
+  expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0)
+  await expect(page.getByText(QUALIFICATION_NOTE)).toBeVisible()
+  await expect(page.getByLabel("Email")).toBeVisible()
+  await expect(page.getByLabel("Name")).toBeVisible()
+
+  await page.getByRole("checkbox", { name: "OM", exact: true }).click()
+  await expect(
+    page.getByRole("checkbox", { name: "OM", exact: true })
+  ).toBeChecked()
+  await expect(
+    page.getByRole("button", { name: "Create invite" })
+  ).toBeVisible()
 })

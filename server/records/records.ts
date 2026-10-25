@@ -29,6 +29,7 @@ import {
   assertAvailable,
 } from "@/server/workflow/workflow"
 
+import { inheritedValues, readPayload, withoutInherited } from "./inherited"
 import { assertValid } from "./validate"
 
 export { ProjectNotActiveError } from "@/server/projects/projects"
@@ -219,7 +220,7 @@ export async function getRecord(
 
   await assertMay(database, actor, record.projectId, record.toolId, "read")
 
-  return record
+  return { ...record, payload: await readPayload(database, record) }
 }
 
 // Sending a record forward or back is writing; approving and locking are approving.
@@ -266,16 +267,42 @@ export async function transitionRecord(
       )
     }
 
-    // Submitting is when a draft must be complete.
-    if (current.state === "draft" && to === "submitted") {
-      assertValid(current.toolId, current.payload, { forSubmit: true })
+    const submitting = current.state === "draft" && to === "submitted"
+
+    // Submitting is when a draft must be complete, and when its inherited
+    // fields are copied in from their sources, so the submitted copy never
+    // changes after. A draft sent back may still hold an earlier copy, which
+    // the new one replaces.
+    let payload = current.payload
+
+    if (submitting) {
+      const written = withoutInherited(current.toolId, current.payload)
+
+      assertValid(current.toolId, written, { forSubmit: true })
+
+      payload = {
+        ...written,
+        ...(await inheritedValues(transaction, current)),
+      }
     }
 
     const [moved] = await transaction
       .update(toolRecords)
-      .set({ state: to, updatedAt: new Date() })
+      .set({ state: to, payload, updatedAt: new Date() })
       .where(eq(toolRecords.id, recordId))
       .returning(columns)
+
+    await writeAudit(
+      transaction,
+      {
+        recordId,
+        projectId: current.projectId,
+        actor,
+        action: "updated",
+        reason: "Inherited values copied on submit",
+      },
+      payloadChanges(current.payload, payload)
+    )
 
     await writeAudit(
       transaction,

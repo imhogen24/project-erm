@@ -55,6 +55,13 @@ export function loadWorkflow(
   active = maps
 }
 
+// Whether the tool runs once per payment milestone in the maps in force.
+export function repeatsPerCycle(toolId: string): boolean {
+  return active.some((map) =>
+    map.tools.some((rule) => rule.tool === toolId && rule.repeats)
+  )
+}
+
 export type OpenTool = { toolId: string; cycle: number }
 
 type LiveRecord = {

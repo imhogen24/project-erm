@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm"
+import { and, asc, eq, ne } from "drizzle-orm"
 
 import type { Database } from "@/db"
 import {
@@ -17,7 +17,9 @@ export class InvalidCompanyRoleError extends Error {}
 export class LastItAdminError extends Error {}
 
 // Any role can be held company-wide except Client, who is always tied to their
-// own project.
+// own project. IT/Admin held company-wide counts on every project. Any other
+// role held company-wide is a qualification: it records that the person can be
+// assigned that role, and gives no access to any project by itself.
 export function assertCompanyWideRoles(held: readonly string[]) {
   if (held.length === 0) {
     throw new InvalidCompanyRoleError("Give at least one role")
@@ -50,6 +52,26 @@ export async function addCompanyRoles(
     .returning({ role: personCompanyRoles.role })
 
   return added.map((row) => row.role)
+}
+
+// The roles a person can be assigned to a project in. IT/Admin is left out,
+// since it is access to every project rather than a qualification.
+export async function qualificationsOf(
+  database: Database,
+  personId: string
+): Promise<Role[]> {
+  const held = await database
+    .select({ role: personCompanyRoles.role })
+    .from(personCompanyRoles)
+    .where(
+      and(
+        eq(personCompanyRoles.personId, personId),
+        ne(personCompanyRoles.role, "IT/Admin")
+      )
+    )
+    .orderBy(asc(personCompanyRoles.role))
+
+  return held.map((row) => row.role)
 }
 
 async function emailOf(database: Database, personId: string) {
@@ -101,9 +123,11 @@ export async function giveCompanyRoles(
   })
 }
 
-// Every permission check reads the roles fresh, so the removal counts from the
-// next request on. The last company-wide IT/Admin is never removed, since
-// nobody could give access after that.
+// Every permission check reads the roles fresh, so removing IT/Admin counts
+// from the next request on. Removing a qualification leaves the person's
+// project assignments as they are and only stops new ones. The last
+// company-wide IT/Admin is never removed, since nobody could give access after
+// that.
 export async function removeCompanyRole(
   database: Database,
   actor: string,

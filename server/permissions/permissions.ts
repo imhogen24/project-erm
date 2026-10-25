@@ -40,7 +40,8 @@ export function roleAllows(
   })
 }
 
-// The roles a person holds on every project.
+// The roles a person holds company-wide: IT/Admin, which counts on every
+// project, and the qualifications, which give no access by themselves.
 export async function companyRolesOf(
   database: Database,
   actor: string
@@ -54,9 +55,11 @@ export async function companyRolesOf(
   return held.map((row) => row.role)
 }
 
-// The roles a person holds on a project: those given on it plus those given
-// company-wide, each once. Empty when they hold none, or the project does not
-// exist, so a company-wide role never reveals which projects exist.
+// The roles a person holds on a project: those given on it plus a company-wide
+// IT/Admin, each once. Any other company-wide role is a qualification and is
+// never added, so access comes only from being assigned to the project. Empty
+// when they hold none, or the project does not exist, so IT/Admin never reveals
+// which projects exist.
 export async function rolesOn(
   database: Database,
   actor: string,
@@ -76,7 +79,12 @@ export async function rolesOn(
       .select({ role: personCompanyRoles.role })
       .from(personCompanyRoles)
       .innerJoin(projects, eq(projects.id, projectId))
-      .where(eq(personCompanyRoles.personId, actor)),
+      .where(
+        and(
+          eq(personCompanyRoles.personId, actor),
+          eq(personCompanyRoles.role, "IT/Admin")
+        )
+      ),
   ])
 
   return [...new Set([...onProject, ...companyWide].map((row) => row.role))]

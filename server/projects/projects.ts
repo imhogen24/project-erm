@@ -213,8 +213,8 @@ export async function assertProjectActive(
 }
 
 // The projects this person holds at least one role on, sorted by name. A
-// person with a company-wide role holds it on every project, so they see every
-// project, with their project roles added to the company-wide ones.
+// company-wide IT/Admin holds it on every project, so they see every project,
+// with their project roles added. A qualification adds no project.
 export async function listProjectsFor(
   database: Database,
   actor: string
@@ -246,7 +246,7 @@ export async function listProjectsFor(
     }
   }
 
-  if (companyWide.length === 0) {
+  if (!companyWide.includes("IT/Admin")) {
     return [...byProject.values()]
   }
 
@@ -256,8 +256,8 @@ export async function listProjectsFor(
     .orderBy(asc(projects.name), asc(projects.id))
 
   return every.map((project) => {
-    const held = new Set([
-      ...companyWide,
+    const held = new Set<Role>([
+      "IT/Admin",
       ...(byProject.get(project.id)?.roles ?? []),
     ])
 

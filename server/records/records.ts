@@ -1,4 +1,5 @@
-import { and, eq } from "drizzle-orm"
+import { DrizzleQueryError, and, eq } from "drizzle-orm"
+import { DatabaseError } from "pg"
 
 import type { Database } from "@/db"
 import {
@@ -15,13 +16,19 @@ import {
   writeAudit,
   type Transaction,
 } from "@/server/audit/audit"
-import { assertGateOpen } from "@/server/gates/gates"
 import { assertCan, type Action } from "@/server/permissions/permissions"
 import { assertProjectActive } from "@/server/projects/projects"
+import {
+  ToolNotAvailableError,
+  applyHardStop,
+  assertAvailable,
+} from "@/server/workflow/workflow"
 
 import { assertValid } from "./validate"
 
 export { ProjectNotActiveError } from "@/server/projects/projects"
+
+export { ToolNotAvailableError } from "@/server/workflow/workflow"
 
 export { UnknownToolError, ValidationError } from "./validate"
 
@@ -33,6 +40,7 @@ export type ToolRecord = {
   id: string
   projectId: string
   toolId: string
+  cycle: number
   state: RecordState
   payload: JsonObject
 }
@@ -54,9 +62,12 @@ const allowedTransitions: Record<RecordState, readonly RecordState[]> = {
   void: [],
 }
 
+// `cycle` is for a tool that repeats once per payment milestone. Left out, the
+// record gets the cycle the workflow map opens next.
 type NewRecord = {
   projectId: string
   toolId: string
+  cycle?: number
   payload?: JsonObject
 }
 
@@ -64,48 +75,74 @@ const columns = {
   id: toolRecords.id,
   projectId: toolRecords.projectId,
   toolId: toolRecords.toolId,
+  cycle: toolRecords.cycle,
   state: toolRecords.state,
   payload: toolRecords.payload,
 }
 
+// The workflow map must have the tool open on this project. Two simultaneous
+// creates both find it open, so the unique index on tool and cycle refuses the
+// second.
 export async function createRecord(
   database: Database,
   actor: string,
   input: NewRecord
 ): Promise<ToolRecord> {
   await assertCan(database, actor, input.projectId, input.toolId, "write")
-  await assertGateOpen(database, input.projectId, input.toolId)
 
   // A new record is a draft, so required fields are not checked yet.
   const payload = assertValid(input.toolId, input.payload ?? {}, {
     forSubmit: false,
   })
 
-  return database.transaction(async (transaction) => {
-    await assertProjectActive(transaction, input.projectId)
+  try {
+    return await database.transaction(async (transaction) => {
+      await assertProjectActive(transaction, input.projectId)
 
-    const [record] = await transaction
-      .insert(toolRecords)
-      .values({
-        projectId: input.projectId,
-        toolId: input.toolId,
-        payload,
-      })
-      .returning(columns)
+      const cycle = await assertAvailable(
+        transaction,
+        input.projectId,
+        input.toolId,
+        input.cycle
+      )
 
-    await writeAudit(
-      transaction,
-      {
-        recordId: record!.id,
-        projectId: input.projectId,
-        actor,
-        action: "created",
-      },
-      [stateChange(null, "draft"), ...payloadChanges({}, record!.payload)]
-    )
+      const [record] = await transaction
+        .insert(toolRecords)
+        .values({
+          projectId: input.projectId,
+          toolId: input.toolId,
+          cycle,
+          payload,
+        })
+        .returning(columns)
 
-    return record!
-  })
+      await writeAudit(
+        transaction,
+        {
+          recordId: record!.id,
+          projectId: input.projectId,
+          actor,
+          action: "created",
+        },
+        [stateChange(null, "draft"), ...payloadChanges({}, record!.payload)]
+      )
+
+      return record!
+    })
+  } catch (error) {
+    // Drizzle wraps the driver's error, so the broken rule is on its cause.
+    if (
+      error instanceof DrizzleQueryError &&
+      error.cause instanceof DatabaseError &&
+      error.cause.constraint === "tool_records_one_live_per_cycle"
+    ) {
+      throw new ToolNotAvailableError(
+        `${input.toolId} cannot be started: ${input.toolId} already has a record`
+      )
+    }
+
+    throw error
+  }
 }
 
 // Reads the record and holds its row until the transaction ends, so a second
@@ -225,6 +262,7 @@ export async function transitionRecord(
 
     if (to === "locked") {
       await applyApprovedChange(transaction, actor, current)
+      await applyHardStop(transaction, actor, current)
     }
 
     return moved!

@@ -1,10 +1,14 @@
+import { sql } from "drizzle-orm"
 import {
+  check,
   index,
+  integer,
   jsonb,
   pgEnum,
   pgTable,
   text,
   timestamp,
+  uniqueIndex,
   uuid,
 } from "drizzle-orm/pg-core"
 
@@ -28,7 +32,10 @@ export type JsonObject = { [key: string]: JsonValue }
 export const recordStateEnum = pgEnum("record_state", recordStates)
 
 // One row per tool record (D1.1, D1.8, ...). The tool's definition decides
-// which fields the payload holds.
+// which fields the payload holds. A tool that repeats once per payment
+// milestone has one record per cycle; every other tool is always cycle 1. The
+// unique index allows one record that is not void per tool and cycle, so two
+// simultaneous creates cannot both succeed.
 export const toolRecords = pgTable(
   "tool_records",
   {
@@ -37,6 +44,7 @@ export const toolRecords = pgTable(
       .notNull()
       .references(() => projects.id, { onDelete: "restrict" }),
     toolId: text("tool_id").notNull(),
+    cycle: integer().notNull().default(1),
     state: recordStateEnum().notNull().default("draft"),
     payload: jsonb().$type<JsonObject>().notNull().default({}),
     createdAt: timestamp("created_at", { withTimezone: true })
@@ -51,5 +59,9 @@ export const toolRecords = pgTable(
       table.projectId,
       table.toolId
     ),
+    uniqueIndex("tool_records_one_live_per_cycle")
+      .on(table.projectId, table.toolId, table.cycle)
+      .where(sql`${table.state} <> 'void'`),
+    check("tool_records_cycle_positive", sql`${table.cycle} >= 1`),
   ]
 )

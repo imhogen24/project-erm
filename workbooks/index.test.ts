@@ -5,6 +5,8 @@ import {
   brokenReplacements,
   createToolRegistry,
 } from "@/server/tools/registry"
+import { brokenWorkflowRules } from "@/server/workflow/check"
+import { workflowMaps } from "@/server/workflow/workflow"
 
 import { allTools, registerAllTools } from "./index"
 
@@ -51,5 +53,13 @@ describe("registered tools", () => {
     registerAllTools(registry)
 
     expect(brokenReplacements(registry.listTools())).toEqual([])
+  })
+
+  it("has a workflow map whose every tool, field and option exists", () => {
+    const registry = createToolRegistry()
+
+    registerAllTools(registry)
+
+    expect(brokenWorkflowRules(workflowMaps, registry.listTools())).toEqual([])
   })
 })

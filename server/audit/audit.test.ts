@@ -14,6 +14,7 @@ import {
 } from "@/server/records/records"
 import { defineTool } from "@/server/tools/define-tool"
 import { tools } from "@/server/tools/registry"
+import { loadUnorderedWorkflow } from "@/server/workflow/testing"
 
 import { payloadChanges } from "./audit"
 
@@ -35,6 +36,8 @@ tools.registerTool(
     ],
   })
 )
+
+loadUnorderedWorkflow({ wb01: ["D1.3"] })
 
 let projectId: string
 

@@ -2,7 +2,6 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
 import { roles, type Role } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
-import { GateClosedError } from "@/server/gates/gates"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import {
   ProjectNotActiveError,
@@ -11,6 +10,7 @@ import {
 import {
   InvalidTransitionError,
   RecordNotEditableError,
+  ToolNotAvailableError,
   createRecord,
   transitionRecord,
   updateRecord,
@@ -18,6 +18,7 @@ import {
 } from "@/server/records/records"
 import { getTool, workbookNumber } from "@/server/tools/registry"
 import { registerTestTools } from "@/server/tools/testing"
+import { loadUnorderedWorkflow } from "@/server/workflow/testing"
 
 import {
   RollbackNotAllowedError,
@@ -39,19 +40,23 @@ let pm: string
 const reason = "The client changed the scope in D1.8"
 
 // The record whose lock opens the next workbook, from workbook 1 to 4.
-const gateTools = ["D1.15", "D2.12", "D3.10", "D4.8"]
+const gateTools = ["D1.16", "D2.12", "D3.10", "D4.8"]
 
 // One more record in each workbook, from workbook 1 to 5, so there is data to
 // compare.
 const extraTools = ["D1.8", "D2.14", "D3.1", "D4.1", "P5.2"]
 
-registerTestTools({
-  wb01: ["D1.15", "D1.8", "D1.3", "T3.D1.8a"],
+const byWorkbook = {
+  wb01: ["D1.16", "D1.8", "D1.3", "T3.D1.8a"],
   wb02: ["D2.12", "D2.14"],
   wb03: ["D3.10", "D3.1"],
   wb04: ["D4.8", "D4.1", "X.FOUR"],
   wb05: ["P5.2"],
-})
+}
+
+registerTestTools(byWorkbook)
+
+loadUnorderedWorkflow(byWorkbook)
 
 // A tool's workbook, read from its definition as rollback does.
 function workbookOf(toolId: string) {
@@ -327,7 +332,7 @@ describe("rolling back", () => {
     // Workbook 2 is skipped on purpose, which the normal steps would not allow.
     await database.pool.query(
       `INSERT INTO tool_records (project_id, tool_id, state) VALUES
-       ($1, 'D1.15', 'locked'), ($1, 'D3.1', 'draft')`,
+       ($1, 'D1.16', 'locked'), ($1, 'D3.1', 'draft')`,
       [projectId]
     )
     const before = await rowsOf()
@@ -557,7 +562,7 @@ describe("void and reopened records", () => {
 
     await rollBack(1)
 
-    const [gate] = (await rowsOf()).filter((row) => row.toolId === "D1.15")
+    const [gate] = (await rowsOf()).filter((row) => row.toolId === "D1.16")
 
     for (const step of ["submitted", "approved", "locked"] as const) {
       await transitionRecord(database, actor, gate!.id, step)
@@ -582,7 +587,7 @@ describe("void and reopened records", () => {
 
     await rollBack(1)
 
-    const [gate] = (await rowsOf()).filter((row) => row.toolId === "D1.15")
+    const [gate] = (await rowsOf()).filter((row) => row.toolId === "D1.16")
 
     for (const step of ["submitted", "approved", "locked"] as const) {
       await transitionRecord(database, actor, gate!.id, step)
@@ -609,7 +614,7 @@ describe("void and reopened records", () => {
 
     await expect(
       createRecord(database, actor, { projectId, toolId: "D2.14" })
-    ).rejects.toThrow(GateClosedError)
+    ).rejects.toThrow(ToolNotAvailableError)
   })
 
   it("leaves other projects untouched", async () => {
@@ -670,7 +675,7 @@ describe("finding a tool's workbook", () => {
   }
 
   it("rolls back a Tier 3 project to workbook 1 with no error", async () => {
-    await recordIn("locked", "D1.15")
+    await recordIn("locked", "D1.16")
     const drafting = await recordIn("locked", "T3.D1.8a")
     await recordIn("submitted", "D2.14")
 
@@ -681,7 +686,7 @@ describe("finding a tool's workbook", () => {
     )
 
     expect(states).toEqual({
-      "D1.15": "draft",
+      "D1.16": "draft",
       "D2.14": "void",
       "T3.D1.8a": "draft",
     })

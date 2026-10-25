@@ -20,6 +20,7 @@ import {
   PermissionDeniedError,
   companyRolesOf,
 } from "@/server/permissions/permissions"
+import { systemActor } from "@/server/system/system"
 
 export class InvalidInviteInputError extends Error {}
 
@@ -198,6 +199,10 @@ export async function createInvite(
   const held = cleanRoles(input.roles, input.projectId)
 
   const existing = await findPerson(database, address)
+
+  if (existing?.id === systemActor) {
+    throw new InvalidInviteInputError("The system cannot be invited")
+  }
 
   // Each change is written in one transaction with its access_log line, so a
   // failed log line undoes the change.

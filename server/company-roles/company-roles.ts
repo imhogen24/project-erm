@@ -10,6 +10,7 @@ import {
 } from "@/db/schema"
 import type { Transaction } from "@/server/audit/audit"
 import { assertCompanyRole } from "@/server/permissions/permissions"
+import { systemActor } from "@/server/system/system"
 
 export class InvalidCompanyRoleError extends Error {}
 
@@ -96,6 +97,10 @@ export async function giveCompanyRoles(
 ): Promise<void> {
   await assertCompanyRole(database, actor, "IT/Admin")
   assertCompanyWideRoles(held)
+
+  if (personId === systemActor) {
+    throw new InvalidCompanyRoleError("The system cannot hold roles")
+  }
 
   const email = await emailOf(database, personId)
 

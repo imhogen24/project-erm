@@ -1,4 +1,5 @@
 import { createDatabase } from "./index"
+import { people, systemPerson } from "./schema"
 
 export function createTestDatabase() {
   const url = process.env.TEST_DATABASE_URL
@@ -27,4 +28,19 @@ export async function resetTestData(
   const tables = rows.map((row) => `"${row.tablename}"`).join(", ")
 
   await database.pool.query(`TRUNCATE ${tables} RESTART IDENTITY CASCADE`)
+}
+
+// resetTestData empties `people`, which takes the system person the
+// migrations made with it. A test that acts as the system puts it back.
+export async function restoreSystemPerson(
+  database: ReturnType<typeof createTestDatabase>
+) {
+  await database
+    .insert(people)
+    .values({
+      id: systemPerson.id,
+      name: systemPerson.name,
+      email: systemPerson.email,
+    })
+    .onConflictDoNothing()
 }

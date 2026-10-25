@@ -1,8 +1,16 @@
-import { index, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
+import {
+  check,
+  index,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core"
 
-import { people } from "./access"
+import { notSystemPerson, people } from "./access"
 
-// Better-Auth's tables. Its "user" is the `people` table in access.ts.
+// Better-Auth's tables. Its "user" is the `people` table in access.ts. The
+// system person can hold neither a session nor an account, so it cannot sign in.
 export const sessions = pgTable(
   "sessions",
   {
@@ -21,7 +29,10 @@ export const sessions = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [index("sessions_person_id_idx").on(table.personId)]
+  (table) => [
+    index("sessions_person_id_idx").on(table.personId),
+    check("sessions_not_system", notSystemPerson(table.personId)),
+  ]
 )
 
 export const accounts = pgTable(
@@ -51,7 +62,10 @@ export const accounts = pgTable(
       .notNull()
       .defaultNow(),
   },
-  (table) => [index("accounts_person_id_idx").on(table.personId)]
+  (table) => [
+    index("accounts_person_id_idx").on(table.personId),
+    check("accounts_not_system", notSystemPerson(table.personId)),
+  ]
 )
 
 export const verifications = pgTable(

@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto"
 
-import { expect, test } from "@playwright/test"
+import { expect, test, type Page } from "@playwright/test"
 
 import {
   addRecord,
@@ -13,6 +13,14 @@ import {
 } from "./support/data"
 
 const NOT_FOUND = "This page could not be found."
+
+// The overview row of one tool. The id must match whole, or "D1.1" would also
+// find D1.10 to D1.16.
+function toolRow(page: Page, toolId: string) {
+  return page
+    .getByRole("listitem")
+    .filter({ has: page.getByText(toolId, { exact: true }) })
+}
 
 test("the list shows only the projects the person is on", async ({ page }) => {
   const person = await makePerson()
@@ -80,14 +88,10 @@ test("each tool row shows the state of its newest record", async ({ page }) => {
   await signIn(page, person.email)
 
   await page.goto(`/projects/${started.id}`)
-  await expect(
-    page.getByRole("listitem").filter({ hasText: "D1.1" })
-  ).toContainText("Locked")
+  await expect(toolRow(page, "D1.1")).toContainText("Locked")
 
   await page.goto(`/projects/${empty.id}`)
-  await expect(
-    page.getByRole("listitem").filter({ hasText: "D1.1" })
-  ).toContainText("Not started")
+  await expect(toolRow(page, "D1.1")).toContainText("Not started")
 })
 
 test("tools sit under a heading for their workbook", async ({ page }) => {
@@ -261,7 +265,7 @@ test("at 375px the overview does not scroll sideways and shows name and badge", 
 
   expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0)
 
-  const row = page.getByRole("listitem").filter({ hasText: "D1.1" })
+  const row = toolRow(page, "D1.1")
 
   await expect(row.getByText("Client Email / Web Form")).toBeVisible()
   await expect(row.getByText("Not started")).toBeVisible()

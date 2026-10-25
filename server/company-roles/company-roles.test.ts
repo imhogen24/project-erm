@@ -6,12 +6,14 @@ import {
   PermissionDeniedError,
   can,
   companyRolesOf,
+  rolesOn,
 } from "@/server/permissions/permissions"
 
 import {
   InvalidCompanyRoleError,
   LastItAdminError,
   giveCompanyRoles,
+  qualificationsOf,
   removeCompanyRole,
 } from "./company-roles"
 
@@ -81,11 +83,18 @@ afterAll(async () => {
 })
 
 describe("giving company-wide roles", () => {
-  it("gives the roles on every project", async () => {
+  it("gives IT/Admin on every project", async () => {
+    await giveCompanyRoles(database, admin, kofi, ["IT/Admin"])
+
+    expect(await companyRolesOf(database, kofi)).toEqual(["IT/Admin"])
+    expect(await rolesOn(database, kofi, projectId)).toEqual(["IT/Admin"])
+  })
+
+  it("gives any other role as a qualification, with no access", async () => {
     await giveCompanyRoles(database, admin, kofi, ["FO"])
 
-    expect(await companyRolesOf(database, kofi)).toEqual(["FO"])
-    expect(await can(database, kofi, projectId, "D1.14", "read")).toBe(true)
+    expect(await qualificationsOf(database, kofi)).toEqual(["FO"])
+    expect(await can(database, kofi, projectId, "D1.14", "read")).toBe(false)
   })
 
   it("logs who gave which roles to whom", async () => {
@@ -153,13 +162,42 @@ describe("giving company-wide roles", () => {
 })
 
 describe("removing a company-wide role", () => {
-  it("refuses on the next permission check", async () => {
+  it("refuses IT/Admin on the next permission check", async () => {
+    await holdCompanyWide(kofi, "IT/Admin")
+    expect(await rolesOn(database, kofi, projectId)).toEqual(["IT/Admin"])
+
+    await removeCompanyRole(database, admin, kofi, "IT/Admin")
+
+    expect(await rolesOn(database, kofi, projectId)).toEqual([])
+  })
+
+  it("removes the qualification", async () => {
     await holdCompanyWide(kofi, "OM")
-    expect(await can(database, kofi, projectId, "D1.2", "write")).toBe(true)
+    await holdCompanyWide(kofi, "PM")
 
     await removeCompanyRole(database, admin, kofi, "OM")
 
-    expect(await can(database, kofi, projectId, "D1.2", "write")).toBe(false)
+    expect(await qualificationsOf(database, kofi)).toEqual(["PM"])
+  })
+
+  it("keeps the person's assignment when the qualification is removed", async () => {
+    await holdCompanyWide(kofi, "PM")
+    await holdOnProject(kofi, "PM")
+
+    await removeCompanyRole(database, admin, kofi, "PM")
+
+    expect(await rolesOn(database, kofi, projectId)).toEqual(["PM"])
+    expect(await qualificationsOf(database, kofi)).toEqual([])
+    expect(await logLines()).toEqual([
+      {
+        actor_id: admin,
+        action: "roles_removed",
+        person_id: kofi,
+        email: "kofi@example.com",
+        project_id: null,
+        roles: ["PM"],
+      },
+    ])
   })
 
   it("logs who removed which role from whom", async () => {
@@ -238,5 +276,27 @@ describe("removing a company-wide role", () => {
     expect(
       results.filter((result) => result.status === "rejected")
     ).toHaveLength(1)
+  })
+})
+
+describe("qualificationsOf", () => {
+  it("returns every role the person is qualified for", async () => {
+    await holdCompanyWide(kofi, "PM")
+    await holdCompanyWide(kofi, "OM")
+
+    expect(await qualificationsOf(database, kofi)).toEqual(["OM", "PM"])
+  })
+
+  it("leaves out IT/Admin, which is access rather than a qualification", async () => {
+    await holdCompanyWide(kofi, "IT/Admin")
+    await holdCompanyWide(kofi, "PM")
+
+    expect(await qualificationsOf(database, kofi)).toEqual(["PM"])
+  })
+
+  it("leaves out the roles held on a project", async () => {
+    await holdOnProject(kofi, "LE")
+
+    expect(await qualificationsOf(database, kofi)).toEqual([])
   })
 })

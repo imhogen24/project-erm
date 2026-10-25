@@ -21,9 +21,10 @@ const PROJECT_NAME = "Demo Project"
 // Shaped like a website request ID, so screens show what a real one looks like.
 export const DEMO_REQUEST_ID = "T1-1789787898386"
 
-// These people work across every project, so the seed gives their role
-// company-wide instead of on Demo Project.
-const COMPANY_WIDE: readonly Role[] = ["OM", "PM", "HE", "FO", "IT/Admin"]
+// These people are qualified for their role, so they can be assigned it on any
+// project, and also hold it on Demo Project. A qualification alone gives no
+// access.
+const QUALIFIED: readonly Role[] = ["OM", "PM", "HE", "FO"]
 
 // "IT/Admin" becomes "it-admin@example.com".
 export function seedEmail(role: Role) {
@@ -117,12 +118,15 @@ async function addPerson(
         .where(eq(accounts.id, account.id))
     }
 
-    if (COMPANY_WIDE.includes(role)) {
+    // IT/Admin sees every project, so it is held company-wide only.
+    if (role === "IT/Admin" || QUALIFIED.includes(role)) {
       await transaction
         .insert(personCompanyRoles)
         .values({ personId, role })
         .onConflictDoNothing()
-    } else {
+    }
+
+    if (role !== "IT/Admin") {
       await transaction
         .insert(personProjectRoles)
         .values({ personId, projectId, role })
@@ -134,8 +138,9 @@ async function addPerson(
 }
 
 // Local development only: one person per role, all with the password
-// `password`. Each holds their role on "Demo Project", or company-wide for the
-// roles in COMPANY_WIDE. Returns the people this run added.
+// `password`. Each holds their role on "Demo Project", except IT/Admin, who
+// holds it company-wide. The roles in QUALIFIED are also given as a
+// qualification. Returns the people this run added.
 export async function seed(url: string): Promise<SeedUser[]> {
   assertLocal(url)
 

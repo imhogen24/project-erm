@@ -174,62 +174,101 @@ describe("listProjectsFor", () => {
   })
 })
 
-describe("listProjectsFor, with company-wide roles", () => {
-  it("lists every project to a person with a company-wide role", async () => {
+describe("listProjectsFor, with a company-wide IT/Admin", () => {
+  it("lists every project", async () => {
     const projectA = await addProject("Project A")
     const projectB = await addProject("Project B")
-    const om = await addPerson("Efua")
-    await grantCompanyWide(om, "OM")
+    const admin = await addPerson("Efua")
+    await grantCompanyWide(admin, "IT/Admin")
 
-    expect(await listProjectsFor(database, om)).toEqual([
-      listed(projectA, "Project A", ["OM"]),
-      listed(projectB, "Project B", ["OM"]),
+    expect(await listProjectsFor(database, admin)).toEqual([
+      listed(projectA, "Project A", ["IT/Admin"]),
+      listed(projectB, "Project B", ["IT/Admin"]),
     ])
   })
 
   it("lists a project created after the role was given", async () => {
-    const om = await addPerson("Efua")
-    await grantCompanyWide(om, "OM")
+    const admin = await addPerson("Efua")
+    await grantCompanyWide(admin, "IT/Admin")
     const inquiry = await addProject("New inquiry")
 
-    expect(await listProjectsFor(database, om)).toEqual([
-      listed(inquiry, "New inquiry", ["OM"]),
+    expect(await listProjectsFor(database, admin)).toEqual([
+      listed(inquiry, "New inquiry", ["IT/Admin"]),
     ])
   })
 
-  it("adds the project roles to the company-wide ones", async () => {
+  it("adds the project roles to IT/Admin, but not the qualifications", async () => {
     const projectA = await addProject("Project A")
     const projectB = await addProject("Project B")
     const person = await addPerson("Efua")
+    await grantCompanyWide(person, "IT/Admin")
     await grantCompanyWide(person, "OM")
     await grant(person, projectA, "LE")
 
     expect(await listProjectsFor(database, person)).toEqual([
-      listed(projectA, "Project A", ["OM", "LE"]),
-      listed(projectB, "Project B", ["OM"]),
+      listed(projectA, "Project A", ["LE", "IT/Admin"]),
+      listed(projectB, "Project B", ["IT/Admin"]),
+    ])
+  })
+})
+
+describe("listProjectsFor, with a qualification", () => {
+  it("does not list a project the person is not assigned to", async () => {
+    const om = await addPerson("Efua")
+    await grantCompanyWide(om, "OM")
+    await addProject("New inquiry")
+
+    expect(await listProjectsFor(database, om)).toEqual([])
+  })
+
+  it("lists only the projects the person is assigned to", async () => {
+    const projectA = await addProject("Project A")
+    await addProject("Project B")
+    const pm = await addPerson("Efua")
+    await grantCompanyWide(pm, "PM")
+    await grantCompanyWide(pm, "OM")
+    await grant(pm, projectA, "PM")
+
+    expect(await listProjectsFor(database, pm)).toEqual([
+      listed(projectA, "Project A", ["PM"]),
     ])
   })
 })
 
 describe("getProjectOverview, with company-wide roles", () => {
-  it("shows a new project to a company-wide OM", async () => {
+  it("shows a new project to a company-wide IT/Admin", async () => {
+    const project = await addProject("New inquiry")
+    const admin = await addPerson("Efua")
+    await grantCompanyWide(admin, "IT/Admin")
+
+    const overview = await getProjectOverview(
+      database,
+      admin,
+      project,
+      fourTools
+    )
+
+    expect(overview.id).toBe(project)
+  })
+
+  it("refuses a person only qualified for OM", async () => {
     const project = await addProject("New inquiry")
     const om = await addPerson("Efua")
     await grantCompanyWide(om, "OM")
 
-    const overview = await getProjectOverview(database, om, project, fourTools)
-
-    expect(overview.tools).toHaveLength(4)
+    await expect(
+      getProjectOverview(database, om, project, fourTools)
+    ).rejects.toThrow(PermissionDeniedError)
   })
 
   it("still refuses a project that does not exist", async () => {
-    const om = await addPerson("Efua")
-    await grantCompanyWide(om, "OM")
+    const admin = await addPerson("Efua")
+    await grantCompanyWide(admin, "IT/Admin")
 
     await expect(
       getProjectOverview(
         database,
-        om,
+        admin,
         "00000000-0000-0000-0000-000000000000",
         fourTools
       )
@@ -546,13 +585,14 @@ describe("setProjectStatus", () => {
     ).rejects.toThrow(PermissionDeniedError)
   })
 
-  it("lets a company-wide PM set it", async () => {
-    const companyPm = await addPerson("Esi")
-    await grantCompanyWide(companyPm, "PM")
+  it("refuses a person qualified for PM but not assigned to the project", async () => {
+    const qualifiedPm = await addPerson("Esi")
+    await grantCompanyWide(qualifiedPm, "PM")
 
-    await setProjectStatus(database, companyPm, project, "on_hold", "Waiting")
-
-    expect(await statusOf(project)).toBe("on_hold")
+    await expect(
+      setProjectStatus(database, qualifiedPm, project, "on_hold", "Waiting")
+    ).rejects.toThrow(PermissionDeniedError)
+    expect(await statusOf(project)).toBe("active")
   })
 
   it("refuses the status the project already has", async () => {

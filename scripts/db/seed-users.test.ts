@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { createAuth } from "@/server/auth/auth"
+import { listProjectsFor } from "@/server/projects/projects"
 
 import { DEMO_REQUEST_ID, seed } from "./seed-users"
 
@@ -42,6 +43,13 @@ const COMPANY_WIDE = [
   { email: "it-admin@example.com", role: "IT/Admin" },
   { email: "om@example.com", role: "OM" },
   { email: "pm@example.com", role: "PM" },
+]
+
+const QUALIFIED = [
+  "fo@example.com",
+  "he@example.com",
+  "om@example.com",
+  "pm@example.com",
 ]
 
 async function count(
@@ -86,29 +94,60 @@ afterAll(async () => {
   await database.pool.end()
 })
 
+async function idOf(email: string) {
+  const { rows } = await database.pool.query<{ id: string }>(
+    "SELECT id FROM people WHERE email = $1",
+    [email]
+  )
+
+  return rows[0]!.id
+}
+
+async function projectsSeenBy(email: string) {
+  const listed = await listProjectsFor(database, await idOf(email))
+
+  return listed.map((project) => project.name)
+}
+
 describe("seeding an empty database", () => {
-  it("adds one person per role, each holding only that role on Demo Project", async () => {
+  it("adds one person per role, each but IT/Admin holding only that role on Demo Project", async () => {
     await seed(url)
 
     expect(await count("projects")).toBe(1)
     expect(await count("people")).toBe(19)
-    expect(await count("person_project_roles")).toBe(14)
+    expect(await count("person_project_roles")).toBe(18)
 
     const held = await rolesOnDemoProject()
 
     expect(held).toContainEqual({ email: "le@example.com", role: "LE" })
+    expect(held).toContainEqual({ email: "pm@example.com", role: "PM" })
     expect(held).toContainEqual({ email: "client@example.com", role: "Client" })
     expect(held.map((row) => row.email).sort()).toEqual(
-      EMAILS.filter(
-        (email) => !COMPANY_WIDE.some((held) => held.email === email)
-      ).sort()
+      EMAILS.filter((email) => email !== "it-admin@example.com").sort()
     )
   })
 
-  it("gives the OM, PM, HE, FO and IT/Admin users their role company-wide", async () => {
+  it("qualifies the OM, PM, HE and FO users and gives IT/Admin company-wide", async () => {
     await seed(url)
 
     expect(await companyWideRoles()).toEqual(COMPANY_WIDE)
+  })
+
+  it("shows the OM, PM, HE and FO users only Demo Project, and IT/Admin every project", async () => {
+    await seed(url)
+
+    await database.pool.query(
+      "INSERT INTO projects (name, request_id, service_track) VALUES ('Other Project', 'T1-1', 'Tier_1')"
+    )
+
+    for (const email of QUALIFIED) {
+      expect(await projectsSeenBy(email)).toEqual(["Demo Project"])
+    }
+
+    expect(await projectsSeenBy("it-admin@example.com")).toEqual([
+      "Demo Project",
+      "Other Project",
+    ])
   })
 
   it("gives Demo Project a request ID and a service track, and leaves it active", async () => {
@@ -144,7 +183,7 @@ describe("seeding again", () => {
     expect(created).toEqual([])
     expect(await count("projects")).toBe(1)
     expect(await count("people")).toBe(19)
-    expect(await count("person_project_roles")).toBe(14)
+    expect(await count("person_project_roles")).toBe(18)
     expect(await count("person_company_roles")).toBe(5)
   })
 
@@ -159,7 +198,7 @@ describe("seeding again", () => {
 
     expect(created).toEqual([{ role: "QA", email: "qa@example.com" }])
     expect(await count("people")).toBe(19)
-    expect(await count("person_project_roles")).toBe(14)
+    expect(await count("person_project_roles")).toBe(18)
     expect(await count("person_company_roles")).toBe(5)
   })
 })
@@ -219,7 +258,7 @@ describe("seeding a database that is not local", () => {
   })
 })
 
-describe("seeding a user who lost a company-wide role", () => {
+describe("seeding a user who lost a qualification", () => {
   it("gives it back", async () => {
     await seed(url)
 

@@ -1,4 +1,6 @@
-import { DrizzleQueryError, and, eq } from "drizzle-orm"
+import { isDeepStrictEqual } from "node:util"
+
+import { DrizzleQueryError, and, eq, ne } from "drizzle-orm"
 import { DatabaseError } from "pg"
 
 import type { Database } from "@/db"
@@ -19,6 +21,7 @@ import {
 import {
   PermissionDeniedError,
   assertCan,
+  rolesOn,
   type Action,
 } from "@/server/permissions/permissions"
 import { assertProjectActive } from "@/server/projects/projects"
@@ -30,7 +33,13 @@ import {
 } from "@/server/workflow/workflow"
 
 import { inheritedValues, readPayload, withoutInherited } from "./inherited"
-import { assertValid } from "./validate"
+import {
+  signatureField,
+  signaturesOf,
+  unsignedFields,
+  withoutSignatures,
+} from "./signatures"
+import { ValidationError, assertValid } from "./validate"
 
 export { ProjectNotActiveError } from "@/server/projects/projects"
 
@@ -42,6 +51,8 @@ export { recordStates }
 
 export type { JsonObject, RecordState }
 
+// `updatedAt` is what a screen sends back with its next save, so a save made
+// over someone else's newer one is refused.
 export type ToolRecord = {
   id: string
   projectId: string
@@ -49,6 +60,12 @@ export type ToolRecord = {
   cycle: number
   state: RecordState
   payload: JsonObject
+  updatedAt: Date
+  submittedBy: string | null
+  submittedAt: Date | null
+  approvedBy: string | null
+  approvedAt: Date | null
+  lockedAt: Date | null
 }
 
 export class InvalidTransitionError extends Error {}
@@ -56,6 +73,18 @@ export class InvalidTransitionError extends Error {}
 export class RecordNotEditableError extends Error {}
 
 export class RecordNotFoundError extends Error {}
+
+export class SelfApprovalError extends Error {}
+
+// Carries the newer record, so the screen can show what changed.
+export class StaleRecordError extends Error {
+  readonly record: ToolRecord
+
+  constructor(record: ToolRecord) {
+    super("Someone else saved this record after you opened it")
+    this.record = record
+  }
+}
 
 // A locked record leaves locked only through an approved change request, which
 // reopens it as draft, or a workbook rollback, which reopens it as draft or
@@ -77,6 +106,16 @@ type NewRecord = {
   payload?: JsonObject
 }
 
+// `expectedUpdatedAt` is the `updatedAt` of the record the screen opened, or
+// left out when the tool had no record yet.
+type DraftSave = {
+  projectId: string
+  toolId: string
+  cycle: number
+  values: JsonObject
+  expectedUpdatedAt?: Date
+}
+
 const columns = {
   id: toolRecords.id,
   projectId: toolRecords.projectId,
@@ -84,6 +123,18 @@ const columns = {
   cycle: toolRecords.cycle,
   state: toolRecords.state,
   payload: toolRecords.payload,
+  updatedAt: toolRecords.updatedAt,
+  submittedBy: toolRecords.submittedBy,
+  submittedAt: toolRecords.submittedAt,
+  approvedBy: toolRecords.approvedBy,
+  approvedAt: toolRecords.approvedAt,
+  lockedAt: toolRecords.lockedAt,
+}
+
+// Always later than the record's last save, even within one millisecond, so
+// a save made over it can always be told apart from it.
+function nextUpdatedAt(record: ToolRecord): Date {
+  return new Date(Math.max(Date.now(), record.updatedAt.getTime() + 1))
 }
 
 // The system holds no roles, so it skips the permission check to read and
@@ -232,8 +283,99 @@ const actionForMove: Record<Exclude<RecordState, "void">, Action> = {
   locked: "approve",
 }
 
+// Moves a record the caller has locked one step, and records who moved it and
+// when. Approving needs every signature field signed.
+async function move(
+  transaction: Transaction,
+  actor: string,
+  current: ToolRecord,
+  to: Exclude<RecordState, "void">
+): Promise<ToolRecord> {
+  if (!allowedTransitions[current.state].includes(to)) {
+    throw new InvalidTransitionError(
+      `A ${current.state} record cannot move to ${to}`
+    )
+  }
+
+  const submitting = current.state === "draft" && to === "submitted"
+
+  // Submitting is when a draft must be complete, and when its inherited
+  // fields are copied in from their sources, so the submitted copy never
+  // changes after. A draft sent back may still hold an earlier copy, which
+  // the new one replaces. Signatures are written only by signing, so they are
+  // kept but not checked as values.
+  let payload = current.payload
+
+  if (submitting) {
+    const written = withoutInherited(current.toolId, current.payload)
+
+    assertValid(current.toolId, withoutSignatures(current.toolId, written), {
+      forSubmit: true,
+    })
+
+    payload = {
+      ...written,
+      ...(await inheritedValues(transaction, current)),
+    }
+  }
+
+  if (to === "approved") {
+    const unsigned = unsignedFields(current.toolId, current.payload)
+
+    if (unsigned.length > 0) {
+      throw new ValidationError(unsigned)
+    }
+  }
+
+  const now = new Date()
+
+  const [moved] = await transaction
+    .update(toolRecords)
+    .set({
+      state: to,
+      payload,
+      updatedAt: nextUpdatedAt(current),
+      ...(to === "submitted" && { submittedBy: actor, submittedAt: now }),
+      ...(to === "approved" && { approvedBy: actor, approvedAt: now }),
+      ...(to === "locked" && { lockedAt: now }),
+    })
+    .where(eq(toolRecords.id, current.id))
+    .returning(columns)
+
+  await writeAudit(
+    transaction,
+    {
+      recordId: current.id,
+      projectId: current.projectId,
+      actor,
+      action: "updated",
+      reason: "Inherited values copied on submit",
+    },
+    payloadChanges(current.payload, payload)
+  )
+
+  await writeAudit(
+    transaction,
+    {
+      recordId: current.id,
+      projectId: current.projectId,
+      actor,
+      action: "transitioned",
+    },
+    [stateChange(current.state, to)]
+  )
+
+  if (to === "locked") {
+    await applyApprovedChange(transaction, actor, current)
+    await applyHardStop(transaction, actor, current)
+  }
+
+  return moved!
+}
+
 // The record is locked while it is checked and moved, so two simultaneous
-// calls cannot both move it.
+// calls cannot both move it. Screens use the steps below; this is the single
+// move they are built from.
 export async function transitionRecord(
   database: Database,
   actor: string,
@@ -259,68 +401,7 @@ export async function transitionRecord(
   return database.transaction(async (transaction) => {
     await assertProjectActive(transaction, record.projectId)
 
-    const current = await lockRecord(transaction, recordId)
-
-    if (!allowedTransitions[current.state].includes(to)) {
-      throw new InvalidTransitionError(
-        `A ${current.state} record cannot move to ${to}`
-      )
-    }
-
-    const submitting = current.state === "draft" && to === "submitted"
-
-    // Submitting is when a draft must be complete, and when its inherited
-    // fields are copied in from their sources, so the submitted copy never
-    // changes after. A draft sent back may still hold an earlier copy, which
-    // the new one replaces.
-    let payload = current.payload
-
-    if (submitting) {
-      const written = withoutInherited(current.toolId, current.payload)
-
-      assertValid(current.toolId, written, { forSubmit: true })
-
-      payload = {
-        ...written,
-        ...(await inheritedValues(transaction, current)),
-      }
-    }
-
-    const [moved] = await transaction
-      .update(toolRecords)
-      .set({ state: to, payload, updatedAt: new Date() })
-      .where(eq(toolRecords.id, recordId))
-      .returning(columns)
-
-    await writeAudit(
-      transaction,
-      {
-        recordId,
-        projectId: current.projectId,
-        actor,
-        action: "updated",
-        reason: "Inherited values copied on submit",
-      },
-      payloadChanges(current.payload, payload)
-    )
-
-    await writeAudit(
-      transaction,
-      {
-        recordId,
-        projectId: current.projectId,
-        actor,
-        action: "transitioned",
-      },
-      [stateChange(current.state, to)]
-    )
-
-    if (to === "locked") {
-      await applyApprovedChange(transaction, actor, current)
-      await applyHardStop(transaction, actor, current)
-    }
-
-    return moved!
+    return move(transaction, actor, await lockRecord(transaction, recordId), to)
   })
 }
 
@@ -358,6 +439,61 @@ async function applyApprovedChange(
   )
 }
 
+// Saves checked values over a draft the caller has locked. A signature vouches
+// for the values it was given on, so editing any other field clears every
+// signature, with its own audit lines. Saving the same values changes nothing.
+async function writeDraft(
+  transaction: Transaction,
+  actor: string,
+  current: ToolRecord,
+  values: JsonObject
+): Promise<ToolRecord> {
+  if (current.state !== "draft") {
+    throw new RecordNotEditableError(
+      `A ${current.state} record cannot be edited`
+    )
+  }
+
+  const before = withoutSignatures(current.toolId, current.payload)
+  const signatures = signaturesOf(current.toolId, current.payload)
+
+  const edited = !isDeepStrictEqual(
+    withoutInherited(current.toolId, before),
+    values
+  )
+
+  const payload = edited ? values : { ...values, ...signatures }
+
+  if (isDeepStrictEqual(payload, current.payload)) {
+    return current
+  }
+
+  const [updated] = await transaction
+    .update(toolRecords)
+    .set({ payload, updatedAt: nextUpdatedAt(current) })
+    .where(eq(toolRecords.id, current.id))
+    .returning(columns)
+
+  const entry = {
+    recordId: current.id,
+    projectId: current.projectId,
+    actor,
+    action: "updated" as const,
+  }
+
+  await writeAudit(transaction, entry, payloadChanges(before, values))
+
+  if (edited) {
+    await writeAudit(
+      transaction,
+      { ...entry, reason: "Signatures cleared: the record was edited" },
+      payloadChanges(signatures, {})
+    )
+  }
+
+  return updated!
+}
+
 export async function updateRecord(
   database: Database,
   actor: string,
@@ -374,17 +510,160 @@ export async function updateRecord(
   return database.transaction(async (transaction) => {
     await assertProjectActive(transaction, record.projectId)
 
+    return writeDraft(
+      transaction,
+      actor,
+      await lockRecord(transaction, recordId),
+      checked
+    )
+  })
+}
+
+// The record of the tool and cycle that is not void, if there is one.
+async function liveRecord(
+  database: Pick<Database, "select">,
+  input: Pick<DraftSave, "projectId" | "toolId" | "cycle">
+): Promise<ToolRecord | undefined> {
+  const [record] = await database
+    .select(columns)
+    .from(toolRecords)
+    .where(
+      and(
+        eq(toolRecords.projectId, input.projectId),
+        eq(toolRecords.toolId, input.toolId),
+        eq(toolRecords.cycle, input.cycle),
+        ne(toolRecords.state, "void")
+      )
+    )
+
+  return record
+}
+
+// The newer record goes back as the screen would show it.
+async function staleError(
+  database: Pick<Database, "select">,
+  record: ToolRecord
+): Promise<StaleRecordError> {
+  return new StaleRecordError({
+    ...record,
+    payload: await readPayload(database, record),
+  })
+}
+
+// Creates the tool's record for the cycle when it has none, if the workflow
+// has the tool open, or saves over its draft. A save is refused with
+// StaleRecordError, changing nothing, when the record is not the one the
+// screen opened: someone created it, or saved it, in between. Saving never
+// needs the whole form to be valid; only submitting does.
+export async function saveDraft(
+  database: Database,
+  actor: string,
+  input: DraftSave
+): Promise<ToolRecord> {
+  await assertMay(database, actor, input.projectId, input.toolId, "write")
+
+  const values = assertValid(input.toolId, input.values, { forSubmit: false })
+  const expected = input.expectedUpdatedAt
+  const existing = await liveRecord(database, input)
+
+  if (!existing && expected) {
+    throw new RecordNotFoundError(
+      `${input.toolId} no longer has a record for this cycle`
+    )
+  }
+
+  if (!existing) {
+    try {
+      return await createRecord(database, actor, {
+        projectId: input.projectId,
+        toolId: input.toolId,
+        cycle: input.cycle,
+        payload: values,
+      })
+    } catch (error) {
+      const created =
+        error instanceof ToolNotAvailableError &&
+        (await liveRecord(database, input))
+
+      if (created) {
+        throw await staleError(database, created)
+      }
+
+      throw error
+    }
+  }
+
+  if (!expected) {
+    throw await staleError(database, existing)
+  }
+
+  return database.transaction(async (transaction) => {
+    await assertProjectActive(transaction, existing.projectId)
+
+    const current = await lockRecord(transaction, existing.id)
+
+    if (current.updatedAt.getTime() !== expected.getTime()) {
+      throw await staleError(transaction, current)
+    }
+
+    return writeDraft(transaction, actor, current, values)
+  })
+}
+
+// Sends a complete draft to be approved, and records who submitted it.
+export async function submitRecord(
+  database: Database,
+  actor: string,
+  recordId: string
+): Promise<ToolRecord> {
+  return transitionRecord(database, actor, recordId, "submitted")
+}
+
+// Writes who signed and when into a signature field of a draft or submitted
+// record. Only a person holding one of the roles the field names may sign.
+export async function signField(
+  database: Database,
+  actor: string,
+  recordId: string,
+  fieldKey: string
+): Promise<ToolRecord> {
+  const record = await loadRecord(database, recordId)
+  const field = signatureField(record.toolId, fieldKey)
+
+  if (!field) {
+    throw new ValidationError([
+      { field: fieldKey, message: "Not a signature field of this tool" },
+    ])
+  }
+
+  const signers = field.signedBy ?? []
+  const held = await rolesOn(database, actor, record.projectId)
+
+  if (!signers.some((role) => held.includes(role))) {
+    throw new PermissionDeniedError(
+      `Only ${signers.join(", ")} may sign ${field.label}`
+    )
+  }
+
+  return database.transaction(async (transaction) => {
+    await assertProjectActive(transaction, record.projectId)
+
     const current = await lockRecord(transaction, recordId)
 
-    if (current.state !== "draft") {
+    if (current.state !== "draft" && current.state !== "submitted") {
       throw new RecordNotEditableError(
-        `A ${current.state} record cannot be edited`
+        `A ${current.state} record cannot be signed`
       )
+    }
+
+    const payload = {
+      ...current.payload,
+      [fieldKey]: { signedBy: actor, signedAt: new Date().toISOString() },
     }
 
     const [updated] = await transaction
       .update(toolRecords)
-      .set({ payload: checked, updatedAt: new Date() })
+      .set({ payload, updatedAt: nextUpdatedAt(current) })
       .where(eq(toolRecords.id, recordId))
       .returning(columns)
 
@@ -395,10 +674,47 @@ export async function updateRecord(
         projectId: current.projectId,
         actor,
         action: "updated",
+        reason: "Signed",
       },
-      payloadChanges(current.payload, checked)
+      payloadChanges(current.payload, payload)
     )
 
     return updated!
+  })
+}
+
+// Approves a submitted record and locks it in one transaction, since the next
+// tool opens when this one is locked. The person who submitted it may not
+// approve it, even when they also hold a role that approves: the check is on
+// the person. Every signature field must be signed.
+export async function approveRecord(
+  database: Database,
+  actor: string,
+  recordId: string
+): Promise<ToolRecord> {
+  const record = await loadRecord(database, recordId)
+
+  await assertMay(database, actor, record.projectId, record.toolId, "approve")
+
+  return database.transaction(async (transaction) => {
+    await assertProjectActive(transaction, record.projectId)
+
+    const current = await lockRecord(transaction, recordId)
+
+    if (current.state !== "submitted") {
+      throw new InvalidTransitionError(
+        `A ${current.state} record cannot be approved`
+      )
+    }
+
+    if (current.submittedBy === actor) {
+      throw new SelfApprovalError(
+        "The person who submitted this record cannot approve it"
+      )
+    }
+
+    const approved = await move(transaction, actor, current, "approved")
+
+    return move(transaction, actor, approved, "locked")
   })
 }

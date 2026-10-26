@@ -6,6 +6,7 @@ import { eq } from "drizzle-orm"
 
 import { createDatabase } from "@/db"
 
+import { requestChange } from "@/server/change-requests/change-requests"
 import { qualificationsOf } from "@/server/company-roles/company-roles"
 import { acceptInvite, createInvite } from "@/server/invites/invites"
 import {
@@ -102,9 +103,14 @@ export async function addRecord(
   toolId: string,
   state: RecordState
 ) {
-  await withDatabase((database) =>
-    database.insert(toolRecords).values({ projectId, toolId, state })
+  const [record] = await withDatabase((database) =>
+    database
+      .insert(toolRecords)
+      .values({ projectId, toolId, state })
+      .returning({ id: toolRecords.id })
   )
+
+  return record!.id
 }
 
 export async function signIn(page: Page, email: string) {
@@ -231,4 +237,15 @@ export async function withNoOneElseQualified(
       }
     })
   }
+}
+
+// An open change request on a locked record, made through the real logic.
+export async function makeChangeRequest(
+  personId: string,
+  recordId: string,
+  reason: string
+) {
+  await withDatabase((database) =>
+    requestChange(database, personId, recordId, reason)
+  )
 }

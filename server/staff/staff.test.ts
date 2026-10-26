@@ -277,7 +277,7 @@ describe("assignStaff", () => {
 
     expect(refused).toHaveLength(1)
     expect(refused[0]!.reason).toBeInstanceOf(WorkloadLimitError)
-    expect(await workloadOf(database, pm)).toContainEqual({
+    expect(await workloadOf(database, admin, pm)).toContainEqual({
       group: "PM",
       count: 3,
       limit: 3,
@@ -356,12 +356,20 @@ describe("workloadOf", () => {
       [person, both]
     )
 
-    const workload = await workloadOf(database, person)
+    const workload = await workloadOf(database, admin, person)
 
     expect(workload).toContainEqual({ group: "PM", count: 2, limit: 3 })
     expect(workload).toContainEqual({ group: "Engineer", count: 1, limit: 3 })
     expect(workload).toContainEqual({ group: "OM", count: 0, limit: 6 })
     expect(workload).toContainEqual({ group: "Finance", count: 0, limit: 6 })
+  })
+
+  it("refuses anyone but a company-wide IT/Admin", async () => {
+    const person = await addPerson()
+
+    await expect(workloadOf(database, person, person)).rejects.toThrow(
+      PermissionDeniedError
+    )
   })
 })
 

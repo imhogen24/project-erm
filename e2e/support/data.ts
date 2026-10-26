@@ -2,8 +2,12 @@ import { randomUUID } from "node:crypto"
 
 import { expect, type Page } from "@playwright/test"
 import { hashPassword } from "better-auth/crypto"
+import { eq } from "drizzle-orm"
 
 import { createDatabase } from "@/db"
+
+import { requestChange } from "@/server/change-requests/change-requests"
+import { qualificationsOf } from "@/server/company-roles/company-roles"
 import { acceptInvite, createInvite } from "@/server/invites/invites"
 import {
   accounts,
@@ -99,9 +103,14 @@ export async function addRecord(
   toolId: string,
   state: RecordState
 ) {
-  await withDatabase((database) =>
-    database.insert(toolRecords).values({ projectId, toolId, state })
+  const [record] = await withDatabase((database) =>
+    database
+      .insert(toolRecords)
+      .values({ projectId, toolId, state })
+      .returning({ id: toolRecords.id })
   )
+
+  return record!.id
 }
 
 export async function signIn(page: Page, email: string) {
@@ -171,4 +180,72 @@ export async function makeAdmin(name?: string) {
   )
 
   return person
+}
+
+// The roles a person has been qualified for, found by their email.
+export async function qualificationsFor(email: string) {
+  return withDatabase(async (database) => {
+    const [person] = await database
+      .select({ id: people.id })
+      .from(people)
+      .where(eq(people.email, email))
+
+    return person ? qualificationsOf(database, person.id) : []
+  })
+}
+
+// Company-wide, so the person is qualified for the roles and has no access.
+export async function makeQualified(name: string, roles: Role[]) {
+  const person = await makePerson(name)
+
+  await withDatabase((database) =>
+    database
+      .insert(personCompanyRoles)
+      .values(roles.map((role) => ({ personId: person.id, role })))
+  )
+
+  return person
+}
+
+// Runs `run` while nobody but the people made inside it is qualified for the
+// role, then puts everyone back. A screen that lists every qualified person
+// cannot otherwise be shown "nobody is free".
+export async function withNoOneElseQualified(
+  role: Role,
+  run: () => Promise<void>
+) {
+  const others = await withDatabase(async (database) =>
+    database
+      .delete(personCompanyRoles)
+      .where(eq(personCompanyRoles.role, role))
+      .returning()
+  )
+
+  try {
+    await run()
+  } finally {
+    await withDatabase(async (database) => {
+      await database
+        .delete(personCompanyRoles)
+        .where(eq(personCompanyRoles.role, role))
+
+      if (others.length > 0) {
+        await database
+          .insert(personCompanyRoles)
+          .values(others)
+          .onConflictDoNothing()
+      }
+    })
+  }
+}
+
+// An open change request on a locked record, made through the real logic.
+export async function makeChangeRequest(
+  personId: string,
+  recordId: string,
+  reason: string
+) {
+  await withDatabase((database) =>
+    requestChange(database, personId, recordId, reason)
+  )
 }

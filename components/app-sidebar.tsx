@@ -11,8 +11,8 @@ type Props = {
   // Set inside a project: its name and the workbooks to jump to.
   project?: { name: string; workbooks: { id: string; label: string }[] }
   // Which page the person is on, outside a project, and whether to offer the
-  // invite page.
-  current?: "projects" | "invites"
+  // IT/Admin pages: invite people and assign staff.
+  current?: "projects" | "invites" | "team"
   canInvite?: boolean
 }
 
@@ -92,6 +92,20 @@ export function AppSidebar({
                   )}
                 >
                   Invite people
+                </Link>
+              )}
+              {canInvite && (
+                <Link
+                  href="/admin/team"
+                  aria-current={current === "team" ? "page" : undefined}
+                  className={cn(
+                    linkClass,
+                    "py-3",
+                    current === "team" &&
+                      "border-primary bg-primary/10 font-medium text-foreground"
+                  )}
+                >
+                  Assign staff
                 </Link>
               )}
             </>

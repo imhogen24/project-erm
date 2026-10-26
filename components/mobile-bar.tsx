@@ -31,12 +31,20 @@ export function MobileBar({
       </Link>
       <div className="flex items-center gap-4">
         {canInvite && (
-          <Link
-            href="/admin/invites"
-            className="text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:bg-primary/10"
-          >
-            Invite people
-          </Link>
+          <>
+            <Link
+              href="/admin/invites"
+              className="text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:bg-primary/10"
+            >
+              Invite people
+            </Link>
+            <Link
+              href="/admin/team"
+              className="text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:bg-primary/10"
+            >
+              Team
+            </Link>
+          </>
         )}
         <SignOutButton />
       </div>

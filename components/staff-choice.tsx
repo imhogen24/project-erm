@@ -76,7 +76,7 @@ export function StaffChoice({
   function send(
     change: Change,
     run: (change: Change) => Promise<Result>,
-    after?: () => void
+    undo?: () => void
   ) {
     setMessage(undefined)
     startTransition(async () => {
@@ -84,11 +84,8 @@ export function StaffChoice({
 
       if (result.status === "error") {
         setMessage(result.message)
-
-        return
+        undo?.()
       }
-
-      after?.()
     })
   }
 
@@ -98,10 +95,16 @@ export function StaffChoice({
     )
 
     if (option) {
+      const previous = chosen
+
+      // The choice is cleared at once, not when the server answers, so a new
+      // choice made while the page refreshes is never wiped. A refusal puts it
+      // back.
+      setChosen("")
       send(
         { projectId, personId: option.personId, role: option.role },
         assign,
-        () => setChosen("")
+        () => setChosen(previous)
       )
     }
   }

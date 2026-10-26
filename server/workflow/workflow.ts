@@ -328,6 +328,38 @@ class Route {
     return { cycle: at, missing }
   }
 
+  // The earlier tools that still have to be locked before this one can start,
+  // for a screen that says what a tool is waiting for. An `any` requirement
+  // that one locked tool already meets waits on nothing.
+  waitingOn(toolId: string, cycle: number): string[] {
+    const tool = this.catalog.get(toolId)!
+    const map = this.maps.find((entry) => entry.workbook === tool.workbook)
+    const rule = map?.tools.find((entry) => entry.tool === toolId)
+
+    const waiting = (requirement: Requirement, by?: ToolRule) => {
+      const ids = requiredTools(requirement).map(
+        (id) => this.catalog.onTrack(id, this.track) ?? id
+      )
+
+      const open = ids.filter((id) =>
+        this.locked(id, this.cycleFor(by, id, cycle))
+      )
+
+      if ("any" in requirement && open.length > 0) {
+        return []
+      }
+
+      return ids.filter((id) => !open.includes(id))
+    }
+
+    return [
+      ...new Set([
+        ...(map?.opens ? waiting(map.opens.after) : []),
+        ...(rule?.after ? waiting(rule.after, rule) : []),
+      ]),
+    ]
+  }
+
   openTools(): OpenTool[] {
     const open: OpenTool[] = []
 
@@ -371,6 +403,31 @@ async function routeOf(
     )
 
   return new Route(project, records, active)
+}
+
+// Whether a tool with no record yet can be started, for a screen that says why
+// not. `waitingOn` names the earlier tools still to be locked.
+export type ToolStatus = {
+  cycle: number
+  missing: string[]
+  waitingOn: string[]
+}
+
+export async function toolStatus(
+  database: Database,
+  projectId: string,
+  toolId: string
+): Promise<ToolStatus> {
+  return database.transaction(async (transaction) => {
+    const route = await routeOf(transaction, projectId)
+    const { cycle, missing } = route.verdict(toolId)
+
+    return {
+      cycle,
+      missing,
+      waitingOn: missing.length === 0 ? [] : route.waitingOn(toolId, cycle),
+    }
+  })
 }
 
 // The tools that can be started on the project now, each with the cycle its

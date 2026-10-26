@@ -41,6 +41,15 @@ type Props = {
   errors?: ToolFieldError[]
   onSave: (values: FormValues) => void
   onSubmit: (values: FormValues) => void
+  // A record that cannot be edited shows its values, with the fields disabled
+  // and no Save or Submit.
+  readOnly?: boolean
+  // The signature fields this person may sign now, and what Sign does. A
+  // signature is never typed, so Sign stays usable on a read-only record.
+  signable?: readonly string[]
+  onSign?: (key: string) => void
+  // Set while something is being sent, so a button is not pressed twice.
+  pending?: boolean
 }
 
 // Shown in the form but never written, so they never leave it.
@@ -189,6 +198,10 @@ export function ToolForm({
   errors = [],
   onSave,
   onSubmit,
+  readOnly = false,
+  signable = [],
+  onSign,
+  pending = false,
 }: Props) {
   const form = useForm<Record<string, RawValue>>({
     defaultValues: Object.fromEntries(
@@ -246,106 +259,134 @@ export function ToolForm({
           )
 
           return (
-            <Controller
+            <fieldset
               key={field.key}
-              name={field.key}
-              control={form.control}
-              render={({ field: control }) => (
-                <Field data-invalid={Boolean(message)}>
-                  {isGroup ? (
-                    <FieldSet className="gap-2">
-                      <FieldLegend
-                        variant="label"
-                        className="mb-0 data-[variant=label]:text-sm"
-                      >
-                        {title}
-                      </FieldLegend>
-                      {field.type === "table" ? (
-                        <TableEditor
-                          field={field}
-                          rows={
-                            Array.isArray(control.value) ? control.value : []
-                          }
-                          onChange={control.onChange}
-                          errors={errors.filter(
-                            (error) =>
-                              error.field === field.key &&
-                              error.row !== undefined &&
-                              error.column !== undefined
+              disabled={readOnly && field.type !== "signature"}
+              className="min-w-0 border-0 p-0"
+            >
+              <Controller
+                name={field.key}
+                control={form.control}
+                render={({ field: control }) => (
+                  <Field data-invalid={Boolean(message)}>
+                    {isGroup ? (
+                      <FieldSet className="gap-2">
+                        <FieldLegend
+                          variant="label"
+                          className="mb-0 data-[variant=label]:text-sm"
+                        >
+                          {title}
+                        </FieldLegend>
+                        {field.type === "table" ? (
+                          <TableEditor
+                            field={field}
+                            rows={
+                              Array.isArray(control.value) ? control.value : []
+                            }
+                            onChange={control.onChange}
+                            errors={errors.filter(
+                              (error) =>
+                                error.field === field.key &&
+                                error.row !== undefined &&
+                                error.column !== undefined
+                            )}
+                          />
+                        ) : (
+                          <FieldControl
+                            cell={field}
+                            id={field.key}
+                            value={
+                              readOnlyTypes.includes(field.type)
+                                ? values[field.key]
+                                : Array.isArray(control.value)
+                                  ? undefined
+                                  : control.value
+                            }
+                            onChange={control.onChange}
+                            invalid={Boolean(message)}
+                            describedBy={message ? errorId : undefined}
+                          />
+                        )}
+                        {field.type === "signature" &&
+                          signable.includes(field.key) &&
+                          onSign && (
+                            <Button
+                              type="button"
+                              variant="secondary"
+                              size="lg"
+                              aria-label={`Sign ${field.label}`}
+                              className="h-12 w-full bg-foreground/10 px-8 text-base hover:bg-foreground/20 sm:w-fit"
+                              disabled={pending}
+                              onClick={() => onSign(field.key)}
+                            >
+                              Sign
+                            </Button>
                           )}
-                        />
-                      ) : (
+                      </FieldSet>
+                    ) : isBox ? (
+                      <div className="flex items-center gap-3">
                         <FieldControl
                           cell={field}
                           id={field.key}
                           value={
-                            readOnlyTypes.includes(field.type)
-                              ? values[field.key]
-                              : Array.isArray(control.value)
-                                ? undefined
-                                : control.value
+                            Array.isArray(control.value)
+                              ? undefined
+                              : control.value
                           }
                           onChange={control.onChange}
+                          required={field.required}
                           invalid={Boolean(message)}
                           describedBy={message ? errorId : undefined}
                         />
-                      )}
-                    </FieldSet>
-                  ) : isBox ? (
-                    <div className="flex items-center gap-3">
-                      <FieldControl
-                        cell={field}
-                        id={field.key}
-                        value={
-                          Array.isArray(control.value)
-                            ? undefined
-                            : control.value
-                        }
-                        onChange={control.onChange}
-                        required={field.required}
-                        invalid={Boolean(message)}
-                        describedBy={message ? errorId : undefined}
-                      />
-                      {label}
-                    </div>
-                  ) : (
-                    <>
-                      {label}
-                      <FieldControl
-                        cell={field}
-                        id={field.key}
-                        value={
-                          Array.isArray(control.value)
-                            ? undefined
-                            : control.value
-                        }
-                        onChange={control.onChange}
-                        required={field.required}
-                        invalid={Boolean(message)}
-                        describedBy={message ? errorId : undefined}
-                      />
-                    </>
-                  )}
-                  {message && <FieldError id={errorId}>{message}</FieldError>}
-                </Field>
-              )}
-            />
+                        {label}
+                      </div>
+                    ) : (
+                      <>
+                        {label}
+                        <FieldControl
+                          cell={field}
+                          id={field.key}
+                          value={
+                            Array.isArray(control.value)
+                              ? undefined
+                              : control.value
+                          }
+                          onChange={control.onChange}
+                          required={field.required}
+                          invalid={Boolean(message)}
+                          describedBy={message ? errorId : undefined}
+                        />
+                      </>
+                    )}
+                    {message && <FieldError id={errorId}>{message}</FieldError>}
+                  </Field>
+                )}
+              />
+            </fieldset>
           )
         })}
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button
-            type="button"
-            variant="secondary"
-            size="lg"
-            className="h-12 bg-foreground/10 px-8 text-base hover:bg-foreground/20"
-            onClick={() => onSave(held())}
-          >
-            Save draft
-          </Button>
-          <Button type="submit" size="lg" className="h-12 px-8 text-base">
-            Submit
-          </Button>
-        </div>
+        {!readOnly && (
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button
+              type="button"
+              variant="secondary"
+              size="lg"
+              className="h-12 bg-foreground/10 px-8 text-base hover:bg-foreground/20"
+              disabled={pending}
+              onClick={() => onSave(held())}
+            >
+              Save draft
+            </Button>
+            <Button
+              type="submit"
+              size="lg"
+              className="h-12 px-8 text-base"
+              disabled={pending}
+            >
+              Submit
+            </Button>
+          </div>
+        )}
       </FieldGroup>
     </form>
   )

@@ -1,3 +1,4 @@
+import Link from "next/link"
 import { notFound } from "next/navigation"
 import { z } from "zod"
 
@@ -194,14 +195,17 @@ export default async function Page({
                           stateFrame(tool.state)
                         )}
                       />
-                      <div className="relative flex min-w-0 flex-col gap-1 px-1">
+                      <Link
+                        href={`/projects/${projectId}/tools/${tool.toolId}`}
+                        className="relative flex min-w-0 flex-col gap-1 px-1 outline-none after:absolute after:-inset-6 focus-visible:underline"
+                      >
                         <span className="font-mono text-sm font-semibold tabular-nums">
                           {tool.toolId}
                         </span>
                         <span className="text-sm leading-snug break-words">
                           {tool.name}
                         </span>
-                      </div>
+                      </Link>
                       <div className="relative flex flex-wrap items-center justify-between gap-2 px-1">
                         <StateBadge state={tool.state} />
                         {controlOf.get(tool.toolId)?.request && (

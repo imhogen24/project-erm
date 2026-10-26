@@ -5,10 +5,12 @@ import { createTestDatabase, resetTestData } from "@/db/testing"
 import {
   ToolNotAvailableError,
   createRecord,
+  signField,
   transitionRecord,
   updateRecord,
   type RecordState,
 } from "@/server/records/records"
+import { signatureFields } from "@/server/records/signatures"
 import { tools } from "@/server/tools/registry"
 import { registerTestTools } from "@/server/tools/testing"
 import {
@@ -110,6 +112,14 @@ async function recordIn(
   })
 
   const order: RecordState[] = ["draft", "submitted", "approved", "locked"]
+
+  // Approving needs every signature signed, so a record that goes past draft
+  // is signed first.
+  if (state !== "draft") {
+    for (const field of signatureFields(toolId)) {
+      await signField(database, actor, record.id, field.key)
+    }
+  }
 
   for (const step of order.slice(1, order.indexOf(state) + 1)) {
     await transitionRecord(database, actor, record.id, step)

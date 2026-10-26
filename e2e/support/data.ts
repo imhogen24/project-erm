@@ -16,6 +16,7 @@ import {
   personProjectRoles,
   projects,
   toolRecords,
+  type JsonObject,
   type RecordState,
   type Role,
 } from "@/db/schema"
@@ -74,16 +75,18 @@ export async function makePerson(name = `Person ${tag()}`) {
 }
 
 export async function makeProject(name = `Project ${tag()}`) {
+  const requestId = `T1-${randomUUID()}`
+
   const id = await withDatabase(async (database) => {
     const [project] = await database
       .insert(projects)
-      .values({ name, requestId: `T1-${randomUUID()}`, serviceTrack: "Tier_1" })
+      .values({ name, requestId, serviceTrack: "Tier_1" })
       .returning({ id: projects.id })
 
     return project!.id
   })
 
-  return { id, name }
+  return { id, name, requestId }
 }
 
 export async function giveRoles(
@@ -98,15 +101,17 @@ export async function giveRoles(
   )
 }
 
+// `submittedBy` is who sent it for approval, for a record past draft.
 export async function addRecord(
   projectId: string,
   toolId: string,
-  state: RecordState
+  state: RecordState,
+  extra: { payload?: JsonObject; submittedBy?: string } = {}
 ) {
   const [record] = await withDatabase((database) =>
     database
       .insert(toolRecords)
-      .values({ projectId, toolId, state })
+      .values({ projectId, toolId, state, ...extra })
       .returning({ id: toolRecords.id })
   )
 
@@ -248,4 +253,19 @@ export async function makeChangeRequest(
   await withDatabase((database) =>
     requestChange(database, personId, recordId, reason)
   )
+}
+
+// Locks the tools before D1.8 on the Tier 1 route, so D1.8 is open.
+export async function lockEarlierTools(projectId: string) {
+  for (const toolId of [
+    "D1.1",
+    "D1.2",
+    "D1.3",
+    "D1.4",
+    "D1.5",
+    "D1.6",
+    "D1.7",
+  ]) {
+    await addRecord(projectId, toolId, "locked")
+  }
 }

@@ -3,16 +3,22 @@ import { z } from "zod"
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { BackLink } from "@/components/back-link"
+import { DecideChange } from "@/components/decide-change"
 import { Grain } from "@/components/grain"
 import { MobileBar } from "@/components/mobile-bar"
+import { RequestChange } from "@/components/request-change"
 import { StateBadge, stateFrame, stateSquare } from "@/components/state-badge"
+import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
 import { registeredTools } from "@/lib/tools"
+import { changeControlsFor } from "@/server/change-requests/controls"
 import { getDatabase } from "@/server/database"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import { getProjectOverview } from "@/server/projects/projects"
+
+import { decideChangeAction, requestChangeAction } from "./actions"
 
 // Every box is a whole number of grid squares and shares its lines.
 const square = "grid-square relative isolate bg-background"
@@ -61,6 +67,16 @@ export default async function Page({
   // Only to decide whether the top bar offers the invite page.
   const canInvite = await isItAdmin(session.user.id)
 
+  const controls = await changeControlsFor(
+    getDatabase(),
+    session.user.id,
+    projectId
+  )
+
+  const controlOf = new Map(
+    controls.records.map((control) => [control.toolId, control])
+  )
+
   const workbooks = new Map<string, typeof overview.tools>()
 
   for (const tool of overview.tools) {
@@ -101,6 +117,45 @@ export default async function Page({
               </h1>
             </div>
           </div>
+          {controls.waiting.length > 0 && (
+            <section
+              aria-label="Change requests waiting"
+              className="mt-[var(--cell)]"
+            >
+              <div className={`${square} px-6 py-6`}>
+                <Grain />
+                <div className="relative flex max-w-3xl flex-col gap-4">
+                  <h2 className="text-lg font-medium">
+                    Change requests waiting
+                  </h2>
+                  <ul className="flex flex-col">
+                    {controls.waiting.map((request) => (
+                      <li
+                        key={request.id}
+                        className="flex flex-col gap-3 border border-foreground/20 p-4 not-first:border-t-0 sm:flex-row sm:items-center sm:justify-between"
+                      >
+                        <div className="flex min-w-0 flex-col gap-1">
+                          <span className="text-sm font-medium break-words">
+                            {`${request.toolId} ${request.toolName}`}
+                          </span>
+                          <span className="text-sm break-words">
+                            {request.reason}
+                          </span>
+                          <span className="text-sm text-muted-foreground">
+                            Asked by {request.requestedBy}
+                          </span>
+                        </div>
+                        <DecideChange
+                          requestId={request.id}
+                          decide={decideChangeAction}
+                        />
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </section>
+          )}
           {[...workbooks].map(([workbook, tools]) => (
             <section
               key={workbook}
@@ -147,8 +202,25 @@ export default async function Page({
                           {tool.name}
                         </span>
                       </div>
-                      <div className="relative px-1">
+                      <div className="relative flex flex-wrap items-center justify-between gap-2 px-1">
                         <StateBadge state={tool.state} />
+                        {controlOf.get(tool.toolId)?.request && (
+                          <Badge
+                            variant="outline"
+                            className="rounded-none border-current bg-transparent text-inherit dark:bg-transparent"
+                          >
+                            {controlOf.get(tool.toolId)?.request?.status ===
+                            "approved"
+                              ? "Change approved"
+                              : "Change requested"}
+                          </Badge>
+                        )}
+                        {controlOf.get(tool.toolId)?.canRequest && (
+                          <RequestChange
+                            recordId={controlOf.get(tool.toolId)!.recordId}
+                            request={requestChangeAction}
+                          />
+                        )}
                       </div>
                     </li>
                   ))}

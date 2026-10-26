@@ -93,10 +93,15 @@ async function personOf(database: Reader, personId: string) {
   return person
 }
 
+// How many projects the person is on in each group. Only a company-wide
+// IT/Admin may ask, since it shows which projects a person works on.
 export async function workloadOf(
   database: Database,
+  actor: string,
   personId: string
 ): Promise<Workload[]> {
+  await assertCompanyRole(database, actor, "IT/Admin")
+
   const rows = await countedRoles(database, [personId])
 
   return workloadLimits.map((entry) => ({

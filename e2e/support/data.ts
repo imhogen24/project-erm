@@ -187,3 +187,48 @@ export async function qualificationsFor(email: string) {
     return person ? qualificationsOf(database, person.id) : []
   })
 }
+
+// Company-wide, so the person is qualified for the roles and has no access.
+export async function makeQualified(name: string, roles: Role[]) {
+  const person = await makePerson(name)
+
+  await withDatabase((database) =>
+    database
+      .insert(personCompanyRoles)
+      .values(roles.map((role) => ({ personId: person.id, role })))
+  )
+
+  return person
+}
+
+// Runs `run` while nobody but the people made inside it is qualified for the
+// role, then puts everyone back. A screen that lists every qualified person
+// cannot otherwise be shown "nobody is free".
+export async function withNoOneElseQualified(
+  role: Role,
+  run: () => Promise<void>
+) {
+  const others = await withDatabase(async (database) =>
+    database
+      .delete(personCompanyRoles)
+      .where(eq(personCompanyRoles.role, role))
+      .returning()
+  )
+
+  try {
+    await run()
+  } finally {
+    await withDatabase(async (database) => {
+      await database
+        .delete(personCompanyRoles)
+        .where(eq(personCompanyRoles.role, role))
+
+      if (others.length > 0) {
+        await database
+          .insert(personCompanyRoles)
+          .values(others)
+          .onConflictDoNothing()
+      }
+    })
+  }
+}

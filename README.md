@@ -53,7 +53,7 @@ The app uses a Postgres database in Docker. `bun dev` starts it if needed, appli
 | `bun run db:generate` | Generate a migration from schema changes |
 | `bun run db:migrate` | Apply migrations to `erm_dev` |
 | `bun run db:seed` | Run the seed script |
-| `bun run db:reset` | Wipe `erm_dev`, then migrate and seed it again |
+| `bun run db:reset` | Wipe `erm_dev`, add empty local copies of the website tables, then migrate and seed it again |
 | `bun run test` | Run the tests against `erm_test` |
 | `bun run test:e2e` | Run the Playwright browser tests |
 

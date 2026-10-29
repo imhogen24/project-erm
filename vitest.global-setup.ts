@@ -4,6 +4,7 @@ import { migrate } from "drizzle-orm/node-postgres/migrator"
 
 import { createDatabase } from "./db"
 import { migrationsSchema, migrationsTable } from "./db/migration-history"
+import { createLocalWebsiteTables } from "./db/website/local"
 
 export default async function setup() {
   const url = process.env.TEST_DATABASE_URL
@@ -32,6 +33,9 @@ export default async function setup() {
       migrationsTable,
     })
   }
+
+  // The website owns these in production. Tests get local copies to read.
+  await createLocalWebsiteTables(database)
 
   await database.pool.end()
 }

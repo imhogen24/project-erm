@@ -1,4 +1,5 @@
 import { createDatabase } from "../../db"
+import { createLocalWebsiteTables } from "../../db/website/local"
 
 const url = process.env.DATABASE_URL
 
@@ -21,6 +22,9 @@ await database.pool.query("DROP SCHEMA IF EXISTS erm_migrations CASCADE")
 await database.pool.query("DROP SCHEMA IF EXISTS public CASCADE")
 
 await database.pool.query("CREATE SCHEMA public")
+
+// The website owns these in production. Development gets empty local copies.
+await createLocalWebsiteTables(database)
 
 await database.pool.end()
 

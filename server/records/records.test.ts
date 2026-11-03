@@ -24,10 +24,8 @@ import { UnknownToolError, ValidationError } from "./validate"
 
 const database = createTestDatabase()
 
-// The fields of the example D1.1 definition (workbooks/wb01/tools/d1-1.ts),
-// copied because server/ cannot import a workbook. No one can approve D1.1,
-// so they are tested under D1.3, where OM writes and PM approves. A select
-// and an inherited field are added for the checks that need them.
+// Example fields under D1.3, where OM writes and PM approves. A select and an
+// inherited field are added for the checks that need them.
 tools.registerTool(
   defineTool({
     id: "D1.3",

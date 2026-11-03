@@ -20,11 +20,14 @@ import { writeAudit, type Transaction } from "@/server/audit/audit"
 
 import {
   PermissionDeniedError,
+  assertCompanyRole,
   assertHoldsRole,
   companyRolesOf,
   roleAllows,
   rolesOn,
 } from "@/server/permissions/permissions"
+
+import { systemActor } from "@/server/system/system"
 
 import type { ToolDefinition } from "@/server/tools/define-tool"
 
@@ -41,6 +44,8 @@ export class InvalidProjectStatusError extends Error {}
 export class ProjectNotActiveError extends Error {}
 
 export class ProjectStatusReasonMissingError extends Error {}
+
+export class RequestIdMissingError extends Error {}
 
 export type Project = {
   id: string
@@ -81,45 +86,10 @@ export async function createProject(
   actor: string,
   input: NewProject
 ): Promise<Project> {
-  if (!serviceTracks.includes(input.serviceTrack)) {
-    throw new InvalidServiceTrackError(
-      `A project needs a service track: ${serviceTracks.join(" or ")}`
-    )
-  }
-
   try {
-    return await database.transaction(async (transaction) => {
-      const [project] = await transaction
-        .insert(projects)
-        .values({
-          name: input.name,
-          requestId: input.requestId,
-          serviceTrack: input.serviceTrack,
-        })
-        .returning(columns)
-
-      await writeAudit(
-        transaction,
-        {
-          recordId: null,
-          projectId: project!.id,
-          actor,
-          action: "created",
-        },
-        [
-          { field: "name", oldValue: null, newValue: project!.name },
-          { field: "request_id", oldValue: null, newValue: project!.requestId },
-          {
-            field: "service_track",
-            oldValue: null,
-            newValue: project!.serviceTrack,
-          },
-          { field: "status", oldValue: null, newValue: project!.status },
-        ]
-      )
-
-      return project!
-    })
+    return await database.transaction((transaction) =>
+      createProjectIn(transaction, actor, input)
+    )
   } catch (error) {
     // Drizzle wraps the driver's error, so the broken rule is on its cause.
     if (
@@ -134,6 +104,60 @@ export async function createProject(
 
     throw error
   }
+}
+
+// The same, inside the caller's transaction, so the website intake saves a
+// project together with its copy of the request. Only the system, for the
+// intake, or a company-wide IT/Admin may create one.
+export async function createProjectIn(
+  transaction: Transaction,
+  actor: string,
+  input: NewProject
+): Promise<Project> {
+  if (actor !== systemActor) {
+    await assertCompanyRole(transaction, actor, "IT/Admin")
+  }
+
+  if (input.requestId.trim() === "") {
+    throw new RequestIdMissingError("A project needs a request ID")
+  }
+
+  if (!serviceTracks.includes(input.serviceTrack)) {
+    throw new InvalidServiceTrackError(
+      `A project needs a service track: ${serviceTracks.join(" or ")}`
+    )
+  }
+
+  const [project] = await transaction
+    .insert(projects)
+    .values({
+      name: input.name,
+      requestId: input.requestId,
+      serviceTrack: input.serviceTrack,
+    })
+    .returning(columns)
+
+  await writeAudit(
+    transaction,
+    {
+      recordId: null,
+      projectId: project!.id,
+      actor,
+      action: "created",
+    },
+    [
+      { field: "name", oldValue: null, newValue: project!.name },
+      { field: "request_id", oldValue: null, newValue: project!.requestId },
+      {
+        field: "service_track",
+        oldValue: null,
+        newValue: project!.serviceTrack,
+      },
+      { field: "status", oldValue: null, newValue: project!.status },
+    ]
+  )
+
+  return project!
 }
 
 // Only the project's PM can do it for now, and only with a reason. The row is

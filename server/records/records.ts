@@ -141,7 +141,7 @@ function nextUpdatedAt(record: ToolRecord): Date {
 // write, but it can never approve or lock. Every check after this one still
 // applies to it.
 async function assertMay(
-  database: Database,
+  database: Pick<Database, "select">,
   actor: string,
   projectId: string,
   toolId: string,
@@ -168,47 +168,10 @@ export async function createRecord(
   actor: string,
   input: NewRecord
 ): Promise<ToolRecord> {
-  await assertMay(database, actor, input.projectId, input.toolId, "write")
-
-  // A new record is a draft, so required fields are not checked yet.
-  const payload = assertValid(input.toolId, input.payload ?? {}, {
-    forSubmit: false,
-  })
-
   try {
-    return await database.transaction(async (transaction) => {
-      await assertProjectActive(transaction, input.projectId)
-
-      const cycle = await assertAvailable(
-        transaction,
-        input.projectId,
-        input.toolId,
-        input.cycle
-      )
-
-      const [record] = await transaction
-        .insert(toolRecords)
-        .values({
-          projectId: input.projectId,
-          toolId: input.toolId,
-          cycle,
-          payload,
-        })
-        .returning(columns)
-
-      await writeAudit(
-        transaction,
-        {
-          recordId: record!.id,
-          projectId: input.projectId,
-          actor,
-          action: "created",
-        },
-        [stateChange(null, "draft"), ...payloadChanges({}, record!.payload)]
-      )
-
-      return record!
-    })
+    return await database.transaction((transaction) =>
+      createRecordIn(transaction, actor, input)
+    )
   } catch (error) {
     // Drizzle wraps the driver's error, so the broken rule is on its cause.
     if (
@@ -223,6 +186,53 @@ export async function createRecord(
 
     throw error
   }
+}
+
+// The same, inside the caller's transaction, so the website intake saves D1.1
+// together with the project it belongs to.
+export async function createRecordIn(
+  transaction: Transaction,
+  actor: string,
+  input: NewRecord
+): Promise<ToolRecord> {
+  await assertMay(transaction, actor, input.projectId, input.toolId, "write")
+
+  // A new record is a draft, so required fields are not checked yet.
+  const payload = assertValid(input.toolId, input.payload ?? {}, {
+    forSubmit: false,
+  })
+
+  await assertProjectActive(transaction, input.projectId)
+
+  const cycle = await assertAvailable(
+    transaction,
+    input.projectId,
+    input.toolId,
+    input.cycle
+  )
+
+  const [record] = await transaction
+    .insert(toolRecords)
+    .values({
+      projectId: input.projectId,
+      toolId: input.toolId,
+      cycle,
+      payload,
+    })
+    .returning(columns)
+
+  await writeAudit(
+    transaction,
+    {
+      recordId: record!.id,
+      projectId: input.projectId,
+      actor,
+      action: "created",
+    },
+    [stateChange(null, "draft"), ...payloadChanges({}, record!.payload)]
+  )
+
+  return record!
 }
 
 // Reads the record and holds its row until the transaction ends, so a second

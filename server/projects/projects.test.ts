@@ -1,8 +1,13 @@
 import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
 import { roles, type RecordState, type Role } from "@/db/schema"
-import { createTestDatabase, resetTestData } from "@/db/testing"
+import {
+  createTestDatabase,
+  resetTestData,
+  restoreSystemPerson,
+} from "@/db/testing"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
+import { systemActor } from "@/server/system/system"
 import { defineTool } from "@/server/tools/define-tool"
 
 import {
@@ -10,6 +15,7 @@ import {
   InvalidProjectStatusError,
   InvalidServiceTrackError,
   ProjectStatusReasonMissingError,
+  RequestIdMissingError,
   createProject,
   getProjectOverview,
   listProjectsFor,
@@ -442,8 +448,21 @@ describe("getProjectOverview", () => {
 })
 
 describe("createProject", () => {
+  async function addItAdmin() {
+    const person = await addPerson()
+    await grantCompanyWide(person, "IT/Admin")
+
+    return person
+  }
+
+  const boiler = {
+    name: "Boiler",
+    serviceTrack: "Tier_1",
+    requestId: "T1-1789787898386",
+  } as const
+
   it("stores the request ID and service track, and starts active", async () => {
-    const actor = await addPerson()
+    const actor = await addItAdmin()
 
     const project = await createProject(database, actor, {
       name: "Boiler",
@@ -461,7 +480,7 @@ describe("createProject", () => {
   })
 
   it("lets only one of two projects with the same request ID through", async () => {
-    const actor = await addPerson()
+    const actor = await addItAdmin()
 
     const input = {
       name: "Boiler",
@@ -490,7 +509,7 @@ describe("createProject", () => {
   })
 
   it("refuses a project without a service track", async () => {
-    const actor = await addPerson()
+    const actor = await addItAdmin()
 
     await expect(
       createProject(database, actor, {
@@ -503,7 +522,7 @@ describe("createProject", () => {
   })
 
   it("writes a project line for each starting value", async () => {
-    const actor = await addPerson()
+    const actor = await addItAdmin()
 
     const project = await createProject(database, actor, {
       name: "Boiler",
@@ -526,6 +545,38 @@ describe("createProject", () => {
       line("service_track", "Tier_3"),
       line("status", "active"),
     ])
+  })
+
+  it("lets the system create a project", async () => {
+    await restoreSystemPerson(database)
+
+    await expect(
+      createProject(database, systemActor, boiler)
+    ).resolves.toMatchObject({ requestId: boiler.requestId })
+  })
+
+  it("refuses anyone who is not the system or a company-wide IT/Admin", async () => {
+    const pm = await addPerson()
+    await grant(pm, await addProject("other"), "PM")
+
+    await expect(createProject(database, pm, boiler)).rejects.toThrow(
+      PermissionDeniedError
+    )
+
+    const { rows } = await database.pool.query(
+      "SELECT 1 FROM projects WHERE request_id = $1",
+      [boiler.requestId]
+    )
+
+    expect(rows).toEqual([])
+  })
+
+  it.each(["", "   "])("refuses a blank request ID (%j)", async (requestId) => {
+    const actor = await addItAdmin()
+
+    await expect(
+      createProject(database, actor, { ...boiler, requestId })
+    ).rejects.toThrow(RequestIdMissingError)
   })
 })
 

@@ -120,6 +120,13 @@
       "when": 1793683121277,
       "tag": "0016_email_log",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "7",
+      "when": 1793726229741,
+      "tag": "0017_notifications",
+      "breakpoints": true
     }
   ]
 }

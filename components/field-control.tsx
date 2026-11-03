@@ -172,7 +172,11 @@ export function FieldControl({
           </SelectTrigger>
           <SelectContent>
             {cell.options.map((option) => (
-              <SelectItem key={option} value={option}>
+              <SelectItem
+                key={option}
+                value={option}
+                disabled={cell.systemOptions?.includes(option)}
+              >
                 {option}
               </SelectItem>
             ))}

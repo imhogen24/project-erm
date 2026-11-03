@@ -52,11 +52,27 @@ const signature = z.object({
   signedBy: z.array(z.enum(roles)).min(1).optional(),
 })
 
+// `systemOptions` are options only the system sets. They are shown, but the
+// form can never choose them.
 const select = z.object({
   ...cellBase,
   type: z.literal("select"),
   options: z.array(z.string().min(1)).min(1),
+  systemOptions: z.array(z.string().min(1)).min(1).optional(),
 })
+
+const strangerSystemOption = "A system option must be one of the options"
+
+// Only a select has options, so any other field passes.
+function holdsSystemOptions(cell: {
+  type: string
+  options?: string[]
+  systemOptions?: string[]
+}) {
+  return (cell.systemOptions ?? []).every((option) =>
+    cell.options?.includes(option)
+  )
+}
 
 // Each item is answered yes or no.
 const checklist = z.object({
@@ -115,6 +131,16 @@ const table = z
       })
     }
 
+    value.columns.forEach((entry, index) => {
+      if (!holdsSystemOptions(entry)) {
+        context.addIssue({
+          code: "custom",
+          path: ["columns", index, "systemOptions"],
+          message: strangerSystemOption,
+        })
+      }
+    })
+
     if (value.subtotal !== undefined) {
       const totalled = value.columns.find(
         (entry) => entry.key === value.subtotal
@@ -164,6 +190,7 @@ const field = z
     staticList.extend(required),
     table,
   ])
+  .refine(holdsSystemOptions, { message: strangerSystemOption })
   .refine((value) => !(value.inherited && value.required), {
     message:
       "An inherited field is filled in by the system, so it is never required",

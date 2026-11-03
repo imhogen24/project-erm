@@ -120,6 +120,25 @@ describe("defineTool", () => {
     })
   })
 
+  it("refuses a system option that is not one of the select's options", () => {
+    expect(() =>
+      defineTool({
+        id: "D1.1",
+        name: "System option",
+        workbook: "wb01",
+        fields: [
+          {
+            key: "status",
+            label: "Status",
+            type: "select",
+            options: ["Pending", "Reviewed"],
+            systemOptions: ["Approved"],
+          },
+        ],
+      })
+    ).toThrow()
+  })
+
   it("refuses a tool with a blank id, name or workbook", () => {
     for (const bad of [
       { id: "", name: "N", workbook: "wb01" },

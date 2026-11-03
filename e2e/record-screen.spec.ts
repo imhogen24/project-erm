@@ -45,12 +45,13 @@ function control(page: Page) {
   return page.getByRole("region", { name: "Document control" })
 }
 
-async function fillClient(page: Page, name: string, email?: string) {
-  await page.getByLabel("Client name").fill(name)
+function requestStatus(page: Page) {
+  return page.getByRole("combobox", { name: "Request status" })
+}
 
-  if (email) {
-    await page.getByLabel("Client email").fill(email)
-  }
+async function chooseStatus(page: Page, status: string) {
+  await requestStatus(page).click()
+  await page.getByRole("option", { name: status }).click()
 }
 
 test("a tool row on the overview opens its page, with its name and state", async ({
@@ -91,16 +92,27 @@ test("Save draft keeps the values after a reload", async ({ page }) => {
   const { project, om } = await setUp()
 
   await open(page, om.email, project.id)
-  await fillClient(page, "Acme Ltd", "ops@acme.com")
+  await chooseStatus(page, "Reviewed")
   await page.getByRole("button", { name: "Save draft" }).click()
 
   await expect(page.getByText("Draft saved.")).toBeVisible()
 
   await page.reload()
 
-  await expect(page.getByLabel("Client name")).toHaveValue("Acme Ltd")
-  await expect(page.getByLabel("Client email")).toHaveValue("ops@acme.com")
+  await expect(requestStatus(page)).toHaveText("Reviewed")
   await expect(page.getByText("Draft", { exact: true })).toBeVisible()
+})
+
+test("Approved is shown in the request status but cannot be chosen", async ({
+  page,
+}) => {
+  const { project, om } = await setUp()
+
+  await open(page, om.email, project.id)
+  await requestStatus(page).click()
+
+  await expect(page.getByRole("option", { name: "Approved" })).toBeDisabled()
+  await expect(page.getByRole("option", { name: "Reviewed" })).toBeEnabled()
 })
 
 test("submitting with a required field empty shows the error and stays a draft", async ({
@@ -109,7 +121,6 @@ test("submitting with a required field empty shows the error and stays a draft",
   const { project, om } = await setUp()
 
   await open(page, om.email, project.id)
-  await fillClient(page, "Acme Ltd")
   await page.getByRole("button", { name: "Submit" }).click()
 
   await expect(page.getByText("Required")).toBeVisible()
@@ -123,11 +134,11 @@ test("submitting a complete form makes it submitted and read only", async ({
   const { project, om } = await setUp()
 
   await open(page, om.email, project.id)
-  await fillClient(page, "Acme Ltd", "ops@acme.com")
+  await chooseStatus(page, "Reviewed")
   await page.getByRole("button", { name: "Submit" }).click()
 
   await expect(page.getByText("Submitted", { exact: true })).toBeVisible()
-  await expect(page.getByLabel("Client name")).toBeDisabled()
+  await expect(requestStatus(page)).toBeDisabled()
   await expect(page.getByRole("button", { name: "Save draft" })).toHaveCount(0)
   await expect(page.getByRole("button", { name: "Submit" })).toHaveCount(0)
   await expect(page.getByText("This record is read only.")).toBeVisible()
@@ -183,7 +194,7 @@ test("the PM approves a submitted record, and it locks and opens the next tool",
   const { project, om, pm } = await setUp()
 
   await addRecord(project.id, "D1.1", "submitted", {
-    payload: { clientName: "Acme", clientEmail: "ops@acme.com" },
+    payload: { requestStatus: "Reviewed" },
     submittedBy: om.id,
   })
   await open(page, pm.email, project.id)
@@ -206,7 +217,7 @@ test("the person who submitted a record has no Approve button", async ({
 
   await giveRoles(both.id, project.id, ["OM", "PM"])
   await addRecord(project.id, "D1.1", "submitted", {
-    payload: { clientName: "Acme", clientEmail: "ops@acme.com" },
+    payload: { requestStatus: "Reviewed" },
     submittedBy: both.id,
   })
   await open(page, both.email, project.id)
@@ -215,34 +226,32 @@ test("the person who submitted a record has no Approve button", async ({
   await expect(page.getByRole("button", { name: "Approve" })).toHaveCount(0)
 })
 
-test("a save over someone else's newer save is refused and keeps the text", async ({
+test("a save over someone else's newer save is refused and keeps the choice", async ({
   page,
 }) => {
   const { project, om } = await setUp()
 
-  await addRecord(project.id, "D1.1", "draft", {
-    payload: { clientName: "Old name" },
-  })
+  await addRecord(project.id, "D1.1", "draft")
   await open(page, om.email, project.id)
 
   const second = await page.context().newPage()
 
   await second.goto(`/projects/${project.id}/tools/D1.1`)
 
-  await fillClient(page, "First save")
+  await chooseStatus(page, "Pending")
   await page.getByRole("button", { name: "Save draft" }).click()
   await expect(page.getByText("Draft saved.")).toBeVisible()
 
-  await second.getByLabel("Client name").fill("Second save")
+  await chooseStatus(second, "Reviewed")
   await second.getByRole("button", { name: "Save draft" }).click()
 
   await expect(second.getByText(STALE)).toBeVisible()
   await expect(second.getByRole("button", { name: "Reload" })).toBeVisible()
-  await expect(second.getByLabel("Client name")).toHaveValue("Second save")
+  await expect(requestStatus(second)).toHaveText("Reviewed")
 
   await second.getByRole("button", { name: "Reload" }).click()
 
-  await expect(second.getByLabel("Client name")).toHaveValue("First save")
+  await expect(requestStatus(second)).toHaveText("Pending")
 })
 
 test("a tool that is not open yet names the tool it waits for and shows no form", async ({
@@ -264,7 +273,7 @@ test("the document control block shows the request ID, the people and the start"
   const { project, om, pm } = await setUp()
 
   await addRecord(project.id, "D1.1", "draft", {
-    payload: { clientName: "Acme" },
+    payload: { requestStatus: "Pending" },
   })
   await open(page, om.email, project.id)
 
@@ -279,13 +288,13 @@ test("a locked record is read only, with no buttons", async ({ page }) => {
   const { project, om } = await setUp()
 
   await addRecord(project.id, "D1.1", "locked", {
-    payload: { clientName: "Acme", clientEmail: "ops@acme.com" },
+    payload: { requestStatus: "Reviewed" },
   })
   await open(page, om.email, project.id)
 
   await expect(page.getByText("This record is read only.")).toBeVisible()
-  await expect(page.getByLabel("Client name")).toBeDisabled()
-  await expect(page.getByLabel("Client name")).toHaveValue("Acme")
+  await expect(requestStatus(page)).toBeDisabled()
+  await expect(requestStatus(page)).toHaveText("Reviewed")
 
   for (const name of ["Save draft", "Submit", "Approve"]) {
     await expect(page.getByRole("button", { name })).toHaveCount(0)
@@ -302,7 +311,7 @@ test("at 375px the page does not scroll sideways and its buttons work", async ({
 
   expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0)
 
-  await fillClient(page, "Acme Ltd", "ops@acme.com")
+  await chooseStatus(page, "Reviewed")
   await expect(page.getByRole("button", { name: "Submit" })).toBeVisible()
   await page.getByRole("button", { name: "Save draft" }).click()
 

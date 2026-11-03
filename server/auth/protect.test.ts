@@ -121,6 +121,12 @@ describe("route protection", () => {
     expect(redirectsToSignIn(response)).toBe(false)
   })
 
+  it("sends a signed-out visitor who opens a client file to /sign-in", async () => {
+    const path = `/api/files/${crypto.randomUUID()}?ref=${encodeURIComponent("https://utfs.io/f/key")}`
+
+    expect(redirectsToSignIn(await proxy(request(path)))).toBe(true)
+  })
+
   it("does not open a path that only starts like /sign-in", async () => {
     expect(redirectsToSignIn(await proxy(request("/sign-in-admin")))).toBe(true)
   })

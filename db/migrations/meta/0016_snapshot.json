@@ -1,5 +1,5 @@
 {
-  "id": "419c430e-de40-4edc-94b3-a8dc0da5ca6e",
+  "id": "f3818714-e57d-4539-a1f9-9a99cee475d2",
   "prevId": "3c08910b-b957-4472-9664-560f9d43c382",
   "version": "7",
   "dialect": "postgresql",
@@ -898,6 +898,125 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
+    "public.email_log": {
+      "name": "email_log",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "recipient": {
+          "name": "recipient",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "kind": {
+          "name": "kind",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "record_id": {
+          "name": "record_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "message_id": {
+          "name": "message_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "status": {
+          "name": "status",
+          "type": "email_status",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'queued'"
+        },
+        "error": {
+          "name": "error",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "key": {
+          "name": "key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "email_log_project_id_projects_id_fk": {
+          "name": "email_log_project_id_projects_id_fk",
+          "tableFrom": "email_log",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "email_log_record_id_tool_records_id_fk": {
+          "name": "email_log_record_id_tool_records_id_fk",
+          "tableFrom": "email_log",
+          "tableTo": "tool_records",
+          "columnsFrom": [
+            "record_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "email_log_key_unique": {
+          "name": "email_log_key_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "key"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
     "public.intake_submissions": {
       "name": "intake_submissions",
       "schema": "",
@@ -1084,153 +1203,6 @@
         "invitations_client_on_a_project": {
           "name": "invitations_client_on_a_project",
           "value": "\"invitations\".\"project_id\" IS NOT NULL OR NOT ('Client' = ANY(\"invitations\".\"roles\"))"
-        }
-      },
-      "isRLSEnabled": false
-    },
-    "public.notifications": {
-      "name": "notifications",
-      "schema": "",
-      "columns": {
-        "id": {
-          "name": "id",
-          "type": "uuid",
-          "primaryKey": true,
-          "notNull": true,
-          "default": "gen_random_uuid()"
-        },
-        "person_id": {
-          "name": "person_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "kind": {
-          "name": "kind",
-          "type": "notification_kind",
-          "typeSchema": "public",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "title": {
-          "name": "title",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "text": {
-          "name": "text",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "project_id": {
-          "name": "project_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "record_id": {
-          "name": "record_id",
-          "type": "uuid",
-          "primaryKey": false,
-          "notNull": false
-        },
-        "path": {
-          "name": "path",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
-        },
-        "created_at": {
-          "name": "created_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "now()"
-        },
-        "read_at": {
-          "name": "read_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        }
-      },
-      "indexes": {
-        "notifications_person_id_created_at_idx": {
-          "name": "notifications_person_id_created_at_idx",
-          "columns": [
-            {
-              "expression": "person_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "created_at",
-              "isExpression": false,
-              "asc": false,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": false,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
-        }
-      },
-      "foreignKeys": {
-        "notifications_person_id_people_id_fk": {
-          "name": "notifications_person_id_people_id_fk",
-          "tableFrom": "notifications",
-          "tableTo": "people",
-          "columnsFrom": [
-            "person_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        },
-        "notifications_project_id_projects_id_fk": {
-          "name": "notifications_project_id_projects_id_fk",
-          "tableFrom": "notifications",
-          "tableTo": "projects",
-          "columnsFrom": [
-            "project_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        },
-        "notifications_record_id_tool_records_id_fk": {
-          "name": "notifications_record_id_tool_records_id_fk",
-          "tableFrom": "notifications",
-          "tableTo": "tool_records",
-          "columnsFrom": [
-            "record_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
-          "onDelete": "restrict",
-          "onUpdate": "no action"
-        }
-      },
-      "compositePrimaryKeys": {},
-      "uniqueConstraints": {},
-      "policies": {},
-      "checkConstraints": {
-        "notifications_not_system": {
-          "name": "notifications_not_system",
-          "value": "\"notifications\".\"person_id\" <> '00000000-0000-4000-8000-000000000001'"
-        },
-        "notifications_path_in_app": {
-          "name": "notifications_path_in_app",
-          "value": "\"notifications\".\"path\" LIKE '/%' AND \"notifications\".\"path\" NOT LIKE '//%'"
         }
       },
       "isRLSEnabled": false
@@ -1703,21 +1675,16 @@
         "applied"
       ]
     },
-    "public.notification_kind": {
-      "name": "notification_kind",
+    "public.email_status": {
+      "name": "email_status",
       "schema": "public",
       "values": [
-        "new_request",
-        "assigned",
-        "approval_needed",
-        "tool_open",
-        "change_waiting",
-        "change_decided",
-        "email_bounced",
-        "client_slots_ready",
-        "client_brief_ready",
-        "client_responded",
-        "intake_failed"
+        "queued",
+        "sent",
+        "failed",
+        "delivered",
+        "bounced",
+        "complained"
       ]
     },
     "public.record_state": {

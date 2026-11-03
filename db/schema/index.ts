@@ -6,6 +6,8 @@ export * from "./auth"
 
 export * from "./change_requests"
 
+export * from "./email_log"
+
 export * from "./intake"
 
 export * from "./invitations"

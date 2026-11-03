@@ -10,6 +10,8 @@ export * from "./intake"
 
 export * from "./invitations"
 
+export * from "./notifications"
+
 export * from "./records"
 
 export * from "./rollbacks"

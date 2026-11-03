@@ -33,7 +33,7 @@ loadWorkflow(workflowMaps)
 
 // The answers that keep the route going.
 const answers = new Map<string, JsonObject>([
-  ["D1.1", { clientName: "Acme", clientEmail: "ops@acme.com" }],
+  ["D1.1", { requestStatus: "Reviewed" }],
   ["D1.2", { triageDecision: "Proceed to D1.3" }],
   ["D1.10", { overallCapabilityStatus: "Capable" }],
   ["D1.11", { goNoGoDecision: "Go" }],

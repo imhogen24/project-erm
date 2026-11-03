@@ -49,6 +49,8 @@ const systemOnly = "Filled in by the system, so it cannot be written"
 
 const readOnly = "Read-only, so it cannot be written"
 
+const systemSets = "Set by the system, so it cannot be chosen"
+
 const percentage = "Must be a percentage from 0 to 100"
 
 function cellSchema(cell: Field | Column): z.ZodType {
@@ -83,9 +85,7 @@ function cellSchema(cell: Field | Column): z.ZodType {
     case "boolean":
       return z.boolean({ error: "Must be yes or no" })
     case "select":
-      return z.enum(cell.options, {
-        error: `Must be one of: ${cell.options.join(", ")}`,
-      })
+      return selectSchema(cell)
     case "checklist":
       return z.strictObject(
         Object.fromEntries(
@@ -104,6 +104,17 @@ function cellSchema(cell: Field | Column): z.ZodType {
     case "table":
       return tableSchema(cell)
   }
+}
+
+// A system option is a valid value, but only the system may set it, so the
+// form is refused it.
+function selectSchema(cell: Extract<Field | Column, { type: "select" }>) {
+  const system = cell.systemOptions ?? []
+  const choosable = cell.options.filter((option) => !system.includes(option))
+
+  return z
+    .enum(cell.options, { error: `Must be one of: ${choosable.join(", ")}` })
+    .refine((value) => !system.includes(value), { error: systemSets })
 }
 
 function tableSchema(table: TableField) {

@@ -19,15 +19,14 @@ describe("registered tools", () => {
     expect(registry.getTool("D1.1")?.name).toBe("Client Email / Web Form")
   })
 
-  it("gives the example D1.1 its three fields", () => {
+  it("gives D1.1 the request status and the attached files table", () => {
     const registry = createToolRegistry()
 
     registerAllTools(registry)
 
     expect(registry.getTool("D1.1")?.fields.map((field) => field.key)).toEqual([
-      "clientName",
-      "clientEmail",
-      "requestDescription",
+      "requestStatus",
+      "attachedFiles",
     ])
   })
 

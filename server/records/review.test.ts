@@ -6,10 +6,16 @@ import { createTestDatabase, resetTestData } from "@/db/testing"
 import { registerTestD11, registerTestTools } from "@/server/tools/testing"
 import { loadUnorderedWorkflow } from "@/server/workflow/testing"
 
+import { PermissionDeniedError } from "@/server/permissions/permissions"
+
+import { getRecordScreen } from "./screen"
 import {
+  RecordNotEditableError,
   ValidationError,
   approveRecord,
   createRecord,
+  saveDraft,
+  setReviewStatus,
   submitRecord,
   updateRecord,
 } from "./records"
@@ -357,5 +363,309 @@ describe("approving D1.1", () => {
       request: "Approved",
       files: ["Approved"],
     })
+  })
+})
+
+// A draft D1.1 as the intake leaves it: every status Pending.
+async function draftD11(request = "Pending", files = ["Pending", "Pending"]) {
+  return createRecord(database, om, {
+    projectId,
+    toolId: "D1.1",
+    payload: {
+      requestStatus: request,
+      attachedFiles: files.map((status, index) => file(index + 1, status)),
+    },
+  })
+}
+
+describe("switching the review statuses", () => {
+  it("switches the request to Reviewed and back to Pending", async () => {
+    const record = await draftD11()
+
+    const reviewed = await setReviewStatus(database, om, record.id, {
+      target: "request",
+      status: "Reviewed",
+    })
+
+    expect(statusesOf(reviewed.payload)).toEqual({
+      request: "Reviewed",
+      files: ["Pending", "Pending"],
+    })
+
+    const back = await setReviewStatus(database, om, record.id, {
+      target: "request",
+      status: "Pending",
+    })
+
+    expect(statusesOf(back.payload).request).toBe("Pending")
+    expect(statusesOf((await stored(record.id)).payload).request).toBe(
+      "Pending"
+    )
+  })
+
+  it("switches one file and leaves the others alone", async () => {
+    const record = await draftD11()
+
+    const reviewed = await setReviewStatus(database, om, record.id, {
+      target: 1,
+      status: "Reviewed",
+    })
+
+    expect(statusesOf(reviewed.payload)).toEqual({
+      request: "Pending",
+      files: ["Pending", "Reviewed"],
+    })
+
+    expect(reviewed.payload.attachedFiles).toEqual([
+      file(1, "Pending"),
+      file(2, "Reviewed"),
+    ])
+  })
+
+  it("writes the change to the audit log, naming the OM", async () => {
+    const record = await draftD11()
+
+    await setReviewStatus(database, om, record.id, {
+      target: "request",
+      status: "Reviewed",
+    })
+
+    const { rows } = await database.pool.query<{
+      actor_id: string
+      field: string
+      old_value: unknown
+      new_value: unknown
+    }>(
+      "SELECT actor_id, field, old_value, new_value FROM audit_log WHERE record_id = $1 AND reason = 'Review status changed'",
+      [record.id]
+    )
+
+    expect(rows).toEqual([
+      {
+        actor_id: om,
+        field: "payload.requestStatus",
+        old_value: "Pending",
+        new_value: "Reviewed",
+      },
+    ])
+  })
+
+  it("never lets a person choose Approved", async () => {
+    const record = await draftD11()
+
+    await expect(
+      setReviewStatus(database, om, record.id, {
+        target: "request",
+        status: "Approved",
+      })
+    ).rejects.toThrow(ValidationError)
+
+    await expect(
+      setReviewStatus(database, om, record.id, {
+        target: 0,
+        status: "Approved",
+      })
+    ).rejects.toThrow(ValidationError)
+
+    expect(statusesOf((await stored(record.id)).payload)).toEqual({
+      request: "Pending",
+      files: ["Pending", "Pending"],
+    })
+  })
+
+  it("refuses a file that is not in the list", async () => {
+    const record = await draftD11()
+
+    await expect(
+      setReviewStatus(database, om, record.id, {
+        target: 2,
+        status: "Reviewed",
+      })
+    ).rejects.toThrow(ValidationError)
+  })
+
+  it("refuses the PM, a Client and a person outside the project", async () => {
+    const record = await draftD11()
+    const client = await addPerson("Client")
+
+    const outsider = (
+      await database.pool.query<{ id: string }>(
+        "INSERT INTO people (name, email) VALUES ('Outside', $1) RETURNING id",
+        [`outside-${crypto.randomUUID()}@example.com`]
+      )
+    ).rows[0]!.id
+
+    for (const actor of [pm, client, outsider]) {
+      await expect(
+        setReviewStatus(database, actor, record.id, {
+          target: "request",
+          status: "Reviewed",
+        })
+      ).rejects.toThrow(PermissionDeniedError)
+    }
+
+    expect(statusesOf((await stored(record.id)).payload).request).toBe(
+      "Pending"
+    )
+  })
+
+  it("is refused once the record is submitted", async () => {
+    const record = await submittedD11("Reviewed", ["Reviewed"])
+
+    await expect(
+      setReviewStatus(database, om, record.id, {
+        target: "request",
+        status: "Pending",
+      })
+    ).rejects.toThrow(RecordNotEditableError)
+
+    expect(statusesOf((await stored(record.id)).payload).request).toBe(
+      "Reviewed"
+    )
+  })
+
+  it("is refused on a tool that has no review", async () => {
+    const other = await createRecord(database, om, {
+      projectId,
+      toolId: "D1.2",
+      payload: {},
+    })
+
+    await expect(
+      setReviewStatus(database, om, other.id, {
+        target: "request",
+        status: "Reviewed",
+      })
+    ).rejects.toThrow(ValidationError)
+  })
+
+  it("lets the OM submit once everything is Reviewed", async () => {
+    const record = await draftD11("Reviewed", ["Reviewed", "Pending"])
+
+    await setReviewStatus(database, om, record.id, {
+      target: 1,
+      status: "Reviewed",
+    })
+
+    const submitted = await submitRecord(database, om, record.id)
+
+    expect(submitted.state).toBe("submitted")
+  })
+})
+
+describe("the files table is read-only", () => {
+  it("refuses a save that changes the files", async () => {
+    const record = await draftD11()
+
+    await expect(
+      updateRecord(database, om, record.id, {
+        requestStatus: "Pending",
+        attachedFiles: [file(1, "Pending")],
+      })
+    ).rejects.toThrow(ValidationError)
+
+    await expect(
+      updateRecord(database, om, record.id, {
+        requestStatus: "Pending",
+        attachedFiles: [
+          { ...file(1, "Pending"), fileLink: "https://evil.example/x" },
+          file(2, "Pending"),
+        ],
+      })
+    ).rejects.toThrow(ValidationError)
+
+    expect((await stored(record.id)).payload.attachedFiles).toEqual([
+      file(1, "Pending"),
+      file(2, "Pending"),
+    ])
+  })
+
+  it("refuses a file status switched through a save", async () => {
+    const record = await draftD11()
+
+    await expect(
+      updateRecord(database, om, record.id, {
+        requestStatus: "Pending",
+        attachedFiles: [file(1, "Reviewed"), file(2, "Pending")],
+      })
+    ).rejects.toThrow(ValidationError)
+  })
+
+  it("accepts a save that sends the same files back", async () => {
+    const record = await draftD11()
+
+    const saved = await updateRecord(database, om, record.id, {
+      requestStatus: "Reviewed",
+      attachedFiles: [file(1, "Pending"), file(2, "Pending")],
+    })
+
+    expect(statusesOf(saved.payload)).toEqual({
+      request: "Reviewed",
+      files: ["Pending", "Pending"],
+    })
+  })
+
+  it("keeps the files when a save leaves them out", async () => {
+    const record = await draftD11()
+
+    const saved = await updateRecord(database, om, record.id, {
+      requestStatus: "Reviewed",
+    })
+
+    expect(saved.payload.attachedFiles).toEqual([
+      file(1, "Pending"),
+      file(2, "Pending"),
+    ])
+  })
+
+  it("refuses files in the first save of a new record", async () => {
+    await expect(
+      saveDraft(database, om, {
+        projectId,
+        toolId: "D1.1",
+        cycle: 1,
+        values: {
+          requestStatus: "Pending",
+          attachedFiles: [file(1, "Pending")],
+        },
+      })
+    ).rejects.toThrow(ValidationError)
+  })
+})
+
+describe("who the D1.1 screen offers the review to", () => {
+  it("offers it to the OM while D1.1 is a draft", async () => {
+    const record = await draftD11()
+
+    const view = await getRecordScreen(database, om, projectId, "D1.1")
+
+    expect(view.can.review).toBe(true)
+    expect(view.record?.id).toBe(record.id)
+  })
+
+  it("does not offer it to the PM", async () => {
+    await draftD11()
+
+    const view = await getRecordScreen(database, pm, projectId, "D1.1")
+
+    expect(view.can.review).toBe(false)
+  })
+
+  it("stops offering it once D1.1 is submitted", async () => {
+    await submittedD11("Reviewed", ["Reviewed"])
+
+    const view = await getRecordScreen(database, om, projectId, "D1.1")
+
+    expect(view.can.review).toBe(false)
+  })
+
+  it("never lets a Client reach it", async () => {
+    await draftD11()
+
+    const client = await addPerson("Client")
+
+    await expect(
+      getRecordScreen(database, client, projectId, "D1.1")
+    ).rejects.toThrow(PermissionDeniedError)
   })
 })

@@ -10,6 +10,11 @@ import {
   type Role,
 } from "@/db/schema"
 import { qualificationsOf } from "@/server/company-roles/company-roles"
+import type { Transport } from "@/server/email/email"
+import {
+  notifyAssigned,
+  sendNotificationEmails,
+} from "@/server/notifications/raise"
 import { assertCompanyRole } from "@/server/permissions/permissions"
 
 import {
@@ -163,11 +168,13 @@ export async function availableStaff(
 // two assignments of one person are counted one after the other and cannot
 // both pass the limit. The project's row is held the same way, so two people
 // cannot both become its PM. Assigning a role the person already holds there
-// changes nothing.
+// changes nothing. The person assigned gets a notification in the same
+// transaction, and an email once it commits.
 export async function assignStaff(
   database: Database,
   actor: string,
-  input: Assignment
+  input: Assignment,
+  transport?: Transport
 ): Promise<void> {
   await assertCompanyRole(database, actor, "IT/Admin")
 
@@ -182,7 +189,7 @@ export async function assignStaff(
     )
   }
 
-  await database.transaction(async (transaction) => {
+  const emails = await database.transaction(async (transaction) => {
     await transaction
       .select({ id: people.id })
       .from(people)
@@ -210,7 +217,7 @@ export async function assignStaff(
       )
 
     if (holders.some((holder) => holder.personId === input.personId)) {
-      return
+      return []
     }
 
     if (oneHolderRoles.includes(input.role) && holders.length > 0) {
@@ -246,7 +253,11 @@ export async function assignStaff(
       projectId: input.projectId,
       roles: [input.role],
     })
+
+    return notifyAssigned(transaction, actor, input)
   })
+
+  await sendNotificationEmails(database, emails, transport)
 }
 
 // Takes one role on one project away, with an access log line. The person's

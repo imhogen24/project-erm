@@ -50,6 +50,7 @@ jobs:
     env:
       TEST_DATABASE_URL: postgres://erm:erm@localhost:5433/erm_test
       EMAIL_FROM: noreply@admin.imhogen.com
+      BETTER_AUTH_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2

@@ -11,6 +11,7 @@ import { qualificationsOf } from "@/server/company-roles/company-roles"
 import { acceptInvite, createInvite } from "@/server/invites/invites"
 import {
   accounts,
+  intakeSubmissions,
   people,
   personCompanyRoles,
   personProjectRoles,
@@ -98,6 +99,19 @@ export async function giveRoles(
     database
       .insert(personProjectRoles)
       .values(roles.map((role) => ({ personId, projectId, role })))
+  )
+}
+
+// The ERM's saved copy of a website request, as the intake would have made it.
+export async function addClientRequest(
+  projectId: string,
+  submission: JsonObject,
+  requestId = `T1-${randomUUID()}`
+) {
+  await withDatabase((database) =>
+    database
+      .insert(intakeSubmissions)
+      .values({ requestId, serviceTrack: "Tier_1", projectId, submission })
   )
 }
 

@@ -246,6 +246,17 @@ describe("defineTool, the wider field types", () => {
     ).toThrow()
   })
 
+  it("keeps a table's read-only flag, and a table without it stays editable", () => {
+    const tool = withFields([
+      { ...operands, readOnly: true },
+      { ...operands, key: "other" },
+    ])
+
+    expect(
+      tool.fields.map((each) => each.type === "table" && each.readOnly)
+    ).toEqual([true, undefined])
+  })
+
   it("refuses prefilled rows that repeat a label", () => {
     expect(() =>
       withFields([{ ...operands, prefilledRows: ["Material", "Material"] }])

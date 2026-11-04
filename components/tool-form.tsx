@@ -50,6 +50,8 @@ type Props = {
   onSign?: (key: string) => void
   // Set while something is being sent, so a button is not pressed twice.
   pending?: boolean
+  // The saved record, so a stored file link can be opened through it.
+  recordId?: string
 }
 
 // Shown in the form but never written, so they never leave it.
@@ -202,6 +204,7 @@ export function ToolForm({
   signable = [],
   onSign,
   pending = false,
+  recordId,
 }: Props) {
   const form = useForm<Record<string, RawValue>>({
     defaultValues: Object.fromEntries(
@@ -284,6 +287,7 @@ export function ToolForm({
                               Array.isArray(control.value) ? control.value : []
                             }
                             onChange={control.onChange}
+                            recordId={recordId}
                             errors={errors.filter(
                               (error) =>
                                 error.field === field.key &&

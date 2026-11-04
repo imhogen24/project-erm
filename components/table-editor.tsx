@@ -5,6 +5,8 @@ import type { CSSProperties } from "react"
 
 import {
   FieldControl,
+  flagsOf,
+  textOf,
   type RawCell,
   type RawRow,
 } from "@/components/field-control"
@@ -21,6 +23,8 @@ type Props = {
   onChange: (rows: RawRow[]) => void
   // Only the errors that name a row of this table.
   errors: ToolFieldError[]
+  // The saved record, so a stored file link can be opened through it.
+  recordId?: string
 }
 
 const readOnlyTypes = ["instruction", "staticList", "signature"]
@@ -54,9 +58,16 @@ const rowGrid =
 
 // A table is one set of inputs. Wide, it is a grid with shared borders. Narrow,
 // each row becomes a card, so nothing scrolls sideways.
-export function TableEditor({ field, rows, onChange, errors }: Props) {
+export function TableEditor({
+  field,
+  rows,
+  onChange,
+  errors,
+  recordId,
+}: Props) {
   const columns = field.columns
   const fixed = field.prefilledRows !== undefined
+  const shownOnly = field.readOnly === true
 
   const total = field.subtotal
     ? { column: field.subtotal, amount: sumOf(rows, field.subtotal) }
@@ -135,6 +146,27 @@ export function TableEditor({ field, rows, onChange, errors }: Props) {
                 )
               }
 
+              if (shownOnly) {
+                return (
+                  <div
+                    key={column.key}
+                    role="cell"
+                    className={`flex flex-col gap-1 @2xl:justify-center @2xl:border-r @2xl:border-foreground/20 @2xl:px-3 @2xl:py-3 ${wideTypes.includes(column.type) ? "col-span-2 @2xl:col-span-1" : ""}`}
+                  >
+                    <span className="pt-2 text-xs text-muted-foreground @2xl:sr-only @2xl:pt-0">
+                      {column.label}
+                      <span className="sr-only">, row {rowIndex + 1}</span>
+                    </span>
+                    <ShownCell
+                      column={column}
+                      value={row[column.key]}
+                      recordId={recordId}
+                      rowNumber={rowIndex + 1}
+                    />
+                  </div>
+                )
+              }
+
               return (
                 <div
                   key={column.key}
@@ -178,7 +210,7 @@ export function TableEditor({ field, rows, onChange, errors }: Props) {
               )
             })}
             <div className="col-span-2 flex items-center justify-end @2xl:col-span-1 @2xl:w-24 @2xl:justify-center">
-              {!fixed && (
+              {!fixed && !shownOnly && (
                 <Button
                   type="button"
                   variant="ghost"
@@ -201,7 +233,7 @@ export function TableEditor({ field, rows, onChange, errors }: Props) {
             amount={total.amount}
           />
         )}
-        {!fixed && (
+        {!fixed && !shownOnly && (
           <div role="row">
             <div
               role="cell"
@@ -222,6 +254,62 @@ export function TableEditor({ field, rows, onChange, errors }: Props) {
         )}
       </div>
     </div>
+  )
+}
+
+// What a read-only cell says: a yes or no answer, the checked items of a
+// checklist, or the text itself.
+function shownText(column: Column, value: RawCell | undefined) {
+  const answers = flagsOf(value)
+
+  if (answers) {
+    return column.type === "checklist"
+      ? column.items.filter((item) => answers[item]).join(", ")
+      : ""
+  }
+
+  if (value === true) {
+    return "Yes"
+  }
+
+  return value === false ? "No" : (textOf(value) ?? "")
+}
+
+// A value shown as it was saved. A stored file link is an Open file button that
+// goes through the ERM, so it only opens for a person who may read the record.
+// With no link, or no saved record yet, there is nothing to open.
+function ShownCell({
+  column,
+  value,
+  recordId,
+  rowNumber,
+}: {
+  column: Column
+  value: RawCell | undefined
+  recordId?: string
+  rowNumber: number
+}) {
+  const text = shownText(column, value)
+
+  if (column.type !== "fileLink") {
+    return <span className="text-sm break-words">{text}</span>
+  }
+
+  if (!text || !recordId) {
+    return null
+  }
+
+  return (
+    <Button asChild variant="outline" size="sm" className="self-start">
+      <a
+        href={`/api/files/${recordId}?ref=${encodeURIComponent(text)}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        Open file
+        <span className="sr-only">, row {rowNumber}</span>
+      </a>
+    </Button>
   )
 }
 

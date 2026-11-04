@@ -158,6 +158,7 @@ export function RecordForm({
         errors={errors}
         readOnly={!canWrite}
         pending={pending}
+        recordId={recordId}
         signable={signable}
         onSave={(held) => run(() => save(saving(held)), "Draft saved.")}
         onSubmit={(held) => run(() => submit(saving(held)), "Submitted.")}

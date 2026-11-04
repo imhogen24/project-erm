@@ -69,6 +69,10 @@ describe("D1.1", () => {
     })
   })
 
+  it("shows the files table but never lets the form edit it", () => {
+    expect(attachedFiles().readOnly).toBe(true)
+  })
+
   it.each(["Pending", "Reviewed"])(
     "accepts %s as the request status",
     (status) => {

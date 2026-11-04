@@ -436,9 +436,18 @@ export async function availableTools(
   database: Database,
   projectId: string
 ): Promise<OpenTool[]> {
-  return database.transaction(async (transaction) =>
-    (await routeOf(transaction, projectId)).openTools()
+  return database.transaction((transaction) =>
+    openToolsIn(transaction, projectId)
   )
+}
+
+// The same, read inside the caller's transaction, so a record it has just
+// locked counts.
+export async function openToolsIn(
+  transaction: Transaction,
+  projectId: string
+): Promise<OpenTool[]> {
+  return (await routeOf(transaction, projectId)).openTools()
 }
 
 // Runs inside the transaction that creates the record, and returns the cycle

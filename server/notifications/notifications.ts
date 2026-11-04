@@ -34,6 +34,8 @@ export type NewNotification = {
   path: string
 }
 
+export type Written = { id: string; personId: string }
+
 export type ListOptions = {
   unreadOnly?: boolean
   limit?: number
@@ -55,11 +57,12 @@ const columns = {
 
 // Runs inside the caller's transaction, so a notification and the change it
 // describes are saved together or not at all. Each person gets one row, however
-// often they are listed, and the system person gets none.
+// often they are listed, and the system person gets none. Returns the rows it
+// wrote, so an email sent with one can use its ID as the email's key.
 export async function notify(
   transaction: Transaction,
   notification: NewNotification
-): Promise<void> {
+): Promise<Written[]> {
   const { personIds, ...rest } = notification
 
   const people = [...new Set(personIds)].filter(
@@ -67,12 +70,13 @@ export async function notify(
   )
 
   if (people.length === 0) {
-    return
+    return []
   }
 
-  await transaction
+  return transaction
     .insert(notifications)
     .values(people.map((personId) => ({ personId, ...rest })))
+    .returning({ id: notifications.id, personId: notifications.personId })
 }
 
 // Only the actor's own, newest first.

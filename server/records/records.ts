@@ -24,12 +24,19 @@ import {
   rolesOn,
   type Action,
 } from "@/server/permissions/permissions"
+import type { Transport } from "@/server/email/email"
+import {
+  notifyApprovalNeeded,
+  notifyToolsOpened,
+  sendNotificationEmails,
+} from "@/server/notifications/raise"
 import { assertProjectActive } from "@/server/projects/projects"
 import { systemActor } from "@/server/system/system"
 import {
   ToolNotAvailableError,
   applyHardStop,
   assertAvailable,
+  openToolsIn,
 } from "@/server/workflow/workflow"
 
 import { inheritedValues, readPayload, withoutInherited } from "./inherited"
@@ -301,7 +308,8 @@ const actionForMove: Record<Exclude<RecordState, "void">, Action> = {
 }
 
 // Moves a record the caller has locked one step, and records who moved it and
-// when. Approving needs every signature field signed.
+// when. Approving needs every signature field signed. Locking notifies the
+// people who write each tool the lock opens.
 async function move(
   transaction: Transaction,
   actor: string,
@@ -344,6 +352,11 @@ async function move(
     }
   }
 
+  // What the workflow offered before this lock, so the tools it opens can be
+  // told apart from those already open.
+  const openBefore =
+    to === "locked" ? await openToolsIn(transaction, current.projectId) : []
+
   const now = new Date()
 
   const [moved] = await transaction
@@ -385,6 +398,14 @@ async function move(
   if (to === "locked") {
     await applyApprovedChange(transaction, actor, current)
     await applyHardStop(transaction, actor, current)
+
+    await notifyToolsOpened(
+      transaction,
+      actor,
+      current.projectId,
+      openBefore,
+      await openToolsIn(transaction, current.projectId)
+    )
   }
 
   return moved!
@@ -397,7 +418,8 @@ export async function transitionRecord(
   database: Database,
   actor: string,
   recordId: string,
-  to: RecordState
+  to: RecordState,
+  transport?: Transport
 ): Promise<ToolRecord> {
   if (to === "void") {
     throw new InvalidTransitionError(
@@ -415,11 +437,24 @@ export async function transitionRecord(
     actionForMove[to]
   )
 
-  return database.transaction(async (transaction) => {
+  const { moved, emails } = await database.transaction(async (transaction) => {
     await assertProjectActive(transaction, record.projectId)
 
-    return move(transaction, actor, await lockRecord(transaction, recordId), to)
+    const current = await lockRecord(transaction, recordId)
+    const result = await move(transaction, actor, current, to)
+
+    return {
+      moved: result,
+      emails:
+        to === "submitted"
+          ? await notifyApprovalNeeded(transaction, actor, result)
+          : [],
+    }
   })
+
+  await sendNotificationEmails(database, emails, transport)
+
+  return moved
 }
 
 // Locking a record that an approved change request reopened completes that
@@ -630,13 +665,16 @@ export async function saveDraft(
   })
 }
 
-// Sends a complete draft to be approved, and records who submitted it.
+// Sends a complete draft to be approved, and records who submitted it. The
+// people who may approve the tool are notified in the same transaction, and
+// emailed once it commits.
 export async function submitRecord(
   database: Database,
   actor: string,
-  recordId: string
+  recordId: string,
+  transport?: Transport
 ): Promise<ToolRecord> {
-  return transitionRecord(database, actor, recordId, "submitted")
+  return transitionRecord(database, actor, recordId, "submitted", transport)
 }
 
 // Writes who signed and when into a signature field of a draft or submitted

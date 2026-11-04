@@ -12,6 +12,10 @@ import {
   writeAudit,
   type Transaction,
 } from "@/server/audit/audit"
+import {
+  notifyChangeDecided,
+  notifyChangeWaiting,
+} from "@/server/notifications/raise"
 import { assertCan, assertHoldsRole } from "@/server/permissions/permissions"
 import {
   getRecord,
@@ -86,7 +90,7 @@ function requireReason(reason: string, what: string): string {
 }
 
 // Anyone who may write the record's tool may ask, but only for a locked record
-// with no open request.
+// with no open request. The project's PM is notified.
 export async function requestChange(
   database: Database,
   actor: string,
@@ -147,12 +151,15 @@ export async function requestChange(
       [changeRequestChange(request!.id, null, "requested", why)]
     )
 
+    await notifyChangeWaiting(transaction, actor, current, why)
+
     return request!
   })
 }
 
 // Only the project's PM decides. Approving moves the record from locked back to
-// draft; rejecting needs a reason and leaves the record locked.
+// draft; rejecting needs a reason and leaves the record locked. The person who
+// asked is notified either way.
 export async function decideChange(
   database: Database,
   actor: string,
@@ -229,6 +236,15 @@ export async function decideChange(
       await reopen(transaction, actor, record)
       await markLaterRecords(transaction, actor, record, requestId)
     }
+
+    await notifyChangeDecided(
+      transaction,
+      actor,
+      record,
+      request.requestedBy,
+      decision.outcome,
+      rejection
+    )
 
     return decided!
   })

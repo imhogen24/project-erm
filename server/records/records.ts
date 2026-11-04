@@ -33,6 +33,7 @@ import {
 } from "@/server/workflow/workflow"
 
 import { inheritedValues, readPayload, withoutInherited } from "./inherited"
+import { approvedPayload, pendingReview } from "./review"
 import {
   signatureField,
   signaturesOf,
@@ -723,8 +724,49 @@ export async function approveRecord(
       )
     }
 
-    const approved = await move(transaction, actor, current, "approved")
+    const pending = pendingReview(current.toolId, current.payload)
+
+    if (pending.length > 0) {
+      throw new ValidationError(pending)
+    }
+
+    const reviewed = await markApproved(transaction, actor, current)
+    const approved = await move(transaction, actor, reviewed, "approved")
 
     return move(transaction, actor, approved, "locked")
   })
+}
+
+// Sets what approval sets, such as D1.1's statuses, on a record the caller has
+// locked, so the change and the lock are saved together or not at all.
+async function markApproved(
+  transaction: Transaction,
+  actor: string,
+  current: ToolRecord
+): Promise<ToolRecord> {
+  const payload = approvedPayload(current.toolId, current.payload)
+
+  if (isDeepStrictEqual(payload, current.payload)) {
+    return current
+  }
+
+  const [updated] = await transaction
+    .update(toolRecords)
+    .set({ payload, updatedAt: nextUpdatedAt(current) })
+    .where(eq(toolRecords.id, current.id))
+    .returning(columns)
+
+  await writeAudit(
+    transaction,
+    {
+      recordId: current.id,
+      projectId: current.projectId,
+      actor,
+      action: "updated",
+      reason: "Approved with the record",
+    },
+    payloadChanges(current.payload, payload)
+  )
+
+  return updated!
 }

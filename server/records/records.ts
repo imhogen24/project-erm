@@ -40,7 +40,13 @@ import {
 } from "@/server/workflow/workflow"
 
 import { inheritedValues, readPayload, withoutInherited } from "./inherited"
-import { approvedPayload, pendingReview } from "./review"
+import { keepReadOnly } from "./read-only"
+import {
+  approvedPayload,
+  pendingReview,
+  withReviewStatus,
+  type ReviewChange,
+} from "./review"
 import {
   signatureField,
   signaturesOf,
@@ -502,13 +508,14 @@ async function writeDraft(
 
   const before = withoutSignatures(current.toolId, current.payload)
   const signatures = signaturesOf(current.toolId, current.payload)
+  const next = keepReadOnly(current.toolId, current.payload, values)
 
   const edited = !isDeepStrictEqual(
     withoutInherited(current.toolId, before),
-    values
+    next
   )
 
-  const payload = edited ? values : { ...values, ...signatures }
+  const payload = edited ? next : { ...next, ...signatures }
 
   if (isDeepStrictEqual(payload, current.payload)) {
     return current
@@ -527,7 +534,7 @@ async function writeDraft(
     action: "updated" as const,
   }
 
-  await writeAudit(transaction, entry, payloadChanges(before, values))
+  await writeAudit(transaction, entry, payloadChanges(before, next))
 
   if (edited) {
     await writeAudit(
@@ -619,12 +626,14 @@ export async function saveDraft(
   }
 
   if (!existing) {
+    const first = keepReadOnly(input.toolId, undefined, values)
+
     try {
       return await createRecord(database, actor, {
         projectId: input.projectId,
         toolId: input.toolId,
         cycle: input.cycle,
-        payload: values,
+        payload: first,
       })
     } catch (error) {
       const created =
@@ -724,6 +733,66 @@ export async function signField(
         actor,
         action: "updated",
         reason: "Signed",
+      },
+      payloadChanges(current.payload, payload)
+    )
+
+    return updated!
+  })
+}
+
+// The OM's switch on the D1.1 review screen: the request, or one file, between
+// Pending and Reviewed, while the record is still a draft. It is its own write
+// because the files table is read-only to the form, and Approved can never be
+// chosen. Only the OM reviews, though a Client may also write D1.1.
+export async function setReviewStatus(
+  database: Database,
+  actor: string,
+  recordId: string,
+  change: ReviewChange
+): Promise<ToolRecord> {
+  const record = await loadRecord(database, recordId)
+
+  await assertMay(database, actor, record.projectId, record.toolId, "write")
+
+  if (
+    actor !== systemActor &&
+    !(await rolesOn(database, actor, record.projectId)).includes("OM")
+  ) {
+    throw new PermissionDeniedError(`Only the OM may review ${record.toolId}`)
+  }
+
+  return database.transaction(async (transaction) => {
+    await assertProjectActive(transaction, record.projectId)
+
+    const current = await lockRecord(transaction, recordId)
+
+    if (current.state !== "draft") {
+      throw new RecordNotEditableError(
+        `A ${current.state} record cannot be reviewed`
+      )
+    }
+
+    const payload = withReviewStatus(current.toolId, current.payload, change)
+
+    if (isDeepStrictEqual(payload, current.payload)) {
+      return current
+    }
+
+    const [updated] = await transaction
+      .update(toolRecords)
+      .set({ payload, updatedAt: nextUpdatedAt(current) })
+      .where(eq(toolRecords.id, recordId))
+      .returning(columns)
+
+    await writeAudit(
+      transaction,
+      {
+        recordId,
+        projectId: current.projectId,
+        actor,
+        action: "updated",
+        reason: "Review status changed",
       },
       payloadChanges(current.payload, payload)
     )

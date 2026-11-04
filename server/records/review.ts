@@ -2,12 +2,17 @@ import { z } from "zod"
 
 import type { JsonObject } from "@/db/schema"
 
-import type { FieldError } from "./validate"
+import { ValidationError, type FieldError } from "./validate"
 
 // D1.1 is reviewed before it is approved: the OM marks the request and each
 // file Reviewed, and the PM's approval marks them all Approved, which no
 // person can choose. The keys are those of D1.1 in workbooks/wb01.
 const reviewedTool = "D1.1"
+
+// Whether the tool is reviewed before it is approved.
+export function hasReview(toolId: string): boolean {
+  return toolId === reviewedTool
+}
 
 const requestStatus = "requestStatus"
 
@@ -17,7 +22,16 @@ const reviewed = "Reviewed"
 
 const approved = "Approved"
 
+// What a person may choose. Approved is the system's, set when the PM approves.
+const choosable = ["Pending", reviewed]
+
+// The request, or a file by its place in the list (counted from 0), and the
+// status to give it.
+export type ReviewChange = { target: "request" | number; status: string }
+
 const fileRows = z.array(z.looseObject({ status: z.string().optional() }))
+
+const storedRows = z.array(z.record(z.string(), z.json()))
 
 function filesOf(payload: JsonObject) {
   return fileRows.parse(payload[attachedFiles] ?? [])
@@ -78,5 +92,51 @@ export function approvedPayload(
       ...row,
       status: approved,
     })),
+  }
+}
+
+// The payload with one status switched. Only Pending and Reviewed can be
+// chosen, and only on a tool that has a review.
+export function withReviewStatus(
+  toolId: string,
+  payload: JsonObject,
+  change: ReviewChange
+): JsonObject {
+  if (toolId !== reviewedTool) {
+    throw new ValidationError([
+      { field: toolId, message: "This tool has no review" },
+    ])
+  }
+
+  const field = change.target === "request" ? requestStatus : attachedFiles
+
+  if (!choosable.includes(change.status)) {
+    throw new ValidationError([
+      { field, message: `Must be one of: ${choosable.join(", ")}` },
+    ])
+  }
+
+  if (change.target === "request") {
+    return { ...payload, [requestStatus]: change.status }
+  }
+
+  const rows = storedRows.parse(payload[attachedFiles] ?? [])
+
+  if (!rows[change.target]) {
+    throw new ValidationError([
+      {
+        field,
+        row: change.target,
+        column: "status",
+        message: "Not a file of this request",
+      },
+    ])
+  }
+
+  return {
+    ...payload,
+    [attachedFiles]: rows.map((row, index) =>
+      index === change.target ? { ...row, status: change.status } : row
+    ),
   }
 }

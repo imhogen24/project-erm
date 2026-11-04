@@ -93,7 +93,7 @@ test("a file with no link has no button", async ({ page }) => {
 })
 
 test("the files table cannot be edited in the form", async ({ page }) => {
-  const { project, om } = await setUp()
+  const { project, om } = await setUp([ONE, TWO], "locked")
 
   await open(page, om.email, project.id)
 

@@ -52,6 +52,7 @@ export function registerTestD11() {
           key: "attachedFiles",
           label: "Attached files",
           type: "table",
+          readOnly: true,
           columns: [
             { key: "label", label: "Label", type: "text" },
             { key: "dateUploaded", label: "Date uploaded", type: "date" },

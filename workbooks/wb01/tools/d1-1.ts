@@ -22,6 +22,7 @@ export const d11 = defineTool({
       key: "attachedFiles",
       label: "Attached files",
       type: "table",
+      readOnly: true,
       columns: [
         { key: "label", label: "Label", type: "text" },
         { key: "dateUploaded", label: "Date uploaded", type: "date" },

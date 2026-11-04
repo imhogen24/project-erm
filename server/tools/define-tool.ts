@@ -110,7 +110,8 @@ const required = { required: z.boolean().default(false) }
 
 // `prefilledRows` are fixed labels for the first column: the table always has
 // exactly these rows, in this order. `subtotal` names a currency column to add
-// up.
+// up. `readOnly` shows the table in the form without letting the form change
+// it: the system and the screens built for it write its rows.
 const table = z
   .object({
     ...cellBase,
@@ -119,6 +120,7 @@ const table = z
     columns: z.array(column).min(1),
     prefilledRows: distinctTexts.optional(),
     subtotal: fieldKey.optional(),
+    readOnly: z.boolean().optional(),
   })
   .superRefine((value, context) => {
     const keys = value.columns.map((entry) => entry.key)

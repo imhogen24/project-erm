@@ -18,6 +18,7 @@ import {
   ValidationError,
   approveRecord,
   saveDraft,
+  setReviewStatus,
   signField,
   submitRecord,
   type ToolRecord,
@@ -35,6 +36,12 @@ const saveInput = z.object({
 })
 
 const recordInput = z.object({ recordId: z.uuid() })
+
+const reviewInput = z.object({
+  recordId: z.uuid(),
+  target: z.union([z.literal("request"), z.number().int().min(0)]),
+  status: z.string().min(1),
+})
 
 const signInput = z.object({ recordId: z.uuid(), fieldKey: z.string().min(1) })
 
@@ -230,4 +237,45 @@ export async function approveRecordAction(values: {
       throw error
     }
   })
+}
+
+// The OM's switch of the request, or one file, on the D1.1 review screen.
+export async function setReviewStatusAction(values: {
+  recordId: string
+  target: "request" | number
+  status: string
+}): Promise<RecordResult> {
+  const parsed = reviewInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Check the form and try again." }
+  }
+
+  const input = parsed.data
+
+  return attempt(async (actor) =>
+    done(
+      await setReviewStatus(getDatabase(), actor, input.recordId, {
+        target: input.target,
+        status: input.status,
+      })
+    )
+  )
+}
+
+// Sends the reviewed record for approval, as it is saved.
+export async function submitReviewAction(values: {
+  recordId: string
+}): Promise<RecordResult> {
+  const parsed = recordInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Check the form and try again." }
+  }
+
+  const input = parsed.data
+
+  return attempt(async (actor) =>
+    done(await submitRecord(getDatabase(), actor, input.recordId))
+  )
 }

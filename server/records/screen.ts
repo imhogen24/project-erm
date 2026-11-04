@@ -23,6 +23,7 @@ import { tools } from "@/server/tools/registry"
 import { toolStatus } from "@/server/workflow/workflow"
 
 import { getRecord } from "./records"
+import { hasReview } from "./review"
 import { signatureFields } from "./signatures"
 import { UnknownToolError } from "./validate"
 
@@ -41,7 +42,13 @@ export type RecordScreen = {
   record: { id: string; updatedAt: Date; payload: JsonObject } | null
   // Set when the tool has no record and the workflow has not opened it.
   waiting: { missing: string[]; waitingOn: string[] } | null
-  can: { write: boolean; approve: boolean; sign: string[] }
+  can: {
+    write: boolean
+    approve: boolean
+    sign: string[]
+    // Whether this person switches the review statuses now: the OM, on a draft.
+    review: boolean
+  }
   control: DocumentControl | null
 }
 
@@ -110,6 +117,12 @@ export async function getRecordScreen(
     throw new PermissionDeniedError("This person is not on this project")
   }
 
+  // A Client may write D1.1, but the review is the staff's, so a Client never
+  // reaches it.
+  if (hasReview(toolId) && held.every((role) => role === "Client")) {
+    throw new PermissionDeniedError(`This person may not review ${toolId}`)
+  }
+
   const tool = tools.getTool(toolId)
 
   if (!tool) {
@@ -162,6 +175,7 @@ export async function getRecordScreen(
         write: active && open && roleAllows(held, toolId, "write"),
         approve: false,
         sign: [],
+        review: false,
       },
       control: null,
     }
@@ -199,6 +213,11 @@ export async function getRecordScreen(
               )
               .map((field) => field.key)
           : [],
+      review:
+        active &&
+        record.state === "draft" &&
+        hasReview(toolId) &&
+        held.includes("OM"),
     },
     control: await getDocumentControl(database, actor, record.id),
   }

@@ -200,7 +200,11 @@ describe("intake_submissions", () => {
 describe("website tables", () => {
   const roots = ["app", "components", "db", "lib", "scripts", "server"]
 
-  const allowed = new Set([join("db", "website", "local.ts")])
+  // The local tables, and the fixtures tests use to fill them.
+  const allowed = new Set([
+    join("db", "website", "local.ts"),
+    join("server", "intake", "testing.ts"),
+  ])
 
   function sourceFiles(directory: string): string[] {
     return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {

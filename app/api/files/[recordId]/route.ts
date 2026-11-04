@@ -2,6 +2,7 @@ import { notFound } from "next/navigation"
 import { NextResponse, type NextRequest } from "next/server"
 
 import { requireSession } from "@/lib/session"
+import { ensureToolsRegistered } from "@/lib/tools"
 import { getDatabase } from "@/server/database"
 import { FileNotFoundError, fileLinkFor } from "@/server/files/files"
 
@@ -12,6 +13,11 @@ export async function GET(
   { params }: { params: Promise<{ recordId: string }> }
 ) {
   const { recordId } = await params
+
+  // The link is found through the record's tool definition, so the tools must
+  // be in the registry before the first lookup.
+  ensureToolsRegistered()
+
   const session = await requireSession()
   const reference = request.nextUrl.searchParams.get("ref")
 

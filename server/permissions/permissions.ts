@@ -14,6 +14,9 @@ export type { Action }
 
 export class PermissionDeniedError extends Error {}
 
+// Every check only reads, so it runs as well inside a caller's transaction.
+type Reader = Pick<Database, "select">
+
 const grants: Record<Access, readonly Action[]> = {
   RW: ["read", "write"],
   RO: ["read"],
@@ -43,7 +46,7 @@ export function roleAllows(
 // The roles a person holds company-wide: IT/Admin, which counts on every
 // project, and the qualifications, which give no access by themselves.
 export async function companyRolesOf(
-  database: Database,
+  database: Reader,
   actor: string
 ): Promise<Role[]> {
   const held = await database
@@ -61,7 +64,7 @@ export async function companyRolesOf(
 // when they hold none, or the project does not exist, so IT/Admin never reveals
 // which projects exist.
 export async function rolesOn(
-  database: Database,
+  database: Reader,
   actor: string,
   projectId: string
 ): Promise<Role[]> {
@@ -91,7 +94,7 @@ export async function rolesOn(
 }
 
 export async function can(
-  database: Database,
+  database: Reader,
   actor: string,
   projectId: string,
   toolId: string,
@@ -103,7 +106,7 @@ export async function can(
 // For the few actions that belong to one role on the project rather than to a
 // tool, such as a PM rolling back a workbook.
 export async function assertHoldsRole(
-  database: Database,
+  database: Reader,
   actor: string,
   projectId: string,
   role: Role
@@ -116,7 +119,7 @@ export async function assertHoldsRole(
 }
 
 export async function assertCan(
-  database: Database,
+  database: Reader,
   actor: string,
   projectId: string,
   toolId: string,
@@ -132,7 +135,7 @@ export async function assertCan(
 // For the actions that belong to a role across the company rather than on one
 // project, such as an IT/Admin giving access.
 export async function assertCompanyRole(
-  database: Database,
+  database: Reader,
   actor: string,
   role: Role
 ): Promise<void> {

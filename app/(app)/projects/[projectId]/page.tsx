@@ -4,6 +4,7 @@ import { z } from "zod"
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { BackLink } from "@/components/back-link"
+import { ClientRequestPanel } from "@/components/client-request-panel"
 import { DecideChange } from "@/components/decide-change"
 import { Grain } from "@/components/grain"
 import { MobileBar } from "@/components/mobile-bar"
@@ -16,6 +17,7 @@ import { requireSession } from "@/lib/session"
 import { registeredTools } from "@/lib/tools"
 import { changeControlsFor } from "@/server/change-requests/controls"
 import { getDatabase } from "@/server/database"
+import { getClientRequestPreview } from "@/server/intake/preview"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import { getProjectOverview } from "@/server/projects/projects"
 
@@ -68,6 +70,12 @@ export default async function Page({
   // Only to decide whether the top bar offers the invite page.
   const canInvite = await isItAdmin(session.user.id)
 
+  const clientRequest = await getClientRequestPreview(
+    getDatabase(),
+    session.user.id,
+    projectId
+  )
+
   const controls = await changeControlsFor(
     getDatabase(),
     session.user.id,
@@ -116,6 +124,11 @@ export default async function Page({
               <h1 className="text-4xl font-semibold tracking-tight break-words sm:text-5xl">
                 {overview.name}
               </h1>
+              {clientRequest && (
+                <div className="relative flex">
+                  <ClientRequestPanel request={clientRequest} />
+                </div>
+              )}
             </div>
           </div>
           {controls.waiting.length > 0 && (

@@ -91,7 +91,8 @@ function attachedFiles(submission: WebsiteSubmission): JsonObject[] {
   }))
 }
 
-async function itAdmins(transaction: Transaction): Promise<Admin[]> {
+// Every company-wide IT/Admin.
+export async function itAdmins(transaction: Transaction): Promise<Admin[]> {
   return transaction
     .select({ id: people.id, email: people.email })
     .from(personCompanyRoles)

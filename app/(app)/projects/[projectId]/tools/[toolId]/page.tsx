@@ -3,6 +3,7 @@ import { z } from "zod"
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { BackLink } from "@/components/back-link"
+import { ClientRequestPanel } from "@/components/client-request-panel"
 import { Grain } from "@/components/grain"
 import { MobileBar } from "@/components/mobile-bar"
 import { RecordForm } from "@/components/record-form"
@@ -12,6 +13,7 @@ import { requireSession } from "@/lib/session"
 import type { FormValues } from "@/lib/tool-definition"
 import { registeredTools } from "@/lib/tools"
 import { getDatabase } from "@/server/database"
+import { getClientRequestPreview } from "@/server/intake/preview"
 import type { DocumentControl } from "@/server/document-control/document-control"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import { getRecordScreen } from "@/server/records/screen"
@@ -108,6 +110,12 @@ export default async function Page({
 
   const canInvite = await isItAdmin(session.user.id)
 
+  const clientRequest = await getClientRequestPreview(
+    getDatabase(),
+    session.user.id,
+    projectId
+  )
+
   const hasRecord = view.record !== null
 
   // SAFETY: a saved payload was checked against the tool's definition when it
@@ -139,6 +147,11 @@ export default async function Page({
                 {statusLine[view.state]}
               </p>
             </div>
+            {clientRequest && (
+              <div className="relative flex">
+                <ClientRequestPanel request={clientRequest} />
+              </div>
+            )}
           </div>
           {view.control && (
             <section

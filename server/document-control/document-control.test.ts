@@ -9,7 +9,7 @@ import {
   submitRecord,
   transitionRecord,
 } from "@/server/records/records"
-import { registerTestTools } from "@/server/tools/testing"
+import { registerTestD11 } from "@/server/tools/testing"
 
 import { getDocumentControl } from "./document-control"
 
@@ -17,7 +17,7 @@ const database = createTestDatabase()
 
 // The real workflow map is in force, so D1.1 opens on a new project. On D1.1
 // the OM and the Client write and the PM approves.
-registerTestTools({ wb01: ["D1.1"] })
+registerTestD11()
 
 const REQUEST_ID = "T1-1789787898386"
 
@@ -44,7 +44,8 @@ function draft(actor: string) {
     projectId,
     toolId: "D1.1",
     cycle: 1,
-    values: { note: "From the website" },
+    // Reviewed, so the PM may approve it.
+    values: { requestStatus: "Reviewed", attachedFiles: [] },
   })
 }
 

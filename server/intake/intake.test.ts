@@ -16,8 +16,7 @@ import {
 } from "@/db/testing"
 import { createFakeTransport, type Transport } from "@/server/email/email"
 import { systemActor } from "@/server/system/system"
-import { defineTool } from "@/server/tools/define-tool"
-import { tools } from "@/server/tools/registry"
+import { registerTestD11 } from "@/server/tools/testing"
 
 import { pullNewRequests } from "./intake"
 
@@ -25,46 +24,7 @@ const database = createTestDatabase()
 
 const baseURL = "https://erm.example.com"
 
-// D1.1 as workbooks/wb01 defines it. server/ cannot import workbooks/, and the
-// app registers the real one before the intake runs.
-const statuses = ["Pending", "Reviewed", "Approved"]
-
-if (!tools.getTool("D1.1")) {
-  tools.registerTool(
-    defineTool({
-      id: "D1.1",
-      name: "Client Email / Web Form",
-      workbook: "wb01",
-      fields: [
-        {
-          key: "requestStatus",
-          label: "Request status",
-          type: "select",
-          options: statuses,
-          systemOptions: ["Approved"],
-          required: true,
-        },
-        {
-          key: "attachedFiles",
-          label: "Attached files",
-          type: "table",
-          columns: [
-            { key: "label", label: "Label", type: "text" },
-            { key: "dateUploaded", label: "Date uploaded", type: "date" },
-            { key: "fileLink", label: "File link", type: "fileLink" },
-            {
-              key: "status",
-              label: "Status",
-              type: "select",
-              options: statuses,
-              systemOptions: ["Approved"],
-            },
-          ],
-        },
-      ],
-    })
-  )
-}
+registerTestD11()
 
 const link = (key: string) => `https://utfs.io/f/${key}`
 

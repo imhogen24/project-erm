@@ -296,7 +296,8 @@ export async function notifyChangeDecided(
 
 // Runs after the action's transaction commits. A failed email never fails the
 // action: sendEmail logs a failed send itself, and anything that stops it
-// before then, such as a bad address, is dropped here.
+// before then, such as a bad address or no BETTER_AUTH_URL, leaves no email
+// row, so it is logged here, without the address.
 export async function sendNotificationEmails(
   database: Database,
   pending: readonly PendingEmail[],
@@ -334,8 +335,12 @@ export async function sendNotificationEmails(
         },
         transport
       )
-    } catch {
-      continue
+    } catch (error) {
+      console.error("Notification email dropped before sending", {
+        key: email.key,
+        kind: email.kind,
+        error: error instanceof Error ? error.message : String(error),
+      })
     }
   }
 }

@@ -7,7 +7,9 @@ import { ClientRequestPanel } from "@/components/client-request-panel"
 import { Grain } from "@/components/grain"
 import { MobileBar } from "@/components/mobile-bar"
 import { RecordForm } from "@/components/record-form"
+import { ReviewScreen } from "@/components/review-screen"
 import { StateBadge } from "@/components/state-badge"
+import { reviewPayload } from "@/lib/review"
 import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
 import type { FormValues } from "@/lib/tool-definition"
@@ -22,8 +24,10 @@ import { UnknownToolError } from "@/server/records/validate"
 import {
   approveRecordAction,
   saveDraftAction,
+  setReviewStatusAction,
   signFieldAction,
   submitRecordAction,
+  submitReviewAction,
 } from "./actions"
 
 const square = "grid-square relative isolate bg-background"
@@ -122,6 +126,8 @@ export default async function Page({
   // was written, so each value has the type its field holds.
   const values = (view.record?.payload ?? {}) as FormValues
 
+  const review = view.can.review && view.record ? view.record : null
+
   return (
     <>
       <MobileBar className="xl:hidden" canInvite={canInvite} />
@@ -185,6 +191,16 @@ export default async function Page({
                     ? `This tool opens after ${view.waiting.waitingOn.join(", ")} is approved.`
                     : `This tool cannot be started yet: ${view.waiting.missing.join("; ")}.`}
                 </p>
+              ) : review ? (
+                <ReviewScreen
+                  recordId={review.id}
+                  requestStatus={
+                    reviewPayload.parse(review.payload).requestStatus
+                  }
+                  files={reviewPayload.parse(review.payload).attachedFiles}
+                  setStatus={setReviewStatusAction}
+                  submit={submitReviewAction}
+                />
               ) : !hasRecord && !view.can.write ? (
                 <p>Nobody has started this tool yet.</p>
               ) : (

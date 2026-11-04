@@ -226,32 +226,36 @@ test("the person who submitted a record has no Approve button", async ({
   await expect(page.getByRole("button", { name: "Approve" })).toHaveCount(0)
 })
 
-test("a save over someone else's newer save is refused and keeps the choice", async ({
+test("a save over someone else's newer save is refused and keeps the text", async ({
   page,
 }) => {
-  const { project, om } = await setUp()
+  const { project, lead } = await setUp()
 
-  await addRecord(project.id, "D1.1", "draft")
-  await open(page, om.email, project.id)
+  await lockEarlierTools(project.id)
+  await addRecord(project.id, "D1.8", "draft")
+  await open(page, lead.email, project.id, "D1.8")
 
   const second = await page.context().newPage()
 
-  await second.goto(`/projects/${project.id}/tools/D1.1`)
+  await second.goto(`/projects/${project.id}/tools/D1.8`)
 
-  await chooseStatus(page, "Pending")
+  const synthesizedBy = (on: Page) =>
+    on.getByRole("textbox", { name: "Synthesized By (Lead Engineer)" })
+
+  await synthesizedBy(page).fill("Lea")
   await page.getByRole("button", { name: "Save draft" }).click()
   await expect(page.getByText("Draft saved.")).toBeVisible()
 
-  await chooseStatus(second, "Reviewed")
+  await synthesizedBy(second).fill("Leo")
   await second.getByRole("button", { name: "Save draft" }).click()
 
   await expect(second.getByText(STALE)).toBeVisible()
   await expect(second.getByRole("button", { name: "Reload" })).toBeVisible()
-  await expect(requestStatus(second)).toHaveText("Reviewed")
+  await expect(synthesizedBy(second)).toHaveValue("Leo")
 
   await second.getByRole("button", { name: "Reload" }).click()
 
-  await expect(requestStatus(second)).toHaveText("Pending")
+  await expect(synthesizedBy(second)).toHaveValue("Lea")
 })
 
 test("a tool that is not open yet names the tool it waits for and shows no form", async ({

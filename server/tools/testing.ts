@@ -24,3 +24,48 @@ export function registerTestTools(
     }
   }
 }
+
+const reviewStatuses = ["Pending", "Reviewed", "Approved"]
+
+// D1.1 as workbooks/wb01 defines it, for a test in server/, which cannot import
+// workbooks/. The app registers the real one.
+export function registerTestD11() {
+  if (tools.getTool("D1.1")) {
+    return
+  }
+
+  tools.registerTool(
+    defineTool({
+      id: "D1.1",
+      name: "Client Email / Web Form",
+      workbook: "wb01",
+      fields: [
+        {
+          key: "requestStatus",
+          label: "Request status",
+          type: "select",
+          options: reviewStatuses,
+          systemOptions: ["Approved"],
+          required: true,
+        },
+        {
+          key: "attachedFiles",
+          label: "Attached files",
+          type: "table",
+          columns: [
+            { key: "label", label: "Label", type: "text" },
+            { key: "dateUploaded", label: "Date uploaded", type: "date" },
+            { key: "fileLink", label: "File link", type: "fileLink" },
+            {
+              key: "status",
+              label: "Status",
+              type: "select",
+              options: reviewStatuses,
+              systemOptions: ["Approved"],
+            },
+          ],
+        },
+      ],
+    })
+  )
+}

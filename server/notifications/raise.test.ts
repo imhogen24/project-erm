@@ -15,14 +15,16 @@ import {
   submitRecord,
 } from "@/server/records/records"
 import { assignStaff } from "@/server/staff/staff"
-import { registerTestTools } from "@/server/tools/testing"
+import { registerTestD11, registerTestTools } from "@/server/tools/testing"
 import { loadWorkflow } from "@/server/workflow/workflow"
 
 import { listNotifications } from "./notifications"
 
 const database = createTestDatabase()
 
-registerTestTools({ wb01: ["D1.1", "D1.2", "D1.3", "D1.4", "D1.9"] })
+registerTestD11()
+
+registerTestTools({ wb01: ["D1.2", "D1.3", "D1.4", "D1.9"] })
 
 // One tool after another, as in the real route. D1.9, which the HE approves
 // rather than the PM, is open from the start.
@@ -110,7 +112,11 @@ async function draftOf(writer: Person, toolId = "D1.1") {
   const record = await createRecord(database, writer.id, {
     projectId,
     toolId,
-    payload: { note: "Ready" },
+    // A D1.1 is Reviewed, so the PM may approve it.
+    payload:
+      toolId === "D1.1"
+        ? { requestStatus: "Reviewed", attachedFiles: [] }
+        : { note: "Ready" },
   })
 
   return record.id

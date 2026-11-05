@@ -61,7 +61,10 @@ test("a tool row on the overview opens its page, with its name and state", async
 
   await signIn(page, om.email)
   await page.goto(`/projects/${project.id}`)
-  await page.getByRole("link", { name: /D1\.1.*Client Email/ }).click()
+  await page
+    .getByRole("main")
+    .getByRole("link", { name: /D1\.1.*Client Email/ })
+    .click()
 
   await expect(page).toHaveURL(`/projects/${project.id}/tools/D1.1`)
   await expect(page.getByRole("heading", { level: 1 })).toContainText("D1.1")

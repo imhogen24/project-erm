@@ -2,14 +2,16 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { BackLink } from "@/components/back-link"
+import { ProjectTree } from "@/components/project-tree"
 import { Sheet } from "@/components/sheet"
 import { SignOutButton } from "@/components/sign-out-button"
+import type { ProjectNav } from "@/lib/project-nav"
 import { cn } from "@/lib/utils"
 
 type Props = {
   name: string
-  // Set inside a project: its name and the workbooks to jump to.
-  project?: { name: string; workbooks: { id: string; label: string }[] }
+  // Set inside a project: its name and its workbooks and tools as a tree.
+  project?: ProjectNav
   // Which page the person is on, outside a project, and whether to offer the
   // IT/Admin pages: invite people and assign staff.
   current?: "projects" | "invites" | "team"
@@ -56,15 +58,7 @@ export function AppSidebar({
               >
                 {project.name}
               </p>
-              <ul className="min-h-0 flex-1 overflow-y-auto py-2">
-                {project.workbooks.map((workbook) => (
-                  <li key={workbook.id}>
-                    <a href={`#${workbook.id}`} className={linkClass}>
-                      {workbook.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              <ProjectTree project={project} />
             </>
           ) : (
             <>

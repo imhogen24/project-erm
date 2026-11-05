@@ -7,6 +7,7 @@ import { ClientRequestPanel } from "@/components/client-request-panel"
 import { Grain } from "@/components/grain"
 import { MobileBar } from "@/components/mobile-bar"
 import { RecordForm } from "@/components/record-form"
+import { RequestMetadataBlock } from "@/components/request-metadata"
 import { ReviewScreen } from "@/components/review-screen"
 import { StateBadge } from "@/components/state-badge"
 import { reviewPayload } from "@/lib/review"
@@ -16,8 +17,10 @@ import type { FormValues } from "@/lib/tool-definition"
 import { registeredTools } from "@/lib/tools"
 import { getDatabase } from "@/server/database"
 import { getClientRequestPreview } from "@/server/intake/preview"
+import { getRequestDetails } from "@/server/intake/request-details"
 import type { DocumentControl } from "@/server/document-control/document-control"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
+import { getProjectOverview } from "@/server/projects/projects"
 import { getRecordScreen } from "@/server/records/screen"
 import { UnknownToolError } from "@/server/records/validate"
 
@@ -29,6 +32,7 @@ import {
   submitRecordAction,
   submitReviewAction,
 } from "./actions"
+import { projectNav } from "../../sidebar"
 
 const square = "grid-square relative isolate bg-background"
 
@@ -114,11 +118,34 @@ export default async function Page({
 
   const canInvite = await isItAdmin(session.user.id)
 
+  // The sidebar's tree of the project's tools.
+  let overview = null
+
+  try {
+    overview = await getProjectOverview(
+      getDatabase(),
+      session.user.id,
+      projectId,
+      registeredTools
+    )
+  } catch (error) {
+    if (!(error instanceof PermissionDeniedError)) {
+      throw error
+    }
+  }
+
   const clientRequest = await getClientRequestPreview(
     getDatabase(),
     session.user.id,
     projectId
   )
+
+  // D1.2 shows where the request came from, read live, whether or not it has
+  // a record yet.
+  const details =
+    toolId === "D1.2"
+      ? await getRequestDetails(getDatabase(), session.user.id, projectId)
+      : null
 
   const hasRecord = view.record !== null
 
@@ -132,7 +159,11 @@ export default async function Page({
     <>
       <MobileBar className="xl:hidden" canInvite={canInvite} />
       <div className="drafting-grid min-h-svh py-[var(--cell)]">
-        <AppSidebar name={session.user.name} canInvite={canInvite} />
+        <AppSidebar
+          name={session.user.name}
+          canInvite={canInvite}
+          project={overview ? projectNav(overview) : undefined}
+        />
         <main className="table-project table-home">
           <div
             className={`${square} flex min-h-[calc(var(--cell)*2)] flex-col justify-end gap-3 px-6 py-6`}
@@ -159,6 +190,18 @@ export default async function Page({
               </div>
             )}
           </div>
+          {details && (
+            <section
+              aria-label="Request details"
+              className={`${square} mt-[var(--cell)] px-6 py-6`}
+            >
+              <Grain />
+              <div className="relative flex flex-col gap-3">
+                <h2 className="text-lg font-medium">Request details</h2>
+                <RequestMetadataBlock metadata={details.metadata} />
+              </div>
+            </section>
+          )}
           {view.control && (
             <section
               aria-label="Document control"

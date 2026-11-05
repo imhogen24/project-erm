@@ -75,13 +75,16 @@ export async function makePerson(name = `Person ${tag()}`) {
   return { id, name, email }
 }
 
-export async function makeProject(name = `Project ${tag()}`) {
-  const requestId = `T1-${randomUUID()}`
+export async function makeProject(
+  name = `Project ${tag()}`,
+  serviceTrack: "Tier_1" | "Tier_3" = "Tier_1"
+) {
+  const requestId = `${serviceTrack === "Tier_3" ? "T3" : "T1"}-${randomUUID()}`
 
   const id = await withDatabase(async (database) => {
     const [project] = await database
       .insert(projects)
-      .values({ name, requestId, serviceTrack: "Tier_1" })
+      .values({ name, requestId, serviceTrack })
       .returning({ id: projects.id })
 
     return project!.id

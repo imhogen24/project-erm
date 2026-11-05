@@ -10,7 +10,9 @@ import { RecordForm } from "@/components/record-form"
 import { RequestMetadataBlock } from "@/components/request-metadata"
 import { ReviewScreen } from "@/components/review-screen"
 import { StateBadge } from "@/components/state-badge"
+import { TriageScreen } from "@/components/triage-screen"
 import { reviewPayload } from "@/lib/review"
+import { triagePayload } from "@/lib/triage"
 import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
 import type { FormValues } from "@/lib/tool-definition"
@@ -155,6 +157,22 @@ export default async function Page({
 
   const review = view.can.review && view.record ? view.record : null
 
+  // D1.2 has its own screen: the files, the three checks and the decision. It
+  // opens before D1.2 has a record, for the person who may write it.
+  const triage =
+    toolId === "D1.2" &&
+    details &&
+    !view.waiting &&
+    (hasRecord || view.can.write)
+      ? details
+      : null
+
+  const checks = tool.fields.flatMap((field) =>
+    field.type === "table" && field.key === "triageChecklist"
+      ? (field.prefilledRows ?? [])
+      : []
+  )
+
   return (
     <>
       <MobileBar className="xl:hidden" canInvite={canInvite} />
@@ -243,6 +261,23 @@ export default async function Page({
                   files={reviewPayload.parse(review.payload).attachedFiles}
                   setStatus={setReviewStatusAction}
                   submit={submitReviewAction}
+                />
+              ) : triage ? (
+                <TriageScreen
+                  projectId={projectId}
+                  cycle={view.cycle}
+                  recordId={view.record?.id}
+                  updatedAt={view.record?.updatedAt.toISOString()}
+                  files={triage.files}
+                  filesRecordId={triage.filesRecordId}
+                  checks={checks}
+                  saved={triagePayload.parse(view.record?.payload ?? {})}
+                  tier3={overview?.serviceTrack === "Tier_3"}
+                  canWrite={view.can.write}
+                  canApprove={view.can.approve}
+                  save={saveDraftAction}
+                  submit={submitRecordAction}
+                  approve={approveRecordAction}
                 />
               ) : !hasRecord && !view.can.write ? (
                 <p>Nobody has started this tool yet.</p>

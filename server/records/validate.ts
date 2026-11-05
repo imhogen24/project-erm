@@ -54,7 +54,7 @@ const systemSets = "Set by the system, so it cannot be chosen"
 const percentage = "Must be a percentage from 0 to 100"
 
 function cellSchema(cell: Field | Column): z.ZodType {
-  if (cell.inherited) {
+  if (cell.inherited || cell.systemFilled) {
     return z.never({ error: systemOnly })
   }
 
@@ -220,9 +220,59 @@ function isMissing(field: Field, value: JsonObject[string] | undefined) {
   return field.items.some((item) => !(item in answers))
 }
 
+const rowsOf = z.array(z.record(z.string(), z.unknown()))
+
+// At submit, a required column must be answered in every row of its table.
+function unansweredCells(table: TableField, value: JsonObject[string]) {
+  const required = table.columns.filter((column) => column.required)
+
+  return (rowsOf.safeParse(value).data ?? []).flatMap((row, index) =>
+    required
+      .filter((column) => blank.safeParse(row[column.key]).success)
+      .map((column): FieldError => ({
+        field: table.key,
+        row: index,
+        column: column.key,
+        message: "Required",
+      }))
+  )
+}
+
+// A select option that is refused while some fixed rows of a table hold a
+// value. The refusal names those rows by their fixed labels.
+function blockedChoice(
+  tool: ToolDefinition,
+  field: Field,
+  payload: JsonObject
+): FieldError | undefined {
+  if (
+    field.type !== "select" ||
+    !field.blockedWhile ||
+    payload[field.key] !== field.blockedWhile.option
+  ) {
+    return undefined
+  }
+
+  const rule = field.blockedWhile
+  const table = tool.fields.find((entry) => entry.key === rule.table)
+  const labels = table?.type === "table" ? (table.prefilledRows ?? []) : []
+
+  const named = (rowsOf.safeParse(payload[rule.table]).data ?? []).flatMap(
+    (row, index) =>
+      row[rule.column] === rule.value
+        ? [`"${labels[index] ?? `Row ${index + 1}`}"`]
+        : []
+  )
+
+  return named.length === 0
+    ? undefined
+    : { field: field.key, message: `${rule.message}: ${named.join(", ")}` }
+}
+
 // Checks `payload` against the tool's definition and returns every problem
-// together. Types, options, table cells, and unknown, inherited or read-only
-// fields are checked on every write. Required fields are checked only when
+// together. Types, options, table cells, blocked options, and unknown,
+// inherited, system-filled or read-only fields are checked on every write.
+// Required fields and required table columns are checked only when
 // `forSubmit` is set, so a draft can be saved incomplete.
 export function validateRecord(
   toolId: string,
@@ -244,17 +294,27 @@ export function validateRecord(
     }
   }
 
-  if (options.forSubmit) {
-    for (const field of tool.fields) {
-      const alreadyWrong = errors.some((error) => error.field === field.key)
+  const wrong = new Set(errors.map((error) => error.field))
 
-      if (
-        field.required &&
-        !alreadyWrong &&
-        isMissing(field, payload[field.key])
-      ) {
-        errors.push({ field: field.key, message: "Required" })
-      }
+  for (const field of tool.fields) {
+    if (wrong.has(field.key)) {
+      continue
+    }
+
+    const blocked = blockedChoice(tool, field, payload)
+
+    if (blocked) {
+      errors.push(blocked)
+    }
+
+    if (!options.forSubmit) {
+      continue
+    }
+
+    if (field.required && isMissing(field, payload[field.key])) {
+      errors.push({ field: field.key, message: "Required" })
+    } else if (field.type === "table") {
+      errors.push(...unansweredCells(field, payload[field.key]))
     }
   }
 

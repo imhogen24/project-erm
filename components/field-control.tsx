@@ -119,7 +119,7 @@ export function FieldControl({
     return null
   }
 
-  if (cell.inherited) {
+  if (cell.inherited || cell.systemFilled) {
     return (
       <Input
         {...shared}

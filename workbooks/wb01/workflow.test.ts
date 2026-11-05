@@ -31,10 +31,24 @@ registerTestTools({ wb02: ["D2.1"] })
 
 loadWorkflow(workflowMaps)
 
+// D1.2 with its three checks answered. A spam request may fail a check.
+function triage(decision: string, status: string) {
+  return {
+    triageChecklist: [
+      "Is the notification readable and free of malicious links?",
+      "Does the request broadly align with IMHOGEN's services?",
+      "Is the contact information apparently valid and legible?",
+    ].map((check) => ({ check, status, reviewerNotes: "Checked" })),
+    triageDecision: decision,
+  }
+}
+
+const spam = triage("Reject as Spam", "Fail")
+
 // The answers that keep the route going.
 const answers = new Map<string, JsonObject>([
   ["D1.1", { requestStatus: "Reviewed" }],
-  ["D1.2", { triageDecision: "Proceed to D1.3" }],
+  ["D1.2", triage("Proceed to D1.3", "Pass")],
   ["D1.10", { overallCapabilityStatus: "Capable" }],
   ["D1.11", { goNoGoDecision: "Go" }],
   ["D1.14", { minimumOverheadMet: true }],
@@ -235,17 +249,20 @@ describe("the Tier 1 route", () => {
 })
 
 describe("hard stops", () => {
-  it("ends the route and rejects the project when D1.2 is spam", async () => {
+  it("rejects the project and never opens D1.3 when the PM approves D1.2 as spam", async () => {
     await lockThrough("D1.1")
-    await recordIn("locked", "D1.2", { triageDecision: "Reject as Spam" })
+    await recordIn("locked", "D1.2", spam)
 
     expect(await open()).toEqual([])
     expect(await status()).toBe("rejected")
+    await expect(
+      createRecord(database, actor, { projectId, toolId: "D1.3" })
+    ).rejects.toThrow()
   })
 
   it("logs the status change with the answer as its reason", async () => {
     await lockThrough("D1.1")
-    await recordIn("locked", "D1.2", { triageDecision: "Reject as Spam" })
+    await recordIn("locked", "D1.2", spam)
 
     const { rows } = await database.pool.query(
       `SELECT record_id AS "recordId", actor_id AS "actorId", field,
@@ -297,9 +314,7 @@ describe("hard stops", () => {
   it("does not stop on a draft spam answer, which can still change", async () => {
     await lockThrough("D1.1")
 
-    const draft = await recordIn("draft", "D1.2", {
-      triageDecision: "Reject as Spam",
-    })
+    const draft = await recordIn("draft", "D1.2", spam)
 
     expect(await status()).toBe("active")
 
@@ -350,7 +365,7 @@ describe("the Tier 3 route", () => {
 
   it("stops the same way as Tier 1", async () => {
     await lockThrough("D1.1", tier3)
-    await recordIn("locked", "D1.2", { triageDecision: "Reject as Spam" })
+    await recordIn("locked", "D1.2", spam)
 
     expect(await open()).toEqual([])
     expect(await status()).toBe("rejected")

@@ -23,11 +23,11 @@ const previews: Preview[] = [
       "On a wide screen, the left sidebar lists the 13 workbooks as folders (Onboarding (WB01), Contracting (WB02) and so on). Onboarding is open with its tools as links, each marked with its state. Click a tool to open it. The tree stays on the tool page, with the open tool highlighted.",
   },
   {
-    screen: "D1.2 request details (RDP-148)",
+    screen: "D1.2 triage screen (RDP-147)",
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.2`,
     expect:
-      "A Request details block: source Web Form, 3 Nov 2026 09:14 UTC, sender client@example.com, recipient and subject Not applicable (web form). Log in as pm@example.com to see the same.",
+      "Request details (source Web Form, 3 Nov 2026 09:14 UTC, sender client@example.com), then two files with Open file and a description box, three triage checks (Pass/Fail and notes), and the two decision buttons. Proceed turns off while a check is Fail. Save draft, then Submit for approval. Log in as pm@example.com afterwards to see it read only with Approve.",
   },
 ]
 

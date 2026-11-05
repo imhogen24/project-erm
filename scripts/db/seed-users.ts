@@ -10,6 +10,7 @@ import {
   personProjectRoles,
   projects,
   roles,
+  toolRecords,
   type Role,
 } from "@/db/schema"
 
@@ -88,6 +89,46 @@ async function addDemoRequest(database: Database, projectId: string) {
       },
     })
     .onConflictDoNothing({ target: intakeSubmissions.requestId })
+}
+
+// An approved D1.1 with two sample files, so D1.2 is open and has files to show.
+// It is only added when the project has no D1.1 yet, so running this again
+// changes nothing and a D1.1 someone is working on is left alone.
+async function addDemoReview(database: Database, projectId: string) {
+  const [existing] = await database
+    .select({ id: toolRecords.id })
+    .from(toolRecords)
+    .where(
+      and(eq(toolRecords.projectId, projectId), eq(toolRecords.toolId, "D1.1"))
+    )
+    .limit(1)
+
+  if (existing) {
+    return
+  }
+
+  await database.insert(toolRecords).values({
+    projectId,
+    toolId: "D1.1",
+    state: "locked",
+    payload: {
+      requestStatus: "Approved",
+      attachedFiles: [
+        {
+          label: "Site photo",
+          dateUploaded: "2026-11-03",
+          fileLink: "https://utfs.io/f/demo-site-photo",
+          status: "Approved",
+        },
+        {
+          label: "Layout drawing",
+          dateUploaded: "2026-11-03",
+          fileLink: "https://utfs.io/f/demo-layout-drawing",
+          status: "Approved",
+        },
+      ],
+    },
+  })
 }
 
 // The id of Demo Project, for the links the preview guide prints.
@@ -195,6 +236,7 @@ export async function seed(url: string): Promise<SeedUser[]> {
     const projectId = await findOrCreateProject(database)
 
     await addDemoRequest(database, projectId)
+    await addDemoReview(database, projectId)
 
     const passwordHash = await hashPassword(SEED_PASSWORD)
     const created: SeedUser[] = []

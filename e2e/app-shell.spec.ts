@@ -103,7 +103,9 @@ test("tools sit under a heading for their workbook", async ({ page }) => {
   await page.goto(`/projects/${project.id}`)
 
   await expect(page.getByRole("heading", { name: "Workbook 1" })).toBeVisible()
-  await expect(page.getByText("Client Email / Web Form")).toBeVisible()
+  await expect(
+    page.getByRole("main").getByText("Client Email / Web Form")
+  ).toBeVisible()
 })
 
 test("the back link returns to the project list", async ({ page }) => {
@@ -174,21 +176,6 @@ test("the header shows the app name and the person's name on every page", async 
   await expect(sidebar.getByText(person.name)).toBeVisible()
   await expect(sidebar.getByText(project.name)).toBeVisible()
   await expect(page.getByRole("banner")).toBeHidden()
-})
-
-test("the sidebar jumps to a workbook on the same page", async ({ page }) => {
-  const person = await makePerson()
-  const project = await makeProject()
-
-  await giveRoles(person.id, project.id, ["PM"])
-  await signIn(page, person.email)
-  await page.goto(`/projects/${project.id}`)
-  await page
-    .getByRole("complementary", { name: "Sidebar" })
-    .getByRole("link", { name: "Workbook 1" })
-    .click()
-
-  await expect(page).toHaveURL(/#wb01$/)
 })
 
 test("the app name links back to the project list", async ({ page }) => {

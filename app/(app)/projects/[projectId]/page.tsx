@@ -22,20 +22,10 @@ import { PermissionDeniedError } from "@/server/permissions/permissions"
 import { getProjectOverview } from "@/server/projects/projects"
 
 import { decideChangeAction, requestChangeAction } from "./actions"
+import { projectNav, workbookNumber, workbookTitle } from "./sidebar"
 
 // Every box is a whole number of grid squares and shares its lines.
 const square = "grid-square relative isolate bg-background"
-
-// "wb01" is shown as "Workbook 1", with the figure 1 drawn large beside it.
-function workbookNumber(workbook: string) {
-  return /^wb0*(\d+)$/.exec(workbook)?.[1]
-}
-
-function workbookTitle(workbook: string) {
-  const number = workbookNumber(workbook)
-
-  return number ? `Workbook ${number}` : workbook
-}
 
 export default async function Page({
   params,
@@ -99,16 +89,7 @@ export default async function Page({
     <>
       <MobileBar className="xl:hidden" canInvite={canInvite} />
       <div className="drafting-grid min-h-svh py-[var(--cell)]">
-        <AppSidebar
-          name={session.user.name}
-          project={{
-            name: overview.name,
-            workbooks: [...workbooks.keys()].map((workbook) => ({
-              id: workbook,
-              label: workbookTitle(workbook),
-            })),
-          }}
-        />
+        <AppSidebar name={session.user.name} project={projectNav(overview)} />
         <main className="table-project table-home">
           <div>
             <div

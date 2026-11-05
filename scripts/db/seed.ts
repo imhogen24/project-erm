@@ -1,4 +1,5 @@
-import { seed, SEED_PASSWORD } from "./seed-users"
+import { printPreviews } from "./preview"
+import { demoProjectId, seed, SEED_PASSWORD } from "./seed-users"
 
 const url = process.env.DATABASE_URL
 
@@ -18,3 +19,5 @@ if (created.length === 0) {
     created.map(({ role, email }) => ({ role, email, password: SEED_PASSWORD }))
   )
 }
+
+printPreviews(await demoProjectId(url))

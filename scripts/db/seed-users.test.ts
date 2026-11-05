@@ -109,6 +109,27 @@ async function projectsSeenBy(email: string) {
   return listed.map((project) => project.name)
 }
 
+describe("the demo request", () => {
+  it("saves one website request for Demo Project, once, however often it runs", async () => {
+    await seed(url)
+    await seed(url)
+
+    const { rows } = await database.pool.query<{
+      request_id: string
+      email: string
+    }>(
+      `SELECT i.request_id, i.submission->>'email' AS email
+         FROM intake_submissions i
+         JOIN projects p ON p.id = i.project_id
+        WHERE p.name = 'Demo Project'`
+    )
+
+    expect(rows).toEqual([
+      { request_id: DEMO_REQUEST_ID, email: "client@example.com" },
+    ])
+  })
+})
+
 describe("seeding an empty database", () => {
   it("adds one person per role, each but IT/Admin holding only that role on Demo Project", async () => {
     await seed(url)

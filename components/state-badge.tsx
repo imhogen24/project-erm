@@ -42,6 +42,10 @@ const states: Record<
   },
 }
 
+export function stateLabel(state: ToolState) {
+  return states[state].label
+}
+
 export function stateSquare(state: ToolState) {
   return states[state].square
 }

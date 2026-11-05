@@ -50,16 +50,18 @@ type Props = {
 }
 
 // Typed text that is empty is left out, since the server refuses an empty date
-// or number and an empty text is the same as none. An inherited value is the
-// system's, so it is never sent.
+// or number and an empty text is the same as none. An inherited or
+// system-filled value is the system's, so it is never sent.
 function sendable(tool: ToolDefinition, values: FormValues): FormValues {
-  const inherited = new Set(
-    tool.fields.filter((field) => field.inherited).map((field) => field.key)
+  const systems = new Set(
+    tool.fields
+      .filter((field) => field.inherited || field.systemFilled)
+      .map((field) => field.key)
   )
 
   return Object.fromEntries(
     Object.entries(values).filter(
-      ([key, value]) => !inherited.has(key) && value !== "" && value !== null
+      ([key, value]) => !systems.has(key) && value !== "" && value !== null
     )
   )
 }

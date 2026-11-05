@@ -13,10 +13,13 @@ const inheritedLink = z.object({
   column: z.string().min(1).optional(),
 })
 
+// `systemFilled` is shown in the form but filled by the system from outside
+// the tool, such as the saved website request, so the form never writes it.
 const cellBase = {
   key: fieldKey,
   label: z.string().min(1),
   inherited: inheritedLink.optional(),
+  systemFilled: z.boolean().optional(),
 }
 
 const distinctTexts = z
@@ -61,6 +64,19 @@ const select = z.object({
   systemOptions: z.array(z.string().min(1)).min(1).optional(),
 })
 
+// Refuses `option` while any row of the `table` field has `value` in its
+// `column`. The refusal is `message`, followed by the first cell of each such
+// row, so the table needs fixed rows to name them.
+const blockedWhile = z.object({
+  option: z.string().min(1),
+  table: fieldKey,
+  column: fieldKey,
+  value: z.string().min(1),
+  message: z.string().min(1),
+})
+
+export type BlockedWhile = z.output<typeof blockedWhile>
+
 const strangerSystemOption = "A system option must be one of the options"
 
 // Only a select has options, so any other field passes.
@@ -95,16 +111,26 @@ const staticList = z.object({
   items: distinctTexts,
 })
 
+// A required column must be answered in every row, but only at submit.
+const columnRequired = { required: z.boolean().optional() }
+
 const column = z.discriminatedUnion("type", [
-  plain,
-  signature,
-  select,
-  checklist,
-  instruction,
-  staticList,
+  plain.extend(columnRequired),
+  signature.extend(columnRequired),
+  select.extend(columnRequired),
+  checklist.extend(columnRequired),
+  instruction.extend(columnRequired),
+  staticList.extend(columnRequired),
 ])
 
 type Column = z.output<typeof column>
+
+// The form never writes these, so they can never be required of it.
+const unwritten = ["signature", "instruction", "staticList"]
+
+function isWritten(cell: Column) {
+  return !(cell.inherited || cell.systemFilled || unwritten.includes(cell.type))
+}
 
 const required = { required: z.boolean().default(false) }
 
@@ -139,6 +165,14 @@ const table = z
           code: "custom",
           path: ["columns", index, "systemOptions"],
           message: strangerSystemOption,
+        })
+      }
+
+      if (entry.required && !isWritten(entry)) {
+        context.addIssue({
+          code: "custom",
+          path: ["columns", index, "required"],
+          message: "A column the form never writes is never required",
         })
       }
     })
@@ -186,7 +220,7 @@ const field = z
   .discriminatedUnion("type", [
     plain.extend(required),
     signature.extend(required),
-    select.extend(required),
+    select.extend({ ...required, blockedWhile: blockedWhile.optional() }),
     checklist.extend(required),
     instruction.extend(required),
     staticList.extend(required),
@@ -197,17 +231,14 @@ const field = z
     message:
       "An inherited field is filled in by the system, so it is never required",
   })
-  .refine(
-    (value) =>
-      !(
-        value.required &&
-        ["signature", "instruction", "staticList"].includes(value.type)
-      ),
-    {
-      message:
-        "A signature, instruction or static list is never written in the form, so it is never required",
-    }
-  )
+  .refine((value) => !(value.required && unwritten.includes(value.type)), {
+    message:
+      "A signature, instruction or static list is never written in the form, so it is never required",
+  })
+  .refine((value) => !(value.systemFilled && value.required), {
+    message:
+      "A system-filled field is filled in by the system, so it is never required",
+  })
 
 // The 13 workbooks. A registered tool belongs to one of them, and its workbook
 // is read only from here, never from the letters of its id.
@@ -254,6 +285,55 @@ const toolDefinition = z
   .refine((value) => value.replaces !== value.id, {
     message: "A tool cannot replace itself",
   })
+  .superRefine((value, context) => {
+    value.fields.forEach((entry, index) => {
+      if (entry.type !== "select" || !entry.blockedWhile) {
+        return
+      }
+
+      const problem = blockedWhileProblem(
+        entry.options,
+        entry.blockedWhile,
+        value.fields
+      )
+
+      if (problem) {
+        context.addIssue({
+          code: "custom",
+          path: ["fields", index, "blockedWhile"],
+          message: problem,
+        })
+      }
+    })
+  })
+
+type FieldOutput = z.output<typeof field>
+
+// The rule must name one of the select's options, and a column of a table with
+// fixed rows whose select can hold the value.
+function blockedWhileProblem(
+  options: string[],
+  rule: BlockedWhile,
+  fields: FieldOutput[]
+) {
+  if (!options.includes(rule.option)) {
+    return `"${rule.option}" is not one of the options`
+  }
+
+  const table = fields.find((entry) => entry.key === rule.table)
+
+  if (table?.type !== "table" || !table.prefilledRows) {
+    return `${rule.table} is not a table with fixed rows`
+  }
+
+  const watched = table.columns.find((entry) => entry.key === rule.column)
+
+  if (watched?.type !== "select" || !watched.options.includes(rule.value)) {
+    return `${rule.table}.${rule.column} is not a select with the option "${rule.value}"`
+  }
+
+  return undefined
+}
 
 export type ToolInput = z.input<typeof toolDefinition>
 

@@ -131,6 +131,7 @@ function toCell(
   if (
     readOnlyTypes.includes(cell.type) ||
     cell.inherited ||
+    cell.systemFilled ||
     raw === undefined ||
     text === ""
   ) {
@@ -173,7 +174,7 @@ function toValues(
       values[field.key] = toRows(field, Array.isArray(raw) ? raw : [])
     } else if (Array.isArray(raw)) {
       continue
-    } else if (field.inherited) {
+    } else if (field.inherited || field.systemFilled) {
       values[field.key] = textOf(raw) ?? null
     } else if (field.type === "number") {
       const text = textOf(raw)
@@ -240,7 +241,8 @@ export function ToolForm({
           const errorId = `${field.key}-error`
 
           // A true/false field reads best as a box with its label beside it.
-          const isBox = field.type === "boolean" && !field.inherited
+          const isBox =
+            field.type === "boolean" && !field.inherited && !field.systemFilled
 
           // These are drawn as a group under a title, not as one input.
           const isGroup =

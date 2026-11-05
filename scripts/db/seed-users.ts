@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm"
 import { createDatabase, type Database } from "@/db"
 import {
   accounts,
+  intakeSubmissions,
   people,
   personCompanyRoles,
   personProjectRoles,
@@ -62,6 +63,50 @@ async function findOrCreateProject(database: Database) {
     .returning({ id: projects.id })
 
   return created!.id
+}
+
+// The website's saved copy of the demo request, shaped like a real one, so the
+// screens that read it have something to show. It is only added when the
+// request has no copy yet, so running this again changes nothing.
+async function addDemoRequest(database: Database, projectId: string) {
+  await database
+    .insert(intakeSubmissions)
+    .values({
+      requestId: DEMO_REQUEST_ID,
+      serviceTrack: "Tier_1",
+      projectId,
+      submission: {
+        organization_name: "Demo Client Ltd",
+        contact_person: "Demo Client",
+        email: seedEmail("Client"),
+        phone_number: "0200000000",
+        site_location: "Accra",
+        project_title: "Demo Boiler Skid",
+        primary_objective: "A skid for the demo boiler",
+        request_id: DEMO_REQUEST_ID,
+        created_at: "2026-11-03T09:14:00+00:00",
+      },
+    })
+    .onConflictDoNothing({ target: intakeSubmissions.requestId })
+}
+
+// The id of Demo Project, for the links the preview guide prints.
+export async function demoProjectId(url: string) {
+  assertLocal(url)
+
+  const database = createDatabase(url)
+
+  try {
+    const [project] = await database
+      .select({ id: projects.id })
+      .from(projects)
+      .where(eq(projects.name, PROJECT_NAME))
+      .limit(1)
+
+    return project?.id
+  } finally {
+    await database.pool.end()
+  }
 }
 
 // Each person is checked before adding, so running this again changes nothing
@@ -148,6 +193,9 @@ export async function seed(url: string): Promise<SeedUser[]> {
 
   try {
     const projectId = await findOrCreateProject(database)
+
+    await addDemoRequest(database, projectId)
+
     const passwordHash = await hashPassword(SEED_PASSWORD)
     const created: SeedUser[] = []
 

@@ -124,7 +124,7 @@ export function ReviewScreen({
     request === "Reviewed" && rows.every((row) => row === "Reviewed")
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="@container flex flex-col gap-8">
       <div className="flex flex-col gap-2">
         <span className="text-sm font-medium">Request status</span>
         <StatusSelect
@@ -145,7 +145,7 @@ export function ReviewScreen({
             {files.map((file, index) => (
               <li
                 key={index}
-                className="flex flex-col gap-3 border border-foreground/20 p-4 not-first:border-t-0 sm:flex-row sm:items-center sm:justify-between"
+                className="flex flex-col gap-3 border border-foreground/20 p-4 not-first:border-t-0"
               >
                 <div className="flex min-w-0 flex-col gap-1">
                   <span className="text-sm font-medium break-words">
@@ -155,9 +155,14 @@ export function ReviewScreen({
                     {file.dateUploaded}
                   </span>
                 </div>
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+                <div className="flex flex-col gap-3 @md:flex-row @md:items-center">
                   {file.fileLink && (
-                    <Button asChild variant="outline" size="sm">
+                    <Button
+                      asChild
+                      variant="outline"
+                      size="sm"
+                      className="self-start"
+                    >
                       <a
                         href={`/api/files/${recordId}?ref=${encodeURIComponent(file.fileLink)}`}
                         target="_blank"

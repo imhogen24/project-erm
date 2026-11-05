@@ -136,7 +136,11 @@ describe("the metadata", () => {
 
     const details = await getRequestDetails(database, om, projectId)
 
-    expect(details).toEqual({ metadata: null, files: [] })
+    expect(details).toEqual({
+      metadata: null,
+      files: [],
+      filesRecordId: null,
+    })
   })
 })
 
@@ -186,6 +190,23 @@ describe("the files", () => {
       "Pending",
       "Reviewed",
     ])
+  })
+
+  it("names the D1.1 record the files are opened through", async () => {
+    await addTier1({ requestId: "T1-1", files: [link("one")] })
+    await pull()
+
+    const projectId = await projectOf("T1-1")
+    const om = await addToProject(projectId, "OM")
+
+    const { rows } = await database.pool.query<{ id: string }>(
+      "SELECT id FROM tool_records WHERE project_id = $1 AND tool_id = 'D1.1'",
+      [projectId]
+    )
+
+    const details = await getRequestDetails(database, om, projectId)
+
+    expect(details?.filesRecordId).toBe(rows[0]!.id)
   })
 
   it("is an empty list, not an error, when D1.1 has no files", async () => {

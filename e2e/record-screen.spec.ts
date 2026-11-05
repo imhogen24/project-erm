@@ -41,17 +41,29 @@ async function open(
   await page.goto(`/projects/${projectId}/tools/${toolId}`)
 }
 
+// D1.1 has the review screen as soon as it has a record, so the plain form is
+// tried on tools that keep it. D1.8 has no required field. D1.10 has one, and
+// opens once D1.9 is locked.
+async function lockThroughD19(projectId: string) {
+  await lockEarlierTools(projectId)
+  await addRecord(projectId, "D1.8", "locked")
+  await addRecord(projectId, "D1.9", "locked")
+}
+
+function notes(page: Page) {
+  return page.getByRole("textbox", { name: "Synthesized By (Lead Engineer)" })
+}
+
+function capability(page: Page) {
+  return page.getByRole("combobox", { name: "Overall Capability Status" })
+}
+
 function control(page: Page) {
   return page.getByRole("region", { name: "Document control" })
 }
 
 function requestStatus(page: Page) {
   return page.getByRole("combobox", { name: "Request status" })
-}
-
-async function chooseStatus(page: Page, status: string) {
-  await requestStatus(page).click()
-  await page.getByRole("option", { name: status }).click()
 }
 
 test("a tool row on the overview opens its page, with its name and state", async ({
@@ -89,17 +101,18 @@ test("a person who may not read the tool, or is not on the project, sees not fou
 })
 
 test("Save draft keeps the values after a reload", async ({ page }) => {
-  const { project, om } = await setUp()
+  const { project, lead } = await setUp()
 
-  await open(page, om.email, project.id)
-  await chooseStatus(page, "Reviewed")
+  await lockEarlierTools(project.id)
+  await open(page, lead.email, project.id, "D1.8")
+  await notes(page).fill("Lea")
   await page.getByRole("button", { name: "Save draft" }).click()
 
   await expect(page.getByText("Draft saved.")).toBeVisible()
 
   await page.reload()
 
-  await expect(requestStatus(page)).toHaveText("Reviewed")
+  await expect(notes(page)).toHaveValue("Lea")
   await expect(page.getByText("Draft", { exact: true })).toBeVisible()
 })
 
@@ -118,9 +131,10 @@ test("Approved is shown in the request status but cannot be chosen", async ({
 test("submitting with a required field empty shows the error and stays a draft", async ({
   page,
 }) => {
-  const { project, om } = await setUp()
+  const { project, lead } = await setUp()
 
-  await open(page, om.email, project.id)
+  await lockThroughD19(project.id)
+  await open(page, lead.email, project.id, "D1.10")
   await page.getByRole("button", { name: "Submit" }).click()
 
   await expect(page.getByText("Required")).toBeVisible()
@@ -131,14 +145,16 @@ test("submitting with a required field empty shows the error and stays a draft",
 test("submitting a complete form makes it submitted and read only", async ({
   page,
 }) => {
-  const { project, om } = await setUp()
+  const { project, lead } = await setUp()
 
-  await open(page, om.email, project.id)
-  await chooseStatus(page, "Reviewed")
+  await lockThroughD19(project.id)
+  await open(page, lead.email, project.id, "D1.10")
+  await capability(page).click()
+  await page.getByRole("option", { name: "Capable", exact: true }).click()
   await page.getByRole("button", { name: "Submit" }).click()
 
   await expect(page.getByText("Submitted", { exact: true })).toBeVisible()
-  await expect(requestStatus(page)).toBeDisabled()
+  await expect(capability(page)).toBeDisabled()
   await expect(page.getByRole("button", { name: "Save draft" })).toHaveCount(0)
   await expect(page.getByRole("button", { name: "Submit" })).toHaveCount(0)
   await expect(page.getByText("This record is read only.")).toBeVisible()
@@ -308,14 +324,15 @@ test("a locked record is read only, with no buttons", async ({ page }) => {
 test("at 375px the page does not scroll sideways and its buttons work", async ({
   page,
 }) => {
-  const { project, om } = await setUp()
+  const { project, lead } = await setUp()
 
+  await lockEarlierTools(project.id)
   await page.setViewportSize({ width: 375, height: 812 })
-  await open(page, om.email, project.id)
+  await open(page, lead.email, project.id, "D1.8")
 
   expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0)
 
-  await chooseStatus(page, "Reviewed")
+  await notes(page).fill("Lea")
   await expect(page.getByRole("button", { name: "Submit" })).toBeVisible()
   await page.getByRole("button", { name: "Save draft" }).click()
 

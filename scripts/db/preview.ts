@@ -36,6 +36,20 @@ const previews: Preview[] = [
     expect:
       "The same sheet as D1.2: request status and the attached files as tables, with Pending | Reviewed, read only because the demo D1.1 is locked.",
   },
+  {
+    screen: "Form tools on the same sheet (dev preview)",
+    loginAs: "PM",
+    path: () => "/dev/form-preview",
+    expect:
+      "Plain fields sit together in a Details table (Field | Answer). Tables, checklists and read-only blocks each get their own titled box with the same ruled lines. Save draft and Submit sit in the action row at the foot. The same boxes are used by every tool that is a form, such as D1.3 once D1.2 is approved.",
+  },
+  {
+    screen: "Change requests on the project overview",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}`,
+    expect:
+      "When a change request is waiting, it shows in a titled, ruled box above the workbooks, like the tables on a tool sheet.",
+  },
 ]
 
 // Printed on every start, so nobody has to ask who to log in as.

@@ -3,16 +3,11 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 
-import { stateFrame, stateLabel } from "@/components/state-badge"
+import { stateLabel } from "@/components/state-badge"
+import { ToolLock, ToolMark } from "@/components/tool-mark"
 import { Folder, Tree } from "@/components/ui/file-tree"
 import type { ProjectNav } from "@/lib/project-nav"
-import type { ToolState } from "@/lib/tool-state"
 import { cn } from "@/lib/utils"
-
-// The same marks as the tool squares: dotted, dashed, solid, heavy, filled.
-function mark(state: ToolState) {
-  return state === "locked" ? "bg-foreground" : stateFrame(state)
-}
 
 // The project's workbooks as folders and their tools as links, so a tool opens
 // from anywhere in the project. The workbook of the open tool starts open.
@@ -55,14 +50,12 @@ export function ProjectTree({ project }: { project: ProjectNav }) {
                 tool.toolId === current && "bg-muted font-medium"
               )}
             >
-              <span
-                aria-hidden
-                className={cn("size-3 shrink-0", mark(tool.state))}
-              />
+              <ToolMark state={tool.state} />
               <span className="sr-only">{stateLabel(tool.state)}: </span>
-              <span className="truncate" title={tool.name}>
+              <span className="min-w-0 flex-1 truncate" title={tool.name}>
                 {tool.name}
               </span>
+              <ToolLock state={tool.state} />
             </Link>
           ))}
         </Folder>

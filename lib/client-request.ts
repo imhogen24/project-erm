@@ -1,5 +1,4 @@
-// One answer on the website form, with its label.
-export type ClientAnswer = { label: string; value: string }
+import type { RequestSheet } from "@/lib/request-sheet"
 
-// What the client request panel shows.
-export type ClientRequest = { requestId: string; answers: ClientAnswer[] }
+// What the client request panel shows: the web form as groups of answers.
+export type ClientRequest = RequestSheet

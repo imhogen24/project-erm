@@ -20,14 +20,21 @@ const previews: Preview[] = [
     loginAs: "PM",
     path: (id) => `/projects/${id}`,
     expect:
-      "On a wide screen, the left sidebar lists the 13 workbooks as folders (Onboarding (WB01), Contracting (WB02) and so on). Onboarding is open with its tools as links, each marked with its state. Click a tool to open it. The tree stays on the tool page, with the open tool highlighted.",
+      "On a wide screen, the left sidebar lists the 13 workbooks as folders (Onboarding (WB01), Contracting (WB02) and so on). Onboarding is open with its tools as links, each marked with its state. Click a tool to open it. The tree stays on the tool page, with the open tool highlighted. Each tool has a mark: grey dots when not started, orange dots moving clockwise while someone works on it, a solid orange square once locked, and a lock at the right that is open until the tool is locked.",
   },
   {
-    screen: "D1.2 request details (RDP-148)",
+    screen: "D1.2 triage sheet (RDP-147)",
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.2`,
     expect:
-      "A Request details block: source Web Form, 3 Nov 2026 09:14 UTC, sender client@example.com, recipient and subject Not applicable (web form). Log in as pm@example.com to see the same.",
+      "One sheet: the title block with the project, request ID and people, then tables for the files (open a file, describe it), the three triage checks (Pass | Fail and notes) and the decision. Proceed turns off while a check is Fail. Press View client request for the web form, in tables, over half the screen. Log in as pm@example.com to see it read only with Approve.",
+  },
+  {
+    screen: "D1.1 review sheet",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.1`,
+    expect:
+      "The same sheet as D1.2: request status and the attached files as tables, with Pending | Reviewed, read only because the demo D1.1 is locked.",
   },
 ]
 

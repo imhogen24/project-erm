@@ -103,7 +103,7 @@ test("the files table cannot be edited in the form", async ({ page }) => {
   await expect(table.getByRole("textbox")).toHaveCount(0)
   await expect(table.getByRole("button", { name: "Add row" })).toHaveCount(0)
   await expect(table.getByRole("button", { name: /^Remove/ })).toHaveCount(0)
-  await expect(table.getByText("File 1")).toBeVisible()
+  await expect(table.getByText("File 1", { exact: true })).toBeVisible()
 })
 
 test("on a locked record the button still works", async ({ page, context }) => {

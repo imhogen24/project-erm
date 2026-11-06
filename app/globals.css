@@ -230,6 +230,36 @@
   }
 }
 
+/* The same, for a sheet that needs room: it fills the space beside the sidebar in
+   whole squares, up to 14 squares wide, with a square of room at the right. */
+@media (min-width: 1280px) {
+  .table-wide {
+    width: min(
+      calc(var(--cell) * 14),
+      round(down, calc(100% - var(--cell) * 6), var(--cell))
+    );
+    margin-left: calc(var(--cell) * 5);
+  }
+}
+
+/* The dots on a tool that is being worked on travel round its square clockwise,
+   one gap per turn of the loop, so the loop never jumps. */
+@keyframes tool-march {
+  to {
+    stroke-dashoffset: -4;
+  }
+}
+
+.tool-march {
+  animation: tool-march 1s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tool-march {
+    animation: none;
+  }
+}
+
 /* A registration mark: a small cross drawn at a corner of the sheet. */
 .reg-mark {
   width: 14px;

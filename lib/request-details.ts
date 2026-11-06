@@ -13,8 +13,10 @@ export type RequestMetadata = {
 }
 
 // What D1.2 shows from elsewhere. The metadata is null when the project has no
-// saved request. The files are D1.1's, in its order.
+// saved request. The files are D1.1's, in its order, and each is opened
+// through D1.1's record, which holds its link.
 export type RequestDetails = {
   metadata: RequestMetadata | null
   files: ReviewFile[]
+  filesRecordId: string | null
 }

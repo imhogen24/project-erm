@@ -3,14 +3,15 @@
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
-import { Button } from "@/components/ui/button"
+import { SegmentedChoice } from "@/components/segmented-choice"
+import { ActionButton, SheetActions } from "@/components/sheet-actions"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  DataCell,
+  DataRow,
+  DataTable,
+  TableBox,
+} from "@/components/sheet-table"
+import { Button } from "@/components/ui/button"
 import { reviewChoices, type ReviewFile, type ReviewResult } from "@/lib/review"
 
 type Change = { recordId: string; target: "request" | number; status: string }
@@ -19,9 +20,18 @@ type Props = {
   recordId: string
   requestStatus: string
   files: ReviewFile[]
+  // The OM changes the statuses while D1.1 is a draft. Anyone else reads them.
+  canReview: boolean
+  canApprove: boolean
   setStatus: (change: Change) => Promise<ReviewResult>
   submit: (values: { recordId: string }) => Promise<ReviewResult>
+  approve: (values: { recordId: string }) => Promise<ReviewResult>
 }
+
+// How wide each column is when there is room. Narrow, the rows stack instead.
+const requestWidths = "minmax(0,1fr) 16rem"
+
+const filesWidths = "minmax(0,1.6fr) 8rem 7rem 16rem"
 
 function problem(result: ReviewResult) {
   switch (result.status) {
@@ -36,7 +46,8 @@ function problem(result: ReviewResult) {
   }
 }
 
-function StatusSelect({
+// A status the OM can switch, or the system's own once it is Approved.
+function Status({
   label,
   value,
   disabled,
@@ -47,42 +58,64 @@ function StatusSelect({
   disabled: boolean
   onChange: (status: string) => void
 }) {
+  if (value === "Approved") {
+    return <span className="text-sm font-medium">Approved</span>
+  }
+
   return (
-    <Select value={value} onValueChange={onChange} disabled={disabled}>
-      <SelectTrigger aria-label={label} className="h-12 w-full sm:w-44">
-        <SelectValue />
-      </SelectTrigger>
-      <SelectContent>
-        {reviewChoices.map((choice) => (
-          <SelectItem key={choice} value={choice}>
-            {choice}
-          </SelectItem>
-        ))}
-      </SelectContent>
-    </Select>
+    <SegmentedChoice
+      label={label}
+      value={value}
+      choices={reviewChoices.map((choice) => ({ value: choice }))}
+      disabled={disabled}
+      onChange={onChange}
+    />
   )
 }
 
-// The OM's review of D1.1: the request and each file switch between Pending
-// and Reviewed, and the record can be sent for approval once all are Reviewed.
-// The server decides every change; this sends it and shows what came back.
+// The review of D1.1: the request and each file switch between Pending and
+// Reviewed, and the record can be sent for approval once all are Reviewed. The
+// server decides every change; this sends it and shows what came back.
 export function ReviewScreen({
   recordId,
   requestStatus,
   files,
+  canReview,
+  canApprove,
   setStatus,
   submit,
+  approve,
 }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
   const [request, setRequest] = useState(requestStatus)
   const [rows, setRows] = useState(files.map((file) => file.status))
   const [message, setMessage] = useState<string>()
+  const [failure, setFailure] = useState<string>()
+
+  function run(send: () => Promise<ReviewResult>, saidDone: string) {
+    setMessage(undefined)
+    setFailure(undefined)
+    startTransition(async () => {
+      const result = await send()
+      const refused = problem(result)
+
+      if (refused) {
+        setFailure(refused)
+
+        return
+      }
+
+      setMessage(saidDone)
+      router.refresh()
+    })
+  }
 
   function change(target: "request" | number, status: string) {
     const before = { request, rows }
 
     setMessage(undefined)
+    setFailure(undefined)
 
     if (target === "request") {
       setRequest(status)
@@ -91,27 +124,12 @@ export function ReviewScreen({
     }
 
     startTransition(async () => {
-      const failure = problem(await setStatus({ recordId, target, status }))
+      const refused = problem(await setStatus({ recordId, target, status }))
 
-      if (failure) {
+      if (refused) {
         setRequest(before.request)
         setRows(before.rows)
-        setMessage(failure)
-
-        return
-      }
-
-      router.refresh()
-    })
-  }
-
-  function send() {
-    setMessage(undefined)
-    startTransition(async () => {
-      const failure = problem(await submit({ recordId }))
-
-      if (failure) {
-        setMessage(failure)
+        setFailure(refused)
 
         return
       }
@@ -123,39 +141,53 @@ export function ReviewScreen({
   const ready =
     request === "Reviewed" && rows.every((row) => row === "Reviewed")
 
+  const locked = !canReview || pending
+
   return (
-    <div className="@container flex flex-col gap-8">
-      <div className="flex flex-col gap-2">
-        <span className="text-sm font-medium">Request status</span>
-        <StatusSelect
+    <div className="flex flex-col gap-8">
+      <TableBox title="Request status">
+        <DataTable
           label="Request status"
-          value={request}
-          disabled={pending}
-          onChange={(status) => change("request", status)}
-        />
-      </div>
-      <section aria-label="Attached files" className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium">Attached files</h2>
+          columns={["Item", "Status"]}
+          widths={requestWidths}
+        >
+          <DataRow widths={requestWidths}>
+            <DataCell label="Item">
+              <span className="text-sm font-medium">The whole request</span>
+            </DataCell>
+            <DataCell label="Status">
+              <Status
+                label="Request status"
+                value={request}
+                disabled={locked}
+                onChange={(status) => change("request", status)}
+              />
+            </DataCell>
+          </DataRow>
+        </DataTable>
+      </TableBox>
+      <TableBox title="Attached files">
         {files.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="px-4 py-4 text-sm text-muted-foreground">
             No files were attached to this request.
           </p>
         ) : (
-          <ul className="flex flex-col">
+          <DataTable
+            label="Attached files"
+            columns={["File", "Uploaded", "", "Status"]}
+            widths={filesWidths}
+          >
             {files.map((file, index) => (
-              <li
-                key={index}
-                className="flex flex-col gap-3 border border-foreground/20 p-4 not-first:border-t-0"
-              >
-                <div className="flex min-w-0 flex-col gap-1">
+              <DataRow key={index} widths={filesWidths}>
+                <DataCell label="File">
                   <span className="text-sm font-medium break-words">
                     {file.label}
                   </span>
-                  <span className="text-sm text-muted-foreground">
-                    {file.dateUploaded}
-                  </span>
-                </div>
-                <div className="flex flex-col gap-3 @md:flex-row @md:items-center">
+                </DataCell>
+                <DataCell label="Uploaded">
+                  <span className="text-sm">{file.dateUploaded}</span>
+                </DataCell>
+                <DataCell label="">
                   {file.fileLink && (
                     <Button
                       asChild
@@ -173,39 +205,50 @@ export function ReviewScreen({
                       </a>
                     </Button>
                   )}
-                  <StatusSelect
+                </DataCell>
+                <DataCell label="Status">
+                  <Status
                     label={`Status of ${file.label}`}
                     value={rows[index] ?? file.status}
-                    disabled={pending}
+                    disabled={locked}
                     onChange={(status) => change(index, status)}
                   />
-                </div>
-              </li>
+                </DataCell>
+              </DataRow>
             ))}
-          </ul>
+          </DataTable>
         )}
-      </section>
-      <div className="flex flex-col gap-3">
-        <Button
-          type="button"
-          size="lg"
-          className="h-12 w-full px-8 text-base sm:w-fit"
-          disabled={!ready || pending}
-          onClick={send}
-        >
-          Submit for approval
-        </Button>
-        {!ready && (
-          <p className="text-sm text-muted-foreground">
-            Mark the request and every file Reviewed to submit.
-          </p>
-        )}
-        {message && (
-          <p role="alert" className="text-sm text-destructive">
-            {message}
-          </p>
-        )}
-      </div>
+      </TableBox>
+      {canReview && !ready && (
+        <p className="text-sm text-muted-foreground">
+          Mark the request and every file Reviewed to submit.
+        </p>
+      )}
+      {failure && (
+        <p role="alert" className="text-sm text-destructive">
+          {failure}
+        </p>
+      )}
+      {(canReview || canApprove) && (
+        <SheetActions message={message}>
+          {canReview && (
+            <ActionButton
+              disabled={!ready || pending}
+              onClick={() => run(() => submit({ recordId }), "Submitted.")}
+            >
+              Submit for approval
+            </ActionButton>
+          )}
+          {canApprove && (
+            <ActionButton
+              disabled={pending}
+              onClick={() => run(() => approve({ recordId }), "Approved.")}
+            >
+              Approve
+            </ActionButton>
+          )}
+        </SheetActions>
+      )}
     </div>
   )
 }

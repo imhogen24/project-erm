@@ -56,7 +56,7 @@ export async function getRequestDetails(
     .where(eq(intakeSubmissions.projectId, projectId))
 
   const [review] = await database
-    .select({ payload: toolRecords.payload })
+    .select({ id: toolRecords.id, payload: toolRecords.payload })
     .from(toolRecords)
     .where(
       and(
@@ -71,5 +71,6 @@ export async function getRequestDetails(
   return {
     metadata: copy ? metadataOf(copy.submission) : null,
     files: review ? reviewPayload.parse(review.payload).attachedFiles : [],
+    filesRecordId: review?.id ?? null,
   }
 }

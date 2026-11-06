@@ -10,6 +10,7 @@ import {
   personProjectRoles,
   projects,
   roles,
+  toolRecords,
   type Role,
 } from "@/db/schema"
 
@@ -80,14 +81,63 @@ async function addDemoRequest(database: Database, projectId: string) {
         contact_person: "Demo Client",
         email: seedEmail("Client"),
         phone_number: "0200000000",
-        site_location: "Accra",
+        site_location: "Tema Industrial Area, Accra",
+        project_scope: ["Product Design", "Process / Factory Design"],
         project_title: "Demo Boiler Skid",
-        primary_objective: "A skid for the demo boiler",
+        primary_objective:
+          "A packaged boiler skid for a food plant, ready to connect to site steam lines.",
+        material_inputs: "Carbon steel plate, stainless piping",
+        energy_and_information_inputs: "415 V supply, PLC signals",
+        transformation: "Cut, weld and assemble onto a single skid frame",
+        outputs: "One skid with drawings and a test report",
+        by_products: "Offcuts and weld spatter",
+        budget_expectations: "GHS 400,000",
+        target_timeline: "12 weeks",
         request_id: DEMO_REQUEST_ID,
         created_at: "2026-11-03T09:14:00+00:00",
       },
     })
     .onConflictDoNothing({ target: intakeSubmissions.requestId })
+}
+
+// An approved D1.1 with two sample files, so D1.2 is open and has files to show.
+// It is only added when the project has no D1.1 yet, so running this again
+// changes nothing and a D1.1 someone is working on is left alone.
+async function addDemoReview(database: Database, projectId: string) {
+  const [existing] = await database
+    .select({ id: toolRecords.id })
+    .from(toolRecords)
+    .where(
+      and(eq(toolRecords.projectId, projectId), eq(toolRecords.toolId, "D1.1"))
+    )
+    .limit(1)
+
+  if (existing) {
+    return
+  }
+
+  await database.insert(toolRecords).values({
+    projectId,
+    toolId: "D1.1",
+    state: "locked",
+    payload: {
+      requestStatus: "Approved",
+      attachedFiles: [
+        {
+          label: "Site photo",
+          dateUploaded: "2026-11-03",
+          fileLink: "https://utfs.io/f/demo-site-photo",
+          status: "Approved",
+        },
+        {
+          label: "Layout drawing",
+          dateUploaded: "2026-11-03",
+          fileLink: "https://utfs.io/f/demo-layout-drawing",
+          status: "Approved",
+        },
+      ],
+    },
+  })
 }
 
 // The id of Demo Project, for the links the preview guide prints.
@@ -195,6 +245,7 @@ export async function seed(url: string): Promise<SeedUser[]> {
     const projectId = await findOrCreateProject(database)
 
     await addDemoRequest(database, projectId)
+    await addDemoReview(database, projectId)
 
     const passwordHash = await hashPassword(SEED_PASSWORD)
     const created: SeedUser[] = []

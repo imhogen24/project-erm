@@ -132,6 +132,79 @@ test("each tool says where it stands, in words", async ({ page }) => {
   await expect(toolLink(page, "D1.2")).toContainText("Not started")
 })
 
+test("a tool in progress has dots travelling round its square, and an open lock", async ({
+  page,
+}) => {
+  const { project, person } = await setUp()
+
+  await addRecord(project.id, "D1.2", "draft")
+  await signIn(page, person.email)
+  await page.goto(`/projects/${project.id}`)
+
+  const link = toolLink(page, "D1.2")
+
+  await expect(link.locator("svg[data-progress]")).toHaveAttribute(
+    "data-progress",
+    "active"
+  )
+  await expect(link.locator("[data-lock]")).toHaveAttribute("data-lock", "open")
+
+  const animation = await link
+    .locator("svg[data-progress] rect")
+    .evaluate((rect) => getComputedStyle(rect).animationName)
+
+  expect(animation).toBe("tool-march")
+})
+
+test("the dots hold still for a person who asks for less motion", async ({
+  page,
+}) => {
+  const { project, person } = await setUp()
+
+  await page.emulateMedia({ reducedMotion: "reduce" })
+  await addRecord(project.id, "D1.2", "submitted")
+  await signIn(page, person.email)
+  await page.goto(`/projects/${project.id}`)
+
+  const animation = await toolLink(page, "D1.2")
+    .locator("svg[data-progress] rect")
+    .evaluate((rect) => getComputedStyle(rect).animationName)
+
+  expect(animation).toBe("none")
+})
+
+test("a locked tool has a solid square and a closed lock, and one not started has neither", async ({
+  page,
+}) => {
+  const { project, person } = await setUp()
+
+  await addRecord(project.id, "D1.1", "locked")
+  await signIn(page, person.email)
+  await page.goto(`/projects/${project.id}`)
+
+  const locked = toolLink(page, "D1.1")
+
+  await expect(locked.locator("svg[data-progress]")).toHaveAttribute(
+    "data-progress",
+    "done"
+  )
+  await expect(locked.locator("[data-lock]")).toHaveAttribute(
+    "data-lock",
+    "closed"
+  )
+
+  const waiting = toolLink(page, "D1.2")
+
+  await expect(waiting.locator("svg[data-progress]")).toHaveAttribute(
+    "data-progress",
+    "none"
+  )
+  await expect(waiting.locator("[data-lock]")).toHaveAttribute(
+    "data-lock",
+    "open"
+  )
+})
+
 test("the main page still lists the tool tiles", async ({ page }) => {
   const { project, person } = await setUp()
 

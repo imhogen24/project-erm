@@ -54,11 +54,16 @@ async function copyOf(requestId: string) {
   return rows[0]
 }
 
-function answer(
-  preview: Awaited<ReturnType<typeof getClientRequestPreview>>,
-  label: string
-) {
-  return preview?.answers.find((each) => each.label === label)?.value
+type Preview = Awaited<ReturnType<typeof getClientRequestPreview>>
+
+function groupsOf(preview: Preview) {
+  return preview?.groups.map((group) => group.title)
+}
+
+function answer(preview: Preview, label: string) {
+  return preview?.groups
+    .flatMap((group) => group.rows)
+    .find((row) => row.label === label)?.value
 }
 
 const internal = [
@@ -91,10 +96,60 @@ describe("getClientRequestPreview", () => {
     const preview = await getClientRequestPreview(database, om, projectId)
 
     expect(preview?.requestId).toBe("T1-1")
-    expect(preview?.serviceTrack).toBe("Tier_1")
-    expect(answer(preview, "Organization name")).toBe("Acme")
-    expect(answer(preview, "Project title")).toBe("Belt")
+    expect(preview?.track).toBe("Tier_1")
+    expect(answer(preview, "Organisation")).toBe("Acme")
+    expect(answer(preview, "Title")).toBe("Belt")
     expect(answer(preview, "Primary objective")).toBe("Move boxes")
+  })
+
+  it("groups a Tier 1 request as contact, project and systems", async () => {
+    await addTier1({ requestId: "T1-g" })
+    await pull()
+
+    const projectId = await projectOf("T1-g")
+    const om = await addToProject(projectId, "OM")
+    const preview = await getClientRequestPreview(database, om, projectId)
+
+    expect(groupsOf(preview)).toEqual([
+      "Contact",
+      "Project",
+      "Systems",
+      "Submission",
+    ])
+  })
+
+  it("groups a Tier 3 request as contact, source asset and drafting", async () => {
+    await addTier3({ requestId: "T3-g" })
+    await pull()
+
+    const projectId = await projectOf("T3-g")
+    const om = await addToProject(projectId, "OM")
+    const preview = await getClientRequestPreview(database, om, projectId)
+
+    expect(groupsOf(preview)).toEqual([
+      "Contact",
+      "Source asset",
+      "Drafting",
+      "Submission",
+    ])
+    expect(answer(preview, "Input material type")).toBe("Paper drawings")
+    expect(answer(preview, "Condition")).toBe("Good")
+    expect(answer(preview, "Output formats")).toBe("DWG")
+  })
+
+  it("shows when it was received and when the terms were accepted", async () => {
+    await addTier1({
+      requestId: "T1-s",
+      createdAt: new Date("2026-11-03T09:14:00Z"),
+    })
+    await pull()
+
+    const projectId = await projectOf("T1-s")
+    const om = await addToProject(projectId, "OM")
+    const preview = await getClientRequestPreview(database, om, projectId)
+
+    expect(answer(preview, "Received")).toBe("3 Nov 2026, 09:14 UTC")
+    expect(answer(preview, "Terms accepted")).toBe("3 Nov 2026, 09:14 UTC")
   })
 
   it("shows a Tier 3 request's answers", async () => {
@@ -105,9 +160,9 @@ describe("getClientRequestPreview", () => {
     const om = await addToProject(projectId, "OM")
     const preview = await getClientRequestPreview(database, om, projectId)
 
-    expect(preview?.serviceTrack).toBe("Tier_3")
-    expect(answer(preview, "Organization name")).toBe("Aquaresh")
-    expect(answer(preview, "Drafting standard")).toBe("ISO")
+    expect(preview?.track).toBe("Tier_3")
+    expect(answer(preview, "Organisation")).toBe("Aquaresh")
+    expect(answer(preview, "Standard")).toBe("ISO")
   })
 
   it("shows a list answer as a comma-separated list", async () => {
@@ -125,38 +180,45 @@ describe("getClientRequestPreview", () => {
 
     const preview = await getClientRequestPreview(database, om, projectId)
 
-    expect(answer(preview, "Drafting services")).toBe(
-      "2D drafting, 3D modelling"
-    )
+    expect(answer(preview, "Services")).toBe("2D drafting, 3D modelling")
   })
 
-  it("leaves nothing out except the internal columns", async () => {
+  it("keeps a column the website adds later, under other answers", async () => {
     await addTier1({ requestId: "T1-2" })
     await pull()
 
     const projectId = await projectOf("T1-2")
     const om = await addToProject(projectId, "OM")
+
+    await database.pool.query(
+      `UPDATE intake_submissions
+       SET submission = submission || '{"extra_question": "Yes please"}'
+       WHERE request_id = 'T1-2'`
+    )
+
     const preview = await getClientRequestPreview(database, om, projectId)
 
-    const copy = await copyOf("T1-2")
+    const other = preview?.groups.find(
+      (group) => group.title === "Other answers"
+    )
 
-    const hidden = new Set([
-      "custom_engineering_id",
-      "drafting_digitization_id",
-      "updated_at",
-      "admin_notified_at",
-      "confirmation_sent_at",
-      "notify_attempts",
-      "file_attachments",
-      "file_attachment",
+    expect(other?.rows).toEqual([
+      { label: "Extra question", value: "Yes please" },
     ])
-
-    const shown = Object.keys(copy.submission).filter((key) => !hidden.has(key))
-
-    expect(preview?.answers).toHaveLength(shown.length)
   })
 
-  it("shows an empty answer as not given", async () => {
+  it("has no other answers group when every column is known", async () => {
+    await addTier1({ requestId: "T1-o" })
+    await pull()
+
+    const projectId = await projectOf("T1-o")
+    const om = await addToProject(projectId, "OM")
+    const preview = await getClientRequestPreview(database, om, projectId)
+
+    expect(groupsOf(preview)).not.toContain("Other answers")
+  })
+
+  it("leaves an empty answer empty, which the panel shows as not given", async () => {
     await addTier1({ requestId: "T1-3" })
     await pull()
 
@@ -164,7 +226,7 @@ describe("getClientRequestPreview", () => {
     const om = await addToProject(projectId, "OM")
     const preview = await getClientRequestPreview(database, om, projectId)
 
-    expect(answer(preview, "By products")).toBe("Not given")
+    expect(answer(preview, "By-products")).toBe("")
   })
 
   it("hides the internal columns", async () => {
@@ -174,7 +236,10 @@ describe("getClientRequestPreview", () => {
     const projectId = await projectOf("T1-4")
     const om = await addToProject(projectId, "OM")
     const preview = await getClientRequestPreview(database, om, projectId)
-    const labels = preview!.answers.map((each) => each.label)
+
+    const labels = preview!.groups.flatMap((group) =>
+      group.rows.map((row) => row.label)
+    )
 
     for (const label of internal) {
       expect(labels).not.toContain(label)

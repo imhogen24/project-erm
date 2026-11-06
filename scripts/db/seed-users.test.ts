@@ -130,6 +130,39 @@ describe("the demo request", () => {
   })
 })
 
+describe("the demo D1.1", () => {
+  it("adds one approved D1.1 with two files to Demo Project, once", async () => {
+    await seed(url)
+    await seed(url)
+
+    const { rows } = await database.pool.query<{
+      state: string
+      files: number
+    }>(
+      `SELECT r.state, jsonb_array_length(r.payload->'attachedFiles') AS files
+         FROM tool_records r
+         JOIN projects p ON p.id = r.project_id
+        WHERE p.name = 'Demo Project' AND r.tool_id = 'D1.1'`
+    )
+
+    expect(rows).toEqual([{ state: "locked", files: 2 }])
+  })
+
+  it("leaves a D1.1 that already exists alone", async () => {
+    await seed(url)
+    await database.pool.query(
+      "UPDATE tool_records SET state = 'draft' WHERE tool_id = 'D1.1'"
+    )
+    await seed(url)
+
+    const { rows } = await database.pool.query<{ state: string }>(
+      "SELECT state FROM tool_records WHERE tool_id = 'D1.1'"
+    )
+
+    expect(rows).toEqual([{ state: "draft" }])
+  })
+})
+
 describe("seeding an empty database", () => {
   it("adds one person per role, each but IT/Admin holding only that role on Demo Project", async () => {
     await seed(url)

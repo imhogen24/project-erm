@@ -1,5 +1,6 @@
 "use client"
 
+import { ClientRequestTables } from "@/components/client-request-tables"
 import { Button } from "@/components/ui/button"
 import {
   Sheet,
@@ -11,8 +12,9 @@ import {
 } from "@/components/ui/sheet"
 import type { ClientRequest } from "@/lib/client-request"
 
-// What the client filled in on the website form. It slides in from the right,
-// scrolls when it is long, and has nothing to edit.
+// What the client filled in on the website form, as tables grouped by what the
+// answers are about. It slides in from the right and covers half the screen on
+// a wide one, scrolls when it is long, and has nothing to edit.
 export function ClientRequestPanel({
   request,
 }: Readonly<{ request: ClientRequest }>) {
@@ -25,27 +27,20 @@ export function ClientRequestPanel({
       </SheetTrigger>
       <SheetContent
         side="right"
-        className="data-[side=right]:w-full data-[side=right]:sm:max-w-md"
+        className="data-[side=right]:w-full data-[side=right]:sm:max-w-none data-[side=right]:md:w-3/4 data-[side=right]:xl:w-1/2"
       >
         <SheetHeader className="border-b pr-14">
-          <SheetTitle>Client request</SheetTitle>
-          <SheetDescription>
+          <SheetTitle className="text-lg">Client request</SheetTitle>
+          <SheetDescription className="text-sm">
             {`Read only. Request ${request.requestId}.`}
           </SheetDescription>
         </SheetHeader>
-        <dl
+        <div
           aria-label="Client request answers"
-          className="flex flex-1 flex-col gap-4 overflow-y-auto p-6 text-sm"
+          className="flex-1 overflow-y-auto p-6"
         >
-          {request.answers.map((answer) => (
-            <div key={answer.label} className="flex flex-col gap-1">
-              <dt className="text-muted-foreground">{answer.label}</dt>
-              <dd className="break-words whitespace-pre-wrap">
-                {answer.value}
-              </dd>
-            </div>
-          ))}
-        </dl>
+          <ClientRequestTables request={request} />
+        </div>
       </SheetContent>
     </Sheet>
   )

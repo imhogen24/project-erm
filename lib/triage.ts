@@ -6,8 +6,6 @@ export const PROCEED = "Proceed to D1.3"
 
 export const REJECT = "Reject as Spam"
 
-export const checkStatuses = ["Pass", "Fail"]
-
 // The part of a D1.2 record the triage screen shows and sends. A missing or odd
 // value reads as empty, since that is what has not been answered.
 export const triagePayload = z.object({

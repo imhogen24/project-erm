@@ -51,12 +51,12 @@ test("the button opens a panel with every answer, labelled and read only", async
   await page.getByRole("button", { name: BUTTON }).click()
 
   await expect(panel(page)).toBeVisible()
-  await expect(panel(page).getByText("Organization name")).toBeVisible()
+  await expect(panel(page).getByText("Organisation")).toBeVisible()
   await expect(
     panel(page).getByText("Syntropy Engineering Solutions")
   ).toBeVisible()
   await expect(panel(page).getByText("Design, Build")).toBeVisible()
-  await expect(panel(page).getByText("Not given")).toBeVisible()
+  await expect(panel(page).getByText("Not given").first()).toBeVisible()
   await expect(panel(page).getByRole("textbox")).toHaveCount(0)
   await expect(panel(page).getByRole("combobox")).toHaveCount(0)
 })
@@ -107,7 +107,7 @@ test("a long request scrolls inside the panel", async ({ page }) => {
   await page.getByRole("button", { name: BUTTON }).click()
 
   const scrolls = await panel(page)
-    .locator("dl")
+    .getByLabel("Client request answers")
     .evaluate((element) => element.scrollHeight > element.clientHeight)
 
   expect(scrolls).toBe(true)

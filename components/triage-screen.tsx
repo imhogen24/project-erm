@@ -4,18 +4,19 @@ import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { SegmentedChoice } from "@/components/segmented-choice"
+import { ActionButton, SheetActions } from "@/components/sheet-actions"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+  DataCell,
+  DataRow,
+  DataTable,
+  TableBox,
+} from "@/components/sheet-table"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import type { ReviewFile } from "@/lib/review"
 import type { FieldError, FormValues, TableRow } from "@/lib/tool-definition"
-import { PROCEED, REJECT, checkStatuses, type TriageValues } from "@/lib/triage"
+import { PROCEED, REJECT, type TriageValues } from "@/lib/triage"
 
 type Result =
   | { status: "done"; recordId: string; updatedAt: string }
@@ -58,6 +59,13 @@ type Props = {
   submit: (values: Save) => Promise<Result>
   approve: (values: { recordId: string }) => Promise<Result>
 }
+
+// How wide each column is when there is room. Narrow, the rows stack instead.
+const filesWidths = "minmax(0,1.3fr) 7rem 7rem minmax(0,2fr)"
+
+const checksWidths = "minmax(0,1.4fr) 11rem minmax(0,2fr)"
+
+const decisionWidths = "3.5rem minmax(0,1fr) minmax(0,2fr)"
 
 const STALE = "Someone else saved this record. Reload to see their changes."
 
@@ -210,30 +218,48 @@ export function TriageScreen({
 
   const locked = !canWrite || pending
 
+  const decisions = [
+    {
+      option: PROCEED,
+      label: proceedLabel,
+      effect: tier3 ? "Opens T3.D1.3a for the OM." : "Opens D1.3 for the OM.",
+      off: failed,
+    },
+    {
+      option: REJECT,
+      label: REJECT,
+      effect: "Ends the project as rejected. Nothing else happens.",
+      off: false,
+    },
+  ]
+
   return (
-    <div className="@container flex flex-col gap-8">
-      <section aria-label="Files" className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium">Files</h2>
+    <div className="flex flex-col gap-8">
+      <TableBox title="Files">
         {files.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
+          <p className="px-4 py-4 text-sm text-muted-foreground">
             No files were attached to this request.
           </p>
         ) : (
-          <ul className="flex flex-col">
+          <DataTable
+            label="Files"
+            columns={["File", "Status", "", "Description"]}
+            widths={filesWidths}
+          >
             {files.map((file, index) => (
-              <li
-                key={index}
-                className="flex flex-col gap-3 border border-foreground/20 p-4 not-first:border-t-0"
-              >
-                <div className="flex min-w-0 flex-col gap-1">
+              <DataRow key={index} widths={filesWidths}>
+                <DataCell label="File">
                   <span className="text-sm font-medium break-words">
                     {file.label}
                   </span>
-                  <span className="text-sm text-muted-foreground">
-                    {file.dateUploaded} · {file.status}
+                  <span className="text-xs text-muted-foreground">
+                    Uploaded {file.dateUploaded}
                   </span>
-                </div>
-                <div className="flex flex-col gap-3 @md:flex-row @md:items-center">
+                </DataCell>
+                <DataCell label="Status">
+                  <span className="text-sm">{file.status}</span>
+                </DataCell>
+                <DataCell label="">
                   {file.fileLink && filesRecordId && (
                     <Button
                       asChild
@@ -251,12 +277,14 @@ export function TriageScreen({
                       </a>
                     </Button>
                   )}
-                  <Input
+                </DataCell>
+                <DataCell label="Description">
+                  <Textarea
                     aria-label={`Description of ${file.label}`}
                     placeholder="Describe this file"
                     value={descriptions[index] ?? ""}
                     disabled={locked}
-                    className="h-12 @md:flex-1"
+                    className="min-h-16 border-foreground/40 bg-background"
                     onChange={(event) =>
                       setDescriptions(
                         descriptions.map((each, at) =>
@@ -265,101 +293,108 @@ export function TriageScreen({
                       )
                     }
                   />
-                </div>
-              </li>
+                </DataCell>
+              </DataRow>
             ))}
-          </ul>
+          </DataTable>
         )}
-      </section>
-      <section aria-label="Preliminary triage" className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium">Preliminary triage</h2>
-        <div className="flex flex-col">
+      </TableBox>
+      <TableBox title="Triage checks">
+        <DataTable
+          label="Triage checks"
+          columns={["Check", "Result", "Reviewer notes"]}
+          widths={checksWidths}
+        >
           {checks.map((check, index) => (
-            <fieldset
-              key={check}
-              className="flex flex-col gap-3 border border-foreground/20 p-4 not-first:border-t-0"
-            >
-              <legend className="px-1 text-sm font-medium">{check}</legend>
-              <div className="flex flex-col gap-3 @md:flex-row @md:items-start">
-                <div className="flex flex-col gap-1">
-                  <Select
-                    value={answers[index]?.status ?? ""}
-                    disabled={locked}
-                    onValueChange={(status) => setAnswer(index, { status })}
-                  >
-                    <SelectTrigger
-                      aria-label={`Status: ${check}`}
-                      aria-invalid={errorAt(index, "status") !== undefined}
-                      className="h-12 w-full @md:w-40"
-                    >
-                      <SelectValue placeholder="Choose" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {checkStatuses.map((option) => (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  {errorAt(index, "status") && (
-                    <p className="text-sm text-destructive">
-                      {errorAt(index, "status")}
-                    </p>
-                  )}
-                </div>
-                <div className="flex min-w-0 flex-col gap-1 @md:flex-1">
-                  <Textarea
-                    aria-label={`Reviewer notes: ${check}`}
-                    aria-invalid={errorAt(index, "reviewerNotes") !== undefined}
-                    placeholder="Reviewer notes"
-                    value={answers[index]?.notes ?? ""}
-                    disabled={locked}
-                    onChange={(event) =>
-                      setAnswer(index, { notes: event.target.value })
-                    }
+            <DataRow key={check} widths={checksWidths}>
+              <DataCell label="Check">
+                <span className="text-sm font-medium">{check}</span>
+              </DataCell>
+              <DataCell label="Result">
+                <SegmentedChoice
+                  label={`Result: ${check}`}
+                  value={answers[index]?.status ?? ""}
+                  choices={[{ value: "Pass" }, { value: "Fail", danger: true }]}
+                  disabled={locked}
+                  onChange={(status) => setAnswer(index, { status })}
+                />
+                {errorAt(index, "status") && (
+                  <p className="text-sm text-destructive">
+                    {errorAt(index, "status")}
+                  </p>
+                )}
+              </DataCell>
+              <DataCell label="Reviewer notes">
+                <Textarea
+                  aria-label={`Reviewer notes: ${check}`}
+                  aria-invalid={errorAt(index, "reviewerNotes") !== undefined}
+                  placeholder="Reviewer notes"
+                  value={answers[index]?.notes ?? ""}
+                  disabled={locked}
+                  className="min-h-16 border-foreground/40 bg-background"
+                  onChange={(event) =>
+                    setAnswer(index, { notes: event.target.value })
+                  }
+                />
+                {errorAt(index, "reviewerNotes") && (
+                  <p className="text-sm text-destructive">
+                    {errorAt(index, "reviewerNotes")}
+                  </p>
+                )}
+              </DataCell>
+            </DataRow>
+          ))}
+        </DataTable>
+      </TableBox>
+      <TableBox title="Triage decision">
+        <RadioGroup
+          aria-label="Triage decision"
+          value={decision}
+          disabled={locked}
+          className="gap-0"
+          onValueChange={setDecision}
+        >
+          <DataTable
+            label="Triage decision"
+            columns={["", "Decision", "What happens"]}
+            widths={decisionWidths}
+          >
+            {decisions.map(({ option, label, effect, off }) => (
+              <DataRow key={option} widths={decisionWidths}>
+                <DataCell label="">
+                  <RadioGroupItem
+                    value={option}
+                    id={`decision-${option}`}
+                    aria-label={label}
+                    className="border-foreground/50"
+                    disabled={locked || off}
                   />
-                  {errorAt(index, "reviewerNotes") && (
-                    <p className="text-sm text-destructive">
-                      {errorAt(index, "reviewerNotes")}
-                    </p>
-                  )}
-                </div>
-              </div>
-            </fieldset>
-          ))}
-        </div>
-      </section>
-      <section aria-label="Triage decision" className="flex flex-col gap-3">
-        <h2 className="text-lg font-medium">Triage decision</h2>
-        <div className="flex flex-col gap-3 @md:flex-row">
-          {[
-            { option: PROCEED, label: proceedLabel, off: failed },
-            { option: REJECT, label: REJECT, off: false },
-          ].map(({ option, label, off }) => (
-            <Button
-              key={option}
-              type="button"
-              size="lg"
-              variant={decision === option ? "default" : "outline"}
-              aria-pressed={decision === option}
-              disabled={locked || off}
-              className="h-12 w-full px-8 text-base @md:w-fit"
-              onClick={() => setDecision(option)}
-            >
-              {label}
-            </Button>
-          ))}
-        </div>
-        {failed && canWrite && (
-          <p className="text-sm text-muted-foreground">
-            Resolve the failed checks to proceed
+                </DataCell>
+                <DataCell label="Decision">
+                  <label
+                    htmlFor={`decision-${option}`}
+                    className="text-sm font-medium"
+                  >
+                    {label}
+                  </label>
+                </DataCell>
+                <DataCell label="What happens">
+                  <span className="text-sm text-muted-foreground">
+                    {off && canWrite
+                      ? "Resolve the failed checks to proceed"
+                      : effect}
+                  </span>
+                </DataCell>
+              </DataRow>
+            ))}
+          </DataTable>
+        </RadioGroup>
+        {decisionError && (
+          <p className="border-t border-foreground/20 px-4 py-3 text-sm text-destructive">
+            {decisionError}
           </p>
         )}
-        {decisionError && (
-          <p className="text-sm text-destructive">{decisionError}</p>
-        )}
-      </section>
+      </TableBox>
       {other.length > 0 && (
         <ul role="alert" className="flex flex-col gap-1">
           {other.map((error, index) => (
@@ -369,45 +404,33 @@ export function TriageScreen({
           ))}
         </ul>
       )}
-      {canWrite && (
-        <div className="flex flex-col gap-3 @md:flex-row">
-          <Button
-            type="button"
-            size="lg"
-            variant="secondary"
-            className="h-12 w-full px-8 text-base @md:w-fit"
+      <SheetActions message={message}>
+        {canWrite && (
+          <>
+            <ActionButton
+              variant="outline"
+              disabled={pending}
+              onClick={() => run(() => save(typed()), "Draft saved.")}
+            >
+              Save draft
+            </ActionButton>
+            <ActionButton
+              disabled={pending}
+              onClick={() => run(() => submit(typed()), "Submitted.")}
+            >
+              Submit for approval
+            </ActionButton>
+          </>
+        )}
+        {canApprove && recordId && (
+          <ActionButton
             disabled={pending}
-            onClick={() => run(() => save(typed()), "Draft saved.")}
+            onClick={() => run(() => approve({ recordId }), "Approved.")}
           >
-            Save draft
-          </Button>
-          <Button
-            type="button"
-            size="lg"
-            className="h-12 w-full px-8 text-base @md:w-fit"
-            disabled={pending}
-            onClick={() => run(() => submit(typed()), "Submitted.")}
-          >
-            Submit for approval
-          </Button>
-        </div>
-      )}
-      {canApprove && recordId && (
-        <Button
-          type="button"
-          size="lg"
-          className="h-12 w-full px-8 text-base @md:w-fit"
-          disabled={pending}
-          onClick={() => run(() => approve({ recordId }), "Approved.")}
-        >
-          Approve
-        </Button>
-      )}
-      {message && (
-        <p role="status" className="text-sm">
-          {message}
-        </p>
-      )}
+            Approve
+          </ActionButton>
+        )}
+      </SheetActions>
       {stale && (
         <div
           role="alert"

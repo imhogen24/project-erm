@@ -2,14 +2,11 @@ import { notFound } from "next/navigation"
 import { z } from "zod"
 
 import { AppSidebar } from "@/components/app-sidebar"
-import { BackLink } from "@/components/back-link"
 import { ClientRequestPanel } from "@/components/client-request-panel"
-import { Grain } from "@/components/grain"
 import { MobileBar } from "@/components/mobile-bar"
 import { RecordForm } from "@/components/record-form"
-import { RequestMetadataBlock } from "@/components/request-metadata"
 import { ReviewScreen } from "@/components/review-screen"
-import { StateBadge } from "@/components/state-badge"
+import { ToolSheet } from "@/components/tool-sheet"
 import { TriageScreen } from "@/components/triage-screen"
 import { reviewPayload } from "@/lib/review"
 import { triagePayload } from "@/lib/triage"
@@ -35,8 +32,6 @@ import {
   submitReviewAction,
 } from "./actions"
 import { projectNav } from "../../sidebar"
-
-const square = "grid-square relative isolate bg-background"
 
 const when = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
@@ -155,7 +150,10 @@ export default async function Page({
   // was written, so each value has the type its field holds.
   const values = (view.record?.payload ?? {}) as FormValues
 
-  const review = view.can.review && view.record ? view.record : null
+  // D1.1 is reviewed on its own screen once it has a record. The OM switches the
+  // statuses while it is a draft, and everyone else reads them.
+  const review =
+    toolId === "D1.1" && view.record && !view.waiting ? view.record : null
 
   // D1.2 has its own screen: the files, the three checks and the decision. It
   // opens before D1.2 has a record, for the person who may write it.
@@ -173,6 +171,68 @@ export default async function Page({
       : []
   )
 
+  const body = view.waiting ? (
+    <p>
+      {view.waiting.waitingOn.length > 0
+        ? `This tool opens after ${view.waiting.waitingOn.join(", ")} is approved.`
+        : `This tool cannot be started yet: ${view.waiting.missing.join("; ")}.`}
+    </p>
+  ) : review ? (
+    <ReviewScreen
+      key={review.updatedAt.toISOString()}
+      recordId={review.id}
+      requestStatus={reviewPayload.parse(review.payload).requestStatus}
+      files={reviewPayload.parse(review.payload).attachedFiles}
+      canReview={view.can.review}
+      canApprove={view.can.approve}
+      setStatus={setReviewStatusAction}
+      submit={submitReviewAction}
+      approve={approveRecordAction}
+    />
+  ) : triage ? (
+    <TriageScreen
+      projectId={projectId}
+      cycle={view.cycle}
+      recordId={view.record?.id}
+      updatedAt={view.record?.updatedAt.toISOString()}
+      files={triage.files}
+      filesRecordId={triage.filesRecordId}
+      checks={checks}
+      saved={triagePayload.parse(view.record?.payload ?? {})}
+      tier3={overview?.serviceTrack === "Tier_3"}
+      canWrite={view.can.write}
+      canApprove={view.can.approve}
+      save={saveDraftAction}
+      submit={submitRecordAction}
+      approve={approveRecordAction}
+    />
+  ) : !hasRecord && !view.can.write ? (
+    <p>Nobody has started this tool yet.</p>
+  ) : (
+    <div className="flex max-w-3xl flex-col gap-6">
+      {hasRecord && !view.can.write && (
+        <p className="text-sm text-muted-foreground">
+          This record is read only.
+        </p>
+      )}
+      <RecordForm
+        tool={tool}
+        projectId={projectId}
+        cycle={view.cycle}
+        values={values}
+        recordId={view.record?.id}
+        updatedAt={view.record?.updatedAt.toISOString()}
+        canWrite={view.can.write}
+        canApprove={view.can.approve}
+        signable={view.can.sign}
+        save={saveDraftAction}
+        submit={submitRecordAction}
+        sign={signFieldAction}
+        approve={approveRecordAction}
+      />
+    </div>
+  )
+
   return (
     <>
       <MobileBar className="xl:hidden" canInvite={canInvite} />
@@ -182,131 +242,49 @@ export default async function Page({
           canInvite={canInvite}
           project={overview ? projectNav(overview) : undefined}
         />
-        <main className="table-project table-home">
-          <div
-            className={`${square} flex min-h-[calc(var(--cell)*2)] flex-col justify-end gap-3 px-6 py-6`}
-          >
-            <Grain />
-            <BackLink
-              href={`/projects/${projectId}`}
-              className="-mx-6 -mt-6 mb-auto border-b"
-            >
-              Project overview
-            </BackLink>
-            <h1 className="text-3xl font-semibold tracking-tight break-words sm:text-5xl">
-              {`${view.toolId} ${view.toolName}`}
-            </h1>
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-              <StateBadge state={view.state} />
-              <p className="text-sm text-muted-foreground">
-                {statusLine[view.state]}
-              </p>
-            </div>
-            {clientRequest && (
-              <div className="relative flex">
+        <main className="table-wide table-home">
+          <ToolSheet
+            backHref={`/projects/${projectId}`}
+            backLabel="Project overview"
+            title={`${view.toolId} ${view.toolName}`}
+            state={view.state}
+            statusLine={
+              view.state === "notStarted" ? undefined : statusLine[view.state]
+            }
+            action={
+              clientRequest ? (
                 <ClientRequestPanel request={clientRequest} />
-              </div>
-            )}
-          </div>
-          {details && (
-            <section
-              aria-label="Request details"
-              className={`${square} mt-[var(--cell)] px-6 py-6`}
-            >
-              <Grain />
-              <div className="relative flex flex-col gap-3">
-                <h2 className="text-lg font-medium">Request details</h2>
-                <RequestMetadataBlock metadata={details.metadata} />
-              </div>
-            </section>
-          )}
-          {view.control && (
-            <section
-              aria-label="Document control"
-              className={`${square} mt-[var(--cell)] px-6 py-6`}
-            >
-              <Grain />
-              <dl className="relative grid max-w-3xl grid-cols-[auto_1fr] gap-x-6 gap-y-2 text-sm">
-                <dt className="text-muted-foreground">Request ID</dt>
-                <dd className="break-words">{view.control.requestId}</dd>
-                <dt className="text-muted-foreground">Prepared by</dt>
-                <dd>{person(view.control.preparedBy)}</dd>
-                <dt className="text-muted-foreground">Checked by</dt>
-                <dd>{person(view.control.checkedBy)}</dd>
-                <dt className="text-muted-foreground">Started</dt>
-                <dd>{time(view.control.startedAt)}</dd>
-                <dt className="text-muted-foreground">Completed</dt>
-                <dd>
-                  {time(view.control.completedAt)}
-                  {duration(view.control.durationSeconds)}
-                </dd>
-              </dl>
-            </section>
-          )}
-          <div className={`${square} mt-[var(--cell)] px-6 py-8`}>
-            <Grain />
-            <div className="relative flex max-w-3xl flex-col gap-6">
-              {view.waiting ? (
-                <p>
-                  {view.waiting.waitingOn.length > 0
-                    ? `This tool opens after ${view.waiting.waitingOn.join(", ")} is approved.`
-                    : `This tool cannot be started yet: ${view.waiting.missing.join("; ")}.`}
-                </p>
-              ) : review ? (
-                <ReviewScreen
-                  recordId={review.id}
-                  requestStatus={
-                    reviewPayload.parse(review.payload).requestStatus
-                  }
-                  files={reviewPayload.parse(review.payload).attachedFiles}
-                  setStatus={setReviewStatusAction}
-                  submit={submitReviewAction}
-                />
-              ) : triage ? (
-                <TriageScreen
-                  projectId={projectId}
-                  cycle={view.cycle}
-                  recordId={view.record?.id}
-                  updatedAt={view.record?.updatedAt.toISOString()}
-                  files={triage.files}
-                  filesRecordId={triage.filesRecordId}
-                  checks={checks}
-                  saved={triagePayload.parse(view.record?.payload ?? {})}
-                  tier3={overview?.serviceTrack === "Tier_3"}
-                  canWrite={view.can.write}
-                  canApprove={view.can.approve}
-                  save={saveDraftAction}
-                  submit={submitRecordAction}
-                  approve={approveRecordAction}
-                />
-              ) : !hasRecord && !view.can.write ? (
-                <p>Nobody has started this tool yet.</p>
-              ) : (
-                <>
-                  {hasRecord && !view.can.write && (
-                    <p className="text-sm text-muted-foreground">
-                      This record is read only.
-                    </p>
-                  )}
-                  <RecordForm
-                    tool={tool}
-                    projectId={projectId}
-                    cycle={view.cycle}
-                    values={values}
-                    recordId={view.record?.id}
-                    updatedAt={view.record?.updatedAt.toISOString()}
-                    canWrite={view.can.write}
-                    canApprove={view.can.approve}
-                    signable={view.can.sign}
-                    save={saveDraftAction}
-                    submit={submitRecordAction}
-                    sign={signFieldAction}
-                    approve={approveRecordAction}
-                  />
-                </>
-              )}
-            </div>
-          </div>
+              ) : undefined
+            }
+            facts={[
+              { label: "Project", value: view.project.name },
+              {
+                label: "Request ID",
+                value:
+                  view.control?.requestId ?? clientRequest?.requestId ?? "-",
+              },
+              {
+                label: "Prepared by",
+                value: view.control ? person(view.control.preparedBy) : "-",
+              },
+              {
+                label: "Checked by",
+                value: view.control ? person(view.control.checkedBy) : "-",
+              },
+              {
+                label: "Started",
+                value: view.control ? time(view.control.startedAt) : "-",
+              },
+              {
+                label: "Completed",
+                value: view.control
+                  ? `${time(view.control.completedAt)}${duration(view.control.durationSeconds)}`
+                  : "-",
+              },
+            ]}
+          >
+            {body}
+          </ToolSheet>
         </main>
       </div>
     </>

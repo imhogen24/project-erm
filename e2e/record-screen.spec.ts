@@ -315,9 +315,12 @@ test("a locked record is read only, with no buttons", async ({ page }) => {
   })
   await open(page, om.email, project.id)
 
-  await expect(page.getByText("This record is read only.")).toBeVisible()
-  await expect(requestStatus(page)).toBeDisabled()
-  await expect(requestStatus(page)).toHaveText("Reviewed")
+  await expect(page.getByText("Locked. This record is final.")).toBeVisible()
+  await expect(page.getByRole("radio", { name: "Reviewed" })).toBeDisabled()
+  await expect(page.getByRole("radio", { name: "Reviewed" })).toHaveAttribute(
+    "aria-checked",
+    "true"
+  )
 
   for (const name of ["Save draft", "Submit", "Approve"]) {
     await expect(page.getByRole("button", { name })).toHaveCount(0)

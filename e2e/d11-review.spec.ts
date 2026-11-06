@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test"
+import { expect, test, type Locator, type Page } from "@playwright/test"
 
 import {
   addRecord,
@@ -52,20 +52,28 @@ async function open(page: Page, email: string, projectId: string) {
 }
 
 function requestStatus(page: Page) {
-  return page.getByRole("combobox", { name: "Request status" })
+  return page.getByRole("radiogroup", { name: "Request status" })
 }
 
 function fileStatus(page: Page, label: string) {
-  return page.getByRole("combobox", { name: `Status of ${label}` })
+  return page.getByRole("radiogroup", { name: `Status of ${label}` })
+}
+
+function pick(group: Locator, name: string) {
+  return group.getByRole("radio", { name, exact: true })
 }
 
 function submit(page: Page) {
   return page.getByRole("button", { name: "Submit for approval" })
 }
 
-async function choose(select: ReturnType<typeof requestStatus>, name: string) {
-  await select.click()
-  await select.page().getByRole("option", { name }).click()
+async function choose(group: Locator, name: string) {
+  await pick(group, name).click()
+}
+
+// The one that is chosen.
+async function expectChosen(group: Locator, name: string) {
+  await expect(pick(group, name)).toHaveAttribute("aria-checked", "true")
 }
 
 test("the OM switches the request to Reviewed and back to Pending", async ({
@@ -75,21 +83,21 @@ test("the OM switches the request to Reviewed and back to Pending", async ({
 
   await open(page, om.email, project.id)
 
-  await expect(requestStatus(page)).toHaveText("Pending")
+  await expectChosen(requestStatus(page), "Pending")
 
   await choose(requestStatus(page), "Reviewed")
-  await expect(requestStatus(page)).toHaveText("Reviewed")
-  await expect(requestStatus(page)).toBeEnabled()
+  await expectChosen(requestStatus(page), "Reviewed")
+  await expect(pick(requestStatus(page), "Reviewed")).toBeEnabled()
 
   await page.reload()
-  await expect(requestStatus(page)).toHaveText("Reviewed")
+  await expectChosen(requestStatus(page), "Reviewed")
 
   await choose(requestStatus(page), "Pending")
-  await expect(requestStatus(page)).toHaveText("Pending")
-  await expect(requestStatus(page)).toBeEnabled()
+  await expectChosen(requestStatus(page), "Pending")
+  await expect(pick(requestStatus(page), "Pending")).toBeEnabled()
 
   await page.reload()
-  await expect(requestStatus(page)).toHaveText("Pending")
+  await expectChosen(requestStatus(page), "Pending")
 })
 
 test("the OM switches one file and the others stay as they were", async ({
@@ -100,14 +108,31 @@ test("the OM switches one file and the others stay as they were", async ({
   await open(page, om.email, project.id)
   await choose(fileStatus(page, "File 2"), "Reviewed")
 
-  await expect(fileStatus(page, "File 2")).toHaveText("Reviewed")
-  await expect(fileStatus(page, "File 2")).toBeEnabled()
+  await expectChosen(fileStatus(page, "File 2"), "Reviewed")
+  await expect(pick(fileStatus(page, "File 2"), "Reviewed")).toBeEnabled()
 
   await page.reload()
 
-  await expect(fileStatus(page, "File 1")).toHaveText("Pending")
-  await expect(fileStatus(page, "File 2")).toHaveText("Reviewed")
-  await expect(requestStatus(page)).toHaveText("Pending")
+  await expectChosen(fileStatus(page, "File 1"), "Pending")
+  await expectChosen(fileStatus(page, "File 2"), "Reviewed")
+  await expectChosen(requestStatus(page), "Pending")
+})
+
+test("pressing the chosen status again keeps it and shows no error", async ({
+  page,
+}) => {
+  const { project, om } = await setUp()
+
+  await open(page, om.email, project.id)
+  await choose(requestStatus(page), "Reviewed")
+  await expectChosen(requestStatus(page), "Reviewed")
+  await choose(requestStatus(page), "Reviewed")
+
+  await expectChosen(requestStatus(page), "Reviewed")
+  await expect(page.getByRole("main").getByRole("alert")).toHaveCount(0)
+
+  await page.reload()
+  await expectChosen(requestStatus(page), "Reviewed")
 })
 
 test("Approved is not offered to the OM", async ({ page }) => {
@@ -115,14 +140,11 @@ test("Approved is not offered to the OM", async ({ page }) => {
 
   await open(page, om.email, project.id)
 
-  for (const select of [requestStatus(page), fileStatus(page, "File 1")]) {
-    await select.click()
-
-    await expect(page.getByRole("option", { name: "Reviewed" })).toBeVisible()
-    await expect(page.getByRole("option", { name: "Pending" })).toBeVisible()
-    await expect(page.getByRole("option", { name: "Approved" })).toHaveCount(0)
-
-    await page.keyboard.press("Escape")
+  for (const group of [requestStatus(page), fileStatus(page, "File 1")]) {
+    await expect(group.getByRole("radio")).toHaveCount(2)
+    await expect(pick(group, "Pending")).toBeVisible()
+    await expect(pick(group, "Reviewed")).toBeVisible()
+    await expect(pick(group, "Approved")).toHaveCount(0)
   }
 })
 
@@ -145,8 +167,12 @@ test("after the PM approves, the OM sees Approved everywhere, read only", async 
 
   await open(second, om.email, project.id)
 
-  await expect(requestStatus(second)).toHaveText("Approved")
-  await expect(requestStatus(second)).toBeDisabled()
+  const requestTable = second.getByRole("table", { name: "Request status" })
+
+  await expect(
+    requestTable.getByText("Approved", { exact: true })
+  ).toBeVisible()
+  await expect(requestStatus(second)).toHaveCount(0)
 
   const table = second.getByRole("table", { name: "Attached files" })
 
@@ -226,7 +252,7 @@ test("at 375px nothing scrolls sideways and the buttons work", async ({
   expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0)
 
   await choose(fileStatus(page, "File 1"), "Reviewed")
-  await expect(fileStatus(page, "File 1")).toHaveText("Reviewed")
+  await expectChosen(fileStatus(page, "File 1"), "Reviewed")
   await expect(
     page.getByRole("link", { name: /^Open file/ }).first()
   ).toBeVisible()
@@ -266,6 +292,6 @@ test("submitting sends D1.1 for approval and the statuses become read only", asy
 
   await expect(page.getByText("Submitted", { exact: true })).toBeVisible()
   await expect(submit(page)).toHaveCount(0)
-  await expect(requestStatus(page)).toBeDisabled()
-  await expect(requestStatus(page)).toHaveText("Reviewed")
+  await expect(pick(requestStatus(page), "Reviewed")).toBeDisabled()
+  await expectChosen(requestStatus(page), "Reviewed")
 })

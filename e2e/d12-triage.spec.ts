@@ -1,4 +1,4 @@
-import { expect, test, type Locator, type Page } from "@playwright/test"
+import { expect, test, type Page } from "@playwright/test"
 
 import {
   addClientRequest,
@@ -66,12 +66,18 @@ async function open(page: Page, email: string, projectId: string) {
   await page.goto(`/projects/${projectId}/tools/D1.2`)
 }
 
-function checkGroup(page: Page, index: number) {
-  return page.getByRole("group", { name: CHECKS[index]! })
+function checkRow(page: Page, index: number) {
+  return page
+    .getByRole("table", { name: "Triage checks" })
+    .getByRole("row")
+    .filter({ hasText: CHECKS[index]! })
 }
 
-function status(page: Page, index: number) {
-  return page.getByRole("combobox", { name: `Status: ${CHECKS[index]}` })
+// The Pass or Fail button of one check.
+function result(page: Page, index: number, option: "Pass" | "Fail") {
+  return page
+    .getByRole("radiogroup", { name: `Result: ${CHECKS[index]}` })
+    .getByRole("radio", { name: option, exact: true })
 }
 
 function notes(page: Page, index: number) {
@@ -83,11 +89,11 @@ function description(page: Page, label: string) {
 }
 
 function proceed(page: Page, label = "Proceed to D1.3") {
-  return page.getByRole("button", { name: label, exact: true })
+  return page.getByRole("radio", { name: label, exact: true })
 }
 
 function reject(page: Page) {
-  return page.getByRole("button", { name: "Reject as Spam", exact: true })
+  return page.getByRole("radio", { name: "Reject as Spam", exact: true })
 }
 
 function save(page: Page) {
@@ -98,14 +104,9 @@ function submit(page: Page) {
   return page.getByRole("button", { name: "Submit for approval" })
 }
 
-async function choose(select: Locator, name: string) {
-  await select.click()
-  await select.page().getByRole("option", { name, exact: true }).click()
-}
-
-async function answerAll(page: Page, result = "Pass") {
+async function answerAll(page: Page, option: "Pass" | "Fail" = "Pass") {
   for (const index of [0, 1, 2]) {
-    await choose(status(page, index), result)
+    await result(page, index, option).click()
     await notes(page, index).fill(`Note ${index + 1}`)
   }
 }
@@ -134,11 +135,10 @@ test("the files show from D1.1 with Open file and their status, before anything 
 
   await open(page, om.email, project.id)
 
-  await expect(page.getByText("client@example.com")).toBeVisible()
   await expect(page.getByText("Photo 1", { exact: true })).toBeVisible()
   await expect(page.getByText("Photo 2", { exact: true })).toBeVisible()
   await expect(page.getByRole("link", { name: /^Open file/ })).toHaveCount(2)
-  await expect(page.getByText("2026-11-03 · Approved")).toHaveCount(2)
+  await expect(page.getByText("Approved", { exact: true })).toHaveCount(2)
 })
 
 test("a screen with no record yet has empty checks and no decision", async ({
@@ -149,12 +149,19 @@ test("a screen with no record yet has empty checks and no decision", async ({
   await open(page, om.email, project.id)
 
   for (const index of [0, 1, 2]) {
-    await expect(status(page, index)).not.toHaveText(/Pass|Fail/)
+    await expect(result(page, index, "Pass")).toHaveAttribute(
+      "aria-checked",
+      "false"
+    )
+    await expect(result(page, index, "Fail")).toHaveAttribute(
+      "aria-checked",
+      "false"
+    )
     await expect(notes(page, index)).toHaveValue("")
   }
 
-  await expect(proceed(page)).toHaveAttribute("aria-pressed", "false")
-  await expect(reject(page)).toHaveAttribute("aria-pressed", "false")
+  await expect(proceed(page)).toHaveAttribute("aria-checked", "false")
+  await expect(reject(page)).toHaveAttribute("aria-checked", "false")
 })
 
 test("the OM describes one file, and it is kept after a reload", async ({
@@ -209,8 +216,15 @@ test("there are exactly the three fixed checks, with no add or remove", async ({
 
   await open(page, om.email, project.id)
 
+  const rows = page
+    .getByRole("table", { name: "Triage checks" })
+    .getByRole("row")
+
+  // The header row and the three checks.
+  await expect(rows).toHaveCount(4)
+
   for (const index of [0, 1, 2]) {
-    await expect(checkGroup(page, index)).toBeVisible()
+    await expect(checkRow(page, index)).toBeVisible()
   }
 
   await expect(page.getByRole("button", { name: /^(Add|Remove)/ })).toHaveCount(
@@ -232,7 +246,10 @@ test("the OM answers each check and the answers are kept after a reload", async 
   await page.reload()
 
   for (const index of [0, 1, 2]) {
-    await expect(status(page, index)).toHaveText("Pass")
+    await expect(result(page, index, "Pass")).toHaveAttribute(
+      "aria-checked",
+      "true"
+    )
     await expect(notes(page, index)).toHaveValue(`Note ${index + 1}`)
   }
 })
@@ -248,8 +265,8 @@ test("submitting with a note left empty says Required under that check", async (
   await reject(page).click()
   await submit(page).click()
 
-  await expect(checkGroup(page, 1).getByText("Required")).toBeVisible()
-  await expect(checkGroup(page, 0).getByText("Required")).toHaveCount(0)
+  await expect(checkRow(page, 1).getByText("Required")).toBeVisible()
+  await expect(checkRow(page, 0).getByText("Required")).toHaveCount(0)
   await expect(page.getByText("Draft", { exact: true })).toBeVisible()
 })
 
@@ -262,14 +279,14 @@ test("Proceed is off while a check is Fail, and on again once it is resolved", a
   await answerAll(page)
   await expect(proceed(page)).toBeEnabled()
 
-  await choose(status(page, 1), "Fail")
+  await result(page, 1, "Fail").click()
 
   await expect(proceed(page)).toBeDisabled()
   await expect(
     page.getByText("Resolve the failed checks to proceed")
   ).toBeVisible()
 
-  await choose(status(page, 1), "Pass")
+  await result(page, 1, "Pass").click()
 
   await expect(proceed(page)).toBeEnabled()
   await expect(
@@ -281,13 +298,13 @@ test("Reject as Spam stays on while a check is Fail", async ({ page }) => {
   const { project, om } = await setUp()
 
   await open(page, om.email, project.id)
-  await choose(status(page, 0), "Fail")
+  await result(page, 0, "Fail").click()
 
   await expect(reject(page)).toBeEnabled()
 
   await reject(page).click()
 
-  await expect(reject(page)).toHaveAttribute("aria-pressed", "true")
+  await expect(reject(page)).toHaveAttribute("aria-checked", "true")
 })
 
 test("pressing Proceed only chooses it and sends nothing", async ({ page }) => {
@@ -296,12 +313,12 @@ test("pressing Proceed only chooses it and sends nothing", async ({ page }) => {
   await open(page, om.email, project.id)
   await proceed(page).click()
 
-  await expect(proceed(page)).toHaveAttribute("aria-pressed", "true")
+  await expect(proceed(page)).toHaveAttribute("aria-checked", "true")
   await expect(page.getByText("Submitted", { exact: true })).toHaveCount(0)
 
   await page.reload()
 
-  await expect(proceed(page)).toHaveAttribute("aria-pressed", "false")
+  await expect(proceed(page)).toHaveAttribute("aria-checked", "false")
 })
 
 test("submitting saves what was typed, and the OM then sees it read only", async ({
@@ -323,10 +340,10 @@ test("submitting saves what was typed, and the OM then sees it read only", async
 
   await expect(description(page, "Photo 1")).toHaveValue("Side view")
   await expect(description(page, "Photo 1")).toBeDisabled()
-  await expect(status(page, 0)).toBeDisabled()
+  await expect(result(page, 0, "Pass")).toBeDisabled()
   await expect(notes(page, 0)).toBeDisabled()
   await expect(proceed(page)).toBeDisabled()
-  await expect(proceed(page)).toHaveAttribute("aria-pressed", "true")
+  await expect(proceed(page)).toHaveAttribute("aria-checked", "true")
 })
 
 test("the PM sees a submitted D1.2 read only, approves it, and D1.3 opens", async ({
@@ -362,6 +379,51 @@ test("a Tier 3 project says Proceed to D1.3a", async ({ page }) => {
   await expect(proceed(page)).toHaveCount(0)
 })
 
+test("the header sits in the sheet with the document control facts", async ({
+  page,
+}) => {
+  const { project, om } = await setUp()
+
+  await open(page, om.email, project.id)
+
+  await expect(page.getByRole("heading", { level: 1 })).toContainText(
+    "D1.2 Initial Inquiry Notification"
+  )
+  await expect(
+    page.getByRole("link", { name: "Project overview" })
+  ).toBeVisible()
+
+  for (const fact of ["Project", "Request ID", "Prepared by", "Checked by"]) {
+    await expect(page.getByText(fact, { exact: true })).toBeVisible()
+  }
+
+  // The web form is in the panel, not on the page.
+  await expect(page.getByText("Organisation")).toHaveCount(0)
+})
+
+test("View client request opens the web form, in tables, over half the screen", async ({
+  page,
+}) => {
+  const { project, om } = await setUp()
+
+  await page.setViewportSize({ width: 1440, height: 900 })
+  await open(page, om.email, project.id)
+  await page.getByRole("button", { name: "View client request" }).click()
+
+  const panel = page.getByRole("dialog", { name: "Client request" })
+
+  await expect(panel).toBeVisible()
+  await expect(panel.getByRole("heading", { name: "Contact" })).toBeVisible()
+  await expect(panel.getByRole("heading", { name: "Project" })).toBeVisible()
+  await expect(panel.getByRole("heading", { name: "Systems" })).toBeVisible()
+  await expect(panel.getByText("client@example.com")).toBeVisible()
+
+  const box = await panel.boundingBox()
+
+  expect(box!.width).toBeGreaterThan(1440 * 0.45)
+  expect(box!.width).toBeLessThan(1440 * 0.55)
+})
+
 test("a client, or a person outside the project, never reaches the screen", async ({
   page,
 }) => {
@@ -390,7 +452,7 @@ test("at 375px nothing scrolls sideways and the buttons work", async ({
 
   expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0)
 
-  await choose(status(page, 0), "Pass")
+  await result(page, 0, "Pass").click()
   await notes(page, 0).fill("Fine")
   await proceed(page).click()
   await save(page).click()

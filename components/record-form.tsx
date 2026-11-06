@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 
+import { ActionButton } from "@/components/sheet-actions"
 import { ToolForm } from "@/components/tool-form"
 import { Button } from "@/components/ui/button"
 import type {
@@ -162,6 +163,17 @@ export function RecordForm({
         pending={pending}
         recordId={recordId}
         signable={signable}
+        message={message}
+        extraActions={
+          canApprove && recordId ? (
+            <ActionButton
+              disabled={pending}
+              onClick={() => run(() => approve({ recordId }), "Approved.")}
+            >
+              Approve
+            </ActionButton>
+          ) : undefined
+        }
         onSave={(held) => run(() => save(saving(held)), "Draft saved.")}
         onSubmit={(held) => run(() => submit(saving(held)), "Submitted.")}
         onSign={(fieldKey) => {
@@ -170,22 +182,6 @@ export function RecordForm({
           }
         }}
       />
-      {canApprove && recordId && (
-        <Button
-          type="button"
-          size="lg"
-          className="h-12 w-full px-8 text-base sm:w-fit"
-          disabled={pending}
-          onClick={() => run(() => approve({ recordId }), "Approved.")}
-        >
-          Approve
-        </Button>
-      )}
-      {message && (
-        <p role="status" className="text-sm">
-          {message}
-        </p>
-      )}
       {stale && (
         <div
           role="alert"

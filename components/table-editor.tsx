@@ -54,7 +54,7 @@ function sumOf(rows: RawRow[], key: string) {
 }
 
 const rowGrid =
-  "grid-cols-2 gap-3 @2xl:grid-cols-[repeat(var(--cols),minmax(0,1fr))_auto] @2xl:gap-0"
+  "grid-cols-2 gap-3 @xl:grid-cols-[repeat(var(--cols),minmax(0,1fr))_auto] @xl:gap-0"
 
 // A table is one set of inputs. Wide, it is a grid with shared borders. Narrow,
 // each row becomes a card, so nothing scrolls sideways.
@@ -94,17 +94,17 @@ export function TableEditor({
         role="table"
         aria-label={field.label}
         style={vars({ "--cols": columns.length })}
-        className="flex flex-col gap-3 @2xl:gap-0 @2xl:border @2xl:border-foreground/20"
+        className="flex flex-col"
       >
         <div
           role="row"
-          className={`hidden bg-muted/60 text-sm font-medium @2xl:grid ${rowGrid}`}
+          className={`hidden border-b border-foreground/20 text-xs text-muted-foreground @xl:grid ${rowGrid}`}
         >
           {columns.map((column) => (
             <div
               key={column.key}
               role="columnheader"
-              className="border-r border-foreground/20 px-3 py-2"
+              className="border-r border-foreground/20 px-4 py-2"
             >
               {column.label}
             </div>
@@ -115,7 +115,7 @@ export function TableEditor({
           <div role="row">
             <div
               role="cell"
-              className="px-3 py-4 text-sm text-muted-foreground"
+              className="px-4 py-4 text-sm text-muted-foreground"
             >
               No rows yet.
             </div>
@@ -125,7 +125,7 @@ export function TableEditor({
           <div
             key={rowIndex}
             role="row"
-            className={`grid border border-foreground/20 p-3 @2xl:border-0 @2xl:border-t @2xl:p-0 ${rowGrid}`}
+            className={`grid p-4 not-last:border-b not-last:border-foreground/20 @xl:p-0 ${rowGrid}`}
           >
             {columns.map((column, columnIndex) => {
               const id = `${field.key}-${rowIndex}-${column.key}`
@@ -144,7 +144,7 @@ export function TableEditor({
                   <div
                     key={column.key}
                     role="cell"
-                    className="col-span-2 flex items-center gap-2 bg-muted/60 text-sm font-medium @2xl:col-span-1 @2xl:border-r @2xl:border-foreground/20 @2xl:px-3 @2xl:py-3"
+                    className="col-span-2 flex items-center gap-2 bg-muted/60 text-sm font-medium @xl:col-span-1 @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3"
                   >
                     <LockSimpleIcon aria-hidden className="size-4 shrink-0" />
                     {label}
@@ -157,9 +157,9 @@ export function TableEditor({
                   <div
                     key={column.key}
                     role="cell"
-                    className={`flex flex-col gap-1 @2xl:justify-center @2xl:border-r @2xl:border-foreground/20 @2xl:px-3 @2xl:py-3 ${wideTypes.includes(column.type) ? "col-span-2 @2xl:col-span-1" : ""}`}
+                    className={`flex flex-col gap-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 ${wideTypes.includes(column.type) ? "col-span-2 @xl:col-span-1" : ""}`}
                   >
-                    <span className="pt-2 text-xs text-muted-foreground @2xl:sr-only @2xl:pt-0">
+                    <span className="pt-2 text-xs text-muted-foreground @xl:sr-only @xl:pt-0">
                       {column.label}
                       <span className="sr-only">, row {rowIndex + 1}</span>
                     </span>
@@ -177,11 +177,11 @@ export function TableEditor({
                 <div
                   key={column.key}
                   role="cell"
-                  className={`flex flex-col gap-1 @2xl:justify-center @2xl:border-r @2xl:border-foreground/20 ${wideTypes.includes(column.type) ? "col-span-2 @2xl:col-span-1" : ""}`}
+                  className={`flex flex-col gap-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 ${wideTypes.includes(column.type) ? "col-span-2 @xl:col-span-1" : ""}`}
                 >
                   <label
                     htmlFor={id}
-                    className="pt-2 text-xs text-muted-foreground @2xl:sr-only @2xl:pt-0"
+                    className="pt-2 text-xs text-muted-foreground @xl:sr-only @xl:pt-0"
                   >
                     {column.label}
                     <span className="sr-only">, row {rowIndex + 1}</span>
@@ -201,13 +201,13 @@ export function TableEditor({
                       onChange={(value) => setCell(rowIndex, column.key, value)}
                       invalid={message !== undefined}
                       describedBy={message ? `${id}-error` : undefined}
-                      inputClassName="@2xl:h-11 @2xl:border-0 @2xl:shadow-none @2xl:focus-visible:ring-inset @2xl:aria-invalid:ring-inset"
+                      inputClassName="@xl:h-11 @xl:border-0 @xl:shadow-none @xl:focus-visible:ring-inset @xl:aria-invalid:ring-inset"
                     />
                   )}
                   {message && (
                     <p
                       id={`${id}-error`}
-                      className="px-0 pb-1 text-sm text-destructive @2xl:px-3"
+                      className="px-0 pb-1 text-sm text-destructive @xl:px-4"
                     >
                       {message}
                     </p>
@@ -215,7 +215,7 @@ export function TableEditor({
                 </div>
               )
             })}
-            <div className="col-span-2 flex items-center justify-end @2xl:col-span-1 @2xl:w-24 @2xl:justify-center">
+            <div className="col-span-2 flex items-center justify-end @xl:col-span-1 @xl:w-24 @xl:justify-center">
               {!fixed && !shownOnly && rowIndex >= lockedCount && (
                 <Button
                   type="button"
@@ -241,10 +241,7 @@ export function TableEditor({
         )}
         {!fixed && !shownOnly && (
           <div role="row">
-            <div
-              role="cell"
-              className="@2xl:border-t @2xl:border-foreground/20 @2xl:p-2"
-            >
+            <div role="cell" className="p-4 @xl:p-3">
               <Button
                 type="button"
                 variant="secondary"
@@ -334,14 +331,14 @@ function Subtotal({
     <div
       role="row"
       style={vars({ "--at": position })}
-      className={`grid border border-foreground/20 bg-muted/60 text-sm font-medium @2xl:border-0 @2xl:border-t ${rowGrid}`}
+      className={`grid border-t border-foreground/20 bg-muted/60 text-sm font-medium ${rowGrid}`}
     >
-      <div role="cell" className="px-3 py-3 @2xl:col-start-1">
+      <div role="cell" className="px-4 py-3 @xl:col-start-1">
         Subtotal
       </div>
       <div
         role="cell"
-        className="px-3 py-3 text-right tabular-nums @2xl:col-start-[var(--at)] @2xl:row-start-1 @2xl:text-left"
+        className="px-4 py-3 text-right tabular-nums @xl:col-start-[var(--at)] @xl:row-start-1 @xl:text-left"
       >
         {money.format(amount)}
       </div>

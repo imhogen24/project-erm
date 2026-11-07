@@ -7,11 +7,27 @@ const fieldKey = z
   .regex(/^[a-z][A-Za-z0-9]*$/, "A field key is a camelCase name")
 
 // `column` is set when the value comes from one column of a table field.
-const inheritedLink = z.object({
+const toolLink = z.strictObject({
   tool: z.string().min(1),
   field: z.string().min(1),
   column: z.string().min(1).optional(),
 })
+
+const requestColumn = z.string().min(1)
+
+// Reads a column of the project's saved web request. Where the Tier 1 and
+// Tier 3 forms hold the same answer under different columns, it names the
+// column for each tier. One column is the same column on both.
+const requestLink = z.strictObject({
+  request: z.union([
+    requestColumn.transform((column) => ({ Tier_1: column, Tier_3: column })),
+    z.strictObject({ Tier_1: requestColumn, Tier_3: requestColumn }),
+  ]),
+})
+
+const inheritedLink = z.union([toolLink, requestLink])
+
+export type RequestLink = z.output<typeof requestLink>
 
 // `systemFilled` is shown in the form but filled by the system from outside
 // the tool, such as the saved website request, so the form never writes it.
@@ -156,6 +172,18 @@ const table = z
         code: "custom",
         path: ["columns"],
         message: "Two columns cannot share a key",
+      })
+    }
+
+    if (
+      [value, ...value.columns].some(
+        (cell) => cell.inherited && "request" in cell.inherited
+      )
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["inherited"],
+        message: "A web request answer is one line, so it cannot fill a table",
       })
     }
 

@@ -39,7 +39,12 @@ import {
   openToolsIn,
 } from "@/server/workflow/workflow"
 
-import { inheritedValues, readPayload, withoutInherited } from "./inherited"
+import {
+  inheritedValues,
+  readPayload,
+  withoutHiddenAnswers,
+  withoutInherited,
+} from "./inherited"
 import { keepReadOnly } from "./read-only"
 import {
   approvedPayload,
@@ -268,6 +273,23 @@ export async function lockRecord(
   return record
 }
 
+// The record as this person's screen shows it.
+async function asShownTo(
+  database: Pick<Database, "select">,
+  actor: string,
+  record: ToolRecord
+): Promise<ToolRecord> {
+  const payload = await readPayload(database, record)
+
+  return {
+    ...record,
+    payload: await withoutHiddenAnswers(database, actor, {
+      ...record,
+      payload,
+    }),
+  }
+}
+
 // Loads the record without a permission check, for the operations below that
 // need its project and tool before they can check.
 async function loadRecord(
@@ -295,7 +317,7 @@ export async function getRecord(
 
   await assertMay(database, actor, record.projectId, record.toolId, "read")
 
-  return { ...record, payload: await readPayload(database, record) }
+  return await asShownTo(database, actor, record)
 }
 
 // Sending a record forward or back is writing; approving and locking are approving.
@@ -595,12 +617,10 @@ async function liveRecord(
 // The newer record goes back as the screen would show it.
 async function staleError(
   database: Pick<Database, "select">,
+  actor: string,
   record: ToolRecord
 ): Promise<StaleRecordError> {
-  return new StaleRecordError({
-    ...record,
-    payload: await readPayload(database, record),
-  })
+  return new StaleRecordError(await asShownTo(database, actor, record))
 }
 
 // Creates the tool's record for the cycle when it has none, if the workflow
@@ -641,7 +661,7 @@ export async function saveDraft(
         (await liveRecord(database, input))
 
       if (created) {
-        throw await staleError(database, created)
+        throw await staleError(database, actor, created)
       }
 
       throw error
@@ -649,7 +669,7 @@ export async function saveDraft(
   }
 
   if (!expected) {
-    throw await staleError(database, existing)
+    throw await staleError(database, actor, existing)
   }
 
   return database.transaction(async (transaction) => {
@@ -658,7 +678,7 @@ export async function saveDraft(
     const current = await lockRecord(transaction, existing.id)
 
     if (current.updatedAt.getTime() !== expected.getTime()) {
-      throw await staleError(transaction, current)
+      throw await staleError(transaction, actor, current)
     }
 
     return writeDraft(transaction, actor, current, values)

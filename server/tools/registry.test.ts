@@ -252,3 +252,52 @@ describe("workbookNumber", () => {
     expect(workbookNumber(tool("T3.X", workbook))).toBe(number)
   })
 })
+
+describe("brokenInheritedLinks, for web request links", () => {
+  function linked(request: string | { Tier_1: string; Tier_3: string }) {
+    return defineTool({
+      id: "D1.4",
+      name: "Client acknowledgement",
+      workbook: "wb01",
+      fields: [
+        {
+          key: "answer",
+          label: "Answer",
+          type: "text",
+          inherited: { request },
+        },
+      ],
+    })
+  }
+
+  it.each([
+    ["on both forms", "email"],
+    ["on the Tier 1 form only", "project_title"],
+    ["on the Tier 3 form only", "end_goal"],
+  ])("reports nothing for a column %s", (_, column) => {
+    expect(brokenInheritedLinks([linked(column)])).toEqual([])
+  })
+
+  it("reports nothing when each tier's column is on its form", () => {
+    const tool = linked({
+      Tier_1: "project_scope",
+      Tier_3: "drafting_services",
+    })
+
+    expect(brokenInheritedLinks([tool])).toEqual([])
+  })
+
+  it("reports a column on neither form", () => {
+    expect(brokenInheritedLinks([linked("nope")])).toEqual([
+      "D1.4.answer inherits nope, which no website form has",
+    ])
+  })
+
+  it("reports a tier's column that is only on the other tier's form", () => {
+    const tool = linked({ Tier_1: "drafting_services", Tier_3: "end_goal" })
+
+    expect(brokenInheritedLinks([tool])).toEqual([
+      "D1.4.answer inherits drafting_services, which the Tier_1 website form does not have",
+    ])
+  })
+})

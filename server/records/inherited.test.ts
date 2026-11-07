@@ -8,7 +8,9 @@ import { loadWorkflow } from "@/server/workflow/workflow"
 
 import {
   ValidationError,
+  StaleRecordError,
   getRecord,
+  saveDraft,
   transitionRecord,
   updateRecord,
   type JsonObject,
@@ -19,8 +21,24 @@ const database = createTestDatabase()
 // D1.15 takes the client's name from D1.3, as in WB01. On a Tier 3 project
 // T3.D1.3a takes the place of D1.3. In WB03, D3.5 repeats with D3.4 and takes
 // its amount from the same cycle. D4.1 does not repeat, so it takes the amount
-// from the latest locked cycle.
+// from the latest locked cycle. D1.4 takes its fields from the saved web
+// request, which a Client may not read though they may read D1.4. D1.5 takes
+// those answers on from D1.4 and from the Tier 3 briefing, and a Client may
+// write D1.1.
 const definitions = [
+  defineTool({
+    id: "D1.1",
+    name: "Client Email / Web Form",
+    workbook: "wb01",
+    fields: [
+      {
+        key: "contactEmail",
+        label: "Contact email",
+        type: "email",
+        inherited: { request: "email" },
+      },
+    ],
+  }),
   defineTool({
     id: "D1.3",
     name: "Initial client briefing",
@@ -37,7 +55,63 @@ const definitions = [
     workbook: "wb01",
     tier: 3,
     replaces: "D1.3",
-    fields: [{ key: "clientName", label: "Client name", type: "text" }],
+    fields: [
+      { key: "clientName", label: "Client name", type: "text" },
+      {
+        key: "contactEmail",
+        label: "Contact email",
+        type: "email",
+        inherited: { request: "email" },
+      },
+    ],
+  }),
+  defineTool({
+    id: "D1.4",
+    name: "Client acknowledgement",
+    workbook: "wb01",
+    fields: [
+      {
+        key: "contactEmail",
+        label: "Contact email",
+        type: "email",
+        inherited: { request: "email" },
+      },
+      {
+        key: "budget",
+        label: "Budget",
+        type: "text",
+        inherited: { request: "budget_expectations" },
+      },
+      {
+        key: "services",
+        label: "Services",
+        type: "text",
+        inherited: {
+          request: { Tier_1: "project_scope", Tier_3: "drafting_services" },
+        },
+      },
+      { key: "note", label: "Note", type: "text" },
+    ],
+  }),
+  defineTool({
+    id: "D1.5",
+    name: "Follow-up",
+    workbook: "wb01",
+    fields: [
+      {
+        key: "contactEmail",
+        label: "Contact email",
+        type: "email",
+        inherited: { tool: "D1.4", field: "contactEmail" },
+      },
+      {
+        key: "briefedEmail",
+        label: "Briefed email",
+        type: "email",
+        inherited: { tool: "D1.3", field: "contactEmail" },
+      },
+      { key: "note", label: "Note", type: "text" },
+    ],
   }),
   defineTool({
     id: "D1.15",
@@ -113,8 +187,11 @@ loadWorkflow([
   {
     workbook: "wb01",
     tools: [
+      { tool: "D1.1" },
       { tool: "D1.3" },
       { tool: "T3.D1.3a" },
+      { tool: "D1.4" },
+      { tool: "D1.5" },
       { tool: "D1.15", after: { all: ["D1.3"] } },
     ],
   },
@@ -196,6 +273,38 @@ async function storedPayload(recordId: string) {
 
 async function read(recordId: string) {
   return (await getRecord(database, actor, recordId)).payload
+}
+
+// The project's saved copy of the website row.
+async function addRequest(
+  submission: JsonObject,
+  track: ServiceTrack = "Tier_1"
+) {
+  await database.pool.query(
+    "INSERT INTO intake_submissions (request_id, service_track, project_id, submission) VALUES ($1, $2, $3, $4)",
+    [`T1-${crypto.randomUUID()}`, track, projectId, JSON.stringify(submission)]
+  )
+}
+
+async function editRequest(submission: JsonObject) {
+  await database.pool.query(
+    "UPDATE intake_submissions SET submission = $2 WHERE project_id = $1",
+    [projectId, JSON.stringify(submission)]
+  )
+}
+
+async function addPersonWith(role: string) {
+  const { rows } = await database.pool.query<{ id: string }>(
+    "INSERT INTO people (name, email) VALUES ('Kofi', $1) RETURNING id",
+    [`${crypto.randomUUID()}@example.com`]
+  )
+
+  await database.pool.query(
+    "INSERT INTO person_project_roles (person_id, project_id, role) VALUES ($1, $2, $3)",
+    [rows[0]!.id, projectId, role]
+  )
+
+  return rows[0]!.id
 }
 
 beforeEach(async () => {
@@ -446,5 +555,191 @@ describe("writing an inherited field", () => {
       })
     ).rejects.toBeInstanceOf(ValidationError)
     expect(await storedPayload(summary)).toEqual({ summary: "Boiler refit" })
+  })
+})
+
+describe("a field linked to the saved web request", () => {
+  it("shows the request's value", async () => {
+    await addRequest({ email: "ama@acme.example" })
+    const record = await addRecord("D1.4", { note: "Sent" })
+
+    expect(await read(record)).toEqual({
+      contactEmail: "ama@acme.example",
+      note: "Sent",
+    })
+  })
+
+  it("is refused when someone writes it", async () => {
+    await addRequest({ email: "ama@acme.example" })
+    const record = await addRecord("D1.4", { note: "Sent" })
+
+    await expect(
+      updateRecord(database, actor, record, {
+        note: "Sent",
+        contactEmail: "someone@else.example",
+      })
+    ).rejects.toBeInstanceOf(ValidationError)
+    expect(await storedPayload(record)).toEqual({ note: "Sent" })
+  })
+
+  it.each([
+    ["missing", {}],
+    ["null", { budget_expectations: null }],
+    ["blank", { budget_expectations: "   " }],
+  ])("is empty when the request's value is %s", async (_, submission) => {
+    await addRequest(submission)
+    const record = await addRecord("D1.4", {})
+
+    expect(await read(record)).not.toHaveProperty("budget")
+  })
+
+  it("is empty when the project has no saved request", async () => {
+    const record = await addRecord("D1.4", { note: "Sent" })
+
+    expect(await read(record)).toEqual({ note: "Sent" })
+  })
+
+  it("shows the new value once the request is edited", async () => {
+    await addRequest({ email: "ama@acme.example" })
+    const record = await addRecord("D1.4", {})
+
+    await editRequest({ email: "ama@acme-ltd.example" })
+
+    expect((await read(record)).contactEmail).toBe("ama@acme-ltd.example")
+  })
+
+  it("shows a list answer as one line", async () => {
+    await addRequest({ project_scope: ["Design", "Fabrication"] })
+    const record = await addRecord("D1.4", {})
+
+    expect((await read(record)).services).toBe("Design, Fabrication")
+  })
+
+  it("reads the column named for the request's tier", async () => {
+    projectId = await addProject("Tier_3")
+    await database.pool.query(
+      "INSERT INTO person_project_roles (person_id, project_id, role) VALUES ($1, $2, 'PM')",
+      [actor, projectId]
+    )
+    await addRequest(
+      { project_scope: ["Wrong"], drafting_services: ["Scan", "Redraw"] },
+      "Tier_3"
+    )
+    const record = await addRecord("D1.4", {})
+
+    expect((await read(record)).services).toBe("Scan, Redraw")
+  })
+
+  it("does not write the live value into the stored draft", async () => {
+    await addRequest({ email: "ama@acme.example" })
+    const record = await addRecord("D1.4", { note: "Sent" })
+
+    await read(record)
+
+    expect(await storedPayload(record)).toEqual({ note: "Sent" })
+  })
+
+  it("is copied on submit and keeps that value when the request changes", async () => {
+    await addRequest({ email: "ama@acme.example" })
+    const record = await addRecord("D1.4", { note: "Sent" })
+
+    await transitionRecord(database, actor, record, "submitted")
+    await editRequest({ email: "ama@acme-ltd.example" })
+
+    expect(await storedPayload(record)).toEqual({
+      contactEmail: "ama@acme.example",
+      note: "Sent",
+    })
+    expect((await read(record)).contactEmail).toBe("ama@acme.example")
+  })
+})
+
+describe("a person who may not read the request", () => {
+  async function asClient(recordId: string) {
+    const client = await addPersonWith("Client")
+
+    return (await getRecord(database, client, recordId)).payload
+  }
+
+  it("does not see the value on a draft, but sees the rest", async () => {
+    await addRequest({ email: "ama@acme.example" })
+    const record = await addRecord("D1.4", { note: "Sent" })
+
+    expect(await asClient(record)).toEqual({ note: "Sent" })
+  })
+
+  it("does not see the value once it is frozen in the payload", async () => {
+    await addRequest({ email: "ama@acme.example" })
+    const record = await addRecord("D1.4", { note: "Sent" })
+
+    await transitionRecord(database, actor, record, "submitted")
+
+    expect(await asClient(record)).toEqual({ note: "Sent" })
+  })
+
+  it("does not see it through a tool that inherits the frozen value", async () => {
+    await addRequest({ email: "ama@acme.example" })
+    await addRecord(
+      "D1.4",
+      { contactEmail: "ama@acme.example" },
+      { state: "locked" }
+    )
+    const record = await addRecord("D1.5", { note: "Called" })
+
+    expect((await read(record)).contactEmail).toBe("ama@acme.example")
+    expect(await asClient(record)).toEqual({ note: "Called" })
+  })
+
+  it("does not see it through the tool that replaces the source on the track", async () => {
+    projectId = await addProject("Tier_3")
+    await database.pool.query(
+      "INSERT INTO person_project_roles (person_id, project_id, role) VALUES ($1, $2, 'PM')",
+      [actor, projectId]
+    )
+    await addRecord(
+      "T3.D1.3a",
+      { contactEmail: "ama@acme.example" },
+      { state: "locked" }
+    )
+    const record = await addRecord("D1.5", { note: "Called" })
+
+    expect((await read(record)).briefedEmail).toBe("ama@acme.example")
+    expect(await asClient(record)).toEqual({ note: "Called" })
+  })
+
+  it("does not get it from a refused save", async () => {
+    await addRequest({ email: "ama@acme.example" })
+    await addRecord("D1.1", {})
+    const client = await addPersonWith("Client")
+
+    const refused = saveDraft(database, client, {
+      projectId,
+      toolId: "D1.1",
+      cycle: 1,
+      values: {},
+      expectedUpdatedAt: new Date(0),
+    })
+
+    await expect(refused).rejects.toBeInstanceOf(StaleRecordError)
+    await expect(refused).rejects.toHaveProperty("record.payload", {})
+  })
+
+  it("still freezes the real value when the Client submits", async () => {
+    await addRequest({ email: "ama@acme.example" })
+    const record = await addRecord("D1.1", {})
+    const client = await addPersonWith("Client")
+
+    await transitionRecord(database, client, record, "submitted")
+
+    expect(await storedPayload(record)).toEqual({
+      contactEmail: "ama@acme.example",
+    })
+  })
+
+  it("leaves staff who also hold the Client role able to see it", async () => {
+    await addRequest({ email: "ama@acme.example" })
+    const record = await addRecord("D1.4", {})
+
+    expect((await read(record)).contactEmail).toBe("ama@acme.example")
   })
 })

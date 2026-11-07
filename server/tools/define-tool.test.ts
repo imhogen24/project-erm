@@ -410,3 +410,87 @@ describe("defineTool, tier variants", () => {
     ).toThrow()
   })
 })
+
+describe("defineTool, web request links", () => {
+  const base = { id: "D1.4", name: "Acknowledgement", workbook: "wb01" }
+
+  it("takes one column, or a column for each tier", () => {
+    const tool = defineTool({
+      ...base,
+      fields: [
+        {
+          key: "email",
+          label: "Email",
+          type: "email",
+          inherited: { request: "email" },
+        },
+        {
+          key: "services",
+          label: "Services",
+          type: "text",
+          inherited: {
+            request: { Tier_1: "project_scope", Tier_3: "drafting_services" },
+          },
+        },
+      ],
+    })
+
+    expect(tool.fields.map((field) => field.inherited)).toEqual([
+      { request: { Tier_1: "email", Tier_3: "email" } },
+      { request: { Tier_1: "project_scope", Tier_3: "drafting_services" } },
+    ])
+  })
+
+  it("refuses a link that names a tool and a column of the request", () => {
+    const both = { tool: "D1.3", field: "email", request: "email" }
+
+    expect(() =>
+      defineTool({
+        ...base,
+        fields: [
+          { key: "email", label: "Email", type: "email", inherited: both },
+        ],
+      })
+    ).toThrow()
+  })
+
+  it("refuses a request link on a table", () => {
+    expect(() =>
+      defineTool({
+        ...base,
+        fields: [
+          {
+            key: "rows",
+            label: "Rows",
+            type: "table",
+            inherited: { request: "email" },
+            columns: [{ key: "name", label: "Name", type: "text" }],
+          },
+        ],
+      })
+    ).toThrow()
+  })
+
+  it("refuses a request link on a table column", () => {
+    expect(() =>
+      defineTool({
+        ...base,
+        fields: [
+          {
+            key: "rows",
+            label: "Rows",
+            type: "table",
+            columns: [
+              {
+                key: "name",
+                label: "Name",
+                type: "text",
+                inherited: { request: "email" },
+              },
+            ],
+          },
+        ],
+      })
+    ).toThrow()
+  })
+})

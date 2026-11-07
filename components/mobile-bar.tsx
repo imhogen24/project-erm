@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 
+import { NotificationBell } from "@/components/notifications/notification-bell"
 import { SignOutButton } from "@/components/sign-out-button"
 import { cn } from "@/lib/utils"
 
@@ -46,6 +47,7 @@ export function MobileBar({
             </Link>
           </>
         )}
+        <NotificationBell variant="sheet" />
         <SignOutButton />
       </div>
     </header>

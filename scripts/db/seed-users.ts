@@ -140,6 +140,70 @@ async function addDemoReview(database: Database, projectId: string) {
   })
 }
 
+// Four sample notifications for the demo PM, so the bell has something to show:
+// three unread (the number on the bell) and one older one already read. Each is
+// only added when the PM has no notification with that title yet, so running
+// this again changes nothing, and one the PM has opened is not made unread
+// again. Notifications cannot be deleted, so this only ever adds.
+async function addDemoNotifications(database: Database, projectId: string) {
+  const [pm] = await database
+    .select({ id: people.id })
+    .from(people)
+    .where(eq(people.email, seedEmail("PM")))
+    .limit(1)
+
+  if (!pm) {
+    return
+  }
+
+  const minutes = 60 * 1000
+  const now = Date.now()
+
+  const samples = [
+    {
+      title: "D1.2 is ready for review on Demo Project",
+      path: `/projects/${projectId}/tools/D1.2`,
+      createdAt: new Date(now - 5 * minutes),
+      read: false,
+    },
+    {
+      title: "D1.1 was approved on Demo Project",
+      path: `/projects/${projectId}/tools/D1.1`,
+      createdAt: new Date(now - 3 * 60 * minutes),
+      read: false,
+    },
+    {
+      title: "You were added to Demo Project",
+      path: `/projects/${projectId}`,
+      createdAt: new Date(now - 26 * 60 * minutes),
+      read: false,
+    },
+    {
+      title: "Demo client request received",
+      path: `/projects/${projectId}`,
+      createdAt: new Date(now - 3 * 24 * 60 * minutes),
+      read: true,
+    },
+  ]
+
+  for (const sample of samples) {
+    await database.pool.query(
+      `INSERT INTO notifications (person_id, kind, title, path, created_at, read_at)
+       SELECT $1::uuid, 'tool_open', $2::text, $3::text, $4::timestamptz, $5::timestamptz
+       WHERE NOT EXISTS (
+         SELECT 1 FROM notifications WHERE person_id = $1::uuid AND title = $2::text
+       )`,
+      [
+        pm.id,
+        sample.title,
+        sample.path,
+        sample.createdAt,
+        sample.read ? sample.createdAt : null,
+      ]
+    )
+  }
+}
+
 // The id of Demo Project, for the links the preview guide prints.
 export async function demoProjectId(url: string) {
   assertLocal(url)
@@ -255,6 +319,9 @@ export async function seed(url: string): Promise<SeedUser[]> {
         created.push({ role, email: seedEmail(role) })
       }
     }
+
+    // After the people loop, because the notifications belong to the demo PM.
+    await addDemoNotifications(database, projectId)
 
     return created
   } finally {

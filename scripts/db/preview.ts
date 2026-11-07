@@ -36,6 +36,13 @@ const previews: Preview[] = [
     expect:
       "The same sheet as D1.2: request status and the attached files as tables, with Pending | Reviewed, read only because the demo D1.1 is locked.",
   },
+  {
+    screen: "Notification bell (RDP-115)",
+    loginAs: "PM",
+    path: () => "/",
+    expect:
+      "A bell at the top right of the sidebar header (on a narrow screen, in the top bar before Sign out) with the number 3 on it. Press it: a panel lists 4 notifications, newest first, each with its title and how long ago (5 minutes ago, 3 hours ago, Yesterday, 3 days ago). The first 3 have a dot for unread. Click one: you go to its page and the number drops by 1. Press Mark all read: the number and the dots go. Log in as another demo user, for example om@example.com, to see the empty message: You have no notifications. Notifications cannot be deleted, so once read they stay read.",
+  },
 ]
 
 // Printed on every start, so nobody has to ask who to log in as.

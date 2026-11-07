@@ -4,7 +4,7 @@ import type { ProjectStatus, Role } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 
-import { projectsNeedingTeam, teamOf } from "./team"
+import { countProjectsNeedingTeam, projectsNeedingTeam, teamOf } from "./team"
 
 const database = createTestDatabase()
 
@@ -121,6 +121,72 @@ describe("projectsNeedingTeam", () => {
     await holds(pm, projectId, "PM")
 
     await expect(projectsNeedingTeam(database, pm)).rejects.toBeInstanceOf(
+      PermissionDeniedError
+    )
+  })
+})
+
+describe("countProjectsNeedingTeam", () => {
+  it("1. counts the projects that need a team", async () => {
+    await addProject("Bare One")
+    await addProject("Bare Two")
+
+    const crewed = await addProject("Full Crew")
+
+    await holds(await addPerson("Pat"), crewed, "PM")
+    await holds(await addPerson("Olu"), crewed, "OM")
+
+    expect(await countProjectsNeedingTeam(database, admin)).toBe(2)
+  })
+
+  it("2. equals the length of the list, for any set of projects", async () => {
+    await addProject("Bare")
+    await addProject("Spam", "rejected")
+    await addProject("Paused", "on_hold")
+
+    const half = await addProject("Half")
+
+    await holds(await addPerson("Pat"), half, "PM")
+
+    const full = await addProject("Full")
+
+    await holds(await addPerson("Pia"), full, "PM")
+    await holds(await addPerson("Olu"), full, "OM")
+
+    const listed = await projectsNeedingTeam(database, admin)
+
+    expect(listed).toHaveLength(3)
+    expect(await countProjectsNeedingTeam(database, admin)).toBe(listed.length)
+  })
+
+  it("3. drops by one when a project gets a PM and an OM", async () => {
+    const first = await addProject("First")
+
+    await addProject("Second")
+
+    expect(await countProjectsNeedingTeam(database, admin)).toBe(2)
+
+    await holds(await addPerson("Pat"), first, "PM")
+
+    // A PM alone does not free it: the OM is still missing.
+    expect(await countProjectsNeedingTeam(database, admin)).toBe(2)
+
+    await holds(await addPerson("Olu"), first, "OM")
+
+    expect(await countProjectsNeedingTeam(database, admin)).toBe(1)
+  })
+
+  it("is zero when nothing is waiting", async () => {
+    expect(await countProjectsNeedingTeam(database, admin)).toBe(0)
+  })
+
+  it("4. refuses anyone but a company-wide IT/Admin", async () => {
+    const projectId = await addProject("Aquaresh")
+    const pm = await addPerson("Pat")
+
+    await holds(pm, projectId, "PM")
+
+    await expect(countProjectsNeedingTeam(database, pm)).rejects.toBeInstanceOf(
       PermissionDeniedError
     )
   })

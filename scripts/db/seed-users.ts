@@ -204,6 +204,31 @@ async function addDemoNotifications(database: Database, projectId: string) {
   }
 }
 
+// Two projects with nobody on them, so IT/Admin has requests waiting for a team
+// and the Assign staff link shows a number. A project is only added when none
+// has its name, so running this again changes nothing. Once IT/Admin gives one
+// a PM and an OM it drops off the list, and is not made bare again.
+const WAITING_PROJECTS = [
+  { name: "Waiting Project A", requestId: "T1-1789787898001" },
+  { name: "Waiting Project B", requestId: "T1-1789787898002" },
+] as const
+
+async function addWaitingProjects(database: Database) {
+  for (const { name, requestId } of WAITING_PROJECTS) {
+    const [existing] = await database
+      .select({ id: projects.id })
+      .from(projects)
+      .where(eq(projects.name, name))
+      .limit(1)
+
+    if (!existing) {
+      await database
+        .insert(projects)
+        .values({ name, requestId, serviceTrack: "Tier_1" })
+    }
+  }
+}
+
 // The id of Demo Project, for the links the preview guide prints.
 export async function demoProjectId(url: string) {
   assertLocal(url)
@@ -322,6 +347,7 @@ export async function seed(url: string): Promise<SeedUser[]> {
 
     // After the people loop, because the notifications belong to the demo PM.
     await addDemoNotifications(database, projectId)
+    await addWaitingProjects(database)
 
     return created
   } finally {

@@ -3,6 +3,7 @@ import Link from "next/link"
 
 import { NotificationBell } from "@/components/notifications/notification-bell"
 import { SignOutButton } from "@/components/sign-out-button"
+import { TeamWaiting } from "@/components/team-waiting"
 import { cn } from "@/lib/utils"
 
 // The slim top bar for screens too narrow for the title bar or the sidebar.
@@ -44,6 +45,7 @@ export function MobileBar({
               className="text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:bg-primary/10"
             >
               Team
+              <TeamWaiting />
             </Link>
           </>
         )}

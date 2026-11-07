@@ -87,6 +87,16 @@ export async function projectsNeedingTeam(
     )
 }
 
+// How many projects the "needs a team" list shows. It is the list itself,
+// counted, so the number and the list can never disagree. Only a company-wide
+// IT/Admin may ask.
+export async function countProjectsNeedingTeam(
+  database: Database,
+  actor: string
+): Promise<number> {
+  return (await projectsNeedingTeam(database, actor)).length
+}
+
 // The project and the people on it in the team roles, PM first. Nothing when
 // the project does not exist. Only a company-wide IT/Admin may ask.
 export async function teamOf(

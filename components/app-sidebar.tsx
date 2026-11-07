@@ -6,6 +6,7 @@ import { NotificationBell } from "@/components/notifications/notification-bell"
 import { ProjectTree } from "@/components/project-tree"
 import { Sheet } from "@/components/sheet"
 import { SignOutButton } from "@/components/sign-out-button"
+import { TeamWaiting } from "@/components/team-waiting"
 import type { ProjectNav } from "@/lib/project-nav"
 import { cn } from "@/lib/utils"
 
@@ -101,6 +102,7 @@ export function AppSidebar({
                   )}
                 >
                   Assign staff
+                  <TeamWaiting />
                 </Link>
               )}
             </>

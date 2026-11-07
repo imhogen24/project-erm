@@ -43,6 +43,13 @@ const previews: Preview[] = [
     expect:
       "A bell at the top right of the sidebar header (on a narrow screen, in the top bar before Sign out) with the number 3 on it. Press it: a panel lists 4 notifications, newest first, each with its title and how long ago (5 minutes ago, 3 hours ago, Yesterday, 3 days ago). The first 3 have a dot for unread. Click one: you go to its page and the number drops by 1. Press Mark all read: the number and the dots go. Log in as another demo user, for example om@example.com, to see the empty message: You have no notifications. Notifications cannot be deleted, so once read they stay read.",
   },
+  {
+    screen: "Requests waiting for a team (RDP-127)",
+    loginAs: "IT/Admin",
+    path: () => "/admin/team",
+    expect:
+      "In the left sidebar the link reads Assign staff (2): the number of requests with no PM or no OM, the same as the list on the page. (On a narrow screen the top bar says Team (2).) Give one of the two Waiting Projects both a PM and an OM and go back: the number drops by 1. At 0 the link is just Assign staff, with no brackets. Log in as pm@example.com: there is no Assign staff link.",
+  },
 ]
 
 // Printed on every start, so nobody has to ask who to log in as.

@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 
 import { BackLink } from "@/components/back-link"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 import { ProjectTree } from "@/components/project-tree"
 import { Sheet } from "@/components/sheet"
 import { SignOutButton } from "@/components/sign-out-button"
@@ -33,19 +34,19 @@ export function AppSidebar({
   return (
     <Sheet className="fixed top-[var(--cell)] bottom-[var(--cell)] left-[var(--cell)] z-20 hidden w-[calc(var(--cell)*3)] flex-col shadow-xl shadow-foreground/10 xl:flex">
       <aside aria-label="Sidebar" className="flex min-h-0 flex-1 flex-col">
-        <Link
-          href="/"
-          className="flex h-16 shrink-0 items-center border-b px-5 outline-none focus-visible:bg-primary/10"
-        >
-          <Image
-            src="/logo.png"
-            alt="IMHOGEN ERM"
-            width={112}
-            height={27}
-            priority
-            className="h-auto w-28"
-          />
-        </Link>
+        <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b pr-3 pl-5">
+          <Link href="/" className="outline-none focus-visible:bg-primary/10">
+            <Image
+              src="/logo.png"
+              alt="IMHOGEN ERM"
+              width={112}
+              height={27}
+              priority
+              className="h-auto w-28"
+            />
+          </Link>
+          <NotificationBell variant="popover" />
+        </div>
         <nav aria-label="Main" className="flex min-h-0 flex-1 flex-col">
           {project ? (
             <>

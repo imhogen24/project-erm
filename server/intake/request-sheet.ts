@@ -45,7 +45,7 @@ function labelOf(column: string) {
 // One column of the website row as a line of text. A list of choices is joined
 // with commas, a time reads as a date and time, and anything missing reads as
 // empty.
-function valueOf(row: JsonObject, column: string) {
+export function valueOf(row: JsonObject, column: string) {
   const choices = list.safeParse(row[column])
 
   if (choices.success) {

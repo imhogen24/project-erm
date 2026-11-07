@@ -1,4 +1,12 @@
-import { workbooks, type Field, type ToolDefinition } from "./define-tool"
+import { serviceTracks, type ServiceTrack } from "@/db/schema"
+import { requestLayouts, submissionFields } from "@/lib/request-sheet"
+
+import {
+  workbooks,
+  type Field,
+  type RequestLink,
+  type ToolDefinition,
+} from "./define-tool"
 
 export class UnknownWorkbookError extends Error {}
 
@@ -61,14 +69,45 @@ export const tools = createToolRegistry()
 
 export const { registerTool, getTool, listTools } = tools
 
+// Whether the track's website form holds the column.
+function formHolds(track: ServiceTrack, column: string) {
+  return [
+    ...requestLayouts[track].flatMap((group) => group.fields),
+    ...submissionFields,
+  ].some((field) => field.column === column)
+}
+
+// One column for both tiers may be on either form, and is empty on the other.
+// A column named for one tier must be on that tier's form.
+function brokenRequestLink(where: string, { request }: RequestLink): string[] {
+  if (request.Tier_1 === request.Tier_3) {
+    return serviceTracks.some((track) => formHolds(track, request[track]))
+      ? []
+      : [`${where} inherits ${request.Tier_1}, which no website form has`]
+  }
+
+  return serviceTracks
+    .filter((track) => !formHolds(track, request[track]))
+    .map(
+      (track) =>
+        `${where} inherits ${request[track]}, which the ${track} website form does not have`
+    )
+}
+
 // Describes every `inherited` link, on a field or a table column, whose tool,
-// field or column does not exist.
+// field or column does not exist, or whose web form column no form has.
 export function brokenInheritedLinks(tools: ToolDefinition[]): string[] {
   const byId = new Map(tools.map((tool) => [tool.id, tool]))
   const broken: string[] = []
 
   function check(where: string, link: Field["inherited"]) {
     if (!link) {
+      return
+    }
+
+    if ("request" in link) {
+      broken.push(...brokenRequestLink(where, link))
+
       return
     }
 

@@ -67,6 +67,7 @@ export function TableEditor({
 }: Props) {
   const columns = field.columns
   const fixed = field.prefilledRows !== undefined
+  const lockedCount = field.lockedRows?.length ?? 0
   const shownOnly = field.readOnly === true
 
   const total = field.subtotal
@@ -129,8 +130,13 @@ export function TableEditor({
             {columns.map((column, columnIndex) => {
               const id = `${field.key}-${rowIndex}-${column.key}`
               const message = cellError(rowIndex, column.key)
-              const locked = fixed && columnIndex === 0
-              const label = field.prefilledRows?.[rowIndex] ?? ""
+
+              const locked =
+                columnIndex === 0 && (fixed || rowIndex < lockedCount)
+
+              const label =
+                (field.prefilledRows ?? field.lockedRows)?.[rowIndex] ?? ""
+
               const readOnly = readOnlyTypes.includes(column.type)
 
               if (locked) {
@@ -210,7 +216,7 @@ export function TableEditor({
               )
             })}
             <div className="col-span-2 flex items-center justify-end @2xl:col-span-1 @2xl:w-24 @2xl:justify-center">
-              {!fixed && !shownOnly && (
+              {!fixed && !shownOnly && rowIndex >= lockedCount && (
                 <Button
                   type="button"
                   variant="ghost"

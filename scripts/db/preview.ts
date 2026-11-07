@@ -37,6 +37,13 @@ const previews: Preview[] = [
       "The same sheet as D1.2: request status and the attached files as tables, with Pending | Reviewed, read only because the demo D1.1 is locked.",
   },
   {
+    screen: "Tables with locked and added rows (RDP-144, dev preview)",
+    loginAs: "PM",
+    path: () => "/dev/form-preview",
+    expect:
+      "Find the table Locked and added rows. Its two rows, Primary purpose and Main deliverables, show a lock and have no Remove button. Press Add row: a third row opens with an editable name and a Remove button. D1.3 and T3.D1.3a use this table for their own tables once the OM can open them.",
+  },
+  {
     screen: "Notification bell (RDP-115)",
     loginAs: "PM",
     path: () => "/",

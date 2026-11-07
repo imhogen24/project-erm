@@ -52,6 +52,16 @@ const tool = defineTool({
       ],
     },
     {
+      key: "objectives",
+      label: "Locked and added rows",
+      type: "table",
+      lockedRows: ["Primary purpose", "Main deliverables"],
+      columns: [
+        { key: "item", label: "Item", type: "text" },
+        { key: "description", label: "Description", type: "longText" },
+      ],
+    },
+    {
       key: "extraItems",
       label: "Extra items",
       type: "table",

@@ -128,13 +128,22 @@ function tableSchema(table: TableField) {
   return z
     .array(row, { error: "Must be a list of rows" })
     .superRefine((rows, context) => {
-      const labels = table.prefilledRows
+      const labels = table.prefilledRows ?? table.lockedRows
 
       if (!labels) {
         return
       }
 
-      if (rows.length !== labels.length) {
+      if (table.lockedRows && rows.length < labels.length) {
+        context.addIssue({
+          code: "custom",
+          message: `Must keep its ${labels.length} locked rows: ${labels.join(", ")}`,
+        })
+
+        return
+      }
+
+      if (table.prefilledRows && rows.length !== labels.length) {
         context.addIssue({
           code: "custom",
           message: `Must keep its ${labels.length} fixed rows: ${labels.join(", ")}`,
@@ -145,12 +154,14 @@ function tableSchema(table: TableField) {
 
       const first = table.columns[0]!.key
 
-      rows.forEach((entry, index) => {
-        if (entry[first] !== labels[index]) {
+      labels.forEach((label, index) => {
+        const entry = rows[index]!
+
+        if (entry[first] !== label) {
           context.addIssue({
             code: "custom",
             path: [index, first],
-            message: `Must stay "${labels[index]}"`,
+            message: `Must stay "${label}"`,
           })
         }
       })
@@ -225,9 +236,12 @@ const rowsOf = z.array(z.record(z.string(), z.unknown()))
 // At submit, a required column must be answered in every row of its table.
 function unansweredCells(table: TableField, value: JsonObject[string]) {
   const required = table.columns.filter((column) => column.required)
+  const first = table.columns[0]!.key
+  const optional = table.optionalRows ?? []
 
   return (rowsOf.safeParse(value).data ?? []).flatMap((row, index) =>
     required
+      .filter(() => !optional.includes(String(row[first])))
       .filter((column) => blank.safeParse(row[column.key]).success)
       .map((column): FieldError => ({
         field: table.key,

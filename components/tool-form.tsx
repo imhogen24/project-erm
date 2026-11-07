@@ -94,8 +94,17 @@ function startingRows(
 ): RawRow[] {
   const saved = rowsSchema.safeParse(value).data ?? []
   const labels = field.prefilledRows
+  const locked = field.lockedRows ?? []
 
-  const rows = (labels ?? saved.map(() => undefined)).map((label, index) => {
+  // Locked rows come first, then whatever the person added. A table that
+  // starts on a row opens with one empty row when nothing is saved.
+  const held =
+    labels ??
+    (saved.length === 0 && field.startsWithRow
+      ? [undefined]
+      : [...locked, ...saved.slice(locked.length).map(() => undefined)])
+
+  const rows = held.map((label, index) => {
     const row = saved[index] ?? {}
 
     return Object.fromEntries(

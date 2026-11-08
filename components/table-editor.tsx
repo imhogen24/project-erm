@@ -54,7 +54,7 @@ function sumOf(rows: RawRow[], key: string) {
 }
 
 const rowGrid =
-  "grid-cols-2 gap-3 @xl:grid-cols-[repeat(var(--cols),minmax(0,1fr))_auto] @xl:gap-0"
+  "grid-cols-2 gap-3 @xl:grid-cols-[repeat(var(--cols),minmax(0,1fr))] @xl:gap-0"
 
 // A table is one set of inputs. Wide, it is a grid with shared borders. Narrow,
 // each row becomes a card, so nothing scrolls sideways.
@@ -68,7 +68,13 @@ export function TableEditor({
   const columns = field.columns
   const fixed = field.prefilledRows !== undefined
   const lockedCount = field.lockedRows?.length ?? 0
+
+  // A row the person added can be removed. Its Remove button sits inside the
+  // last cell, so the table has no empty column at the right.
   const shownOnly = field.readOnly === true
+
+  const canRemove = (rowIndex: number) =>
+    !fixed && !shownOnly && rowIndex >= lockedCount
 
   const total = field.subtotal
     ? { column: field.subtotal, amount: sumOf(rows, field.subtotal) }
@@ -88,6 +94,20 @@ export function TableEditor({
     )?.message
   }
 
+  function removeButton(rowIndex: number) {
+    return (
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        aria-label={`Remove row ${rowIndex + 1}`}
+        onClick={() => onChange(rows.filter((_, index) => index !== rowIndex))}
+      >
+        Remove
+      </Button>
+    )
+  }
+
   return (
     <div className="@container w-full">
       <div
@@ -104,12 +124,11 @@ export function TableEditor({
             <div
               key={column.key}
               role="columnheader"
-              className="border-r border-foreground/20 px-4 py-2"
+              className="border-r border-foreground/20 px-4 py-2 last:border-r-0"
             >
               {column.label}
             </div>
           ))}
-          <div role="columnheader" className="w-24 px-3 py-2" />
         </div>
         {rows.length === 0 && (
           <div role="row">
@@ -139,12 +158,15 @@ export function TableEditor({
 
               const readOnly = readOnlyTypes.includes(column.type)
 
+              const removable =
+                columnIndex === columns.length - 1 && canRemove(rowIndex)
+
               if (locked) {
                 return (
                   <div
                     key={column.key}
                     role="cell"
-                    className="col-span-2 flex items-center gap-2 bg-muted/60 text-sm font-medium @xl:col-span-1 @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3"
+                    className="col-span-2 flex items-center gap-2 bg-muted/60 text-sm font-medium @xl:col-span-1 @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 @xl:last:border-r-0"
                   >
                     <LockSimpleIcon aria-hidden className="size-4 shrink-0" />
                     {label}
@@ -157,7 +179,7 @@ export function TableEditor({
                   <div
                     key={column.key}
                     role="cell"
-                    className={`flex flex-col gap-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 ${wideTypes.includes(column.type) ? "col-span-2 @xl:col-span-1" : ""}`}
+                    className={`flex flex-col gap-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 @xl:last:border-r-0 ${wideTypes.includes(column.type) ? "col-span-2 @xl:col-span-1" : ""}`}
                   >
                     <span className="pt-2 text-xs text-muted-foreground @xl:sr-only @xl:pt-0">
                       {column.label}
@@ -177,7 +199,7 @@ export function TableEditor({
                 <div
                   key={column.key}
                   role="cell"
-                  className={`flex flex-col gap-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 ${wideTypes.includes(column.type) ? "col-span-2 @xl:col-span-1" : ""}`}
+                  className={`relative flex flex-col gap-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:last:border-r-0 ${wideTypes.includes(column.type) ? "col-span-2 @xl:col-span-1" : ""}`}
                 >
                   <label
                     htmlFor={id}
@@ -201,8 +223,13 @@ export function TableEditor({
                       onChange={(value) => setCell(rowIndex, column.key, value)}
                       invalid={message !== undefined}
                       describedBy={message ? `${id}-error` : undefined}
-                      inputClassName="@xl:h-11 @xl:border-0 @xl:shadow-none @xl:focus-visible:ring-inset @xl:aria-invalid:ring-inset"
+                      inputClassName={`@xl:h-11 @xl:border-0 @xl:shadow-none @xl:focus-visible:ring-inset @xl:aria-invalid:ring-inset ${removable ? "@xl:pr-24" : ""}`}
                     />
+                  )}
+                  {removable && (
+                    <div className="absolute top-1 right-1 hidden @xl:block">
+                      {removeButton(rowIndex)}
+                    </div>
                   )}
                   {message && (
                     <p
@@ -215,21 +242,11 @@ export function TableEditor({
                 </div>
               )
             })}
-            <div className="col-span-2 flex items-center justify-end @xl:col-span-1 @xl:w-24 @xl:justify-center">
-              {!fixed && !shownOnly && rowIndex >= lockedCount && (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  aria-label={`Remove row ${rowIndex + 1}`}
-                  onClick={() =>
-                    onChange(rows.filter((_, index) => index !== rowIndex))
-                  }
-                >
-                  Remove
-                </Button>
-              )}
-            </div>
+            {canRemove(rowIndex) && (
+              <div className="col-span-2 flex justify-end @xl:hidden">
+                {removeButton(rowIndex)}
+              </div>
+            )}
           </div>
         ))}
         {total && (

@@ -69,8 +69,7 @@ export function signatureText(value: FieldValue | RawValue | undefined) {
   return `Signed by ${signature.signedBy} on ${day}`
 }
 
-const readOnlyBlock =
-  "border border-dashed border-foreground/30 bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
+const readOnlyBlock = "bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
 
 const inputType = {
   text: "text",

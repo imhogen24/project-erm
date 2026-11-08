@@ -10,7 +10,7 @@ import { Grain } from "@/components/grain"
 import { MobileBar } from "@/components/mobile-bar"
 import { RequestChange } from "@/components/request-change"
 import { TableBox } from "@/components/sheet-table"
-import { StateBadge, stateFrame, stateSquare } from "@/components/state-badge"
+import { StateBadge, stateSquare } from "@/components/state-badge"
 import { Badge } from "@/components/ui/badge"
 import { cn } from "@/lib/utils"
 import { isItAdmin } from "@/lib/roles"
@@ -175,13 +175,6 @@ export default async function Page({
                       )}
                     >
                       <Grain />
-                      <span
-                        aria-hidden
-                        className={cn(
-                          "pointer-events-none absolute inset-3",
-                          stateFrame(tool.state)
-                        )}
-                      />
                       <Link
                         href={`/projects/${projectId}/tools/${tool.toolId}`}
                         className="relative flex min-w-0 flex-col gap-1 px-1 outline-none after:absolute after:-inset-6 focus-visible:underline"

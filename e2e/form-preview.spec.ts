@@ -204,7 +204,7 @@ for (const width of [1280, 375]) {
 
     await table.getByRole("button", { name: "Add row" }).click()
     await table.getByLabel("Item, row 3").fill("Site access")
-    await table.getByLabel("Description, row 3").fill("Gate code needed")
+    await table.getByLabel("Detail, row 3").fill("Gate code needed")
     await expect(table.getByLabel("Item, row 3")).toHaveValue("Site access")
     expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0)
 

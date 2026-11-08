@@ -2,39 +2,38 @@ import { Badge } from "@/components/ui/badge"
 import type { ToolState } from "@/lib/tool-state"
 import { cn } from "@/lib/utils"
 
-// A state is drawn the way a drawing draws its lines: the badge sample is
-// dotted for what is not there yet, dashed for work that can still change,
-// solid as it firms up, heavy once approved. The tool's square takes a fill,
-// darkest once locked. The square sits on the page grid and has no border of
-// its own.
+// A state is a filled badge, stronger as the tool firms up: faint grey for
+// not started, then draft, then orange once submitted and approved, and light
+// on the dark square once locked. The tool's square sits on the page grid and
+// has no border of its own.
 const states: Record<
   ToolState,
-  { label: string; square: string; sample: string }
+  { label: string; square: string; badge: string }
 > = {
   notStarted: {
     label: "Not started",
     square: "bg-background",
-    sample: "border-t-2 border-dotted border-foreground/50",
+    badge: "bg-foreground/10 text-foreground",
   },
   draft: {
     label: "Draft",
     square: "bg-background",
-    sample: "border-t-2 border-dashed border-foreground/70",
+    badge: "bg-foreground/15 text-foreground",
   },
   submitted: {
     label: "Submitted",
     square: "bg-[color-mix(in_oklab,var(--primary)_7%,var(--background))]",
-    sample: "border-t-2 border-foreground/70",
+    badge: "bg-primary/20 text-foreground",
   },
   approved: {
     label: "Approved",
     square: "bg-[color-mix(in_oklab,var(--primary)_14%,var(--background))]",
-    sample: "border-t-[3px] border-foreground",
+    badge: "bg-primary text-primary-foreground",
   },
   locked: {
     label: "Locked",
     square: "bg-foreground text-background",
-    sample: "border-t-[3px] border-background",
+    badge: "bg-background text-foreground",
   },
 }
 
@@ -47,14 +46,13 @@ export function stateSquare(state: ToolState) {
 }
 
 export function StateBadge({ state }: { state: ToolState }) {
-  const { label, sample } = states[state]
+  const { label, badge } = states[state]
 
   return (
     <Badge
       variant="outline"
-      className="h-6 gap-2 rounded-none border-0 bg-transparent px-0 text-xs text-inherit dark:bg-transparent"
+      className={cn("h-6 rounded-none border-0 px-2.5 text-xs", badge)}
     >
-      <span aria-hidden className={cn("w-6", sample)} />
       {label}
     </Badge>
   )

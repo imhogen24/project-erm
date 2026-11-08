@@ -11,6 +11,7 @@ import {
   projects,
   roles,
   toolRecords,
+  type JsonObject,
   type Role,
 } from "@/db/schema"
 
@@ -100,26 +101,17 @@ async function addDemoRequest(database: Database, projectId: string) {
     .onConflictDoNothing({ target: intakeSubmissions.requestId })
 }
 
-// An approved D1.1 with two sample files, so D1.2 is open and has files to show.
-// It is only added when the project has no D1.1 yet, so running this again
-// changes nothing and a D1.1 someone is working on is left alone.
-async function addDemoReview(database: Database, projectId: string) {
-  const [existing] = await database
-    .select({ id: toolRecords.id })
-    .from(toolRecords)
-    .where(
-      and(eq(toolRecords.projectId, projectId), eq(toolRecords.toolId, "D1.1"))
-    )
-    .limit(1)
-
-  if (existing) {
-    return
-  }
-
-  await database.insert(toolRecords).values({
-    projectId,
+// Each tool the demo project has already been through. The next tool only
+// opens once the one before it is locked, so a developer building a tool can
+// open it on Demo Project without working through the tools before it. When a
+// tool is built, add the tool before it here, locked, and name the tool it
+// opens. A record is only added when the project has none for that tool yet,
+// so running this again changes nothing and a record someone is working on is
+// left alone.
+const demoRecords: { toolId: string; payload: JsonObject }[] = [
+  {
+    // Two sample files, so D1.2 has files to show.
     toolId: "D1.1",
-    state: "locked",
     payload: {
       requestStatus: "Approved",
       attachedFiles: [
@@ -137,7 +129,56 @@ async function addDemoReview(database: Database, projectId: string) {
         },
       ],
     },
-  })
+  },
+  {
+    // Approved with Proceed to D1.3, so D1.3 is open.
+    toolId: "D1.2",
+    payload: {
+      digitalRecords: [
+        { fileName: "Site photo" },
+        { fileName: "Layout drawing" },
+      ],
+      triageChecklist: [
+        {
+          check: "Is the notification readable and free of malicious links?",
+          status: "Pass",
+          reviewerNotes: "Readable, no links",
+        },
+        {
+          check: "Does the request broadly align with IMHOGEN's services?",
+          status: "Pass",
+          reviewerNotes: "Within scope",
+        },
+        {
+          check: "Is the contact information apparently valid and legible?",
+          status: "Pass",
+          reviewerNotes: "Email and phone check out",
+        },
+      ],
+      triageDecision: "Proceed to D1.3",
+    },
+  },
+]
+
+async function addDemoRecords(database: Database, projectId: string) {
+  for (const { toolId, payload } of demoRecords) {
+    const [existing] = await database
+      .select({ id: toolRecords.id })
+      .from(toolRecords)
+      .where(
+        and(
+          eq(toolRecords.projectId, projectId),
+          eq(toolRecords.toolId, toolId)
+        )
+      )
+      .limit(1)
+
+    if (!existing) {
+      await database
+        .insert(toolRecords)
+        .values({ projectId, toolId, state: "locked", payload })
+    }
+  }
 }
 
 // Four sample notifications for the demo PM, so the bell has something to show:
@@ -309,7 +350,7 @@ export async function seed(url: string): Promise<SeedUser[]> {
     const projectId = await findOrCreateProject(database)
 
     await addDemoRequest(database, projectId)
-    await addDemoReview(database, projectId)
+    await addDemoRecords(database, projectId)
 
     const passwordHash = await hashPassword(SEED_PASSWORD)
     const created: SeedUser[] = []

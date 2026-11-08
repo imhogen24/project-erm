@@ -325,3 +325,22 @@ describe("seeding a user who lost a qualification", () => {
     expect(await companyWideRoles()).toEqual(COMPANY_WIDE)
   })
 })
+
+describe("the demo D1.2", () => {
+  it("adds one locked D1.2 that proceeds to D1.3, once, so D1.3 is open", async () => {
+    await seed(url)
+    await seed(url)
+
+    const { rows } = await database.pool.query<{
+      state: string
+      decision: string
+    }>(
+      `SELECT r.state, r.payload->>'triageDecision' AS decision
+         FROM tool_records r
+         JOIN projects p ON p.id = r.project_id
+        WHERE p.name = 'Demo Project' AND r.tool_id = 'D1.2'`
+    )
+
+    expect(rows).toEqual([{ state: "locked", decision: "Proceed to D1.3" }])
+  })
+})

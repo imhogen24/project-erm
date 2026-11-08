@@ -27,7 +27,14 @@ const previews: Preview[] = [
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.2`,
     expect:
-      "One sheet: the title block with the project, request ID and people, then tables for the files (open a file, describe it), the three triage checks (Pass | Fail and notes) and the decision. Proceed turns off while a check is Fail. Press View client request for the web form, in tables, over half the screen. Log in as pm@example.com to see it read only with Approve.",
+      "The demo D1.2 is already approved, so the sheet is read only and D1.3 is open on the project page. The sheet shows the title block, the files, the three triage checks and the decision Proceed to D1.3. Press View client request for the web form, in tables, over half the screen.",
+  },
+  {
+    screen: "D1.3 received request record (RDP-144)",
+    loginAs: "OM",
+    path: (id) => `/projects/${id}/tools/D1.3`,
+    expect:
+      "Demo Project is Tier 1 and D1.2 is already approved, so D1.3 is open. Four tables: Core Objectives and Scope has 3 locked rows (lock, no Remove) and Add row; Input / Output Operands (M, E, I, L) and Operators (5 rows) are fixed; Identified Missing Information is empty with Add row. Save draft keeps a half-filled sheet. Submit needs the description of the first two core objectives. The Tier 3 sheet, T3.D1.3a, opens only on a Tier 3 project.",
   },
   {
     screen: "D1.1 review sheet",

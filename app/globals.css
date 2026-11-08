@@ -192,6 +192,17 @@
     1px 1px 0 0 var(--rule);
 }
 
+/* A frame holding grid squares: its four lines are drawn on the same pixels as
+   the lines of the squares inside it, so nothing is doubled. */
+.grid-frame {
+  box-shadow:
+    inset 1px 0 0 0 var(--rule),
+    inset 0 1px 0 0 var(--rule),
+    1px 0 0 0 var(--rule),
+    0 1px 0 0 var(--rule),
+    1px 1px 0 0 var(--rule);
+}
+
 /* From 640px up the squares are a fixed 96px. Below that the grid shrinks so
    the screen is exactly four squares wide. */
 @media (min-width: 640px) {

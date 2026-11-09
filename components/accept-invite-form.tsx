@@ -40,8 +40,7 @@ type Props = {
   accept: (values: { token: string; password: string }) => Promise<Result>
 }
 
-const inputClass =
-  "h-12 border-foreground/20 bg-background text-base md:text-base"
+const inputClass = "h-12 bg-background text-base md:text-base"
 
 export function AcceptInviteForm({ token, name, email, accept }: Props) {
   const router = useRouter()

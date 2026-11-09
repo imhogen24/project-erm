@@ -1,3 +1,4 @@
+import { LockSimpleIcon } from "@phosphor-icons/react/ssr"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { z } from "zod"
@@ -6,14 +7,13 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { BackLink } from "@/components/back-link"
 import { ClientRequestPanel } from "@/components/client-request-panel"
 import { DecideChange } from "@/components/decide-change"
-import { FrameTab } from "@/components/frame-tab"
 import { Grain } from "@/components/grain"
 import { MobileBar } from "@/components/mobile-bar"
+import { PageSheet } from "@/components/page-sheet"
 import { RequestChange } from "@/components/request-change"
 import { TableBox } from "@/components/sheet-table"
-import { StateBadge, stateSquare } from "@/components/state-badge"
+import { StateBadge } from "@/components/state-badge"
 import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
 import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
 import { registeredTools } from "@/lib/tools"
@@ -96,18 +96,21 @@ export default async function Page({
           <BackLink href="/" className="mb-3 border-y bg-background xl:hidden">
             Your projects
           </BackLink>
-          <div className="grid-frame relative isolate min-h-[calc(100svh-var(--cell)*2)] bg-background">
-            <Grain />
-            <div className="flex h-[var(--cell)] items-start">
-              <FrameTab>
-                <h1 className="line-clamp-2 min-w-0 text-lg leading-tight font-semibold tracking-tight [overflow-wrap:anywhere] sm:text-xl">
-                  {overview.name}
-                </h1>
-                {clientRequest && (
-                  <ClientRequestPanel request={clientRequest} />
-                )}
-              </FrameTab>
-            </div>
+          <PageSheet
+            title={overview.name}
+            below={
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-muted-foreground">
+                <Badge variant="secondary">
+                  {overview.serviceTrack.replace("_", " ")}
+                </Badge>
+                <span className="tabular-nums">{overview.requestId}</span>
+              </div>
+            }
+            actions={
+              clientRequest && <ClientRequestPanel request={clientRequest} />
+            }
+            flush
+          >
             {controls.waiting.length > 0 && (
               <div className={`${square} mt-[var(--cell)] px-6 py-6`}>
                 <Grain />
@@ -161,53 +164,74 @@ export default async function Page({
                     </span>
                   </div>
                   <ul className="contents">
-                    {tools.map((tool) => (
-                      <li
-                        key={tool.toolId}
-                        className={cn(
-                          "grid-square relative isolate flex h-[calc(var(--cell)*2)] min-w-0 flex-col justify-between gap-4 p-6",
-                          stateSquare(tool.state)
-                        )}
-                      >
-                        <Grain />
-                        <Link
-                          href={`/projects/${projectId}/tools/${tool.toolId}`}
-                          className="relative flex min-w-0 flex-col gap-1 px-1 outline-none after:absolute after:-inset-6 focus-visible:underline"
+                    {tools.map((tool) =>
+                      tool.waitingOn !== null ? (
+                        // Not open until the tool before it is locked: no
+                        // link, and it says what it waits on.
+                        <li
+                          key={tool.toolId}
+                          data-shut="true"
+                          className="tool-square grid-square relative isolate flex h-[calc(var(--cell)*2)] min-w-0 flex-col justify-between gap-4 p-6"
                         >
-                          <span className="font-mono text-sm font-semibold tabular-nums">
-                            {tool.toolId}
-                          </span>
-                          <span className="text-sm leading-snug break-words">
-                            {tool.name}
-                          </span>
-                        </Link>
-                        <div className="relative flex flex-wrap items-center justify-between gap-2 px-1">
-                          <StateBadge state={tool.state} />
-                          {controlOf.get(tool.toolId)?.request && (
-                            <Badge
-                              variant="outline"
-                              className="border-current bg-transparent text-inherit dark:bg-transparent"
-                            >
-                              {controlOf.get(tool.toolId)?.request?.status ===
-                              "approved"
-                                ? "Change approved"
-                                : "Change requested"}
-                            </Badge>
-                          )}
-                          {controlOf.get(tool.toolId)?.canRequest && (
-                            <RequestChange
-                              recordId={controlOf.get(tool.toolId)!.recordId}
-                              request={requestChangeAction}
-                            />
-                          )}
-                        </div>
-                      </li>
-                    ))}
+                          <Grain />
+                          <div className="flex min-w-0 flex-col gap-1 px-1">
+                            <span className="text-sm font-semibold tabular-nums">
+                              {tool.toolId}
+                            </span>
+                            <span className="text-sm leading-snug break-words">
+                              {tool.name}
+                            </span>
+                          </div>
+                          <p className="shut-note px-1">
+                            <LockSimpleIcon aria-hidden className="size-3.5" />
+                            {tool.waitingOn.length > 0
+                              ? `Opens after ${tool.waitingOn.join(", ")}`
+                              : "Not open yet"}
+                          </p>
+                        </li>
+                      ) : (
+                        <li
+                          key={tool.toolId}
+                          data-state={tool.state}
+                          className="tool-square link-tile grid-square relative isolate flex h-[calc(var(--cell)*2)] min-w-0 flex-col justify-between gap-4 p-6"
+                        >
+                          <Grain />
+                          <Link
+                            href={`/projects/${projectId}/tools/${tool.toolId}`}
+                            className="stretched-link flex min-w-0 flex-col gap-1 px-1"
+                          >
+                            <span className="text-sm font-semibold tabular-nums">
+                              {tool.toolId}
+                            </span>
+                            <span className="text-sm leading-snug break-words">
+                              {tool.name}
+                            </span>
+                          </Link>
+                          <div className="above-stretch-row flex flex-wrap items-center justify-between gap-2 px-1">
+                            <StateBadge state={tool.state} />
+                            {controlOf.get(tool.toolId)?.request && (
+                              <span data-open="true" className="status-chip">
+                                {controlOf.get(tool.toolId)?.request?.status ===
+                                "approved"
+                                  ? "Change approved"
+                                  : "Change requested"}
+                              </span>
+                            )}
+                            {controlOf.get(tool.toolId)?.canRequest && (
+                              <RequestChange
+                                recordId={controlOf.get(tool.toolId)!.recordId}
+                                request={requestChangeAction}
+                              />
+                            )}
+                          </div>
+                        </li>
+                      )
+                    )}
                   </ul>
                 </div>
               </section>
             ))}
-          </div>
+          </PageSheet>
         </main>
       </div>
     </>

@@ -41,12 +41,19 @@ export function projectNav(overview: ProjectOverview): ProjectNav {
   return {
     id: overview.id,
     name: overview.name,
+    requestId: overview.requestId,
+    tier: overview.serviceTrack === "Tier_1" ? "T1" : "T3",
     workbooks: workbooks.map((id) => ({
       id,
       label: treeLabel(id),
       tools: overview.tools
         .filter((tool) => tool.workbook === id)
-        .map(({ toolId, name, state }) => ({ toolId, name, state })),
+        .map(({ toolId, name, state, waitingOn }) => ({
+          toolId,
+          name,
+          state,
+          open: waitingOn === null,
+        })),
     })),
   }
 }

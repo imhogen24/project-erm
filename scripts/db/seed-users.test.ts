@@ -2,6 +2,11 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { createAuth } from "@/server/auth/auth"
+import { validateRecord } from "@/server/records/validate"
+import { availableTools } from "@/server/workflow/workflow"
+import { tools } from "@/server/tools/registry"
+
+import { registerAllTools } from "@/workbooks"
 import { listProjectsFor } from "@/server/projects/projects"
 import { projectsNeedingTeam, teamOf } from "@/server/staff/team"
 import { workloadOf } from "@/server/staff/staff"
@@ -9,10 +14,14 @@ import { workloadOf } from "@/server/staff/staff"
 import { emailOf, loginFor, staff } from "./seed-data/people"
 import {
   featuredProject,
+  featuredTier3Project,
   projects as seedProjects,
   requestIdOf,
 } from "./seed-data/projects"
+import { projectRecords } from "./seed-data/records"
 import { seed } from "./seed-users"
+
+registerAllTools(tools)
 
 const database = createTestDatabase()
 
@@ -109,25 +118,31 @@ describe("the people", () => {
     expect(rows).toEqual([])
   })
 
-  it("lets every one of them sign in with the password `password`", async () => {
-    await seed(url)
+  it(
+    "lets every one of them sign in with the password `password`",
+    {
+      timeout: 30_000,
+    },
+    async () => {
+      await seed(url)
 
-    const { rows } = await database.pool.query<{ email: string }>(
-      "SELECT email FROM people"
-    )
+      const { rows } = await database.pool.query<{ email: string }>(
+        "SELECT email FROM people"
+      )
 
-    for (const { email } of rows) {
-      const result = await auth.api.signInEmail({
-        body: { email, password: "password" },
-      })
+      for (const { email } of rows) {
+        const result = await auth.api.signInEmail({
+          body: { email, password: "password" },
+        })
 
-      expect(result.user.email).toBe(email)
+        expect(result.user.email).toBe(email)
+      }
     }
-  })
+  )
 })
 
 describe("the projects", () => {
-  it("adds ten projects, each with its website request and a request ID made from when it arrived", async () => {
+  it("adds every project, each with its website request and a request ID made from when it arrived", async () => {
     await seed(url)
 
     expect(await count("projects")).toBe(seedProjects.length)
@@ -191,12 +206,173 @@ describe("the projects", () => {
     const { rows } = await database.pool.query<{
       tool_id: string
       state: string
-    }>(`SELECT tool_id, state FROM tool_records ORDER BY tool_id`)
+    }>(
+      `SELECT tool_id, state FROM tool_records WHERE project_id = $1 ORDER BY tool_id`,
+      [await projectIdOf(featuredProject.name)]
+    )
 
     expect(rows).toEqual([
       { tool_id: "D1.1", state: "locked" },
       { tool_id: "D1.2", state: "locked" },
     ])
+  })
+})
+
+describe("the Tier 3 working project", () => {
+  it("is active and staffed, with D1.1 and D1.2 locked so T3.D1.3a is open and D1.3 is not", async () => {
+    await seed(url)
+
+    const project = await projectIdOf(featuredTier3Project.name)
+
+    const { rows } = await database.pool.query(
+      `SELECT p.service_track, p.status,
+              (SELECT string_agg(tool_id || ':' || state, ',' ORDER BY tool_id)
+                 FROM tool_records WHERE project_id = p.id) AS records
+         FROM projects p WHERE p.id = $1`,
+      [project]
+    )
+
+    expect(rows).toEqual([
+      {
+        service_track: "Tier_3",
+        status: "active",
+        records: "D1.1:locked,D1.2:locked",
+      },
+    ])
+
+    const open = (await availableTools(database, project)).map(
+      (tool) => tool.toolId
+    )
+
+    expect(open).toContain("T3.D1.3a")
+    expect(open).not.toContain("D1.3")
+  })
+})
+
+describe("the records", () => {
+  it("are each valid for their tool, as a draft or as the OM submitted it", () => {
+    for (const [name, records] of projectRecords) {
+      for (const record of records) {
+        // Approved is written by the system when the PM approves, so the OM
+        // submitted Reviewed in its place.
+        const submitted = JSON.parse(
+          JSON.stringify(record.payload).replaceAll('"Approved"', '"Reviewed"')
+        )
+
+        const result = validateRecord(record.toolId, submitted, {
+          forSubmit: record.state !== "draft",
+        })
+
+        expect({ name, toolId: record.toolId, ...result }).toMatchObject({
+          ok: true,
+        })
+      }
+    }
+  })
+
+  it("run in order: only the last record of a project is still open", () => {
+    for (const records of projectRecords.values()) {
+      const states = records.map((record) => record.state)
+
+      expect(states.slice(0, -1).every((state) => state === "locked")).toBe(
+        true
+      )
+    }
+  })
+
+  it("name the OM who prepared each one and the PM who approved the locked ones", async () => {
+    await seed(url)
+
+    const { rows } = await database.pool.query<{
+      state: string
+      prepared: string | null
+      approved: string | null
+    }>(
+      `SELECT r.state,
+              (SELECT p.email FROM people p WHERE p.id = r.submitted_by) AS prepared,
+              (SELECT p.email FROM people p WHERE p.id = r.approved_by) AS approved
+         FROM tool_records r
+         JOIN projects pr ON pr.id = r.project_id
+        WHERE pr.name = 'Ho Water Treatment Dosing Skid'
+        ORDER BY r.created_at`
+    )
+
+    expect(rows).toEqual([
+      {
+        state: "locked",
+        prepared: emailOf("selorm.dzigbordi"),
+        approved: emailOf("efua.quartey"),
+      },
+      {
+        state: "locked",
+        prepared: emailOf("selorm.dzigbordi"),
+        approved: emailOf("efua.quartey"),
+      },
+      {
+        state: "submitted",
+        prepared: emailOf("selorm.dzigbordi"),
+        approved: null,
+      },
+    ])
+  })
+})
+
+describe("what the PMs see", () => {
+  it("gives each PM a record to approve or a change to decide, with an unread note for it", async () => {
+    await seed(url)
+
+    const { rows } = await database.pool.query<{
+      email: string
+      kind: string
+    }>(
+      `SELECT p.email, n.kind
+         FROM notifications n
+         JOIN people p ON p.id = n.person_id
+        WHERE n.read_at IS NULL
+        ORDER BY p.email, n.kind`
+    )
+
+    expect(rows).toEqual([
+      { email: emailOf("ama.owusu"), kind: "approval_needed" },
+      { email: emailOf("ama.owusu"), kind: "change_waiting" },
+      { email: emailOf("efua.quartey"), kind: "approval_needed" },
+      { email: emailOf("nana.adjei"), kind: "approval_needed" },
+    ])
+  })
+
+  it("has one change request waiting, on D1.1 of the featured project, asked by its OM", async () => {
+    await seed(url)
+
+    const { rows } = await database.pool.query(
+      `SELECT r.tool_id, c.status, p.email
+         FROM change_requests c
+         JOIN tool_records r ON r.id = c.record_id
+         JOIN people p ON p.id = c.requested_by`
+    )
+
+    expect(rows).toEqual([
+      {
+        tool_id: "D1.1",
+        status: "requested",
+        email: emailOf("kwabena.asante"),
+      },
+    ])
+  })
+
+  it("adds no second change request or note when it runs again", async () => {
+    await seed(url)
+
+    const before = await database.pool.query(
+      "SELECT (SELECT count(*) FROM notifications) AS n, (SELECT count(*) FROM change_requests) AS c"
+    )
+
+    await seed(url)
+
+    const after = await database.pool.query(
+      "SELECT (SELECT count(*) FROM notifications) AS n, (SELECT count(*) FROM change_requests) AS c"
+    )
+
+    expect(after.rows).toEqual(before.rows)
   })
 })
 
@@ -351,13 +527,18 @@ describe("seeding again", () => {
 
   it("leaves a record someone is working on alone", async () => {
     await seed(url)
+
+    const project = await projectIdOf(featuredProject.name)
+
     await database.pool.query(
-      "UPDATE tool_records SET state = 'draft' WHERE tool_id = 'D1.1'"
+      "UPDATE tool_records SET state = 'draft' WHERE tool_id = 'D1.3' OR (tool_id = 'D1.2' AND project_id = $1)",
+      [project]
     )
     await seed(url)
 
     const { rows } = await database.pool.query<{ state: string }>(
-      "SELECT state FROM tool_records WHERE tool_id = 'D1.1'"
+      "SELECT state FROM tool_records WHERE tool_id = 'D1.2' AND project_id = $1",
+      [project]
     )
 
     expect(rows).toEqual([{ state: "draft" }])

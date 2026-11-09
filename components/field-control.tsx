@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
 import type { Column, Field, FieldValue } from "@/lib/tool-definition"
+import { cn } from "@/lib/utils"
 
 // What the inputs hold while a person is typing: numbers stay text until the
 // form hands its values over.
@@ -23,8 +24,7 @@ export type RawRow = Record<string, RawCell>
 
 export type RawValue = RawCell | RawRow[]
 
-export const controlClass =
-  "h-12 border-foreground/20 bg-background text-base md:text-base"
+export const controlClass = "h-12 bg-background text-base md:text-base"
 
 const signed = z.object({ signedBy: z.string(), signedAt: z.string() })
 
@@ -89,8 +89,11 @@ type Props = {
   invalid?: boolean
   describedBy?: string
   required?: boolean
-  // Extra classes for the text-like inputs, so a table cell can drop the box.
+  // Extra classes for the text-like inputs, such as a shorter height in a
+  // table cell.
   inputClassName?: string
+  // Hint text for an empty text field, such as the column it fills.
+  placeholder?: string
 }
 
 // The input for one field or one table cell. The label and the error message
@@ -104,6 +107,7 @@ export function FieldControl({
   describedBy,
   required,
   inputClassName = "",
+  placeholder,
 }: Props) {
   const shared = {
     id,
@@ -146,9 +150,13 @@ export function FieldControl({
       return (
         <Textarea
           {...shared}
+          placeholder={placeholder}
           value={text}
           onChange={(event) => onChange(event.target.value)}
-          className={`min-h-28 border-foreground/20 bg-background text-base md:text-base ${inputClassName}`}
+          className={cn(
+            "min-h-28 bg-background text-base md:text-base",
+            inputClassName
+          )}
         />
       )
     case "boolean":
@@ -163,10 +171,7 @@ export function FieldControl({
     case "select":
       return (
         <Select value={text} onValueChange={onChange}>
-          <SelectTrigger
-            {...shared}
-            className={`${controlClass} w-full data-[size=default]:h-12 ${inputClassName}`}
-          >
+          <SelectTrigger {...shared} className={inputClassName}>
             <SelectValue placeholder="Choose an option" />
           </SelectTrigger>
           <SelectContent>
@@ -274,7 +279,7 @@ export function FieldControl({
         <Input
           {...shared}
           type={inputType[cell.type]}
-          placeholder={cell.type === "fileLink" ? "https://" : undefined}
+          placeholder={cell.type === "fileLink" ? "https://" : placeholder}
           value={text}
           onChange={(event) => onChange(event.target.value)}
           className={`${controlClass} ${inputClassName}`}

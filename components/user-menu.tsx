@@ -10,23 +10,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { initialsOf } from "@/lib/initials"
 
-// Up to two capital letters from the person's name.
-function initialsOf(name: string) {
-  const letters = name
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((word) => word[0]!.toUpperCase())
-
-  return letters.join("") || "?"
-}
-
-// Who is signed in, as an avatar, and the way to sign out. The name shows in a
-// tooltip on hover and on keyboard focus.
-export function UserMenu({ name }: Readonly<{ name: string }>) {
+// Who is signed in: an avatar, the name and a second line (the role or the
+// email), and the way to sign out. The avatar also has a tooltip.
+export function UserMenu({
+  name,
+  detail,
+}: Readonly<{ name: string; detail?: string }>) {
   return (
-    <div className="flex shrink-0 items-center justify-between border-t px-4 py-3">
+    <div className="flex shrink-0 items-center gap-3 border-t px-4 py-3">
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
@@ -47,6 +40,10 @@ export function UserMenu({ name }: Readonly<{ name: string }>) {
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
+      <span className="user-identity">
+        <span className="user-identity-name">{name}</span>
+        {detail && <span className="user-identity-detail">{detail}</span>}
+      </span>
       <SignOutButton icon={<SignOutIcon aria-hidden className="size-5" />} />
     </div>
   )

@@ -71,7 +71,7 @@ export function SignInForm() {
                   type="email"
                   autoComplete="email"
                   placeholder="name@company.com"
-                  className="h-12 border-foreground/20 bg-background ps-10 text-base md:text-base"
+                  className="h-12 bg-background ps-10 text-base md:text-base"
                   aria-invalid={fieldState.invalid}
                 />
               </div>
@@ -94,7 +94,7 @@ export function SignInForm() {
                   id="password"
                   type={shown ? "text" : "password"}
                   autoComplete="current-password"
-                  className="h-12 border-foreground/20 bg-background ps-10 pe-16 text-base md:text-base"
+                  className="h-12 bg-background ps-10 pe-16 text-base md:text-base"
                   aria-invalid={fieldState.invalid}
                 />
                 <Button

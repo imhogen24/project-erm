@@ -430,6 +430,37 @@ export async function toolStatus(
   })
 }
 
+// For each tool, whether it can be started now: null when it can, or the
+// tools it is waiting on (empty when it is held up for another reason, such
+// as the project being on hold). One route serves every tool, so a whole
+// overview costs one read.
+export async function toolGates(
+  database: Database,
+  projectId: string,
+  toolIds: readonly string[]
+): Promise<Map<string, string[] | null>> {
+  return database.transaction(async (transaction) => {
+    const route = await routeOf(transaction, projectId)
+
+    return new Map(
+      toolIds.map((toolId) => {
+        // A tool the registry does not hold has no place on the route; the
+        // record screen refuses it on its own.
+        if (!tools.getTool(toolId)) {
+          return [toolId, null]
+        }
+
+        const { cycle, missing } = route.verdict(toolId)
+
+        return [
+          toolId,
+          missing.length === 0 ? null : route.waitingOn(toolId, cycle),
+        ]
+      })
+    )
+  })
+}
+
 // The tools that can be started on the project now, each with the cycle its
 // new record gets. Only locked records count.
 export async function availableTools(

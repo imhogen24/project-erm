@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 import { z } from "zod"
 
 import { AppSidebar } from "@/components/app-sidebar"
@@ -113,6 +113,12 @@ export default async function Page({
     notFound()
   }
 
+  // A tool cannot be opened until the tool before it is locked. Its address
+  // leads back to the project, where its tile says what it waits on.
+  if (view.waiting) {
+    redirect(`/projects/${projectId}`)
+  }
+
   const canInvite = await isItAdmin(session.user.id)
 
   // The sidebar's tree of the project's tools.
@@ -152,16 +158,12 @@ export default async function Page({
 
   // D1.1 is reviewed on its own screen once it has a record. The OM switches the
   // statuses while it is a draft, and everyone else reads them.
-  const review =
-    toolId === "D1.1" && view.record && !view.waiting ? view.record : null
+  const review = toolId === "D1.1" && view.record ? view.record : null
 
   // D1.2 has its own screen: the files, the three checks and the decision. It
   // opens before D1.2 has a record, for the person who may write it.
   const triage =
-    toolId === "D1.2" &&
-    details &&
-    !view.waiting &&
-    (hasRecord || view.can.write)
+    toolId === "D1.2" && details && (hasRecord || view.can.write)
       ? details
       : null
 
@@ -171,13 +173,7 @@ export default async function Page({
       : []
   )
 
-  const body = view.waiting ? (
-    <p>
-      {view.waiting.waitingOn.length > 0
-        ? `This tool opens after ${view.waiting.waitingOn.join(", ")} is approved.`
-        : `This tool cannot be started yet: ${view.waiting.missing.join("; ")}.`}
-    </p>
-  ) : review ? (
+  const body = review ? (
     <ReviewScreen
       key={review.updatedAt.toISOString()}
       recordId={review.id}

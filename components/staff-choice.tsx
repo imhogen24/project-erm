@@ -1,7 +1,10 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { CheckCircleIcon, CircleDashedIcon, XIcon } from "@phosphor-icons/react"
 
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { OptionRow } from "@/components/option-row"
 import { Button } from "@/components/ui/button"
 import { FieldError } from "@/components/ui/field"
 import {
@@ -11,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { initialsOf } from "@/lib/initials"
 
 export type StaffOption = {
   personId: string
@@ -32,6 +36,8 @@ type Result = { status: "done" } | { status: "error"; message: string }
 type Props = {
   projectId: string
   title: string
+  // One line under the title: how many a project has and the workload limit.
+  hint: string
   // Whether the project has only one person in this role.
   single: boolean
   buttonLabel: string
@@ -42,14 +48,33 @@ type Props = {
   unassign: (change: Change) => Promise<Result>
 }
 
-function optionText(option: StaffOption, showRole: boolean) {
-  const who = showRole ? `${option.name} (${option.role})` : option.name
-
+function loadText(option: StaffOption) {
   if (option.limit === null) {
-    return who
+    return ""
   }
 
-  return `${who}, ${option.count} of ${option.limit} projects${option.full ? " (full)" : ""}`
+  return `${option.count} of ${option.limit} projects${option.full ? " (full)" : ""}`
+}
+
+// How full the person's slots are: one mark per project they may be on,
+// filled for each they are on, so the freest stand out.
+function LoadMeter({ option }: { option: StaffOption }) {
+  if (option.limit === null) {
+    return null
+  }
+
+  return (
+    <span aria-hidden className="flex gap-0.5">
+      {Array.from({ length: option.limit }, (_, index) => (
+        <span
+          key={index}
+          data-on={index < option.count}
+          data-full={option.full}
+          className="meter-mark"
+        />
+      ))}
+    </span>
+  )
 }
 
 // One role of a team: who holds it, a choice to add someone, and the server's
@@ -58,6 +83,7 @@ function optionText(option: StaffOption, showRole: boolean) {
 export function StaffChoice({
   projectId,
   title,
+  hint,
   single,
   buttonLabel,
   members,
@@ -109,24 +135,52 @@ export function StaffChoice({
     }
   }
 
+  let status = `${members.length} assigned`
+
+  if (members.length === 0) {
+    status = "None yet"
+  } else if (single) {
+    status = "Filled"
+  }
+
   return (
-    <section
-      aria-label={title}
-      className="flex flex-col gap-3 border-t border-foreground/20 py-6 first:border-t-0 first:pt-0"
-    >
-      <h2 className="text-sm font-medium">{title}</h2>
+    <section aria-label={title} className="tile flex flex-col gap-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-col gap-1">
+          <h2 className="text-base font-semibold">{title}</h2>
+          <p className="text-sm text-muted-foreground">{hint}</p>
+        </div>
+        <span data-open={members.length === 0} className="status-chip">
+          {members.length === 0 ? (
+            <CircleDashedIcon aria-hidden className="size-3.5" />
+          ) : (
+            <CheckCircleIcon aria-hidden weight="fill" className="size-3.5" />
+          )}
+          {status}
+        </span>
+      </div>
       {members.length > 0 && (
         <ul className="flex flex-col gap-2">
           {members.map((member) => (
             <li
               key={`${member.personId}:${member.role}`}
-              className="flex items-center justify-between gap-3 border border-foreground/20 px-3 py-2"
+              className="inset-row flex items-center gap-3"
             >
-              <span className="min-w-0 truncate text-sm">
-                {member.name}
-                {showRole || members.some((each) => each.role !== member.role)
-                  ? ` (${member.role})`
-                  : ""}
+              <Avatar className="size-9">
+                <AvatarFallback className="avatar-soft text-xs">
+                  {initialsOf(member.name)}
+                </AvatarFallback>
+              </Avatar>
+              <span className="flex min-w-0 flex-1 flex-col">
+                <span className="truncate text-sm font-medium">
+                  {member.name}
+                </span>
+                {(showRole ||
+                  members.some((each) => each.role !== member.role)) && (
+                  <span className="text-xs text-muted-foreground">
+                    {member.role}
+                  </span>
+                )}
               </span>
               <Button
                 type="button"
@@ -134,6 +188,7 @@ export function StaffChoice({
                 size="sm"
                 aria-label={`Remove ${member.name}`}
                 disabled={pending}
+                className="text-muted-foreground hover:text-foreground"
                 onClick={() =>
                   send(
                     {
@@ -145,6 +200,7 @@ export function StaffChoice({
                   )
                 }
               >
+                <XIcon aria-hidden className="size-4" />
                 Remove
               </Button>
             </li>
@@ -152,12 +208,12 @@ export function StaffChoice({
         </ul>
       )}
       {hasChoice && (
-        <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col gap-3 2xl:flex-row">
           <Select value={chosen} onValueChange={setChosen}>
             <SelectTrigger
               aria-label={`Choose ${title.toLowerCase()}`}
               disabled={options.length === 0}
-              className="h-12 w-full border-foreground/20 bg-background text-base data-[size=default]:h-12 sm:max-w-md"
+              className="2xl:flex-1"
             >
               <SelectValue placeholder="Choose a person" />
             </SelectTrigger>
@@ -168,7 +224,20 @@ export function StaffChoice({
                   value={`${option.personId}:${option.role}`}
                   disabled={option.full}
                 >
-                  {optionText(option, showRole)}
+                  <OptionRow
+                    mark={initialsOf(option.name)}
+                    label={
+                      showRole ? `${option.name} (${option.role})` : option.name
+                    }
+                    meta={
+                      option.limit === null ? undefined : (
+                        <>
+                          <LoadMeter option={option} />
+                          {loadText(option)}
+                        </>
+                      )
+                    }
+                  />
                 </SelectItem>
               ))}
             </SelectContent>
@@ -176,7 +245,7 @@ export function StaffChoice({
           <Button
             type="button"
             size="lg"
-            className="h-12 w-full px-8 text-base sm:w-fit"
+            className="h-12 w-full shrink-0 px-6 text-base sm:w-fit sm:self-end 2xl:self-auto"
             disabled={chosen === "" || pending}
             onClick={add}
           >

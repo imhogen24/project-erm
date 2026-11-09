@@ -166,6 +166,9 @@ const table = z
     prefilledRows: distinctTexts.optional(),
     lockedRows: distinctTexts.optional(),
     optionalRows: distinctTexts.optional(),
+    // A short note shown under a fixed or locked row's label, such as
+    // "Material" under "M". Only shown; never stored.
+    rowNotes: z.record(z.string().min(1), z.string().min(1)).optional(),
     startsWithRow: z.boolean().optional(),
     subtotal: fieldKey.optional(),
     readOnly: z.boolean().optional(),
@@ -261,6 +264,16 @@ const table = z
         code: "custom",
         path: ["optionalRows"],
         message: "An optional row must be one of the fixed or locked rows",
+      })
+    }
+
+    if (
+      Object.keys(value.rowNotes ?? {}).some((label) => !named.includes(label))
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["rowNotes"],
+        message: "A row note must name one of the fixed or locked rows",
       })
     }
   })

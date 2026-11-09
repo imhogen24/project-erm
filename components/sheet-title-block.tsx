@@ -30,17 +30,19 @@ export function SheetTitleBlock({
       <BackLink href={backHref} className="border-b">
         {backLabel}
       </BackLink>
-      <div className="flex flex-col gap-3 px-6 pt-8 pb-6">
-        <h1 className="text-3xl font-semibold tracking-tight break-words sm:text-4xl">
-          {title}
-        </h1>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          <StateBadge state={state} />
-          {statusLine && (
-            <p className="text-sm text-muted-foreground">{statusLine}</p>
-          )}
+      <div className="flex flex-col gap-4 px-6 pt-8 pb-6 @2xl:flex-row @2xl:items-end @2xl:justify-between">
+        <div className="flex min-w-0 flex-col gap-3">
+          <h1 className="text-3xl font-semibold tracking-tight break-words sm:text-4xl">
+            {title}
+          </h1>
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+            <StateBadge state={state} />
+            {statusLine && (
+              <p className="text-sm text-muted-foreground">{statusLine}</p>
+            )}
+          </div>
         </div>
-        {action && <div className="flex">{action}</div>}
+        {action && <div className="flex shrink-0">{action}</div>}
       </div>
       {facts.length > 0 && (
         <section aria-label="Document control">

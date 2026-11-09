@@ -37,6 +37,13 @@ export const d13 = defineTool({
       label: "Input / Output Operands",
       type: "table",
       prefilledRows: ["M", "E", "I", "L"],
+      // From docs/dev_docs/WORKBOOK_01/README.md: the four operands.
+      rowNotes: {
+        M: "Material",
+        E: "Energy",
+        I: "Information",
+        L: "Living thing",
+      },
       columns: [
         { key: "operand", label: "Operand", type: "text" },
         { key: "input", label: "Input", type: "longText" },

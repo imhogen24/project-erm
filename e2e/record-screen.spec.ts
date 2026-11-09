@@ -277,17 +277,24 @@ test("a save over someone else's newer save is refused and keeps the text", asyn
   await expect(synthesizedBy(second)).toHaveValue("Lea")
 })
 
-test("a tool that is not open yet names the tool it waits for and shows no form", async ({
+test("a tool that is not open yet cannot be opened, and its tile says what it waits for", async ({
   page,
 }) => {
   const { project, pm } = await setUp()
 
   await open(page, pm.email, project.id, "D1.9")
 
-  await expect(
-    page.getByText("This tool opens after D1.8 is approved.")
-  ).toBeVisible()
+  // Its address leads back to the project.
+  await expect(page).toHaveURL(new RegExp(`/projects/${project.id}$`))
   await expect(page.getByRole("button", { name: "Save draft" })).toHaveCount(0)
+
+  const tile = page
+    .getByRole("main")
+    .getByRole("listitem")
+    .filter({ has: page.getByText("D1.9", { exact: true }) })
+
+  await expect(tile).toContainText("Opens after D1.8")
+  await expect(tile.getByRole("link")).toHaveCount(0)
 })
 
 test("the document control block shows the request ID, the people and the start", async ({

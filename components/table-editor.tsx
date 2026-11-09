@@ -1,6 +1,6 @@
 "use client"
 
-import { LockSimpleIcon, PlusIcon } from "@phosphor-icons/react"
+import { LockSimpleIcon, PlusIcon, TrashIcon } from "@phosphor-icons/react"
 import type { CSSProperties } from "react"
 
 import {
@@ -98,12 +98,14 @@ export function TableEditor({
     return (
       <Button
         type="button"
-        variant="ghost"
-        size="sm"
+        variant="secondary"
+        size="icon"
         aria-label={`Remove row ${rowIndex + 1}`}
+        title="Remove this row"
+        className="tile-action size-12 shrink-0"
         onClick={() => onChange(rows.filter((_, index) => index !== rowIndex))}
       >
-        Remove
+        <TrashIcon aria-hidden className="size-4" />
       </Button>
     )
   }
@@ -136,7 +138,7 @@ export function TableEditor({
               role="cell"
               className="px-4 py-4 text-sm text-muted-foreground"
             >
-              No rows yet.
+              Nothing here yet. Press Add row to start the list.
             </div>
           </div>
         )}
@@ -168,8 +170,22 @@ export function TableEditor({
                     role="cell"
                     className="col-span-2 flex items-center gap-2 bg-muted/60 text-sm font-medium @xl:col-span-1 @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 @xl:last:border-r-0"
                   >
-                    <LockSimpleIcon aria-hidden className="size-4 shrink-0" />
-                    {label}
+                    {/* A padlock only where fixed rows sit beside rows the
+                        person adds; in a fully fixed table every row is. */}
+                    {!fixed && (
+                      <LockSimpleIcon
+                        aria-hidden
+                        className="size-4 shrink-0 text-muted-foreground"
+                      />
+                    )}
+                    <span className="flex min-w-0 flex-col">
+                      <span>{label}</span>
+                      {field.rowNotes?.[label] && (
+                        <span className="text-xs font-normal text-muted-foreground">
+                          {field.rowNotes[label]}
+                        </span>
+                      )}
+                    </span>
                   </div>
                 )
               }
@@ -199,7 +215,7 @@ export function TableEditor({
                 <div
                   key={column.key}
                   role="cell"
-                  className={`relative flex flex-col gap-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:last:border-r-0 ${wideTypes.includes(column.type) ? "col-span-2 @xl:col-span-1" : ""}`}
+                  className={`relative flex flex-col gap-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:p-3 @xl:last:border-r-0 ${wideTypes.includes(column.type) ? "col-span-2 @xl:col-span-1" : ""}`}
                 >
                   <label
                     htmlFor={id}
@@ -208,29 +224,42 @@ export function TableEditor({
                     {column.label}
                     <span className="sr-only">, row {rowIndex + 1}</span>
                   </label>
-                  {readOnly ? (
-                    <FieldControl
-                      cell={column}
-                      id={id}
-                      value={row[column.key]}
-                      onChange={() => undefined}
-                    />
-                  ) : (
-                    <FieldControl
-                      cell={column}
-                      id={id}
-                      value={row[column.key]}
-                      onChange={(value) => setCell(rowIndex, column.key, value)}
-                      invalid={message !== undefined}
-                      describedBy={message ? `${id}-error` : undefined}
-                      inputClassName={`@xl:h-11 @xl:border-0 @xl:shadow-none @xl:focus-visible:ring-inset @xl:aria-invalid:ring-inset ${removable ? "@xl:pr-24" : ""}`}
-                    />
-                  )}
-                  {removable && (
-                    <div className="absolute top-1 right-1 hidden @xl:block">
-                      {removeButton(rowIndex)}
+                  <div className="flex items-start gap-2">
+                    <div className="min-w-0 flex-1">
+                      {readOnly ? (
+                        <FieldControl
+                          cell={column}
+                          id={id}
+                          value={row[column.key]}
+                          onChange={() => undefined}
+                        />
+                      ) : (
+                        <FieldControl
+                          cell={column}
+                          id={id}
+                          value={row[column.key]}
+                          onChange={(value) =>
+                            setCell(rowIndex, column.key, value)
+                          }
+                          invalid={message !== undefined}
+                          describedBy={message ? `${id}-error` : undefined}
+                          // Every field in a row starts one line tall, so a
+                          // row reads level; a long answer grows as it is
+                          // typed.
+                          inputClassName={
+                            column.type === "longText"
+                              ? "min-h-12 py-[0.6875rem]"
+                              : ""
+                          }
+                        />
+                      )}
                     </div>
-                  )}
+                    {removable && (
+                      <div className="hidden @xl:block">
+                        {removeButton(rowIndex)}
+                      </div>
+                    )}
+                  </div>
                   {message && (
                     <p
                       id={`${id}-error`}
@@ -263,7 +292,7 @@ export function TableEditor({
                 type="button"
                 variant="secondary"
                 size="sm"
-                className="bg-foreground/10 hover:bg-foreground/20"
+                className="tile-action"
                 onClick={() => onChange([...rows, {}])}
               >
                 <PlusIcon aria-hidden />

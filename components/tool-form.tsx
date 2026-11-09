@@ -324,7 +324,11 @@ export function ToolForm({
     if (field.type === "table") {
       return (
         <TableBox key={field.key} title={title}>
-          <fieldset disabled={readOnly} className="min-w-0 border-0 p-0">
+          <fieldset
+            disabled={readOnly}
+            data-final={readOnly}
+            className="min-w-0 border-0 p-0"
+          >
             <Controller
               name={field.key}
               control={form.control}
@@ -355,6 +359,7 @@ export function ToolForm({
       <TableBox key={field.key} title={title}>
         <fieldset
           disabled={readOnly && field.type !== "signature"}
+          data-final={readOnly}
           className="min-w-0 border-0 p-0"
         >
           <FieldSet className="gap-3 p-4">
@@ -396,7 +401,11 @@ export function ToolForm({
                 </FieldLabel>
               </DataCell>
               <DataCell label="">
-                <fieldset disabled={readOnly} className="min-w-0 border-0 p-0">
+                <fieldset
+                  disabled={readOnly}
+                  data-final={readOnly}
+                  className="min-w-0 border-0 p-0"
+                >
                   {input(field)}
                 </fieldset>
               </DataCell>
@@ -443,7 +452,7 @@ export function ToolForm({
                 Save draft
               </ActionButton>
               <ActionButton type="submit" disabled={pending}>
-                Submit
+                Submit for approval
               </ActionButton>
             </>
           )}

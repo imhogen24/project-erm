@@ -4,6 +4,7 @@ import { and, eq } from "drizzle-orm"
 import { createDatabase, type Database } from "@/db"
 import {
   accounts,
+  changeRequests,
   intakeSubmissions,
   people,
   personCompanyRoles,
@@ -15,10 +16,10 @@ import {
   type Role,
 } from "@/db/schema"
 
+import { projectChangeRequests, projectRecords } from "./seed-data/records"
 import {
   emailOf,
   holdsCompanyWide,
-  loginFor,
   staff,
   staffByHandle,
 } from "./seed-data/people"
@@ -146,145 +147,187 @@ async function addRequest(
     .onConflictDoNothing({ target: intakeSubmissions.requestId })
 }
 
-// Each tool the demo project has already been through. The next tool only
-// opens once the one before it is locked, so a developer building a tool can
-// open it on the featured project without working through the tools before it. When a
-// tool is built, add the tool before it here, locked, and name the tool it
-// opens. A record is only added when the project has none for that tool yet,
-// so running this again changes nothing and a record someone is working on is
-// left alone.
-const demoRecords: { toolId: string; payload: JsonObject }[] = [
-  {
-    // Two sample files, so D1.2 has files to show.
-    toolId: "D1.1",
-    payload: {
-      requestStatus: "Approved",
-      attachedFiles: [
-        {
-          label: "Site photo",
-          dateUploaded: "2026-11-03",
-          fileLink: "https://utfs.io/f/demo-site-photo",
-          status: "Approved",
-        },
-        {
-          label: "Layout drawing",
-          dateUploaded: "2026-11-03",
-          fileLink: "https://utfs.io/f/demo-layout-drawing",
-          status: "Approved",
-        },
-      ],
-    },
-  },
-  {
-    // Approved with Proceed to D1.3, so D1.3 is open.
-    toolId: "D1.2",
-    payload: {
-      digitalRecords: [
-        { fileName: "Site photo" },
-        { fileName: "Layout drawing" },
-      ],
-      triageChecklist: [
-        {
-          check: "Is the notification readable and free of malicious links?",
-          status: "Pass",
-          reviewerNotes: "Readable, no links",
-        },
-        {
-          check: "Does the request broadly align with IMHOGEN's services?",
-          status: "Pass",
-          reviewerNotes: "Within scope",
-        },
-        {
-          check: "Is the contact information apparently valid and legible?",
-          status: "Pass",
-          reviewerNotes: "Email and phone check out",
-        },
-      ],
-      triageDecision: "Proceed to D1.3",
-    },
-  },
-]
+const HOUR = 60 * 60 * 1000
 
-async function addDemoRecords(database: Database, projectId: string) {
-  for (const { toolId, payload } of demoRecords) {
+const DAY = 24 * HOUR
+
+type Team = Map<Role, string>
+
+// The person holding a role on the project, for who prepared and approved.
+function holderOf(team: Team, role: Role) {
+  return team.get(role) ?? null
+}
+
+// Each project's records, at the stage written in seed-data/records.ts. The OM
+// prepares a record and the PM approves it, a few hours apart, so the title
+// block shows real names and times. A record is only added when the project
+// has none for that tool yet, so running this again changes nothing and a
+// record someone is working on is left alone.
+async function addRecords(
+  database: Database,
+  project: SeedProject,
+  projectId: string,
+  team: Team
+) {
+  const received = Date.parse(project.received)
+  const recordIds = new Map<string, string>()
+
+  for (const record of projectRecords.get(project.name) ?? []) {
     const [existing] = await database
       .select({ id: toolRecords.id })
       .from(toolRecords)
       .where(
         and(
           eq(toolRecords.projectId, projectId),
-          eq(toolRecords.toolId, toolId)
+          eq(toolRecords.toolId, record.toolId)
         )
       )
       .limit(1)
 
-    if (!existing) {
-      await database
-        .insert(toolRecords)
-        .values({ projectId, toolId, state: "locked", payload })
+    if (existing) {
+      recordIds.set(record.toolId, existing.id)
+
+      continue
     }
+
+    const started = new Date(received + record.day * DAY + 2 * HOUR)
+    const submitted = new Date(started.getTime() + 3 * HOUR)
+    const approved = new Date(submitted.getTime() + 5 * HOUR)
+    const done = record.state === "locked"
+
+    const [inserted] = await database
+      .insert(toolRecords)
+      .values({
+        projectId,
+        toolId: record.toolId,
+        state: record.state,
+        payload: record.payload,
+        createdAt: started,
+        updatedAt: done ? approved : submitted,
+        submittedBy: record.state === "draft" ? null : holderOf(team, "OM"),
+        submittedAt: record.state === "draft" ? null : submitted,
+        approvedBy: done ? holderOf(team, "PM") : null,
+        approvedAt: done ? approved : null,
+        lockedAt: done ? approved : null,
+      })
+      .returning({ id: toolRecords.id })
+
+    recordIds.set(record.toolId, inserted!.id)
+  }
+
+  for (const request of projectChangeRequests.get(project.name) ?? []) {
+    const recordId = recordIds.get(request.toolId)
+    const requestedBy = holderOf(team, "OM")
+
+    if (!recordId || !requestedBy) {
+      continue
+    }
+
+    await database
+      .insert(changeRequests)
+      .values({
+        projectId,
+        recordId,
+        reason: request.reason,
+        requestedBy,
+        createdAt: new Date(received + request.day * DAY),
+      })
+      .onConflictDoNothing()
   }
 }
 
-// Four notifications for the featured project's PM, so the bell has something to show:
-// three unread (the number on the bell) and one older one already read. Each is
-// only added when the PM has no notification with that title yet, so running
-// this again changes nothing, and one the PM has opened is not made unread
-// again. Notifications cannot be deleted, so this only ever adds.
-async function addDemoNotifications(database: Database, projectId: string) {
-  const [pm] = await database
-    .select({ id: people.id })
-    .from(people)
-    .where(eq(people.email, loginFor("PM")))
-    .limit(1)
+type Note = {
+  personId: string
+  kind: "approval_needed" | "change_waiting" | "assigned" | "tool_open"
+  title: string
+  path: string
+  createdAt: Date
+  read: boolean
+}
 
-  if (!pm) {
-    return
+// What each PM's bell shows: a note for every record waiting for their
+// approval and every change request waiting for their decision, unread, and
+// older notes already read. Each is only added when the person has no
+// notification with that title yet, so running this again changes nothing,
+// and one they have opened is not made unread again. Notifications cannot be
+// deleted, so this only ever adds.
+async function addNotifications(
+  database: Database,
+  teams: Map<string, { projectId: string; team: Team }>
+) {
+  const now = Date.now()
+  const notes: Note[] = []
+
+  for (const project of seedProjects) {
+    const entry = teams.get(project.name)
+    const pm = entry && holderOf(entry.team, "PM")
+
+    if (!entry || !pm) {
+      continue
+    }
+
+    const base = `/projects/${entry.projectId}`
+    const records = projectRecords.get(project.name) ?? []
+
+    records.forEach((record, index) => {
+      if (record.state === "submitted") {
+        notes.push({
+          personId: pm,
+          kind: "approval_needed",
+          title: `${record.toolId} is waiting for your approval on ${project.name}`,
+          path: `${base}/tools/${record.toolId}`,
+          createdAt: new Date(now - (20 + index * 45) * 60 * 1000),
+          read: false,
+        })
+      }
+    })
+
+    for (const request of projectChangeRequests.get(project.name) ?? []) {
+      notes.push({
+        personId: pm,
+        kind: "change_waiting",
+        title: `A change to ${request.toolId} is waiting for your decision on ${project.name}`,
+        path: base,
+        createdAt: new Date(now - 3 * HOUR),
+        read: false,
+      })
+    }
+
+    if (records.some((record) => record.state === "locked")) {
+      notes.push({
+        personId: pm,
+        kind: "tool_open",
+        title: `${records.findLast((record) => record.state === "locked")!.toolId} was locked on ${project.name}`,
+        path: base,
+        createdAt: new Date(now - 2 * DAY),
+        read: true,
+      })
+    }
+
+    notes.push({
+      personId: pm,
+      kind: "assigned",
+      title: `You were added to ${project.name}`,
+      path: base,
+      createdAt: new Date(Date.parse(project.received) + DAY),
+      read: true,
+    })
   }
 
-  const minutes = 60 * 1000
-  const now = Date.now()
-
-  const samples = [
-    {
-      title: `D1.2 is ready for review on ${featuredProject.name}`,
-      path: `/projects/${projectId}/tools/D1.2`,
-      createdAt: new Date(now - 5 * minutes),
-      read: false,
-    },
-    {
-      title: `D1.1 was approved on ${featuredProject.name}`,
-      path: `/projects/${projectId}/tools/D1.1`,
-      createdAt: new Date(now - 3 * 60 * minutes),
-      read: false,
-    },
-    {
-      title: `You were added to ${featuredProject.name}`,
-      path: `/projects/${projectId}`,
-      createdAt: new Date(now - 26 * 60 * minutes),
-      read: false,
-    },
-    {
-      title: `${featuredProject.client.organisation} request received`,
-      path: `/projects/${projectId}`,
-      createdAt: new Date(now - 3 * 24 * 60 * minutes),
-      read: true,
-    },
-  ]
-
-  for (const sample of samples) {
+  for (const note of notes) {
     await database.pool.query(
       `INSERT INTO notifications (person_id, kind, title, path, created_at, read_at)
-       SELECT $1::uuid, 'tool_open', $2::text, $3::text, $4::timestamptz, $5::timestamptz
+       SELECT $1::uuid, $2::notification_kind, $3::text, $4::text, $5::timestamptz, $6::timestamptz
        WHERE NOT EXISTS (
-         SELECT 1 FROM notifications WHERE person_id = $1::uuid AND title = $2::text
+         SELECT 1 FROM notifications WHERE person_id = $1::uuid AND title = $3::text
        )`,
       [
-        pm.id,
-        sample.title,
-        sample.path,
-        sample.createdAt,
-        sample.read ? sample.createdAt : null,
+        note.personId,
+        note.kind,
+        note.title,
+        note.path,
+        note.createdAt,
+        note.read ? note.createdAt : null,
       ]
     )
   }
@@ -400,7 +443,7 @@ async function giveProjectRole(
     .onConflictDoNothing()
 }
 
-// Local development only: IMHOGEN's staff, ten projects at different stages
+// Local development only: IMHOGEN's staff, twelve projects at different stages
 // with their clients, and the teams on them. Everyone signs in with the
 // password `password`. IT/Admin holds the role company-wide, and the roles in
 // qualifiedRoles are also held as a qualification. Returns the people this run
@@ -414,7 +457,7 @@ export async function seed(url: string): Promise<SeedUser[]> {
     const passwordHash = await hashPassword(SEED_PASSWORD)
     const created: SeedUser[] = []
     const ids = new Map<string, string>()
-    let featuredId: string | undefined
+    const teams = new Map<string, { projectId: string; team: Team }>()
 
     for (const person of staff) {
       const email = emailOf(person.handle)
@@ -452,22 +495,24 @@ export async function seed(url: string): Promise<SeedUser[]> {
         created.push({ role: "Client", email: project.client.email })
       }
 
+      const team: Team = new Map()
+
       for (const { handle, role } of rolesOnProject(project)) {
         staffByHandle(handle)
 
         await giveProjectRole(database, ids.get(handle)!, projectId, role)
+
+        if (!team.has(role)) {
+          team.set(role, ids.get(handle)!)
+        }
       }
 
-      if (project === featuredProject) {
-        featuredId = projectId
-        await addDemoRecords(database, projectId)
-      }
+      teams.set(project.name, { projectId, team })
+      await addRecords(database, project, projectId, team)
     }
 
-    // After the people loop, because the notifications belong to the PM.
-    if (featuredId) {
-      await addDemoNotifications(database, featuredId)
-    }
+    // After every project, because the notifications point at their records.
+    await addNotifications(database, teams)
 
     return created
   } finally {

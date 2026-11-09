@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
 import { Button } from "@/components/ui/button"
+import { FileStatusChip } from "@/components/file-status-chip"
 import { SegmentedChoice } from "@/components/segmented-choice"
 import { ActionButton, SheetActions } from "@/components/sheet-actions"
 import {
@@ -61,11 +62,9 @@ type Props = {
 }
 
 // How wide each column is when there is room. Narrow, the rows stack instead.
-const filesWidths = "minmax(0,1.3fr) 7rem 7rem minmax(0,2fr)"
+const filesWidths = "minmax(0,1.3fr) 8.5rem 7rem minmax(0,2fr)"
 
-const checksWidths = "minmax(0,1.4fr) 11rem minmax(0,2fr)"
-
-const decisionWidths = "3.5rem minmax(0,1fr) minmax(0,2fr)"
+const checksWidths = "minmax(0,1.4fr) 13rem minmax(0,2fr)"
 
 const STALE = "Someone else saved this record. Reload to see their changes."
 
@@ -234,7 +233,9 @@ export function TriageScreen({
   ]
 
   return (
-    <div className="flex flex-col gap-8">
+    // Final when this person can no longer write it, never just while saving,
+    // so a save in flight does not turn the fields into text.
+    <div data-final={!canWrite} className="flex flex-col gap-8">
       <TableBox title="Files">
         {files.length === 0 ? (
           <p className="px-4 py-4 text-sm text-muted-foreground">
@@ -257,7 +258,7 @@ export function TriageScreen({
                   </span>
                 </DataCell>
                 <DataCell label="Status">
-                  <span className="text-sm">{file.status}</span>
+                  <FileStatusChip status={file.status} />
                 </DataCell>
                 <DataCell label="">
                   {file.fileLink && filesRecordId && (
@@ -314,7 +315,10 @@ export function TriageScreen({
                 <SegmentedChoice
                   label={`Result: ${check}`}
                   value={answers[index]?.status ?? ""}
-                  choices={[{ value: "Pass" }, { value: "Fail", danger: true }]}
+                  choices={[
+                    { value: "Pass", tone: "good" },
+                    { value: "Fail", tone: "bad" },
+                  ]}
                   disabled={locked}
                   onChange={(status) => setAnswer(index, { status })}
                 />
@@ -346,55 +350,43 @@ export function TriageScreen({
           ))}
         </DataTable>
       </TableBox>
-      <TableBox title="Triage decision">
+      <section aria-label="Triage decision" className="flex flex-col gap-3">
+        <h2 className="text-sm font-medium">Triage decision</h2>
         <RadioGroup
           aria-label="Triage decision"
           value={decision}
           disabled={locked}
-          className="gap-0"
+          className="grid gap-3 md:grid-cols-2"
           onValueChange={setDecision}
         >
-          <DataTable
-            label="Triage decision"
-            columns={["", "Decision", "What happens"]}
-            widths={decisionWidths}
-          >
-            {decisions.map(({ option, label, effect, off }) => (
-              <DataRow key={option} widths={decisionWidths}>
-                <DataCell label="">
-                  <RadioGroupItem
-                    value={option}
-                    id={`decision-${option}`}
-                    aria-label={label}
-                    className="border-foreground/50"
-                    disabled={locked || off}
-                  />
-                </DataCell>
-                <DataCell label="Decision">
-                  <label
-                    htmlFor={`decision-${option}`}
-                    className="text-sm font-medium"
-                  >
-                    {label}
-                  </label>
-                </DataCell>
-                <DataCell label="What happens">
-                  <span className="text-sm text-muted-foreground">
-                    {off && canWrite
-                      ? "Resolve the failed checks to proceed"
-                      : effect}
-                  </span>
-                </DataCell>
-              </DataRow>
-            ))}
-          </DataTable>
+          {decisions.map(({ option, label, effect, off }) => (
+            <label
+              key={option}
+              htmlFor={`decision-${option}`}
+              className="tile-choice"
+            >
+              <RadioGroupItem
+                value={option}
+                id={`decision-${option}`}
+                aria-label={label}
+                className="mt-0.5"
+                disabled={locked || off}
+              />
+              <span className="flex flex-col gap-1">
+                <span className="text-sm font-medium">{label}</span>
+                <span className="text-sm text-muted-foreground">
+                  {off && canWrite
+                    ? "Resolve the failed checks to proceed"
+                    : effect}
+                </span>
+              </span>
+            </label>
+          ))}
         </RadioGroup>
         {decisionError && (
-          <p className="border-t border-foreground/20 px-4 py-3 text-sm text-destructive">
-            {decisionError}
-          </p>
+          <p className="text-sm text-destructive">{decisionError}</p>
         )}
-      </TableBox>
+      </section>
       {other.length > 0 && (
         <ul role="alert" className="flex flex-col gap-1">
           {other.map((error, index) => (

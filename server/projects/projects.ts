@@ -30,6 +30,8 @@ import {
 import { systemActor } from "@/server/system/system"
 
 import type { ToolDefinition } from "@/server/tools/define-tool"
+import { servesTrack } from "@/server/workflow/tracks"
+import { toolGates } from "@/server/workflow/workflow"
 
 export { projectStatuses, serviceTracks }
 
@@ -61,7 +63,16 @@ export type ProjectSummary = Project & { roles: Role[] }
 export type ToolState = Exclude<RecordState, "void"> | "notStarted"
 
 export type ProjectOverview = Project & {
-  tools: { toolId: string; name: string; workbook: string; state: ToolState }[]
+  tools: {
+    toolId: string
+    name: string
+    workbook: string
+    state: ToolState
+    // Null when the tool can be opened. Otherwise it cannot be opened yet, and
+    // this names the tools it waits on (empty when the reason is the project,
+    // such as it being on hold).
+    waitingOn: string[] | null
+  }[]
 }
 
 type NewProject = {
@@ -311,7 +322,14 @@ export async function getProjectOverview(
     .from(projects)
     .where(eq(projects.id, projectId))
 
-  const readable = tools.filter((tool) => roleAllows(held, tool.id, "read"))
+  // Only the tools of the project's own track: a Tier 1 project never lists
+  // a T3 tool, and a Tier 3 project never lists the Tier 1 tool a T3 one
+  // replaces.
+  const readable = tools.filter(
+    (tool) =>
+      servesTrack(tool, project!.serviceTrack) &&
+      roleAllows(held, tool.id, "read")
+  )
 
   const records =
     readable.length === 0
@@ -340,6 +358,17 @@ export async function getProjectOverview(
     }
   }
 
+  // A tool with a record can always be opened. One without can be opened
+  // only once the workflow lets it start; until then it says what it waits on.
+  const unstarted = readable.flatMap((tool) =>
+    newest.has(tool.id) ? [] : [tool.id]
+  )
+
+  const gates =
+    unstarted.length === 0
+      ? new Map<string, string[] | null>()
+      : await toolGates(database, projectId, unstarted)
+
   return {
     ...project!,
     tools: readable.map((tool) => ({
@@ -347,6 +376,7 @@ export async function getProjectOverview(
       name: tool.name,
       workbook: tool.workbook,
       state: newest.get(tool.id) ?? "notStarted",
+      waitingOn: gates.get(tool.id) ?? null,
     })),
   }
 }

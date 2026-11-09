@@ -1,59 +1,37 @@
-import { Badge } from "@/components/ui/badge"
-import type { ToolState } from "@/lib/tool-state"
-import { cn } from "@/lib/utils"
+import { CheckIcon, LockSimpleIcon } from "@phosphor-icons/react/ssr"
 
-// A state is a filled badge, stronger as the tool firms up: faint grey for
-// not started, then draft, then orange once submitted and approved, and light
-// on the dark square once locked. The tool's square sits on the page grid and
-// has no border of its own.
-const states: Record<
-  ToolState,
-  { label: string; square: string; badge: string }
-> = {
-  notStarted: {
-    label: "Not started",
-    square: "bg-background",
-    badge: "bg-foreground/10 text-foreground",
-  },
-  draft: {
-    label: "Draft",
-    square: "bg-background",
-    badge: "bg-foreground/15 text-foreground",
-  },
-  submitted: {
-    label: "Submitted",
-    square: "bg-[color-mix(in_oklab,var(--primary)_7%,var(--background))]",
-    badge: "bg-primary/20 text-foreground",
-  },
-  approved: {
-    label: "Approved",
-    square: "bg-[color-mix(in_oklab,var(--primary)_14%,var(--background))]",
-    badge: "bg-primary text-primary-foreground",
-  },
-  locked: {
-    label: "Locked",
-    square: "bg-foreground text-background",
-    badge: "bg-background text-foreground",
-  },
+import type { ToolState } from "@/lib/tool-state"
+
+// A state is a filled chip that gets stronger as the tool firms up: grey for
+// not started, darker for draft, soft orange once submitted, soft orange with a
+// tick once approved, and solid orange with a padlock once locked. Drawn by
+// .state-badge in globals.css, keyed by data-state.
+const labels: Record<ToolState, string> = {
+  notStarted: "Not started",
+  draft: "Draft",
+  submitted: "Submitted",
+  approved: "Approved",
+  locked: "Locked",
 }
 
 export function stateLabel(state: ToolState) {
-  return states[state].label
-}
-
-export function stateSquare(state: ToolState) {
-  return states[state].square
+  return labels[state]
 }
 
 export function StateBadge({ state }: { state: ToolState }) {
-  const { label, badge } = states[state]
-
   return (
-    <Badge
-      variant="outline"
-      className={cn("h-6 border-0 px-2.5 text-xs", badge)}
-    >
-      {label}
-    </Badge>
+    <span data-state={state} className="state-badge">
+      {state === "approved" && (
+        <CheckIcon aria-hidden weight="bold" className="state-badge-icon" />
+      )}
+      {state === "locked" && (
+        <LockSimpleIcon
+          aria-hidden
+          weight="fill"
+          className="state-badge-icon"
+        />
+      )}
+      {labels[state]}
+    </span>
   )
 }

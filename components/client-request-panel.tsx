@@ -1,5 +1,7 @@
 "use client"
 
+import { FileTextIcon } from "@phosphor-icons/react"
+
 import { ClientRequestTables } from "@/components/client-request-tables"
 import { Button } from "@/components/ui/button"
 import {
@@ -21,7 +23,8 @@ export function ClientRequestPanel({
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" size="sm">
+        <Button variant="outline" className="h-10 gap-2 px-4">
+          <FileTextIcon aria-hidden className="size-4" />
           View client request
         </Button>
       </SheetTrigger>

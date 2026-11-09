@@ -91,6 +91,43 @@ export const projects: readonly SeedProject[] = [
     },
   },
   {
+    // The Tier 3 match for the first project: active, staffed for drafting,
+    // with D1.1 and D1.2 locked, so T3.D1.3a is open to build and test on.
+    name: "Tarkwa Mine Pump Station Drawings",
+    serviceTrack: "Tier_3",
+    status: "active",
+    received: "2026-11-02T10:05:00Z",
+    site: "Tarkwa, Western Region",
+    client: {
+      name: "Joseph Arhin",
+      email: "joseph.arhin@tarkwaminesupport.test",
+      organisation: "Tarkwa Mine Support Ltd",
+      phone: "0312 220 418",
+    },
+    team: {
+      PM: ["nana.adjei"],
+      OM: ["selorm.dzigbordi"],
+      FO: ["edem.agbeko"],
+      LE: ["yaa.sarpong"],
+      AE: ["adwoa.baffoe"],
+      LD: ["nii.lamptey"],
+      HE: ["kwesi.appiah"],
+    },
+    request: {
+      inputMaterialType: "Site photos and faded blueprints from 1998",
+      assetCondition: "In service, blueprints faded and out of date",
+      services: [
+        "3D Modelling",
+        "General Arrangement/Assembly",
+        "Manuals/Technical Illustrations",
+      ],
+      endGoal:
+        "Up-to-date drawings of the pump station and an illustrated manual for the maintenance crew",
+      standard: "ISO",
+      outputFormats: ["PDF", "DWG", "STEP"],
+    },
+  },
+  {
     name: "Takoradi Port Conveyor Upgrade",
     serviceTrack: "Tier_3",
     status: "active",
@@ -373,3 +410,7 @@ export const projects: readonly SeedProject[] = [
 ]
 
 export const featuredProject = projects[0]!
+
+export const featuredTier3Project = projects.find(
+  (project) => project.name === "Tarkwa Mine Pump Station Drawings"
+)!

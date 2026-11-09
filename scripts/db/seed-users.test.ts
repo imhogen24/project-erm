@@ -3,8 +3,16 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { createAuth } from "@/server/auth/auth"
 import { listProjectsFor } from "@/server/projects/projects"
+import { projectsNeedingTeam, teamOf } from "@/server/staff/team"
+import { workloadOf } from "@/server/staff/staff"
 
-import { DEMO_REQUEST_ID, seed } from "./seed-users"
+import { emailOf, loginFor, staff } from "./seed-data/people"
+import {
+  featuredProject,
+  projects as seedProjects,
+  requestIdOf,
+} from "./seed-data/projects"
+import { seed } from "./seed-users"
 
 const database = createTestDatabase()
 
@@ -15,42 +23,9 @@ const auth = createAuth(database, {
 
 const url = process.env.TEST_DATABASE_URL!
 
-const EMAILS = [
-  "client@example.com",
-  "om@example.com",
-  "pm@example.com",
-  "le@example.com",
-  "ae@example.com",
-  "ld@example.com",
-  "fo@example.com",
-  "ca@example.com",
-  "he@example.com",
-  "po@example.com",
-  "io@example.com",
-  "ws@example.com",
-  "t@example.com",
-  "qa@example.com",
-  "lfe@example.com",
-  "lo@example.com",
-  "cr@example.com",
-  "it-admin@example.com",
-  "mkt@example.com",
-]
+const PEOPLE = staff.length + seedProjects.length
 
-const COMPANY_WIDE = [
-  { email: "fo@example.com", role: "FO" },
-  { email: "he@example.com", role: "HE" },
-  { email: "it-admin@example.com", role: "IT/Admin" },
-  { email: "om@example.com", role: "OM" },
-  { email: "pm@example.com", role: "PM" },
-]
-
-const QUALIFIED = [
-  "fo@example.com",
-  "he@example.com",
-  "om@example.com",
-  "pm@example.com",
-]
+const ADMIN = emailOf("kofi.mensah")
 
 async function count(
   table: "people" | "projects" | "person_project_roles" | "person_company_roles"
@@ -62,28 +37,22 @@ async function count(
   return Number(rows[0]!.n)
 }
 
-async function rolesOnDemoProject() {
-  const { rows } = await database.pool.query<{ email: string; role: string }>(
-    `SELECT people.email, person_project_roles.role
-       FROM person_project_roles
-       JOIN people ON people.id = person_project_roles.person_id
-       JOIN projects ON projects.id = person_project_roles.project_id
-      WHERE projects.name = 'Demo Project'
-      ORDER BY people.email`
+async function idOf(email: string) {
+  const { rows } = await database.pool.query<{ id: string }>(
+    "SELECT id FROM people WHERE email = $1",
+    [email]
   )
 
-  return rows
+  return rows[0]!.id
 }
 
-async function companyWideRoles() {
-  const { rows } = await database.pool.query<{ email: string; role: string }>(
-    `SELECT people.email, person_company_roles.role
-       FROM person_company_roles
-       JOIN people ON people.id = person_company_roles.person_id
-      ORDER BY people.email`
+async function projectIdOf(name: string) {
+  const { rows } = await database.pool.query<{ id: string }>(
+    "SELECT id FROM projects WHERE name = $1",
+    [name]
   )
 
-  return rows
+  return rows[0]!.id
 }
 
 beforeEach(async () => {
@@ -94,61 +63,293 @@ afterAll(async () => {
   await database.pool.end()
 })
 
-async function idOf(email: string) {
-  const { rows } = await database.pool.query<{ id: string }>(
-    "SELECT id FROM people WHERE email = $1",
-    [email]
-  )
+describe("the people", () => {
+  it("adds IMHOGEN's staff and one client for each project", async () => {
+    const created = await seed(url)
 
-  return rows[0]!.id
-}
+    expect(await count("people")).toBe(PEOPLE)
+    expect(created).toHaveLength(PEOPLE)
+    expect(created).toContainEqual({
+      role: "QA",
+      email: emailOf("mavis.hammond"),
+    })
+    expect(created.filter((person) => person.role === "Client")).toHaveLength(
+      seedProjects.length
+    )
+  })
 
-async function projectsSeenBy(email: string) {
-  const listed = await listProjectsFor(database, await idOf(email))
-
-  return listed.map((project) => project.name)
-}
-
-describe("the demo request", () => {
-  it("saves one website request for Demo Project, once, however often it runs", async () => {
+  it("holds IT/Admin company-wide and gives the assignable roles as qualifications", async () => {
     await seed(url)
+
+    const { rows } = await database.pool.query<{ role: string; n: string }>(
+      `SELECT role, count(*) AS n FROM person_company_roles GROUP BY role`
+    )
+
+    const held = Object.fromEntries(
+      rows.map((row) => [row.role, Number(row.n)])
+    )
+
+    expect(held["IT/Admin"]).toBe(1)
+    expect(held.PM).toBe(4)
+    expect(held.OM).toBe(3)
+    expect(held.FO).toBe(2)
+    expect(held.LE).toBe(3)
+    expect(held.AE).toBe(2)
+    expect(held.HE).toBe(1)
+  })
+
+  it("uses no demo names and no example.com addresses", async () => {
     await seed(url)
+
+    const { rows } = await database.pool.query(
+      `SELECT name, email FROM people
+        WHERE name ILIKE '%demo%' OR email ILIKE '%example.com'`
+    )
+
+    expect(rows).toEqual([])
+  })
+
+  it("lets every one of them sign in with the password `password`", async () => {
+    await seed(url)
+
+    const { rows } = await database.pool.query<{ email: string }>(
+      "SELECT email FROM people"
+    )
+
+    for (const { email } of rows) {
+      const result = await auth.api.signInEmail({
+        body: { email, password: "password" },
+      })
+
+      expect(result.user.email).toBe(email)
+    }
+  })
+})
+
+describe("the projects", () => {
+  it("adds ten projects, each with its website request and a request ID made from when it arrived", async () => {
+    await seed(url)
+
+    expect(await count("projects")).toBe(seedProjects.length)
 
     const { rows } = await database.pool.query<{
       request_id: string
+      submission_id: string
       email: string
     }>(
-      `SELECT i.request_id, i.submission->>'email' AS email
-         FROM intake_submissions i
-         JOIN projects p ON p.id = i.project_id
-        WHERE p.name = 'Demo Project'`
+      `SELECT p.request_id, i.request_id AS submission_id, i.submission->>'email' AS email
+         FROM projects p
+         JOIN intake_submissions i ON i.project_id = p.id
+        ORDER BY p.created_at`
     )
 
+    expect(rows).toHaveLength(seedProjects.length)
+
+    for (const row of rows) {
+      expect(row.request_id).toBe(row.submission_id)
+      expect(row.request_id).toMatch(/^T[13]-\d{13}$/)
+    }
+
+    expect(rows.map((row) => row.request_id)).toContain(
+      requestIdOf(featuredProject)
+    )
+  })
+
+  it("covers both tracks and every status a project can be in", async () => {
+    await seed(url)
+
+    const { rows } = await database.pool.query<{ k: string }>(
+      `SELECT DISTINCT service_track::text AS k FROM projects
+       UNION SELECT DISTINCT status::text FROM projects`
+    )
+
+    expect(rows.map((row) => row.k).sort()).toEqual([
+      "Tier_1",
+      "Tier_3",
+      "active",
+      "closed",
+      "completed",
+      "on_hold",
+      "rejected",
+    ])
+  })
+
+  it("puts every role on the featured project, and its client", async () => {
+    await seed(url)
+
+    const { rows } = await database.pool.query<{ role: string }>(
+      `SELECT DISTINCT role FROM person_project_roles WHERE project_id = $1`,
+      [await projectIdOf(featuredProject.name)]
+    )
+
+    expect(rows).toHaveLength(18)
+  })
+
+  it("has a locked D1.1 and D1.2 on the featured project, so D1.3 is open", async () => {
+    await seed(url)
+
+    const { rows } = await database.pool.query<{
+      tool_id: string
+      state: string
+    }>(`SELECT tool_id, state FROM tool_records ORDER BY tool_id`)
+
     expect(rows).toEqual([
-      { request_id: DEMO_REQUEST_ID, email: "client@example.com" },
+      { tool_id: "D1.1", state: "locked" },
+      { tool_id: "D1.2", state: "locked" },
     ])
   })
 })
 
-describe("the demo D1.1", () => {
-  it("adds one approved D1.1 with two files to Demo Project, once", async () => {
-    await seed(url)
+describe("what the IT/Admin sees", () => {
+  it("sees every project", async () => {
     await seed(url)
 
-    const { rows } = await database.pool.query<{
-      state: string
-      files: number
-    }>(
-      `SELECT r.state, jsonb_array_length(r.payload->'attachedFiles') AS files
-         FROM tool_records r
-         JOIN projects p ON p.id = r.project_id
-        WHERE p.name = 'Demo Project' AND r.tool_id = 'D1.1'`
+    const listed = await listProjectsFor(database, await idOf(ADMIN))
+
+    expect(listed.map((project) => project.name).sort()).toEqual(
+      seedProjects.map((project) => project.name).sort()
     )
-
-    expect(rows).toEqual([{ state: "locked", files: 2 }])
   })
 
-  it("leaves a D1.1 that already exists alone", async () => {
+  it("lists the running projects short of a PM or an OM, and no others", async () => {
+    await seed(url)
+
+    const needing = await projectsNeedingTeam(database, await idOf(ADMIN))
+
+    expect(needing.map((project) => project.name).sort()).toEqual([
+      "Accra Brewery Bottling Retrofit",
+      "Kumasi Cocoa Roasting Line",
+      "Takoradi Port Conveyor Upgrade",
+    ])
+  })
+
+  it("shows a team on a staffed project", async () => {
+    await seed(url)
+
+    const team = await teamOf(
+      database,
+      await idOf(ADMIN),
+      await projectIdOf("Tamale Shea Butter Processing Plant")
+    )
+
+    expect(team?.members.map((member) => member.role)).toEqual([
+      "PM",
+      "OM",
+      "LE",
+      "AE",
+      "FO",
+    ])
+  })
+
+  it("keeps everyone within their workload limit, with one engineer at it", async () => {
+    await seed(url)
+
+    const admin = await idOf(ADMIN)
+    const full: string[] = []
+
+    for (const person of staff) {
+      for (const load of await workloadOf(
+        database,
+        admin,
+        await idOf(emailOf(person.handle))
+      )) {
+        expect(load.count).toBeLessThanOrEqual(load.limit)
+
+        if (load.count === load.limit) {
+          full.push(`${person.name}: ${load.group}`)
+        }
+      }
+    }
+
+    expect(full).toContain("Kojo Antwi: Engineer")
+  })
+})
+
+describe("what the other roles see", () => {
+  it("shows the PM only the projects they are on", async () => {
+    await seed(url)
+
+    const listed = await listProjectsFor(database, await idOf(loginFor("PM")))
+
+    expect(listed.map((project) => project.name).sort()).toEqual([
+      "Cape Coast Hotel Laundry Boiler",
+      "Tamale Shea Butter Processing Plant",
+      "Tema Foods Boiler Skid",
+    ])
+  })
+
+  it("shows a client only their own project", async () => {
+    await seed(url)
+
+    const listed = await listProjectsFor(
+      database,
+      await idOf(featuredProject.client.email)
+    )
+
+    expect(listed.map((project) => project.name)).toEqual([
+      featuredProject.name,
+    ])
+  })
+})
+
+describe("seeding again", () => {
+  it("changes nothing and creates no one", async () => {
+    await seed(url)
+
+    const roles = await count("person_project_roles")
+    const created = await seed(url)
+
+    expect(created).toEqual([])
+    expect(await count("projects")).toBe(seedProjects.length)
+    expect(await count("people")).toBe(PEOPLE)
+    expect(await count("person_project_roles")).toBe(roles)
+  })
+
+  it("adds back only a person who was deleted", async () => {
+    await seed(url)
+    await database.pool.query("DELETE FROM people WHERE email = $1", [
+      emailOf("mavis.hammond"),
+    ])
+
+    const created = await seed(url)
+
+    expect(created).toEqual([{ role: "QA", email: emailOf("mavis.hammond") }])
+    expect(await count("people")).toBe(PEOPLE)
+  })
+
+  it("gives back a lost password, a lost role and a lost qualification", async () => {
+    await seed(url)
+
+    const roles = await count("person_project_roles")
+    const qualifications = await count("person_company_roles")
+    const email = emailOf("ama.owusu")
+
+    await database.pool.query(
+      "DELETE FROM accounts WHERE person_id = (SELECT id FROM people WHERE email = $1)",
+      [email]
+    )
+    await database.pool.query(
+      "DELETE FROM person_project_roles WHERE person_id = (SELECT id FROM people WHERE email = $1)",
+      [email]
+    )
+    await database.pool.query(
+      "DELETE FROM person_company_roles WHERE person_id = (SELECT id FROM people WHERE email = $1)",
+      [email]
+    )
+
+    expect(await seed(url)).toEqual([])
+    expect(await count("people")).toBe(PEOPLE)
+    expect(await count("person_project_roles")).toBe(roles)
+    expect(await count("person_company_roles")).toBe(qualifications)
+
+    const result = await auth.api.signInEmail({
+      body: { email, password: "password" },
+    })
+
+    expect(result.user.email).toBe(email)
+  })
+
+  it("leaves a record someone is working on alone", async () => {
     await seed(url)
     await database.pool.query(
       "UPDATE tool_records SET state = 'draft' WHERE tool_id = 'D1.1'"
@@ -163,142 +364,6 @@ describe("the demo D1.1", () => {
   })
 })
 
-describe("seeding an empty database", () => {
-  it("adds one person per role, each but IT/Admin holding only that role on Demo Project", async () => {
-    await seed(url)
-
-    expect(await count("projects")).toBe(1)
-    expect(await count("people")).toBe(19)
-    expect(await count("person_project_roles")).toBe(18)
-
-    const held = await rolesOnDemoProject()
-
-    expect(held).toContainEqual({ email: "le@example.com", role: "LE" })
-    expect(held).toContainEqual({ email: "pm@example.com", role: "PM" })
-    expect(held).toContainEqual({ email: "client@example.com", role: "Client" })
-    expect(held.map((row) => row.email).sort()).toEqual(
-      EMAILS.filter((email) => email !== "it-admin@example.com").sort()
-    )
-  })
-
-  it("qualifies the OM, PM, HE and FO users and gives IT/Admin company-wide", async () => {
-    await seed(url)
-
-    expect(await companyWideRoles()).toEqual(COMPANY_WIDE)
-  })
-
-  it("shows the OM, PM, HE and FO users only Demo Project, and IT/Admin every project", async () => {
-    await seed(url)
-
-    await database.pool.query(
-      "INSERT INTO projects (name, request_id, service_track) VALUES ('Other Project', 'T1-1', 'Tier_1')"
-    )
-
-    for (const email of QUALIFIED) {
-      expect(await projectsSeenBy(email)).toEqual(["Demo Project"])
-    }
-
-    expect(await projectsSeenBy("it-admin@example.com")).toEqual([
-      "Demo Project",
-      "Other Project",
-    ])
-  })
-
-  it("gives Demo Project a request ID and a service track, and leaves it active", async () => {
-    await seed(url)
-
-    const { rows } = await database.pool.query(
-      "SELECT request_id, service_track, status FROM projects WHERE name = 'Demo Project'"
-    )
-
-    expect(rows).toEqual([
-      {
-        request_id: DEMO_REQUEST_ID,
-        service_track: "Tier_1",
-        status: "active",
-      },
-    ])
-  })
-
-  it("returns every user it created", async () => {
-    const created = await seed(url)
-
-    expect(created).toHaveLength(19)
-    expect(created).toContainEqual({ role: "QA", email: "qa@example.com" })
-  })
-})
-
-describe("seeding again", () => {
-  it("changes nothing and creates no one", async () => {
-    await seed(url)
-
-    const created = await seed(url)
-
-    expect(created).toEqual([])
-    expect(await count("projects")).toBe(1)
-    expect(await count("people")).toBe(19)
-    expect(await count("person_project_roles")).toBe(18)
-    expect(await count("person_company_roles")).toBe(5)
-  })
-
-  it("adds back only a user who was deleted", async () => {
-    await seed(url)
-
-    await database.pool.query(
-      "DELETE FROM people WHERE email = 'qa@example.com'"
-    )
-
-    const created = await seed(url)
-
-    expect(created).toEqual([{ role: "QA", email: "qa@example.com" }])
-    expect(await count("people")).toBe(19)
-    expect(await count("person_project_roles")).toBe(18)
-    expect(await count("person_company_roles")).toBe(5)
-  })
-})
-
-describe("seeding a user who lost their password or role", () => {
-  it("gives them back without adding a second person", async () => {
-    await seed(url)
-
-    await database.pool.query(
-      "DELETE FROM accounts WHERE person_id = (SELECT id FROM people WHERE email = 'qa@example.com')"
-    )
-    await database.pool.query(
-      "DELETE FROM person_project_roles WHERE person_id = (SELECT id FROM people WHERE email = 'qa@example.com')"
-    )
-
-    const created = await seed(url)
-
-    expect(created).toEqual([])
-    expect(await count("people")).toBe(19)
-    expect(await rolesOnDemoProject()).toContainEqual({
-      email: "qa@example.com",
-      role: "QA",
-    })
-
-    const result = await auth.api.signInEmail({
-      body: { email: "qa@example.com", password: "password" },
-    })
-
-    expect(result.user.email).toBe("qa@example.com")
-  })
-})
-
-describe("signing in as a seed user", () => {
-  it("works for every role with the password `password`", async () => {
-    await seed(url)
-
-    for (const email of EMAILS) {
-      const result = await auth.api.signInEmail({
-        body: { email, password: "password" },
-      })
-
-      expect(result.user.email).toBe(email)
-    }
-  })
-})
-
 describe("seeding a database that is not local", () => {
   it("stops with a clear message and writes nothing", async () => {
     const remote = new URL(url)
@@ -309,38 +374,5 @@ describe("seeding a database that is not local", () => {
 
     expect(await count("people")).toBe(0)
     expect(await count("projects")).toBe(0)
-  })
-})
-
-describe("seeding a user who lost a qualification", () => {
-  it("gives it back", async () => {
-    await seed(url)
-
-    await database.pool.query(
-      "DELETE FROM person_company_roles WHERE person_id = (SELECT id FROM people WHERE email = 'om@example.com')"
-    )
-
-    await seed(url)
-
-    expect(await companyWideRoles()).toEqual(COMPANY_WIDE)
-  })
-})
-
-describe("the demo D1.2", () => {
-  it("adds one locked D1.2 that proceeds to D1.3, once, so D1.3 is open", async () => {
-    await seed(url)
-    await seed(url)
-
-    const { rows } = await database.pool.query<{
-      state: string
-      decision: string
-    }>(
-      `SELECT r.state, r.payload->>'triageDecision' AS decision
-         FROM tool_records r
-         JOIN projects p ON p.id = r.project_id
-        WHERE p.name = 'Demo Project' AND r.tool_id = 'D1.2'`
-    )
-
-    expect(rows).toEqual([{ state: "locked", decision: "Proceed to D1.3" }])
   })
 })

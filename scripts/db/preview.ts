@@ -1,6 +1,7 @@
 import type { Role } from "@/db/schema"
 
-import { SEED_PASSWORD, seedEmail } from "./seed-users"
+import { loginFor } from "./seed-data/people"
+import { SEED_PASSWORD } from "./seed-users"
 
 const BASE = "http://localhost:3000"
 
@@ -16,6 +17,20 @@ type Preview = {
 
 const previews: Preview[] = [
   {
+    screen: "Projects that need a team (IT/Admin)",
+    loginAs: "IT/Admin",
+    path: () => "/admin/team",
+    expect:
+      "Kofi Mensah sees three running projects short of a PM or an OM: Takoradi Port Conveyor Upgrade (nobody), Kumasi Cocoa Roasting Line (a PM only) and Accra Brewery Bottling Retrofit (an OM only), newest first. The rejected, closed, completed and fully staffed projects are not listed. Open one to assign people: Ama Owusu and Kojo Antwi are already at their limit of three projects.",
+  },
+  {
+    screen: "Every project as IT/Admin",
+    loginAs: "IT/Admin",
+    path: () => "/",
+    expect:
+      "All ten projects, Tier 1 and Tier 3, active, on hold, rejected, closed and completed, each with the client's organisation. The IT/Admin holds no project role, so no project shows Your roles.",
+  },
+  {
     screen: "Project tree in the sidebar",
     loginAs: "PM",
     path: (id) => `/projects/${id}`,
@@ -27,21 +42,21 @@ const previews: Preview[] = [
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.2`,
     expect:
-      "The demo D1.2 is already approved, so the sheet is read only and D1.3 is open on the project page. The sheet shows the title block, the files, the three triage checks and the decision Proceed to D1.3. Press View client request for the web form, in tables, over half the screen.",
+      "D1.2 is already approved, so the sheet is read only and D1.3 is open on the project page. The sheet shows the title block, the files, the three triage checks and the decision Proceed to D1.3. Press View client request for the web form, in tables, over half the screen.",
   },
   {
     screen: "D1.3 received request record (RDP-144)",
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.3`,
     expect:
-      "Demo Project is Tier 1 and D1.2 is already approved, so D1.3 is open. Four tables: Core Objectives and Scope has 3 locked rows (lock, no Remove) and Add row; Input / Output Operands (M, E, I, L) and Operators (5 rows) are fixed; Identified Missing Information is empty with Add row. Save draft keeps a half-filled sheet. Submit needs the description of the first two core objectives. The Tier 3 sheet, T3.D1.3a, opens only on a Tier 3 project.",
+      "Tema Foods Boiler Skid is Tier 1 and D1.2 is already approved, so D1.3 is open. Four tables: Core Objectives and Scope has 3 locked rows (lock, no Remove) and Add row; Input / Output Operands (M, E, I, L) and Operators (5 rows) are fixed; Identified Missing Information is empty with Add row. Save draft keeps a half-filled sheet. Submit needs the description of the first two core objectives. The Tier 3 sheet, T3.D1.3a, opens only on a Tier 3 project.",
   },
   {
     screen: "D1.1 review sheet",
     loginAs: "PM",
     path: (id) => `/projects/${id}/tools/D1.1`,
     expect:
-      "The same sheet as D1.2: request status and the attached files as tables, with Pending | Reviewed, read only because the demo D1.1 is locked.",
+      "The same sheet as D1.2: request status and the attached files as tables, with Pending | Reviewed, read only because D1.1 is locked.",
   },
   {
     screen: "Form tools on the same sheet (dev preview)",
@@ -69,14 +84,14 @@ const previews: Preview[] = [
     loginAs: "PM",
     path: (id) => `/projects/${id}`,
     expect:
-      "At the foot of the sidebar: a round avatar with the person's initials, and a round sign-out icon at the right. Hover or tab to the avatar: a tooltip says Signed in as and the name. Buttons and badges across the app are rounded; the grid boxes and tables stay square.",
+      "At the foot of the sidebar: a rounded avatar with the person's initials, and a rounded sign-out icon at the right. Hover or tab to the avatar: a tooltip says Signed in as and the name. Buttons and badges across the app are rounded; the grid boxes and tables stay square.",
   },
   {
     screen: "Notification bell (RDP-115)",
     loginAs: "PM",
     path: () => "/",
     expect:
-      "A bell at the top right of the sidebar header (on a narrow screen, in the top bar before Sign out) with the number 3 on it. Press it: a panel lists 4 notifications, newest first, each with its title and how long ago (5 minutes ago, 3 hours ago, Yesterday, 3 days ago). The first 3 have a dot for unread. Click one: you go to its page and the number drops by 1. Press Mark all read: the number and the dots go. Log in as another demo user, for example om@example.com, to see the empty message: You have no notifications. Notifications cannot be deleted, so once read they stay read.",
+      "A bell at the top right of the sidebar header (on a narrow screen, in the top bar before Sign out) with the number 3 on it. Press it: a panel lists 4 notifications, newest first, each with its title and how long ago (5 minutes ago, 3 hours ago, Yesterday, 3 days ago). The first 3 have a dot for unread. Click one: you go to its page and the number drops by 1. Press Mark all read: the number and the dots go. Log in as another person, for example the OM, to see the empty message: You have no notifications. Notifications cannot be deleted, so once read they stay read.",
   },
 ]
 
@@ -87,11 +102,11 @@ export function printPreviews(projectId: string | undefined) {
   }
 
   console.log(`\nSee it in the browser: ${BASE}/sign-in`)
-  console.log(`Password for every demo user: ${SEED_PASSWORD}\n`)
+  console.log(`Password for everyone: ${SEED_PASSWORD}\n`)
 
   for (const preview of previews) {
     console.log(preview.screen)
-    console.log(`  Log in as: ${seedEmail(preview.loginAs)}`)
+    console.log(`  Log in as: ${loginFor(preview.loginAs)}`)
     console.log(`  Visit:     ${BASE}${preview.path(projectId)}`)
     console.log(`  You see:   ${preview.expect}\n`)
   }

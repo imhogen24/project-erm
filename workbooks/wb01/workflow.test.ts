@@ -20,6 +20,7 @@ import {
 } from "@/server/workflow/workflow"
 
 import { registerAllTools } from "../index"
+import { qualityGateQuestions } from "./tools/t3-d1-3a"
 
 // The real WB01 map and tools. D2.1 stands in for the first tool of WB02,
 // which has no definition yet.
@@ -49,6 +50,19 @@ const spam = triage("Reject as Spam", "Fail")
 const answers = new Map<string, JsonObject>([
   ["D1.1", { requestStatus: "Reviewed" }],
   ["D1.2", triage("Proceed to D1.3", "Pass")],
+  [
+    "T3.D1.3a",
+    {
+      sourceAssets: [{ assetType: "Paper drawing" }],
+      draftingSpecs: [
+        { requirement: "3D Modelling", toleranceClass: "General" },
+      ],
+      qualityGate: qualityGateQuestions.map((question) => ({
+        question,
+        answer: "Yes",
+      })),
+    },
+  ],
   ["D1.10", { overallCapabilityStatus: "Capable" }],
   ["D1.11", { goNoGoDecision: "Go" }],
   ["D1.14", { minimumOverheadMet: true }],

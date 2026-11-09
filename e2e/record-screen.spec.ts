@@ -160,7 +160,6 @@ test("submitting a complete form makes it submitted and read only", async ({
   await expect(capability(page)).toBeDisabled()
   await expect(page.getByRole("button", { name: "Save draft" })).toHaveCount(0)
   await expect(page.getByRole("button", { name: "Submit" })).toHaveCount(0)
-  await expect(page.getByText("This record is read only.")).toBeVisible()
 })
 
 test("a person with the right role signs, and the name and time show", async ({

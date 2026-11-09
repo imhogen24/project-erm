@@ -63,6 +63,8 @@ const answers = new Map<string, JsonObject>([
       })),
     },
   ],
+  // In the app the PM's Send locks D1.4; here it moves like any record.
+  ["D1.4", { subject: "Acknowledgement of Boiler request", body: "Dear Ama," }],
   ["D1.10", { overallCapabilityStatus: "Capable" }],
   ["D1.11", { goNoGoDecision: "Go" }],
   ["D1.14", { minimumOverheadMet: true }],

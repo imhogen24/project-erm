@@ -59,7 +59,7 @@ export function requestIdOf(project: SeedProject) {
 }
 
 // The first project is the one the preview guide points at: every role is on
-// it and it already has a locked D1.1 and D1.2, so D1.3 is open. The others
+// it and its records are locked up to the tool being built (records.ts). The others
 // are at the other stages a project can be in. Workloads stay within the
 // limits, with Kojo Antwi at his limit of three engineering projects.
 export const projects: readonly SeedProject[] = [
@@ -91,8 +91,8 @@ export const projects: readonly SeedProject[] = [
     },
   },
   {
-    // The Tier 3 match for the first project: active, staffed for drafting,
-    // with D1.1 and D1.2 locked, so T3.D1.3a is open to build and test on.
+    // The Tier 3 match for the first project: active and staffed for drafting,
+    // with records locked up to the tool being built (records.ts).
     name: "Tarkwa Mine Pump Station Drawings",
     serviceTrack: "Tier_3",
     status: "active",

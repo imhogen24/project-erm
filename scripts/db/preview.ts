@@ -45,14 +45,28 @@ const previews: Preview[] = [
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.2`,
     expect:
-      "D1.2 is already approved, so the sheet is read only and D1.3 is open on the project page. The sheet shows the title block, the files, the three triage checks and the decision Proceed to D1.3. Press View client request for the web form, in tables, over half the screen.",
+      "D1.2 is already approved, so the sheet is read only. The sheet shows the title block, the files, the three triage checks and the decision Proceed to D1.3. Press View client request for the web form, in tables, over half the screen.",
   },
   {
     screen: "D1.3 received request record (RDP-144)",
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.3`,
     expect:
-      "Tema Foods Boiler Skid is Tier 1 and D1.2 is already approved, so D1.3 is open. Four tables, each answer in a rounded field with the column name as a hint: Core Objectives and Scope has 3 locked rows (padlock, no Remove) and Add row; Input / Output Operands (M, E, I, L, each with its name under it: Material, Energy, Information, Living thing) and Operators (5 rows) are fixed, with no padlocks; Identified Missing Information says Nothing here yet and has Add row. Save draft keeps a half-filled sheet. Submit for approval needs the description of the first two core objectives. The Tier 3 sheet, T3.D1.3a, opens only on a Tier 3 project.",
+      "D1.3 on Tema Foods Boiler Skid is locked, so it reads as a finished sheet: Core Objectives and Scope, Input / Output Operands (M, E, I, L with Material, Energy, Information, Living thing under them), Operators and one missing item. Ho Water Treatment Dosing Skid has a D1.3 waiting for the PM. To fill in a D1.3 from empty, approve a D1.2 on another Tier 1 project.",
+  },
+  {
+    screen: "D1.4 acknowledgement email, as the OM (RDP-150)",
+    loginAs: "OM",
+    path: (id) => `/projects/${id}/tools/D1.4`,
+    expect:
+      "D1.3 is locked, so D1.4 is open. Two boxes: 1.0 Dispatch metadata (Sent To is the client's email, grey; CC / BCC and Subject Line to type, the subject starting as Acknowledgement of Packaged boiler skid for the juice line request; Sent By already shows the OM's email, the IMHOGEN rep it comes from; Date Sent, Time Sent and Delivery Status say Filled in when the email is sent) and 2.0 Standard email template, the sheet's email with Dear Kwaku Ampofo, the submission date and the request ID filled in. There is no Save draft, Submit or Send: the OM prepares, and only the PM (ama.owusu@imhogen.test) sees Send. Edit the text and stop: the foot says Saving..., then ✓ Saved. Nothing is saved until you edit.",
+  },
+  {
+    screen: "D1.4 acknowledgement email, as the PM: Send (RDP-150)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.4`,
+    expect:
+      "The same email, read only, with Send at the foot. Before the OM edits it, Send is off and says the Onboarding Manager has not started the email yet; with an empty subject or text it says what to add. Press Send: the email goes to the client through Resend when RESEND_API_KEY is set (the seeded clients have .test addresses, so nothing reaches anyone; without the key nothing leaves the machine), the email goes from the noreply address, the record locks, and Date Sent, Time Sent and Delivery Status Sent fill in, with Sent By kept as the OM, and D1.4 reads as Locked. Pressing twice sends once. A bad address in CC / BCC is refused and nothing is sent.",
   },
   {
     screen: "D1.1 review sheet",
@@ -90,12 +104,12 @@ const previews: Preview[] = [
       "At the foot of the sidebar: a rounded avatar with the person's initials, and a rounded sign-out icon at the right. Hover or tab to the avatar: a tooltip says Signed in as and the name. Buttons and badges across the app are rounded; the grid boxes and tables stay square.",
   },
   {
-    screen: "Tier 3: T3.D1.3a on Tarkwa Mine Pump Station Drawings",
+    screen: "Tier 3: Tarkwa Mine Pump Station Drawings",
     loginAs: "OM",
     email: "selorm.dzigbordi@imhogen.test",
     path: () => "/",
     expect:
-      "Tarkwa Mine Pump Station Drawings shows Tier 3 on its tile. Open it: D1.1 and D1.2 are locked and the next tool is T3.D1.3a T3 Technical Intake (Drafting), open to fill in. No Tier 1 tool such as D1.3 is listed. Its PM is nana.adjei@imhogen.test. Tema Foods Boiler Skid is the Tier 1 match, with D1.3 open.",
+      "Tarkwa Mine Pump Station Drawings shows Tier 3 on its tile. Open it: D1.1, D1.2 and T3.D1.3a T3 Technical Intake (Drafting) are locked, and D1.4 is open, its subject using the project name because the Tier 3 form has no title. No Tier 1 tool such as D1.3 is listed. Its PM, nana.adjei@imhogen.test, sends D1.4. Tema Foods Boiler Skid is the Tier 1 match.",
   },
   {
     screen: "PM: a D1.2 waiting for approval",

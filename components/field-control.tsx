@@ -128,6 +128,7 @@ export function FieldControl({
         {...shared}
         readOnly
         value={text}
+        placeholder={placeholder}
         className={`${controlClass} bg-muted/50 ${inputClassName}`}
       />
     )

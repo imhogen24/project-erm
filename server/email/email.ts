@@ -13,6 +13,8 @@ import { renderEmail, type EmailDataByKind, type EmailKind } from "./templates"
 export type EmailMessage = {
   from: string
   to: string
+  // Copied openly. Left out when there are none.
+  cc?: string[]
   subject: string
   text: string
   html: string
@@ -32,6 +34,7 @@ export type FakeTransport = Transport & { sent: EmailMessage[] }
 
 export type EmailInput<K extends EmailKind> = {
   to: string
+  cc?: string[]
   kind: K
   data: EmailDataByKind[K]
   projectId?: string
@@ -110,6 +113,7 @@ export async function sendEmail<K extends EmailKind>(
   transport: Transport = getTransport()
 ): Promise<EmailLogRow> {
   const to = recipient.parse(input.to)
+  const cc = (input.cc ?? []).map((address) => recipient.parse(address))
 
   const [created] = await database
     .insert(emailLog)
@@ -138,7 +142,12 @@ export async function sendEmail<K extends EmailKind>(
     const email = renderEmail(input.kind, input.data)
 
     const { id } = await transport.send(
-      { from: requireEnv("EMAIL_FROM"), to, ...email },
+      {
+        from: requireEnv("EMAIL_FROM"),
+        to,
+        ...(cc.length > 0 && { cc }),
+        ...email,
+      },
       { idempotencyKey: input.key }
     )
 

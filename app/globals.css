@@ -554,6 +554,21 @@
     font-size: 0.75rem;
   }
 
+  /* A value the system fills, such as who sent an email: text, the height
+     of a field so a row stays level, and a grey note until it is filled. */
+  .system-value {
+    display: flex;
+    min-height: var(--control-height);
+    align-items: center;
+    font-size: 1rem;
+    color: var(--foreground);
+    overflow-wrap: anywhere;
+  }
+
+  .system-value[data-empty="true"] {
+    color: var(--muted-foreground);
+  }
+
   /* A filled, rounded area on a grid box. No outline: the fill sets it apart. */
   .tile {
     border-radius: var(--radius-control);

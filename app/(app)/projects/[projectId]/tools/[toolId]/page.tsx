@@ -14,11 +14,17 @@ import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
 import type { FormValues } from "@/lib/tool-definition"
 import { registeredTools } from "@/lib/tools"
+import {
+  ACKNOWLEDGEMENT,
+  acknowledgementDraft,
+  missingToSend,
+  sendableOf,
+} from "@/server/acknowledgement/acknowledgement"
 import { getDatabase } from "@/server/database"
 import { getClientRequestPreview } from "@/server/intake/preview"
 import { getRequestDetails } from "@/server/intake/request-details"
 import type { DocumentControl } from "@/server/document-control/document-control"
-import { PermissionDeniedError } from "@/server/permissions/permissions"
+import { PermissionDeniedError, can } from "@/server/permissions/permissions"
 import { getProjectOverview } from "@/server/projects/projects"
 import { getRecordScreen } from "@/server/records/screen"
 import { UnknownToolError } from "@/server/records/validate"
@@ -30,6 +36,7 @@ import {
   signFieldAction,
   submitRecordAction,
   submitReviewAction,
+  sendAcknowledgementAction,
 } from "./actions"
 import { projectNav } from "../../sidebar"
 
@@ -167,6 +174,44 @@ export default async function Page({
       ? details
       : null
 
+  // D1.4 starts from the standard email, filled in from the web request, and
+  // shows the client's address. Nothing is saved until the OM edits it. The
+  // person who may approve D1.4, the PM, sends it.
+  let formValues = values
+
+  let send:
+    { missing: string[]; run: typeof sendAcknowledgementAction } | undefined
+
+  if (toolId === ACKNOWLEDGEMENT) {
+    const draft = await acknowledgementDraft(getDatabase(), projectId)
+
+    formValues = {
+      ...(view.record ? values : { subject: draft.subject, body: draft.body }),
+      // Once sent, what was recorded; before, the web request's address and
+      // the project's OM.
+      sentTo:
+        sendableOf(view.record?.payload ?? {}).sentTo ?? draft.sentTo ?? "",
+      sentBy:
+        sendableOf(view.record?.payload ?? {}).sentBy ?? draft.sentBy ?? "",
+    }
+
+    const mayStillSend =
+      view.project.status === "active" &&
+      (view.state === "draft" || view.state === "notStarted")
+
+    if (
+      mayStillSend &&
+      (await can(getDatabase(), session.user.id, projectId, toolId, "approve"))
+    ) {
+      send = {
+        missing: view.record
+          ? missingToSend(draft.sentTo, sendableOf(view.record.payload))
+          : ["the Onboarding Manager has not started the email yet"],
+        run: sendAcknowledgementAction,
+      }
+    }
+  }
+
   const checks = tool.fields.flatMap((field) =>
     field.type === "table" && field.key === "triageChecklist"
       ? (field.prefilledRows ?? [])
@@ -202,20 +247,15 @@ export default async function Page({
       submit={submitRecordAction}
       approve={approveRecordAction}
     />
-  ) : !hasRecord && !view.can.write ? (
+  ) : !hasRecord && !view.can.write && !send ? (
     <p>Nobody has started this tool yet.</p>
   ) : (
     <div className="flex flex-col gap-6">
-      {hasRecord && !view.can.write && (
-        <p className="text-sm text-muted-foreground">
-          This record is read only.
-        </p>
-      )}
       <RecordForm
         tool={tool}
         projectId={projectId}
         cycle={view.cycle}
-        values={values}
+        values={formValues}
         recordId={view.record?.id}
         updatedAt={view.record?.updatedAt.toISOString()}
         canWrite={view.can.write}
@@ -225,6 +265,7 @@ export default async function Page({
         submit={submitRecordAction}
         sign={signFieldAction}
         approve={approveRecordAction}
+        send={send}
       />
     </div>
   )
@@ -245,7 +286,10 @@ export default async function Page({
             title={`${view.toolId} ${view.toolName}`}
             state={view.state}
             statusLine={
-              view.state === "notStarted" ? undefined : statusLine[view.state]
+              // A tool that saves by itself needs no line explaining how.
+              view.state === "notStarted" || tool.autosave
+                ? undefined
+                : statusLine[view.state]
             }
             action={
               clientRequest ? (

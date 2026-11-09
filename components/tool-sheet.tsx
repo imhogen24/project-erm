@@ -11,10 +11,12 @@ type Props = Parameters<typeof SheetTitleBlock>[0] & { children: ReactNode }
 // inside it changes with the sheet's width, not the screen's.
 export function ToolSheet({ children, ...titleBlock }: Props) {
   return (
-    <div className="grid-square @container relative isolate bg-background">
+    <div className="page-sheet grid-square @container relative isolate">
       <Grain />
       <SheetTitleBlock {...titleBlock} />
-      <div className="relative flex flex-col gap-8 px-6 py-8">{children}</div>
+      <div className="relative flex flex-1 flex-col gap-8 px-6 py-8">
+        {children}
+      </div>
     </div>
   )
 }

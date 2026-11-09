@@ -52,7 +52,8 @@
   --foreground: oklch(0.147 0.004 49.25);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.147 0.004 49.25);
-  --popover: oklch(1 0 0);
+  /* Warm, like the page, so a list that opens over it belongs to it. */
+  --popover: oklch(0.972 0.007 81.79);
   --popover-foreground: oklch(0.147 0.004 49.25);
   --primary: oklch(0.555 0.163 48.998);
   --primary-foreground: oklch(0.987 0.022 95.277);
@@ -64,7 +65,9 @@
   --accent-foreground: oklch(0.216 0.006 56.043);
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.923 0.003 48.717);
-  --input: oklch(0.923 0.003 48.717);
+  /* Borders of inputs, checkboxes and radios. Dark enough to see on a filled
+     tile, not only on the page background. */
+  --input: oklch(0.72 0.012 60);
   --ring: oklch(0.709 0.01 56.259);
   --chart-1: oklch(0.879 0.169 91.605);
   --chart-2: oklch(0.769 0.188 70.08);
@@ -72,6 +75,9 @@
   --chart-4: oklch(0.555 0.163 48.998);
   --chart-5: oklch(0.473 0.137 46.201);
   --radius: 0;
+  /* Buttons, badges and avatars are softly rounded. Boxes on the grid stay
+     square, so they keep using --radius. */
+  --radius-control: 0.5rem;
   --sidebar: oklch(0.985 0.001 106.423);
   --sidebar-foreground: oklch(0.147 0.004 49.25);
   --sidebar-primary: oklch(0.666 0.179 58.318);
@@ -99,7 +105,7 @@
   --accent-foreground: oklch(0.985 0.001 106.423);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
+  --input: oklch(1 0 0 / 28%);
   --ring: oklch(0.553 0.013 58.071);
   --chart-1: oklch(0.879 0.169 91.605);
   --chart-2: oklch(0.769 0.188 70.08);
@@ -114,6 +120,807 @@
   --sidebar-accent-foreground: oklch(0.985 0.001 106.423);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.553 0.013 58.071);
+}
+
+/* Surfaces and marks for controls, made from the theme colours so light and
+   dark follow on their own. Components use these, never a one-off opacity. */
+:root {
+  --surface-tile: color-mix(in oklab, var(--foreground) 5%, transparent);
+  --surface-tile-hover: color-mix(in oklab, var(--foreground) 9%, transparent);
+  --surface-chosen: color-mix(in oklab, var(--primary) 16%, transparent);
+  --surface-note: color-mix(in oklab, var(--primary) 10%, transparent);
+  --surface-inset: color-mix(in oklab, var(--background) 75%, transparent);
+  --chip-open: color-mix(in oklab, var(--primary) 22%, transparent);
+  --chip-done: color-mix(in oklab, var(--foreground) 7%, transparent);
+  --avatar-soft: color-mix(in oklab, var(--primary) 22%, transparent);
+  --meter-on: var(--primary);
+  --meter-off: color-mix(in oklab, var(--foreground) 15%, transparent);
+  --meter-full: var(--muted-foreground);
+  --tile-padding: 1.25rem;
+  /* Every field, select and the button beside it share one height. */
+  --control-height: 3rem;
+  --list-shadow: 0 16px 40px -16px
+    color-mix(in oklab, var(--foreground) 40%, transparent);
+}
+
+@layer components {
+  /* Selects. One look for every select in the app: the closed field, the list
+     that opens under it, and each option in the list. */
+  .select-trigger {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    height: var(--control-height);
+    padding-inline: 0.75rem;
+    border: 1px solid var(--input);
+    border-radius: var(--radius-control);
+    background: var(--background);
+    font-size: 1rem;
+    white-space: nowrap;
+    outline: none;
+    transition: border-color 120ms ease;
+  }
+
+  .select-trigger:hover:not(:disabled) {
+    border-color: var(--muted-foreground);
+  }
+
+  .select-trigger:focus-visible {
+    border-color: var(--ring);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--ring) 35%, transparent);
+  }
+
+  .select-trigger[data-placeholder] {
+    color: var(--muted-foreground);
+  }
+
+  .select-trigger[aria-invalid="true"] {
+    border-color: var(--destructive);
+  }
+
+  .select-trigger:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .select-trigger > [data-slot="select-value"] {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    align-items: center;
+    overflow: hidden;
+    text-align: start;
+  }
+
+  .select-caret {
+    width: 1rem;
+    height: 1rem;
+    flex-shrink: 0;
+    color: var(--muted-foreground);
+  }
+
+  .select-content {
+    position: relative;
+    z-index: 50;
+    min-width: var(--radix-select-trigger-width);
+    max-height: min(var(--radix-select-content-available-height), 22rem);
+    overflow-x: hidden;
+    overflow-y: auto;
+    border: 1px solid var(--input);
+    border-radius: var(--radius-control);
+    background: var(--popover);
+    color: var(--popover-foreground);
+    box-shadow: var(--list-shadow);
+  }
+
+  .select-viewport {
+    padding: 0.25rem;
+  }
+
+  .select-item {
+    position: relative;
+    display: flex;
+    width: 100%;
+    min-height: 2.75rem;
+    align-items: center;
+    padding: 0.5rem 2.25rem 0.5rem 0.75rem;
+    border-radius: calc(var(--radius-control) - 0.25rem);
+    font-size: 0.875rem;
+    cursor: default;
+    outline: none;
+    user-select: none;
+  }
+
+  .select-item[data-state="checked"] {
+    background: var(--surface-chosen);
+    font-weight: 500;
+  }
+
+  .select-item[data-highlighted] {
+    background: var(--surface-tile-hover);
+  }
+
+  .select-item[data-disabled] {
+    pointer-events: none;
+    opacity: 0.5;
+  }
+
+  .select-item > [data-slot="select-item-text"] {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    align-items: center;
+  }
+
+  .select-check {
+    position: absolute;
+    inset-inline-end: 0.75rem;
+    display: flex;
+    color: var(--primary);
+  }
+
+  /* A rich option: a mark, the name, then grey detail at the end. Used in the
+     list and, once chosen, in the closed field. */
+  .option-row {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .option-mark {
+    display: inline-flex;
+    width: 1.75rem;
+    height: 1.75rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: calc(var(--radius-control) - 0.125rem);
+    background: var(--avatar-soft);
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--foreground);
+  }
+
+  .option-label {
+    min-width: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .option-meta {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 400;
+    color: var(--muted-foreground);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* The sidebar outside a project: groups of links with icons, then a short
+     list of projects. */
+  .nav-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+    padding: 1rem 0.75rem 0.5rem;
+  }
+
+  .nav-group-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 0.5rem 0.375rem;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+  }
+
+  .nav-link {
+    display: flex;
+    min-height: 2.5rem;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 0.5rem;
+    border-radius: var(--radius-control);
+    font-size: 0.875rem;
+    color: var(--muted-foreground);
+    outline: none;
+    transition:
+      background-color 120ms ease,
+      color 120ms ease;
+  }
+
+  .nav-link:hover {
+    background: var(--surface-tile-hover);
+    color: var(--foreground);
+  }
+
+  .nav-link:focus-visible {
+    box-shadow: 0 0 0 2px var(--ring);
+  }
+
+  .nav-link[aria-current="page"] {
+    background: var(--surface-chosen);
+    color: var(--foreground);
+    font-weight: 500;
+  }
+
+  .nav-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    flex-shrink: 0;
+  }
+
+  .nav-link[aria-current="page"] .nav-icon {
+    color: var(--primary);
+  }
+
+  .nav-count {
+    display: inline-flex;
+    min-width: 1.375rem;
+    height: 1.375rem;
+    align-items: center;
+    justify-content: center;
+    padding-inline: 0.375rem;
+    border-radius: 999px;
+    background: var(--chip-open);
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--foreground);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .nav-count[data-tone="quiet"] {
+    background: var(--chip-done);
+    color: var(--muted-foreground);
+  }
+
+  .nav-project {
+    display: flex;
+    min-height: 2.25rem;
+    min-width: 0;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0 0.5rem;
+    border-radius: var(--radius-control);
+    font-size: 0.875rem;
+    color: var(--foreground);
+    outline: none;
+  }
+
+  .nav-project:hover {
+    background: var(--surface-tile-hover);
+  }
+
+  .nav-project:focus-visible {
+    box-shadow: 0 0 0 2px var(--ring);
+  }
+
+  /* Orange only when the project needs something, as on the team page.
+     Otherwise grey: darker while it runs, faint while it is on hold. */
+  .nav-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    flex-shrink: 0;
+    margin-inline: 0.375rem;
+    border-radius: 999px;
+    background: var(--primary);
+  }
+
+  .nav-dot[data-tone="active"] {
+    background: var(--muted-foreground);
+  }
+
+  .nav-dot[data-tone="quiet"] {
+    background: var(--meter-off);
+  }
+
+  .nav-more {
+    padding: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .nav-more:hover {
+    color: var(--foreground);
+  }
+
+  .user-identity {
+    display: flex;
+    min-width: 0;
+    flex: 1;
+    flex-direction: column;
+    line-height: 1.25;
+  }
+
+  .user-identity-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+
+  .user-identity-detail {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+  }
+
+  /* A result, such as a file's status: grey, or soft orange with a tick once
+     it is good. */
+  .result-chip {
+    display: inline-flex;
+    width: fit-content;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.75rem;
+    padding-inline: 0.625rem;
+    border-radius: var(--radius-control);
+    background: var(--chip-done);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--foreground);
+  }
+
+  .result-chip[data-tone="good"] {
+    background: var(--chip-open);
+  }
+
+  .result-chip[data-tone="good"] svg {
+    color: var(--primary);
+  }
+
+  /* A tool's state, the same shape as .status-chip, stronger as the tool
+     firms up: grey, darker grey, soft orange, soft orange with a tick, then
+     solid orange with a padlock. */
+  .state-badge {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.75rem;
+    padding-inline: 0.625rem;
+    border-radius: var(--radius-control);
+    background: var(--chip-done);
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--muted-foreground);
+  }
+
+  .state-badge[data-state="draft"] {
+    background: color-mix(in oklab, var(--foreground) 14%, transparent);
+    color: var(--foreground);
+  }
+
+  .state-badge[data-state="submitted"] {
+    background: var(--chip-open);
+    color: var(--foreground);
+  }
+
+  .state-badge[data-state="approved"] {
+    background: var(--chip-open);
+    color: var(--foreground);
+  }
+
+  .state-badge[data-state="locked"] {
+    background: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  .state-badge-icon {
+    width: 0.875rem;
+    height: 0.875rem;
+    flex-shrink: 0;
+  }
+
+  /* A tool's square on the overview keeps the page's background whatever its
+     state; the badge says where it stands. A locked tool also gets an orange
+     bar down its left edge, drawn as a background layer so the grid lines
+     stay. */
+  .tool-square {
+    background: var(--background);
+  }
+
+  .tool-square[data-state="locked"] {
+    background:
+      linear-gradient(var(--primary), var(--primary)) left / 3px 100% no-repeat,
+      var(--background);
+  }
+
+  /* A tool that cannot be opened yet: its square is quiet and not a link,
+     and a line says what it waits on. */
+  .tool-square[data-shut="true"] {
+    color: var(--muted-foreground);
+  }
+
+  .shut-note {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.75rem;
+  }
+
+  /* A filled, rounded area on a grid box. No outline: the fill sets it apart. */
+  .tile {
+    border-radius: var(--radius-control);
+    background: var(--surface-tile);
+    padding: var(--tile-padding);
+  }
+
+  /* A tile that is a choice. It fills orange once its checkbox or radio is on. */
+  .tile-choice {
+    display: flex;
+    gap: 0.75rem;
+    cursor: pointer;
+    border-radius: var(--radius-control);
+    background: var(--surface-tile);
+    padding: 1rem;
+    transition: background-color 120ms ease;
+  }
+
+  .tile-choice:hover {
+    background: var(--surface-tile-hover);
+  }
+
+  .tile-choice:has([data-state="checked"]) {
+    background: var(--surface-chosen);
+  }
+
+  .tile-choice:has(:focus-visible) {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  .tile-choice:has(:disabled) {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  /* On a locked record the choice made stays bright: it is the answer. */
+  .tile-choice:has(:disabled[data-state="checked"]) {
+    cursor: default;
+    opacity: 1;
+  }
+
+  /* A message that confirms something, such as a new invite link. */
+  .note-panel {
+    border-radius: var(--radius-control);
+    background: var(--surface-note);
+    padding: var(--tile-padding);
+  }
+
+  .note-panel[data-tone="error"] {
+    background: color-mix(in oklab, var(--destructive) 12%, transparent);
+  }
+
+  /* A person shown inside a tile. */
+  .inset-row {
+    border-radius: var(--radius-control);
+    background: var(--surface-inset);
+    padding: 0.5rem;
+  }
+
+  /* Whether a role on a project has someone: orange when it is still open. */
+  .status-chip {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    gap: 0.375rem;
+    height: 1.75rem;
+    border-radius: var(--radius-control);
+    background: var(--chip-done);
+    padding-inline: 0.625rem;
+    font-size: 0.75rem;
+    color: var(--muted-foreground);
+  }
+
+  .status-chip[data-open="true"] {
+    background: var(--chip-open);
+    color: var(--foreground);
+    font-weight: 500;
+  }
+
+  /* One mark per project a person may be on; filled for each they are on. */
+  .meter-mark {
+    width: 0.375rem;
+    height: 0.75rem;
+    border-radius: 999px;
+    background: var(--meter-off);
+  }
+
+  .meter-mark[data-on="true"] {
+    background: var(--meter-on);
+  }
+
+  .meter-mark[data-on="true"][data-full="true"] {
+    background: var(--meter-full);
+  }
+}
+
+/* The project tree in the sidebar: workbook folders and tool rows, drawn like
+   the other sidebar links. Outside the layers, like the avatar below, because
+   the tree's own classes would otherwise win. */
+.nav-folder {
+  width: 100%;
+  min-height: 2.25rem;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+  border-radius: var(--radius-control);
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.nav-folder:hover {
+  background: var(--surface-tile-hover);
+}
+
+.nav-tool {
+  display: flex;
+  min-width: 0;
+  min-height: 2.25rem;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0 0.5rem;
+  border-radius: var(--radius-control);
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+  outline: none;
+}
+
+.nav-tool:hover {
+  background: var(--surface-tile-hover);
+  color: var(--foreground);
+}
+
+.nav-tool:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+/* A tool in the tree that is not open yet: shown, but not a link. */
+.nav-tool[data-shut="true"] {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.nav-tool[data-shut="true"]:hover {
+  background: transparent;
+  color: var(--muted-foreground);
+}
+
+.nav-tool[aria-current="page"] {
+  background: var(--surface-chosen);
+  color: var(--foreground);
+  font-weight: 500;
+}
+
+/* The project the sidebar is showing, under the way back to the list: its
+   tier, its name and its request ID, as a card that opens its overview. */
+.project-card {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-control);
+  background: var(--surface-tile);
+  outline: none;
+}
+
+.project-card:hover {
+  background: var(--surface-tile-hover);
+}
+
+.project-card:focus-visible {
+  box-shadow: 0 0 0 2px var(--ring);
+}
+
+.project-card .option-mark {
+  width: 2.25rem;
+  height: 2.25rem;
+  font-size: 0.75rem;
+}
+
+.project-card-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.3;
+  overflow-wrap: anywhere;
+}
+
+.project-card-meta {
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  font-variant-numeric: tabular-nums;
+}
+
+/* A tile that opens somewhere when clicked anywhere on it. The tile's main
+   link stretches over the whole tile; any other control inside sits above it
+   with .above-stretch, so it still gets its own clicks. */
+.stretched-link {
+  outline: none;
+}
+
+/* The same, when the tile's visible link is a button: a button moves a pixel
+   when pressed, which would shrink a stretch drawn from it mid-click. So the
+   tile gets its own cover link, hidden from screen readers and the keyboard,
+   which reach the button itself. */
+.tile-cover {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.stretched-link::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.above-stretch {
+  position: relative;
+  z-index: 2;
+}
+
+/* A row of things over a stretched link, such as a badge and a button. The
+   row lets clicks through to the tile; only its controls take them. */
+.above-stretch-row {
+  position: relative;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.above-stretch-row :is(a, button, input, select, textarea, [role="button"]) {
+  pointer-events: auto;
+}
+
+/* The whole tile answers the pointer and the keyboard, not just the link. A
+   background layer tints it, so the grid lines drawn by its shadows stay. */
+.link-tile:has(.stretched-link:hover),
+.link-tile:has(.tile-cover:hover) {
+  background-image: linear-gradient(
+    color-mix(in oklab, var(--primary) 8%, transparent),
+    color-mix(in oklab, var(--primary) 8%, transparent)
+  );
+}
+
+.link-tile:has(.stretched-link:focus-visible) {
+  outline: 2px solid var(--ring);
+  outline-offset: -2px;
+}
+
+/* A small button on a tool's square, such as Request a change: a filled chip
+   like the state badge beside it.
+   Outside the layers so the button's own outline colours do not win. */
+.tile-action {
+  border-color: transparent;
+  background: var(--chip-done);
+  color: var(--foreground);
+}
+
+.tile-action:hover {
+  background: var(--surface-tile-hover);
+  color: var(--foreground);
+}
+
+/* On a sheet, a field that can no longer be changed reads as text: no box, no
+   placeholder, the answer in the normal text colour. Only inside a part
+   marked data-final (the record is read only for this person), never a field
+   disabled just while a save is in flight. */
+.page-sheet [data-final="true"] :is(textarea, input):disabled {
+  min-height: 0;
+  padding-inline: 0;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--foreground);
+  opacity: 1;
+  cursor: default;
+  resize: none;
+}
+
+.page-sheet [data-final="true"] :is(textarea, input):disabled::placeholder {
+  color: transparent;
+}
+
+/* A choice between a few short options, such as Pass | Fail: one rounded
+   track with the options inside. The chosen option fills with what it means.
+   Outside the layers so the toggle's own classes do not win. */
+.segmented {
+  display: inline-flex;
+  width: fit-content;
+  max-width: 100%;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: var(--radius-control);
+  background: var(--surface-tile);
+}
+
+.segmented-item {
+  display: inline-flex;
+  height: 2.25rem;
+  min-width: 4rem;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  padding: 0 0.75rem;
+  border: 0;
+  border-radius: calc(var(--radius-control) - 0.25rem);
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+  box-shadow: none;
+}
+
+.segmented-item:hover:not(:disabled) {
+  background: var(--surface-tile-hover);
+  color: var(--foreground);
+}
+
+.segmented-item:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 1px;
+}
+
+.segmented-item[data-state="on"] {
+  background: var(--chip-done);
+  color: var(--foreground);
+}
+
+.segmented-item[data-state="on"][data-tone="good"] {
+  background: var(--chip-open);
+}
+
+.segmented-item[data-state="on"][data-tone="bad"] {
+  background: color-mix(in oklab, var(--destructive) 22%, transparent);
+  color: var(--foreground);
+}
+
+.segmented-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.segmented-item[data-tone="good"] .segmented-icon {
+  color: var(--primary);
+}
+
+.segmented-item[data-tone="bad"] .segmented-icon {
+  color: var(--destructive);
+}
+
+/* Locked: the answer stays bright, the options not taken fade. */
+.segmented-item:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.segmented-item:disabled:not([data-state="on"]) {
+  opacity: 0.4;
+}
+
+/* Outside the layers on purpose: an avatar's own background is a utility
+   class, and this has to win over it. */
+.avatar-soft {
+  background: var(--avatar-soft);
+  color: var(--foreground);
+  font-weight: 500;
 }
 
 @layer base {
@@ -143,7 +950,13 @@
 
 /* A drafting table. One major square is --cell, and four small squares make
    one. Every box on the page is sized in whole major squares and starts on a
-   line, so its edges sit exactly on the grid. */
+   line, so its edges sit exactly on the grid.
+
+   The screen is rarely a whole number of squares wide. What is left over is
+   split between the two sides, so the grid is centred and the gap at the left
+   of the sidebar matches the gap at the right of the page. In any width or
+   margin below, mod(100%, var(--cell)) is that leftover, and half of it,
+   rounded to a whole pixel so lines stay sharp, is the edge. */
 .drafting-grid {
   --cell: calc(100vw / 4);
   /* The colour of a drawn line, opaque so two lines on one pixel stay one line. */
@@ -172,7 +985,13 @@
       color-mix(in oklab, var(--foreground) 5%, transparent) 1px,
       transparent 1px
     );
-  background-position: 0 0;
+  /* In background-position, 100% is the width less the tile, which leaves the
+     same remainder for a whole square; a small square adds its quarter back. */
+  background-position:
+    round(down, mod(100%, var(--cell)) / 2, 1px) 0,
+    round(down, mod(100%, var(--cell)) / 2, 1px) 0,
+    round(down, mod(100% + var(--cell) / 4, var(--cell)) / 2, 1px) 0,
+    round(down, mod(100% + var(--cell) / 4, var(--cell)) / 2, 1px) 0;
   background-size:
     var(--cell) var(--cell),
     var(--cell) var(--cell),
@@ -192,6 +1011,17 @@
     1px 1px 0 0 var(--rule);
 }
 
+/* A frame holding grid squares: its four lines are drawn on the same pixels as
+   the lines of the squares inside it, so nothing is doubled. */
+.grid-frame {
+  box-shadow:
+    inset 1px 0 0 0 var(--rule),
+    inset 0 1px 0 0 var(--rule),
+    1px 0 0 0 var(--rule),
+    0 1px 0 0 var(--rule),
+    1px 1px 0 0 var(--rule);
+}
+
 /* From 640px up the squares are a fixed 96px. Below that the grid shrinks so
    the screen is exactly four squares wide. */
 @media (min-width: 640px) {
@@ -201,7 +1031,7 @@
 }
 
 /* Page content with no sidebar: as many 4-square columns as fit, up to three,
-   with a square of room at each side, centred on a line. */
+   centred on the grid. */
 .table-home {
   width: 100%;
   margin-left: 0;
@@ -211,35 +1041,83 @@
   .table-home {
     --content-w: min(
       calc(var(--cell) * 12),
-      round(down, calc(100% - var(--cell) * 2), calc(var(--cell) * 4))
+      round(
+        down,
+        calc(100% - mod(100%, var(--cell)) - var(--cell) * 2),
+        calc(var(--cell) * 4)
+      )
     );
     width: var(--content-w);
-    margin-left: round(down, calc((100% - var(--content-w)) / 2), var(--cell));
-  }
-}
-
-/* Page content beside the floating sidebar: it starts 5 squares in, after the
-   sidebar (squares 1 to 4) and a square of gap. */
-@media (min-width: 1280px) {
-  .table-project {
-    width: min(
-      calc(var(--cell) * 12),
-      round(down, calc(100% - var(--cell) * 6), calc(var(--cell) * 4))
+    margin-left: calc(
+      round(down, mod(100%, var(--cell)) / 2, 1px) +
+        round(
+          down,
+          calc((100% - mod(100%, var(--cell)) - var(--content-w)) / 2),
+          var(--cell)
+        )
     );
-    margin-left: calc(var(--cell) * 5);
   }
 }
 
-/* The same, for a sheet that needs room: it fills the space beside the sidebar in
-   whole squares, up to 14 squares wide, with a square of room at the right. */
+/* Page content beside the floating sidebar. The sidebar takes squares 1 to 3
+   after a one-square gap; the page starts a square after it and stops one
+   square before the right edge, the same gap as at the left. Both kinds of
+   page, a list and a sheet, sit the same way. */
 @media (min-width: 1280px) {
+  .table-project,
   .table-wide {
-    width: min(
-      calc(var(--cell) * 14),
-      round(down, calc(100% - var(--cell) * 6), var(--cell))
+    width: calc(
+      100% - round(down, mod(100%, var(--cell)) / 2, 1px) * 2 - var(--cell) * 6
     );
-    margin-left: calc(var(--cell) * 5);
+    margin-left: calc(
+      round(down, mod(100%, var(--cell)) / 2, 1px) + var(--cell) * 5
+    );
   }
+}
+
+/* The floating sidebar, one square in from the centred grid's first line. For
+   a fixed box, 100% is the window less its scroll bar: the same width the grid
+   is centred in. */
+.sidebar-frame {
+  position: fixed;
+  top: var(--cell);
+  bottom: var(--cell);
+  left: calc(round(down, mod(100%, var(--cell)) / 2, 1px) + var(--cell));
+  width: calc(var(--cell) * 3);
+}
+
+/* One sheet per page, as tall as the sidebar beside it. A longer page grows
+   and the window scrolls. */
+.page-sheet {
+  display: flex;
+  min-height: calc(100svh - var(--cell) * 2);
+  flex-direction: column;
+  background: var(--background);
+}
+
+.page-sheet-head {
+  position: relative;
+  display: flex;
+  min-height: calc(var(--cell) * 2);
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--rule);
+}
+
+.page-sheet-body {
+  position: relative;
+  flex: 1;
+  padding: 2rem 1.5rem;
+}
+
+/* A flush body is a column, so a grid of tiles inside it can take the full
+   height and share any spare room between its rows. */
+.page-sheet-body[data-flush="true"] {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
 }
 
 /* The dots on a tool that is being worked on travel round its square clockwise,

@@ -4,7 +4,7 @@ import type { ProjectStatus } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { registerTestTools } from "@/server/tools/testing"
 
-import { loadWorkflow, toolStatus, workflowMaps } from "./workflow"
+import { loadWorkflow, toolGates, toolStatus, workflowMaps } from "./workflow"
 
 const database = createTestDatabase()
 
@@ -90,5 +90,41 @@ describe("toolStatus", () => {
 
     expect(status.waitingOn).toEqual([])
     expect(status.missing.join(" ")).toContain("closed")
+  })
+})
+
+describe("toolGates", () => {
+  it("opens the first tool and names what each later one waits on", async () => {
+    const gates = await toolGates(database, projectId, [
+      "D1.8",
+      "D1.9",
+      "D1.16",
+    ])
+
+    expect(gates.get("D1.8")).toBeNull()
+    expect(gates.get("D1.9")).toEqual(["D1.8"])
+    expect(gates.get("D1.16")).toEqual(["D1.8", "D1.9"])
+  })
+
+  it("opens the next tool once the one before it is locked", async () => {
+    await lock("D1.8")
+
+    const gates = await toolGates(database, projectId, ["D1.9"])
+
+    expect(gates.get("D1.9")).toBeNull()
+  })
+
+  it("keeps every tool shut on a project on hold, naming no tool", async () => {
+    projectId = await addProject("on_hold")
+
+    const gates = await toolGates(database, projectId, ["D1.8"])
+
+    expect(gates.get("D1.8")).toEqual([])
+  })
+
+  it("leaves a tool the registry does not hold to the record screen", async () => {
+    const gates = await toolGates(database, projectId, ["X9.9"])
+
+    expect(gates.get("X9.9")).toBeNull()
   })
 })

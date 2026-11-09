@@ -186,3 +186,30 @@ test("at 375px there is no sideways scroll and every input works", async ({
 
   expect((await lastSent(page)).values.priority).toBe("Low")
 })
+
+for (const width of [1280, 375]) {
+  test(`locked rows keep their name and added rows can be removed at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 })
+    await openPreview(page)
+
+    const table = page.getByRole("table", { name: "Locked and added rows" })
+
+    await expect(table.getByText("Primary purpose")).toBeVisible()
+    await expect(table.getByText("Main deliverables")).toBeVisible()
+    await expect(
+      table.getByRole("button", { name: /^Remove row/ })
+    ).toHaveCount(0)
+
+    await table.getByRole("button", { name: "Add row" }).click()
+    await table.getByLabel("Item, row 3").fill("Site access")
+    await table.getByLabel("Detail, row 3").fill("Gate code needed")
+    await expect(table.getByLabel("Item, row 3")).toHaveValue("Site access")
+    expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0)
+
+    await table.getByRole("button", { name: "Remove row 3" }).click()
+    await expect(table.getByLabel("Item, row 3")).toHaveCount(0)
+    await expect(table.getByText("Primary purpose")).toBeVisible()
+  })
+}

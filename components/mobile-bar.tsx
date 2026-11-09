@@ -1,3 +1,4 @@
+import { SignOutIcon } from "@phosphor-icons/react/ssr"
 import Image from "next/image"
 import Link from "next/link"
 
@@ -48,7 +49,7 @@ export function MobileBar({
           </>
         )}
         <NotificationBell variant="sheet" />
-        <SignOutButton />
+        <SignOutButton icon={<SignOutIcon aria-hidden className="size-5" />} />
       </div>
     </header>
   )

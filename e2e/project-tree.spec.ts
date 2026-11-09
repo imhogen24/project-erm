@@ -97,11 +97,28 @@ test("every workbook is a folder, and one with no tools says so", async ({
   await expect(sidebar.getByText("No tools yet")).toBeVisible()
 })
 
+test("a tool that is not open yet is in the tree but is not a link", async ({
+  page,
+}) => {
+  const { project, person } = await setUp()
+
+  await signIn(page, person.email)
+  await page.goto(`/projects/${project.id}`)
+
+  const sidebar = page.getByRole("complementary", { name: "Sidebar" })
+
+  await expect(toolLink(page, "D1.1")).toBeVisible()
+  await expect(sidebar.getByText(names["D1.2"], { exact: true })).toBeVisible()
+  await expect(toolLink(page, "D1.2")).toHaveCount(0)
+})
+
 test("a tool in the tree opens that tool, and the open tool is marked", async ({
   page,
 }) => {
   const { project, person } = await setUp()
 
+  // D1.2 only opens once D1.1 is locked.
+  await addRecord(project.id, "D1.1", "locked")
   await signIn(page, person.email)
   await page.goto(`/projects/${project.id}`)
   await toolLink(page, "D1.1").click()

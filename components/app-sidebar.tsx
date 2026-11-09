@@ -1,13 +1,22 @@
+import {
+  ArrowLeftIcon,
+  FolderSimpleIcon,
+  UserPlusIcon,
+  UsersThreeIcon,
+} from "@phosphor-icons/react/ssr"
 import Image from "next/image"
 import Link from "next/link"
+import type { ReactNode } from "react"
 
-import { BackLink } from "@/components/back-link"
 import { NotificationBell } from "@/components/notifications/notification-bell"
 import { ProjectTree } from "@/components/project-tree"
 import { Sheet } from "@/components/sheet"
-import { SignOutButton } from "@/components/sign-out-button"
+import { SidebarProjects } from "@/components/sidebar-projects"
+import { UserMenu } from "@/components/user-menu"
 import type { ProjectNav } from "@/lib/project-nav"
-import { cn } from "@/lib/utils"
+import { isItAdmin } from "@/lib/roles"
+import { loadSidebarList } from "@/lib/sidebar-list"
+import { requireSession } from "@/lib/session"
 
 type Props = {
   name: string
@@ -19,20 +28,54 @@ type Props = {
   canInvite?: boolean
 }
 
-const linkClass =
-  "block truncate border-l-2 border-transparent px-4 py-2 text-sm text-muted-foreground outline-none transition-colors hover:border-primary hover:bg-primary/5 hover:text-foreground focus-visible:bg-primary/10"
+function NavLink({
+  href,
+  icon,
+  active,
+  count,
+  countLabel,
+  children,
+}: {
+  href: string
+  icon: ReactNode
+  active: boolean
+  count?: number
+  countLabel?: string
+  children: ReactNode
+}) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className="nav-link"
+    >
+      {icon}
+      <span className="min-w-0 flex-1 truncate">{children}</span>
+      {count !== undefined && count > 0 && (
+        <span className="nav-count">
+          {count}
+          <span className="sr-only"> {countLabel}</span>
+        </span>
+      )}
+    </Link>
+  )
+}
 
 // Floats over the drafting table on wide screens, with its edges on the grid:
 // one square in, three squares wide. Inside a project it is that project's
 // navigation. On narrower screens the top bar is shown instead.
-export function AppSidebar({
+export async function AppSidebar({
   name,
   project,
   current = "projects",
   canInvite = false,
 }: Props) {
+  const session = await requireSession()
+  const admin = await isItAdmin(session.user.id)
+  const list = project ? undefined : await loadSidebarList()
+
   return (
-    <Sheet className="fixed top-[var(--cell)] bottom-[var(--cell)] left-[var(--cell)] z-20 hidden w-[calc(var(--cell)*3)] flex-col shadow-xl shadow-foreground/10 xl:flex">
+    <Sheet className="sidebar-frame z-20 hidden flex-col shadow-xl shadow-foreground/10 xl:flex">
       <aside aria-label="Sidebar" className="flex min-h-0 flex-1 flex-col">
         <div className="flex h-16 shrink-0 items-center justify-between gap-2 border-b pr-3 pl-5">
           <Link href="/" className="outline-none focus-visible:bg-primary/10">
@@ -49,70 +92,74 @@ export function AppSidebar({
         </div>
         <nav aria-label="Main" className="flex min-h-0 flex-1 flex-col">
           {project ? (
-            <>
-              <BackLink href="/" className="border-b">
-                Your projects
-              </BackLink>
-              <p
-                title={project.name}
-                className="border-b px-5 py-4 text-sm leading-snug font-medium break-words"
-              >
-                {project.name}
-              </p>
+            <div className="flex min-h-0 flex-1 flex-col">
+              <div className="nav-section">
+                <NavLink
+                  href="/"
+                  icon={<ArrowLeftIcon aria-hidden className="nav-icon" />}
+                  active={false}
+                >
+                  Your projects
+                </NavLink>
+                <Link
+                  href={`/projects/${project.id}`}
+                  title={project.name}
+                  className="project-card"
+                >
+                  <span aria-hidden className="option-mark">
+                    {project.tier}
+                  </span>
+                  <span className="flex min-w-0 flex-col">
+                    <span className="project-card-name">{project.name}</span>
+                    <span className="project-card-meta">
+                      {project.requestId}
+                    </span>
+                  </span>
+                </Link>
+              </div>
               <ProjectTree project={project} />
-            </>
+            </div>
           ) : (
-            <>
-              <Link
-                href="/"
-                aria-current={current === "projects" ? "page" : undefined}
-                className={cn(
-                  linkClass,
-                  "py-3",
-                  current === "projects" &&
-                    "border-primary bg-primary/10 font-medium text-foreground"
-                )}
-              >
-                Your projects
-              </Link>
-              {canInvite && (
-                <Link
-                  href="/admin/invites"
-                  aria-current={current === "invites" ? "page" : undefined}
-                  className={cn(
-                    linkClass,
-                    "py-3",
-                    current === "invites" &&
-                      "border-primary bg-primary/10 font-medium text-foreground"
-                  )}
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+              <div className="nav-section">
+                <p className="nav-group-title">Work</p>
+                <NavLink
+                  href="/"
+                  icon={<FolderSimpleIcon aria-hidden className="nav-icon" />}
+                  active={current === "projects"}
                 >
-                  Invite people
-                </Link>
-              )}
+                  Your projects
+                </NavLink>
+              </div>
               {canInvite && (
-                <Link
-                  href="/admin/team"
-                  aria-current={current === "team" ? "page" : undefined}
-                  className={cn(
-                    linkClass,
-                    "py-3",
-                    current === "team" &&
-                      "border-primary bg-primary/10 font-medium text-foreground"
-                  )}
-                >
-                  Assign staff
-                </Link>
+                <div className="nav-section">
+                  <p className="nav-group-title">Admin</p>
+                  <NavLink
+                    href="/admin/invites"
+                    icon={<UserPlusIcon aria-hidden className="nav-icon" />}
+                    active={current === "invites"}
+                  >
+                    Invite people
+                  </NavLink>
+                  <NavLink
+                    href="/admin/team"
+                    icon={<UsersThreeIcon aria-hidden className="nav-icon" />}
+                    active={current === "team"}
+                    count={list?.rows.length}
+                    countLabel="projects need a team"
+                  >
+                    Assign staff
+                  </NavLink>
+                </div>
               )}
-            </>
+              {list && <SidebarProjects list={list} />}
+            </div>
           )}
         </nav>
-        <div className="flex shrink-0 flex-col gap-3 border-t p-4">
-          <div className="flex min-w-0 flex-col">
-            <span className="text-xs text-muted-foreground">Signed in as</span>
-            <span className="truncate text-sm font-medium">{name}</span>
-          </div>
-          <SignOutButton />
-        </div>
+        <UserMenu
+          name={name}
+          detail={admin ? "IT/Admin" : session.user.email}
+        />
       </aside>
     </Sheet>
   )

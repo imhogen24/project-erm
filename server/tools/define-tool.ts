@@ -152,7 +152,10 @@ const required = { required: z.boolean().default(false) }
 
 // `prefilledRows` are fixed labels for the first column: the table always has
 // exactly these rows, in this order. `subtotal` names a currency column to add
-// up. `readOnly` shows the table in the form without letting the form change
+// up. `lockedRows` are the same kind of labels, but the table may also hold
+// rows after them that the person adds, names and removes. `optionalRows` names
+// rows whose required columns may stay empty. `startsWithRow` opens a table
+// with no locked rows on one empty row. `readOnly` shows the table in the form without letting the form change
 // it: the system and the screens built for it write its rows.
 const table = z
   .object({
@@ -161,6 +164,12 @@ const table = z
     type: z.literal("table"),
     columns: z.array(column).min(1),
     prefilledRows: distinctTexts.optional(),
+    lockedRows: distinctTexts.optional(),
+    optionalRows: distinctTexts.optional(),
+    // A short note shown under a fixed or locked row's label, such as
+    // "Material" under "M". Only shown; never stored.
+    rowNotes: z.record(z.string().min(1), z.string().min(1)).optional(),
+    startsWithRow: z.boolean().optional(),
     subtotal: fieldKey.optional(),
     readOnly: z.boolean().optional(),
   })
@@ -219,15 +228,52 @@ const table = z
       }
     }
 
+    if (value.prefilledRows && value.lockedRows) {
+      context.addIssue({
+        code: "custom",
+        path: ["lockedRows"],
+        message: "A table has fixed rows or locked rows, not both",
+      })
+    }
+
+    if (value.startsWithRow && (value.prefilledRows || value.lockedRows)) {
+      context.addIssue({
+        code: "custom",
+        path: ["startsWithRow"],
+        message: "Only a table with no locked or fixed rows starts on a row",
+      })
+    }
+
+    for (const key of ["prefilledRows", "lockedRows"] as const) {
+      const labels = value[key]
+
+      if (labels && !holdsLabels(value.columns[0], labels)) {
+        context.addIssue({
+          code: "custom",
+          path: [key],
+          message:
+            "Prefilled rows need a first column of text, or a select whose options include every label, that is not inherited",
+        })
+      }
+    }
+
+    const named = value.prefilledRows ?? value.lockedRows ?? []
+
+    if (value.optionalRows?.some((label) => !named.includes(label))) {
+      context.addIssue({
+        code: "custom",
+        path: ["optionalRows"],
+        message: "An optional row must be one of the fixed or locked rows",
+      })
+    }
+
     if (
-      value.prefilledRows &&
-      !holdsLabels(value.columns[0], value.prefilledRows)
+      Object.keys(value.rowNotes ?? {}).some((label) => !named.includes(label))
     ) {
       context.addIssue({
         code: "custom",
-        path: ["prefilledRows"],
-        message:
-          "Prefilled rows need a first column of text, or a select whose options include every label, that is not inherited",
+        path: ["rowNotes"],
+        message: "A row note must name one of the fixed or locked rows",
       })
     }
   })

@@ -166,14 +166,18 @@ test("the header shows the app name and the person's name on every page", async 
   const sidebar = page.getByRole("complementary", { name: "Sidebar" })
 
   await expect(sidebar.getByRole("link", { name: "IMHOGEN ERM" })).toBeVisible()
-  await expect(sidebar.getByText(person.name)).toBeVisible()
+  await expect(
+    sidebar.getByRole("button", { name: `Signed in as ${person.name}` })
+  ).toBeVisible()
   await expect(page.getByRole("banner")).toBeHidden()
 
   // Inside a project it is the same sidebar, now with the project's name.
   await page.goto(`/projects/${project.id}`)
 
   await expect(sidebar.getByRole("link", { name: "IMHOGEN ERM" })).toBeVisible()
-  await expect(sidebar.getByText(person.name)).toBeVisible()
+  await expect(
+    sidebar.getByRole("button", { name: `Signed in as ${person.name}` })
+  ).toBeVisible()
   await expect(sidebar.getByText(project.name)).toBeVisible()
   await expect(page.getByRole("banner")).toBeHidden()
 })
@@ -256,4 +260,17 @@ test("at 375px the overview does not scroll sideways and shows name and badge", 
 
   await expect(row.getByText("Client Email / Web Form")).toBeVisible()
   await expect(row.getByText("Not started")).toBeVisible()
+})
+
+test("hovering the avatar shows who is signed in", async ({ page }) => {
+  const person = await makePerson(`Ama Owusu ${tag()}`)
+
+  await signIn(page, person.email)
+  await page
+    .getByRole("button", { name: `Signed in as ${person.name}` })
+    .hover()
+
+  await expect(page.getByRole("tooltip")).toContainText(
+    `Signed in as ${person.name}`
+  )
 })

@@ -56,7 +56,7 @@ export function RequestChange({ recordId, request }: Props) {
           type="button"
           variant="outline"
           size="sm"
-          className="bg-background text-foreground hover:bg-background/80 hover:text-foreground"
+          className="tile-action"
         >
           Request a change
         </Button>
@@ -72,7 +72,7 @@ export function RequestChange({ recordId, request }: Props) {
           id={`reason-${recordId}`}
           value={reason}
           aria-invalid={message ? true : undefined}
-          className="min-h-24 border-foreground/20 bg-background text-base md:text-base"
+          className="min-h-24 bg-background text-base md:text-base"
           onChange={(event) => setReason(event.target.value)}
         />
         {message && <FieldError role="alert">{message}</FieldError>}

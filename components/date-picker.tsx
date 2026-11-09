@@ -79,7 +79,7 @@ export function DatePicker({
           aria-required={required ? true : undefined}
           aria-invalid={invalid ? true : undefined}
           aria-describedby={describedBy}
-          className={`h-12 w-full justify-start border-foreground/20 bg-background text-base font-normal ${date ? "" : "text-muted-foreground"} ${className}`}
+          className={`h-12 w-full justify-start bg-background text-base font-normal ${date ? "" : "text-muted-foreground"} ${className}`}
         >
           <CalendarBlankIcon aria-hidden />
           {date ? shown.format(date) : "Pick a date"}

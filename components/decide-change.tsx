@@ -88,7 +88,7 @@ export function DecideChange({ requestId, decide }: Props) {
               id={`rejection-${requestId}`}
               value={reason}
               aria-invalid={open && message ? true : undefined}
-              className="min-h-24 border-foreground/20 bg-background text-base md:text-base"
+              className="min-h-24 bg-background text-base md:text-base"
               onChange={(event) => setReason(event.target.value)}
             />
             {open && message && <FieldError role="alert">{message}</FieldError>}

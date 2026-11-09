@@ -4,6 +4,8 @@ import Link from "next/link"
 import { AppSidebar } from "@/components/app-sidebar"
 import { Grain } from "@/components/grain"
 import { MobileBar } from "@/components/mobile-bar"
+import { PageSheet } from "@/components/page-sheet"
+import { Badge } from "@/components/ui/badge"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
@@ -28,31 +30,25 @@ export default async function Page() {
       <div className="drafting-grid min-h-svh py-[var(--cell)]">
         <AppSidebar name={session.user.name} canInvite={canInvite} />
         <main className="table-project table-home">
-          <div>
-            <div
-              className={`${square} flex min-h-[calc(var(--cell)*2)] flex-col justify-end gap-2 px-6 py-6`}
-            >
-              <Grain />
-              <h1 className="text-4xl font-semibold tracking-tight sm:text-5xl">
-                Your projects
-              </h1>
+          <PageSheet
+            title="Your projects"
+            below={
               <p className="text-sm text-muted-foreground">
                 {projects.length === 1
                   ? "1 project"
                   : `${projects.length} projects`}
               </p>
-            </div>
+            }
+            flush={projects.length > 0}
+          >
             {projects.length === 0 ? (
-              <p className={`${square} px-6 py-6 text-muted-foreground`}>
+              <p className="text-muted-foreground">
                 You are not on any project yet.
               </p>
             ) : (
-              <ul className="grid grid-cols-[repeat(auto-fill,calc(var(--cell)*4))]">
+              <ul className="grid flex-1 auto-rows-[minmax(calc(var(--cell)*2),1fr)] grid-cols-[repeat(auto-fill,minmax(calc(var(--cell)*4),1fr))]">
                 {projects.map((project) => (
-                  <li
-                    key={project.id}
-                    className={`${square} h-[calc(var(--cell)*2)] min-w-0`}
-                  >
+                  <li key={project.id} className={`${square} min-w-0`}>
                     <Grain />
                     <Link
                       href={`/projects/${project.id}`}
@@ -63,9 +59,14 @@ export default async function Page() {
                           <CardTitle className="text-lg leading-snug break-words">
                             {project.name}
                           </CardTitle>
-                          <p className="text-sm text-muted-foreground">
-                            Your roles: {project.roles.join(", ")}
-                          </p>
+                          <div className="flex flex-wrap items-center gap-2">
+                            <Badge variant="secondary">
+                              {project.serviceTrack.replace("_", " ")}
+                            </Badge>
+                            <p className="text-sm text-muted-foreground">
+                              Your roles: {project.roles.join(", ")}
+                            </p>
+                          </div>
                         </CardHeader>
                         <div className="flex justify-end px-6 pb-6 text-muted-foreground transition-colors group-hover:text-primary">
                           <ArrowUpRightIcon className="size-5" />
@@ -76,7 +77,7 @@ export default async function Page() {
                 ))}
               </ul>
             )}
-          </div>
+          </PageSheet>
         </main>
       </div>
     </>

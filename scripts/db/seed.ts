@@ -1,5 +1,5 @@
 import { printPreviews } from "./preview"
-import { demoProjectId, seed, SEED_PASSWORD } from "./seed-users"
+import { featuredProjectId, seed, SEED_PASSWORD } from "./seed-users"
 
 const url = process.env.DATABASE_URL
 
@@ -20,4 +20,4 @@ if (created.length === 0) {
   )
 }
 
-printPreviews(await demoProjectId(url))
+printPreviews(await featuredProjectId(url))

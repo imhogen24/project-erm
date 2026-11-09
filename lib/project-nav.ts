@@ -5,9 +5,13 @@ import type { ToolState } from "@/lib/tool-state"
 export type ProjectNav = {
   id: string
   name: string
+  requestId: string
+  // "T1" or "T3", for the project card at the top of the sidebar.
+  tier: string
   workbooks: {
     id: string
     label: string
-    tools: { toolId: string; name: string; state: ToolState }[]
+    // Whether the tool can be opened: false until the tool before it is locked.
+    tools: { toolId: string; name: string; state: ToolState; open: boolean }[]
   }[]
 }

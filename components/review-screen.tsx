@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
+import { FileStatusChip } from "@/components/file-status-chip"
 import { SegmentedChoice } from "@/components/segmented-choice"
 import { ActionButton, SheetActions } from "@/components/sheet-actions"
 import {
@@ -59,14 +60,17 @@ function Status({
   onChange: (status: string) => void
 }) {
   if (value === "Approved") {
-    return <span className="text-sm font-medium">Approved</span>
+    return <FileStatusChip status="Approved" />
   }
 
   return (
     <SegmentedChoice
       label={label}
       value={value}
-      choices={reviewChoices.map((choice) => ({ value: choice }))}
+      choices={reviewChoices.map((choice) => ({
+        value: choice,
+        tone: choice === "Reviewed" ? "good" : undefined,
+      }))}
       disabled={disabled}
       onChange={onChange}
     />
@@ -144,7 +148,7 @@ export function ReviewScreen({
   const locked = !canReview || pending
 
   return (
-    <div className="flex flex-col gap-8">
+    <div data-final={!canReview} className="flex flex-col gap-8">
       <TableBox title="Request status">
         <DataTable
           label="Request status"

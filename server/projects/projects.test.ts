@@ -83,7 +83,13 @@ function tool(id: string) {
 
 // What the overview shows for one tool.
 function shown(id: string, state: ToolState) {
-  return { toolId: id, name: `Tool ${id}`, workbook: "D1", state }
+  return {
+    toolId: id,
+    name: `Tool ${id}`,
+    workbook: "D1",
+    state,
+    waitingOn: null,
+  }
 }
 
 // What the project list shows for one project made by addProject.
@@ -279,6 +285,48 @@ describe("getProjectOverview, with company-wide roles", () => {
         fourTools
       )
     ).rejects.toThrow(PermissionDeniedError)
+  })
+})
+
+describe("getProjectOverview, by service track", () => {
+  // D1.3 is for Tier 1 only, T3.D1.3a takes its place on Tier 3, and D1.4 is
+  // on both tracks.
+  const tracked = [
+    defineTool({ ...tool("D1.3"), tier: 1 }),
+    defineTool({ ...tool("T3.D1.3a"), tier: 3, replaces: "D1.3" }),
+    tool("D1.4"),
+  ]
+
+  async function addTier3Project(name: string) {
+    const { rows } = await database.pool.query<{ id: string }>(
+      "INSERT INTO projects (name, request_id, service_track) VALUES ($1, $2, 'Tier_3') RETURNING id",
+      [name, `T3-${name}`]
+    )
+
+    return rows[0]!.id
+  }
+
+  it("lists no Tier 3 tool on a Tier 1 project", async () => {
+    const project = await addProject("Boiler")
+    const person = await addPerson()
+    await grant(person, project, "OM")
+
+    const result = await getProjectOverview(database, person, project, tracked)
+
+    expect(result.tools.map((each) => each.toolId)).toEqual(["D1.3", "D1.4"])
+  })
+
+  it("lists the Tier 3 tool, not the one it replaces, on a Tier 3 project", async () => {
+    const project = await addTier3Project("Conveyor")
+    const person = await addPerson()
+    await grant(person, project, "OM")
+
+    const result = await getProjectOverview(database, person, project, tracked)
+
+    expect(result.tools.map((each) => each.toolId)).toEqual([
+      "T3.D1.3a",
+      "D1.4",
+    ])
   })
 })
 

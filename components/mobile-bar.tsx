@@ -2,9 +2,27 @@ import { SignOutIcon } from "@phosphor-icons/react/ssr"
 import Image from "next/image"
 import Link from "next/link"
 
+import { CountBadge } from "@/components/count-badge"
 import { NotificationBell } from "@/components/notifications/notification-bell"
 import { SignOutButton } from "@/components/sign-out-button"
+import { requireSession } from "@/lib/session"
+import { projectsWaitingForTeam } from "@/lib/team"
 import { cn } from "@/lib/utils"
+
+// How many projects wait for a team, after the Team link. Only rendered for an
+// IT/Admin, the only person who may ask. From RDP-127.
+async function TeamWaiting() {
+  const session = await requireSession()
+  const waiting = await projectsWaitingForTeam(session.user.id)
+
+  return (
+    <CountBadge
+      count={waiting.length}
+      one="project needs a team"
+      many="projects need a team"
+    />
+  )
+}
 
 // The slim top bar for screens too narrow for the title bar or the sidebar.
 export function MobileBar({
@@ -42,9 +60,10 @@ export function MobileBar({
             </Link>
             <Link
               href="/admin/team"
-              className="text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:bg-primary/10"
+              className="inline-flex items-center gap-1.5 text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:bg-primary/10"
             >
               Team
+              <TeamWaiting />
             </Link>
           </>
         )}

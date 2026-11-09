@@ -51,7 +51,7 @@ export function StateBadge({ state }: { state: ToolState }) {
   return (
     <Badge
       variant="outline"
-      className={cn("h-6 rounded-none border-0 px-2.5 text-xs", badge)}
+      className={cn("h-6 border-0 px-2.5 text-xs", badge)}
     >
       {label}
     </Badge>

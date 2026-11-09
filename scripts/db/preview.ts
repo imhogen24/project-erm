@@ -65,6 +65,13 @@ const previews: Preview[] = [
       "Find the table Locked and added rows. Its two rows, Primary purpose and Main deliverables, show a lock and have no Remove button. Press Add row: a third row opens with an editable name and a Remove button. D1.3 and T3.D1.3a use this table for their own tables once the OM can open them.",
   },
   {
+    screen: "Sidebar avatar and sign out, rounded buttons",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}`,
+    expect:
+      "At the foot of the sidebar: a round avatar with the person's initials, and a round sign-out icon at the right. Hover or tab to the avatar: a tooltip says Signed in as and the name. Buttons and badges across the app are rounded; the grid boxes and tables stay square.",
+  },
+  {
     screen: "Notification bell (RDP-115)",
     loginAs: "PM",
     path: () => "/",

@@ -186,7 +186,7 @@ export default async function Page({
                           {controlOf.get(tool.toolId)?.request && (
                             <Badge
                               variant="outline"
-                              className="rounded-none border-current bg-transparent text-inherit dark:bg-transparent"
+                              className="border-current bg-transparent text-inherit dark:bg-transparent"
                             >
                               {controlOf.get(tool.toolId)?.request?.status ===
                               "approved"

@@ -72,6 +72,9 @@
   --chart-4: oklch(0.555 0.163 48.998);
   --chart-5: oklch(0.473 0.137 46.201);
   --radius: 0;
+  /* Buttons, badges and avatars are softly rounded. Boxes on the grid stay
+     square, so they keep using --radius. */
+  --radius-control: 0.5rem;
   --sidebar: oklch(0.985 0.001 106.423);
   --sidebar-foreground: oklch(0.147 0.004 49.25);
   --sidebar-primary: oklch(0.666 0.179 58.318);

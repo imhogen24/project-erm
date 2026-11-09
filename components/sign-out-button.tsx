@@ -1,12 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 
 import { Button } from "@/components/ui/button"
 import { authClient } from "@/lib/auth-client"
 
-export function SignOutButton() {
+// With an `icon` the button shows only the icon, and the name stays for
+// screen readers and the hover title.
+export function SignOutButton({ icon }: Readonly<{ icon?: ReactNode }>) {
   const router = useRouter()
   const [pending, setPending] = useState(false)
   const [failed, setFailed] = useState(false)
@@ -34,12 +36,18 @@ export function SignOutButton() {
     <>
       <Button
         variant="secondary"
-        size="sm"
-        className="bg-foreground/10 hover:bg-foreground/20"
+        size={icon ? "icon" : "sm"}
+        className={
+          icon
+            ? "size-10 bg-foreground/10 hover:bg-foreground/20"
+            : "bg-foreground/10 hover:bg-foreground/20"
+        }
         disabled={pending}
         onClick={signOut}
+        aria-label={failed ? "Retry sign out" : "Sign out"}
+        title={failed ? "Retry sign out" : "Sign out"}
       >
-        {failed ? "Retry sign out" : "Sign out"}
+        {icon ?? (failed ? "Retry sign out" : "Sign out")}
       </Button>
       {failed && (
         <span role="alert" className="sr-only">

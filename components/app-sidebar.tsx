@@ -5,8 +5,8 @@ import { BackLink } from "@/components/back-link"
 import { NotificationBell } from "@/components/notifications/notification-bell"
 import { ProjectTree } from "@/components/project-tree"
 import { Sheet } from "@/components/sheet"
-import { SignOutButton } from "@/components/sign-out-button"
 import type { ProjectNav } from "@/lib/project-nav"
+import { UserMenu } from "@/components/user-menu"
 import { cn } from "@/lib/utils"
 
 type Props = {
@@ -106,13 +106,7 @@ export function AppSidebar({
             </>
           )}
         </nav>
-        <div className="flex shrink-0 flex-col gap-3 border-t p-4">
-          <div className="flex min-w-0 flex-col">
-            <span className="text-xs text-muted-foreground">Signed in as</span>
-            <span className="truncate text-sm font-medium">{name}</span>
-          </div>
-          <SignOutButton />
-        </div>
+        <UserMenu name={name} />
       </aside>
     </Sheet>
   )

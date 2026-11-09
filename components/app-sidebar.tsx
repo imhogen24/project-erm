@@ -8,6 +8,7 @@ import Image from "next/image"
 import Link from "next/link"
 import type { ReactNode } from "react"
 
+import { CountBadge } from "@/components/count-badge"
 import { NotificationBell } from "@/components/notifications/notification-bell"
 import { ProjectTree } from "@/components/project-tree"
 import { Sheet } from "@/components/sheet"
@@ -32,15 +33,14 @@ function NavLink({
   href,
   icon,
   active,
-  count,
-  countLabel,
+  badge,
   children,
 }: {
   href: string
   icon: ReactNode
   active: boolean
-  count?: number
-  countLabel?: string
+  // A count after the name, such as the projects waiting for a team.
+  badge?: ReactNode
   children: ReactNode
 }) {
   return (
@@ -51,12 +51,7 @@ function NavLink({
     >
       {icon}
       <span className="min-w-0 flex-1 truncate">{children}</span>
-      {count !== undefined && count > 0 && (
-        <span className="nav-count">
-          {count}
-          <span className="sr-only"> {countLabel}</span>
-        </span>
-      )}
+      {badge}
     </Link>
   )
 }
@@ -145,8 +140,13 @@ export async function AppSidebar({
                     href="/admin/team"
                     icon={<UsersThreeIcon aria-hidden className="nav-icon" />}
                     active={current === "team"}
-                    count={list?.rows.length}
-                    countLabel="projects need a team"
+                    badge={
+                      <CountBadge
+                        count={list?.rows.length ?? 0}
+                        one="project needs a team"
+                        many="projects need a team"
+                      />
+                    }
                   >
                     Assign staff
                   </NavLink>

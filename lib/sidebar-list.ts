@@ -1,9 +1,9 @@
 import type { ProjectStatus } from "@/db/schema"
 import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
+import { projectsWaitingForTeam } from "@/lib/team"
 import { getDatabase } from "@/server/database"
 import { listProjectsFor } from "@/server/projects/projects"
-import { projectsNeedingTeam } from "@/server/staff/team"
 
 const running: readonly ProjectStatus[] = ["active", "on_hold"]
 
@@ -33,7 +33,7 @@ export async function loadSidebarList(): Promise<SidebarList> {
   let more = { href: "/", label: "All your projects" }
 
   if (admin) {
-    const needing = await projectsNeedingTeam(database, session.user.id)
+    const needing = await projectsWaitingForTeam(session.user.id)
 
     title = "Need a team"
     more = { href: "/admin/team", label: "All projects that need a team" }

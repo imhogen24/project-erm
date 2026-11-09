@@ -24,7 +24,7 @@ const previews: Preview[] = [
     loginAs: "IT/Admin",
     path: () => "/admin/team",
     expect:
-      "Kofi Mensah sees three running projects short of a PM or an OM: Takoradi Port Conveyor Upgrade (nobody), Kumasi Cocoa Roasting Line (a PM only) and Accra Brewery Bottling Retrofit (an OM only), newest first. The rejected, closed, completed and fully staffed projects are not listed. Open one to assign people: Ama Owusu and Kojo Antwi are already at their limit of three projects.",
+      "Kofi Mensah sees three running projects short of a PM or an OM: Takoradi Port Conveyor Upgrade (nobody), Kumasi Cocoa Roasting Line (a PM only) and Accra Brewery Bottling Retrofit (an OM only), newest first. The rejected, closed, completed and fully staffed projects are not listed. Open one to assign people: Ama Owusu and Kojo Antwi are already at their limit of three projects. Assign staff in the sidebar has an orange count of 3, and on a narrow screen Team in the top bar has the same count (from RDP-127).",
   },
   {
     screen: "Every project as IT/Admin",

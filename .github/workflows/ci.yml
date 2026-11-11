@@ -59,11 +59,6 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
-    # Chromium and its system packages come with the image, so the job never
-    # downloads them from Ubuntu's servers. Keep the tag on the installed
-    # @playwright/test version.
-    container:
-      image: mcr.microsoft.com/playwright:v1.64.1-noble
     services:
       postgres:
         image: postgres:17
@@ -71,23 +66,28 @@ jobs:
           POSTGRES_USER: erm
           POSTGRES_PASSWORD: erm
           POSTGRES_DB: erm_dev
+        ports:
+          - 5433:5432
         options: >-
           --health-cmd "pg_isready -U erm -d erm_dev"
           --health-interval 2s
           --health-timeout 3s
           --health-retries 20
     env:
-      # Inside a container the database is reached by its service name.
-      DATABASE_URL: postgres://erm:erm@postgres:5432/erm_dev
+      DATABASE_URL: postgres://erm:erm@localhost:5433/erm_dev
       BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
       BETTER_AUTH_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
-      # The checkout belongs to another user than the container's, and the
-      # git hooks that install runs refuse such a folder unless told it is safe.
-      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - run: npm install -g bun@1.4.3
+      - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: bun run db:migrate
       - run: bun run db:seed
+      # The runner already has Chrome's system libraries, so only the browser
+      # is fetched, from Playwright, never from Ubuntu's package servers.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('bun.lock') }}
+      - run: bunx playwright install chromium
       - run: bun run test:e2e

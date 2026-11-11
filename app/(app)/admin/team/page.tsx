@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button"
 import type { Role } from "@/db/schema"
 import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
-import { getDatabase } from "@/server/database"
-import { projectsNeedingTeam } from "@/server/staff/team"
+import { projectsWaitingForTeam } from "@/lib/team"
 
 import { roleNames, trackName } from "./names"
 
@@ -60,7 +59,9 @@ export default async function Page() {
     redirect("/")
   }
 
-  const needing = await projectsNeedingTeam(getDatabase(), session.user.id)
+  // The same read as the sidebar's count, once per request, so the list and
+  // the count always agree.
+  const needing = await projectsWaitingForTeam(session.user.id)
 
   return (
     <>

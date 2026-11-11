@@ -4,15 +4,18 @@ import { qualityGateQuestions } from "@/workbooks/wb01/tools/t3-d1-3a"
 
 // Where each project has got to in Workbook 1, so every role has something to
 // open. A tool only opens once the one before it is locked, so each project's
-// records run in order from D1.1. The OM prepares D1.1 to D1.3 and the PM
-// approves them (server/permissions/matrix.ts).
+// records run in order from D1.1. The client writes D1.1; the OM prepares
+// D1.2 and D1.3 and the PM approves them (server/permissions/matrix.ts).
 //
 // What the PMs see:
 // - Ama Owusu: D1.2 waiting for approval on Tamale Shea Butter, a change
 //   request on D1.1 of Tema Foods, and a finished D1.3 on Cape Coast.
 // - Efua Quartey: D1.3 waiting for approval on Ho Water Treatment.
-// - Nana Adjei: D1.1 waiting for approval on Sunyani Timber Kiln.
-// - Yaw Boateng: D1.1 still with the OM on Kumasi Cocoa.
+// - Nana Adjei: D1.2 waiting for approval on Sunyani Timber Kiln.
+// - Yaw Boateng: Kumasi Cocoa has its client's form but no OM to triage it.
+//
+// D1.1 is the client's web form, locked the moment it is submitted, so it is
+// locked on every project.
 //
 // Tema Foods Boiler Skid (Tier 1) and Tarkwa Mine Pump Station Drawings (Tier
 // 3) are where the tool being built is open: their records are locked up to
@@ -37,14 +40,14 @@ export type SeedChangeRequest = {
 
 type File = { label: string; date: string; slug: string }
 
-function d11(files: File[], status: "Pending" | "Reviewed" | "Approved") {
+// D1.1 is the client's web form; the record holds the files they attached.
+// It locks the moment the client submits it.
+function d11(files: File[]) {
   return {
-    requestStatus: status,
     attachedFiles: files.map((file) => ({
       label: file.label,
       dateUploaded: file.date,
       fileLink: `https://utfs.io/f/${file.slug}`,
-      status,
     })),
   }
 }
@@ -238,14 +241,14 @@ const koforiduaFiles: File[] = [
 ]
 
 // By project name, as in projects.ts.
-export const projectRecords = new Map(
+export const projectRecords = new Map<string, SeedRecord[]>(
   Object.entries({
     "Tema Foods Boiler Skid": [
       {
         toolId: "D1.1",
         state: "locked",
         day: 0,
-        payload: d11(temaFiles, "Approved"),
+        payload: d11(temaFiles),
       },
       {
         toolId: "D1.2",
@@ -309,7 +312,7 @@ export const projectRecords = new Map(
         toolId: "D1.1",
         state: "locked",
         day: 0,
-        payload: d11(tamaleFiles, "Approved"),
+        payload: d11(tamaleFiles),
       },
       {
         toolId: "D1.2",
@@ -331,7 +334,7 @@ export const projectRecords = new Map(
         toolId: "D1.1",
         state: "locked",
         day: 0,
-        payload: d11(capeCoastFiles, "Approved"),
+        payload: d11(capeCoastFiles),
       },
       {
         toolId: "D1.2",
@@ -391,7 +394,7 @@ export const projectRecords = new Map(
         toolId: "D1.1",
         state: "locked",
         day: 0,
-        payload: d11(hoFiles, "Approved"),
+        payload: d11(hoFiles),
       },
       {
         toolId: "D1.2",
@@ -445,18 +448,32 @@ export const projectRecords = new Map(
     "Sunyani Timber Kiln Controls": [
       {
         toolId: "D1.1",
-        state: "submitted",
+        state: "locked",
         day: 1,
-        payload: d11(sunyaniFiles, "Reviewed"),
+        payload: d11(sunyaniFiles),
+      },
+      {
+        toolId: "D1.2",
+        state: "submitted",
+        day: 2,
+        payload: d12(
+          sunyaniFiles,
+          allPass([
+            "Readable, photos open",
+            "Kiln controls are in scope",
+            "Company phone confirmed",
+          ]),
+          "Proceed to D1.3"
+        ),
       },
     ],
     "Kumasi Cocoa Roasting Line": [
-      // Made by the intake, still Pending: the project has no OM yet.
+      // The client's form is in; the project has no OM yet to triage it.
       {
         toolId: "D1.1",
-        state: "draft",
+        state: "locked",
         day: 0,
-        payload: d11(kumasiFiles, "Pending"),
+        payload: d11(kumasiFiles),
       },
     ],
     "Tarkwa Mine Pump Station Drawings": [
@@ -464,7 +481,7 @@ export const projectRecords = new Map(
         toolId: "D1.1",
         state: "locked",
         day: 0,
-        payload: d11(tarkwaFiles, "Approved"),
+        payload: d11(tarkwaFiles),
       },
       {
         toolId: "D1.2",
@@ -539,17 +556,17 @@ export const projectRecords = new Map(
     "Takoradi Port Conveyor Upgrade": [
       {
         toolId: "D1.1",
-        state: "draft",
+        state: "locked",
         day: 0,
-        payload: d11(takoradiFiles, "Pending"),
+        payload: d11(takoradiFiles),
       },
     ],
     "Accra Brewery Bottling Retrofit": [
       {
         toolId: "D1.1",
-        state: "draft",
+        state: "locked",
         day: 1,
-        payload: d11(accraFiles, "Reviewed"),
+        payload: d11(accraFiles),
       },
     ],
     "Obuasi Workshop Crane Rail": [
@@ -557,7 +574,7 @@ export const projectRecords = new Map(
         toolId: "D1.1",
         state: "locked",
         day: 0,
-        payload: d11(obuasiFiles, "Approved"),
+        payload: d11(obuasiFiles),
       },
       {
         toolId: "D1.2",
@@ -626,7 +643,7 @@ export const projectRecords = new Map(
         toolId: "D1.1",
         state: "locked",
         day: 0,
-        payload: d11(bolgaFiles, "Approved"),
+        payload: d11(bolgaFiles),
       },
       {
         toolId: "D1.2",
@@ -648,7 +665,7 @@ export const projectRecords = new Map(
         toolId: "D1.1",
         state: "locked",
         day: 0,
-        payload: d11(koforiduaFiles, "Approved"),
+        payload: d11(koforiduaFiles),
       },
       {
         toolId: "D1.2",
@@ -669,7 +686,7 @@ export const projectRecords = new Map(
 )
 
 // Requests to unlock a locked record, waiting for the project's PM.
-export const projectChangeRequests = new Map(
+export const projectChangeRequests = new Map<string, SeedChangeRequest[]>(
   Object.entries({
     "Tema Foods Boiler Skid": [
       {

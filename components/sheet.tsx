@@ -17,7 +17,7 @@ export function Sheet({
   return (
     <div
       className={cn(
-        "relative isolate border border-foreground/70 bg-background",
+        "relative isolate border border-[var(--rule)] bg-background",
         className
       )}
     >

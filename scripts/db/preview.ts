@@ -55,6 +55,13 @@ const previews: Preview[] = [
       "D1.3 on Tema Foods Boiler Skid is locked, so it reads as a finished sheet: Core Objectives and Scope, Input / Output Operands (M, E, I, L with Material, Energy, Information, Living thing under them), Operators and one missing item. Ho Water Treatment Dosing Skid has a D1.3 waiting for the PM. To fill in a D1.3 from empty, approve a D1.2 on another Tier 1 project.",
   },
   {
+    screen: "Top bar over every tool: the project and the document control",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.3`,
+    expect:
+      "Over the sheet, in its own box: a back arrow, the tool's title (the project name, tier and request ID are in the sidebar; on a phone they sit above the title) with its state badge, View client request at the right, with an Iteration badge beside the state, then the document control in one slim row under it (Prepared by, Checked by, Date checked, Date approved, Started, Completed): small grey labels over bold values, with the role (OM, PM) and the time taken as badges. The sheet below holds only the tool's tables. No sentence about the state is shown; the badge says it. Scroll on a wide screen: the bar stays put, level with the sidebar, and the sheet slides under it. On a phone the document control folds into a Document control row to tap. Every table title (Core Objectives and Scope, ...) is plain text on no fill, and the row of column names under it is hatched with bold text. On Tema Foods Boiler Skid, D1.3 is locked: Date checked and Date approved are both the approval time, and Iteration is 1. On Ho Water Treatment Dosing Skid, D1.3 waits for the PM: both dates are -, Iteration is 1. Iteration goes up each time someone other than the submitter moves a submitted record back to draft.",
+  },
+  {
     screen: "D1.4 acknowledgement email, as the OM (RDP-150)",
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.4`,
@@ -69,11 +76,19 @@ const previews: Preview[] = [
       "The same email, read only, with Send at the foot. Before the OM edits it, Send is off and says the Onboarding Manager has not started the email yet; with an empty subject or text it says what to add. Press Send: the email goes to the client through Resend when RESEND_API_KEY is set (the seeded clients have .test addresses, so nothing reaches anyone; without the key nothing leaves the machine), the email goes from the noreply address, the record locks, and Date Sent, Time Sent and Delivery Status Sent fill in, with Sent By kept as the OM, and D1.4 reads as Locked. Pressing twice sends once. A bad address in CC / BCC is refused and nothing is sent.",
   },
   {
-    screen: "D1.1 review sheet",
+    screen: "D1.1 client web form",
     loginAs: "PM",
     path: (id) => `/projects/${id}/tools/D1.1`,
     expect:
-      "The same sheet as D1.2: request status and the attached files as tables, with Pending | Reviewed, read only because D1.1 is locked.",
+      "D1.1 is the client's web form, locked the moment it came in: the answers in tables (Contact, Project, Systems, Submission) and the attached files, read only. The OM, PM, CR and IT/Admin read it; nobody else sees it. The PM sees a change request on it from the OM: approve it and the client can edit and resend the form, which locks D1.1 again.",
+  },
+  {
+    screen: "Client: start a new project",
+    loginAs: "Client",
+    email: "kwaku.ampofo@temafoods.test",
+    path: () => "/",
+    expect:
+      "Kwaku Ampofo, a client, sees their projects, and the last square of the grid is Start new project with a plus. Press it, choose Tier 1 (Custom Engineering & Factory Solutions) or Tier 3 (Engineering Drafting & Digitization), and fill the same form as on the IMHOGEN website. Send request creates the project with D1.1 locked and opens it; it waits for the IT/Admin to assign a team. The form has no file upload yet.",
   },
   {
     screen: "Form tools on the same sheet (dev preview)",

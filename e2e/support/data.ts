@@ -135,12 +135,14 @@ export async function addRecord(
   return record!.id
 }
 
+// Waits for the form to be ready before typing, and gives the first page after
+// sign-in time to compile on a cold dev server.
 export async function signIn(page: Page, email: string) {
-  await page.goto("/sign-in")
+  await page.goto("/sign-in", { waitUntil: "networkidle" })
   await page.getByLabel("Email").fill(email)
   await page.getByLabel("Password").fill(PASSWORD)
   await page.getByRole("button", { name: "Sign in" }).click()
-  await expect(page).toHaveURL(/\/$/)
+  await expect(page).toHaveURL(/\/$/, { timeout: 30_000 })
 }
 
 export async function sidewaysScroll(page: Page) {

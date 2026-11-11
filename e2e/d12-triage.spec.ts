@@ -35,19 +35,16 @@ async function setUp(track: "Tier_1" | "Tier_3" = "Tier_1") {
 
   const filesRecordId = await addRecord(project.id, "D1.1", "locked", {
     payload: {
-      requestStatus: "Approved",
       attachedFiles: [
         {
           label: "Photo 1",
           dateUploaded: "2026-11-03",
           fileLink: ONE,
-          status: "Approved",
         },
         {
           label: "Photo 2",
           dateUploaded: "2026-11-03",
           fileLink: TWO,
-          status: "Approved",
         },
       ],
     },
@@ -128,7 +125,7 @@ function saved(
   }
 }
 
-test("the files show from D1.1 with Open file and their status, before anything is saved", async ({
+test("the files show from D1.1 with Open file, before anything is saved", async ({
   page,
 }) => {
   const { project, om } = await setUp()
@@ -138,7 +135,6 @@ test("the files show from D1.1 with Open file and their status, before anything 
   await expect(page.getByText("Photo 1", { exact: true })).toBeVisible()
   await expect(page.getByText("Photo 2", { exact: true })).toBeVisible()
   await expect(page.getByRole("link", { name: /^Open file/ })).toHaveCount(2)
-  await expect(page.getByText("Approved", { exact: true })).toHaveCount(2)
 })
 
 test("a screen with no record yet has empty checks and no decision", async ({
@@ -379,7 +375,7 @@ test("a Tier 3 project says Proceed to D1.3a", async ({ page }) => {
   await expect(proceed(page)).toHaveCount(0)
 })
 
-test("the header sits in the sheet with the document control facts", async ({
+test("the top bar holds the title and the document control facts", async ({
   page,
 }) => {
   const { project, om } = await setUp()
@@ -393,8 +389,11 @@ test("the header sits in the sheet with the document control facts", async ({
     page.getByRole("link", { name: "Project overview" })
   ).toBeVisible()
 
-  for (const fact of ["Project", "Request ID", "Prepared by", "Checked by"]) {
-    await expect(page.getByText(fact, { exact: true })).toBeVisible()
+  const control = page.locator('header[aria-label="Document control"]')
+
+  for (const fact of ["Prepared by", "Checked by", "Started", "Completed"]) {
+    // The facts are drawn twice: in one row, and folded away for phones.
+    await expect(control.getByText(fact, { exact: true }).first()).toBeVisible()
   }
 
   // The web form is in the panel, not on the page.

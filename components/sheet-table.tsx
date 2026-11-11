@@ -24,7 +24,7 @@ export function TableBox({
       aria-label={title}
       className={cn("border border-foreground/20", className)}
     >
-      <h2 className="border-b border-foreground/20 bg-muted/60 px-4 py-2.5 text-sm font-medium">
+      <h2 className="border-b border-foreground/20 px-4 py-2.5 text-sm font-normal">
         {title}
       </h2>
       {children}
@@ -52,7 +52,7 @@ export function DataTable({
       <div
         role="row"
         style={template(widths)}
-        className="hidden border-b border-foreground/20 text-xs text-muted-foreground @xl:grid @xl:grid-cols-[var(--template)]"
+        className="column-header-row hidden border-b border-foreground/20 @xl:grid @xl:grid-cols-[var(--template)]"
       >
         {columns.map((column) => (
           <div

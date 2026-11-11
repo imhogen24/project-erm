@@ -1,4 +1,4 @@
-import type { ReviewFile } from "@/lib/review"
+import type { ClientFile } from "@/lib/client-files"
 
 // A web form has no recipient address and no subject line.
 export const NOT_APPLICABLE = "Not applicable (web form)"
@@ -17,6 +17,6 @@ export type RequestMetadata = {
 // through D1.1's record, which holds its link.
 export type RequestDetails = {
   metadata: RequestMetadata | null
-  files: ReviewFile[]
+  files: ClientFile[]
   filesRecordId: string | null
 }

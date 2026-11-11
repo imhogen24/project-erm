@@ -10,7 +10,7 @@ Agents: **Client · OM** (Onboarding Manager) **· PM** (Project Manager) **· L
 
 | Tool ID | Tool Name | Client | OM | PM | LE | AE | LD | FO | CA | HE | PO | IO | WS | T | QA | LFE | LO | CR | IT/Admin | MKT |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| D1.1 | Client Email / Web Form | RW | RW | RA | - | - | - | - | - | - | - | - | - | - | - | - | RO | RO | - | |
+| D1.1 | Client Email / Web Form | RW | RO | RO | - | - | - | - | - | - | - | - | - | - | - | - | - | RO | RO | |
 | D1.2 | Initial Inquiry Notification | - | RW | RA | - | - | - | - | RO | - | - | - | - | - | - | - | RO | RO | - | |
 | D1.3 | Received Request Record | - | RW | RA | - | - | - | - | RO | - | - | - | - | - | - | - | RO | RO | - | |
 | D1.4 | Acknowledgment Email | RO | RW | RA | - | - | - | - | RO | - | - | - | - | - | - | - | RO | RO | - | |

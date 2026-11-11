@@ -71,7 +71,9 @@ test("the button is on the project page and on a tool page", async ({
   await page.goto(`/projects/${project.id}`)
   await expect(page.getByRole("button", { name: BUTTON })).toBeVisible()
 
-  await page.goto(`/projects/${project.id}/tools/D1.1`)
+  // D1.1 shows the request on the page itself, so the button is on the tools
+  // after it.
+  await page.goto(`/projects/${project.id}/tools/D1.2`)
   await expect(page.getByRole("button", { name: BUTTON })).toBeVisible()
 })
 
@@ -133,13 +135,13 @@ test("the close button and Escape close the panel", async ({ page }) => {
   await expect(page.getByRole("button", { name: BUTTON })).toBeVisible()
 })
 
-test("a client gets no button", async ({ page }) => {
+test("a role that may not read D1.1 gets no button", async ({ page }) => {
   const { project } = await setUp()
-  const client = await makePerson()
+  const lead = await makePerson()
 
-  await giveRoles(client.id, project.id, ["Client"])
+  await giveRoles(lead.id, project.id, ["LE"])
 
-  await signIn(page, client.email)
+  await signIn(page, lead.email)
   await page.goto(`/projects/${project.id}`)
 
   await expect(page.getByRole("heading", { level: 1 })).toBeVisible()

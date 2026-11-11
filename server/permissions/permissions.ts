@@ -8,7 +8,12 @@ import {
   type Role,
 } from "@/db/schema"
 
-import { accessRow, type Access, type Action } from "./matrix"
+import {
+  accessRow,
+  extraChangeRequesters,
+  type Access,
+  type Action,
+} from "./matrix"
 
 export type { Action }
 
@@ -142,4 +147,16 @@ export async function assertCompanyRole(
   if (!(await companyRolesOf(database, actor)).includes(role)) {
     throw new PermissionDeniedError(`Only a company-wide ${role} may do this`)
   }
+}
+
+// Who may ask for a change to a locked record: whoever may write the tool, and
+// the few roles named for it in extraChangeRequesters.
+export function mayRequestChange(
+  roles: readonly Role[],
+  toolId: string
+): boolean {
+  return (
+    roleAllows(roles, toolId, "write") ||
+    roles.some((role) => extraChangeRequesters.get(toolId)?.includes(role))
+  )
 }

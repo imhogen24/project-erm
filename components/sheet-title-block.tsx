@@ -14,6 +14,7 @@ export function SheetTitleBlock({
   statusLine,
   facts,
   action,
+  badges,
 }: {
   backHref: string
   backLabel: string
@@ -24,6 +25,8 @@ export function SheetTitleBlock({
   facts: { label: string; value: string }[]
   // A button for the sheet, such as the one that opens the client request.
   action?: ReactNode
+  // Chips beside the state, such as D1.4's delivery status.
+  badges?: ReactNode
 }) {
   return (
     <header className="relative flex flex-col">
@@ -37,6 +40,7 @@ export function SheetTitleBlock({
           </h1>
           <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
             <StateBadge state={state} />
+            {badges}
             {statusLine && (
               <p className="text-sm text-muted-foreground">{statusLine}</p>
             )}

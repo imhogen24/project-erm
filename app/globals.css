@@ -484,6 +484,15 @@
     color: var(--primary);
   }
 
+  /* A result that failed, such as an email that bounced. */
+  .result-chip[data-tone="bad"] {
+    background: color-mix(in oklab, var(--destructive) 12%, transparent);
+  }
+
+  .result-chip[data-tone="bad"] svg {
+    color: var(--destructive);
+  }
+
   /* A tool's state, the same shape as .status-chip, stronger as the tool
      firms up: grey, darker grey, soft orange, soft orange with a tick, then
      solid orange with a padlock. */

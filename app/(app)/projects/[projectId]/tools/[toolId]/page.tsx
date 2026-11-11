@@ -1,10 +1,13 @@
 import { notFound, redirect } from "next/navigation"
+import type { ReactNode } from "react"
 import { z } from "zod"
 
 import { AppSidebar } from "@/components/app-sidebar"
 import { ClientRequestPanel } from "@/components/client-request-panel"
+import { DeliveryChip } from "@/components/delivery-chip"
 import { MobileBar } from "@/components/mobile-bar"
 import { RecordForm } from "@/components/record-form"
+import { RetryEmail } from "@/components/retry-email"
 import { ReviewScreen } from "@/components/review-screen"
 import { ToolSheet } from "@/components/tool-sheet"
 import { TriageScreen } from "@/components/triage-screen"
@@ -20,6 +23,7 @@ import {
   missingToSend,
   sendableOf,
 } from "@/server/acknowledgement/acknowledgement"
+import { acknowledgementDelivery } from "@/server/acknowledgement/delivery"
 import { getDatabase } from "@/server/database"
 import { getClientRequestPreview } from "@/server/intake/preview"
 import { getRequestDetails } from "@/server/intake/request-details"
@@ -37,6 +41,7 @@ import {
   submitRecordAction,
   submitReviewAction,
   sendAcknowledgementAction,
+  retryAcknowledgementAction,
 } from "./actions"
 import { projectNav } from "../../sidebar"
 
@@ -182,6 +187,13 @@ export default async function Page({
   let send:
     { missing: string[]; run: typeof sendAcknowledgementAction } | undefined
 
+  // Once sent, D1.4 shows whether the client got it. After a bounce, or no
+  // answer in time, the PM corrects the address and retries; everyone else
+  // is told the PM knows.
+  let deliveryChip: ReactNode
+
+  let deliveryBox: ReactNode
+
   if (toolId === ACKNOWLEDGEMENT) {
     const draft = await acknowledgementDraft(getDatabase(), projectId)
 
@@ -198,6 +210,46 @@ export default async function Page({
     const mayStillSend =
       view.project.status === "active" &&
       (view.state === "draft" || view.state === "notStarted")
+
+    const delivery =
+      view.record && view.state === "locked"
+        ? await acknowledgementDelivery(getDatabase(), view.record.id)
+        : null
+
+    if (delivery?.status) {
+      deliveryChip = <DeliveryChip status={delivery.status} />
+    }
+
+    if (view.record && (delivery?.status === "Bounced" || delivery?.retry)) {
+      const what =
+        delivery.status === "Bounced"
+          ? "This email bounced."
+          : "Delivery of this email could not be confirmed."
+
+      const mayRetry =
+        delivery.retry &&
+        view.project.status === "active" &&
+        (await can(
+          getDatabase(),
+          session.user.id,
+          projectId,
+          toolId,
+          "approve"
+        ))
+
+      deliveryBox = mayRetry ? (
+        <RetryEmail
+          recordId={view.record.id}
+          sentTo={String(formValues.sentTo ?? "")}
+          heading={`${what} Correct the address and try again.`}
+          retry={retryAcknowledgementAction}
+        />
+      ) : (
+        <p role="status" data-tone="error" className="note-panel text-sm">
+          {what} The Project Manager has been told.
+        </p>
+      )
+    }
 
     if (
       mayStillSend &&
@@ -251,6 +303,7 @@ export default async function Page({
     <p>Nobody has started this tool yet.</p>
   ) : (
     <div className="flex flex-col gap-6">
+      {deliveryBox}
       <RecordForm
         tool={tool}
         projectId={projectId}
@@ -285,6 +338,7 @@ export default async function Page({
             backLabel="Project overview"
             title={`${view.toolId} ${view.toolName}`}
             state={view.state}
+            badges={deliveryChip}
             statusLine={
               // A tool that saves by itself needs no line explaining how.
               view.state === "notStarted" || tool.autosave

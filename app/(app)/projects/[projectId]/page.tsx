@@ -7,6 +7,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { BackLink } from "@/components/back-link"
 import { ClientRequestPanel } from "@/components/client-request-panel"
 import { DecideChange } from "@/components/decide-change"
+import { DeliveryChip } from "@/components/delivery-chip"
 import { Grain } from "@/components/grain"
 import { MobileBar } from "@/components/mobile-bar"
 import { PageSheet } from "@/components/page-sheet"
@@ -17,6 +18,8 @@ import { Badge } from "@/components/ui/badge"
 import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
 import { registeredTools } from "@/lib/tools"
+import { ACKNOWLEDGEMENT } from "@/server/acknowledgement/acknowledgement"
+import { projectDelivery } from "@/server/acknowledgement/delivery"
 import { changeControlsFor } from "@/server/change-requests/controls"
 import { getDatabase } from "@/server/database"
 import { getClientRequestPreview } from "@/server/intake/preview"
@@ -73,6 +76,14 @@ export default async function Page({
     session.user.id,
     projectId
   )
+
+  // D1.4's tile says whether the client got the email. Only read when the
+  // person sees that tile.
+  const delivery = overview.tools.some(
+    (tool) => tool.toolId === ACKNOWLEDGEMENT && tool.state === "locked"
+  )
+    ? await projectDelivery(getDatabase(), projectId)
+    : null
 
   const controlOf = new Map(
     controls.records.map((control) => [control.toolId, control])
@@ -184,9 +195,10 @@ export default async function Page({
                           </div>
                           <p className="shut-note px-1">
                             <LockSimpleIcon aria-hidden className="size-3.5" />
-                            {tool.waitingOn.length > 0
-                              ? `Opens after ${tool.waitingOn.join(", ")}`
-                              : "Not open yet"}
+                            {tool.note ??
+                              (tool.waitingOn.length > 0
+                                ? `Opens after ${tool.waitingOn.join(", ")}`
+                                : "Not open yet")}
                           </p>
                         </li>
                       ) : (
@@ -208,7 +220,12 @@ export default async function Page({
                             </span>
                           </Link>
                           <div className="above-stretch-row flex flex-wrap items-center justify-between gap-2 px-1">
-                            <StateBadge state={tool.state} />
+                            <div className="flex flex-wrap items-center gap-2">
+                              <StateBadge state={tool.state} />
+                              {tool.toolId === ACKNOWLEDGEMENT && delivery && (
+                                <DeliveryChip status={delivery} />
+                              )}
+                            </div>
                             {controlOf.get(tool.toolId)?.request && (
                               <span data-open="true" className="status-chip">
                                 {controlOf.get(tool.toolId)?.request?.status ===

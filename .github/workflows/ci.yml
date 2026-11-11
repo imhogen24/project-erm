@@ -59,6 +59,11 @@ jobs:
 
   e2e:
     runs-on: ubuntu-latest
+    # Chromium and its system packages come with the image, so the job never
+    # downloads them from Ubuntu's servers. Keep the tag on the installed
+    # @playwright/test version.
+    container:
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
     services:
       postgres:
         image: postgres:17
@@ -66,22 +71,20 @@ jobs:
           POSTGRES_USER: erm
           POSTGRES_PASSWORD: erm
           POSTGRES_DB: erm_dev
-        ports:
-          - 5433:5432
         options: >-
           --health-cmd "pg_isready -U erm -d erm_dev"
           --health-interval 2s
           --health-timeout 3s
           --health-retries 20
     env:
-      DATABASE_URL: postgres://erm:erm@localhost:5433/erm_dev
+      # Inside a container the database is reached by its service name.
+      DATABASE_URL: postgres://erm:erm@postgres:5432/erm_dev
       BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
       BETTER_AUTH_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
+      - run: npm install -g bun@1.4.3
       - run: bun install --frozen-lockfile
       - run: bun run db:migrate
       - run: bun run db:seed
-      - run: bunx playwright install --with-deps chromium
       - run: bun run test:e2e

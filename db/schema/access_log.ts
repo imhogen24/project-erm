@@ -8,6 +8,8 @@ export const accessActions = [
   "invite_accepted",
   "signed_in",
   "signed_out",
+  // A client made their own account at /sign-up.
+  "signed_up",
 ] as const
 
 export type AccessAction = (typeof accessActions)[number]

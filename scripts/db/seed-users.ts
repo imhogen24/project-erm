@@ -13,6 +13,7 @@ import {
   roles,
   toolRecords,
   type JsonObject,
+  type AccountType,
   type Role,
 } from "@/db/schema"
 
@@ -358,7 +359,8 @@ export async function featuredProjectId(url: string) {
 async function addPerson(
   database: Database,
   person: { name: string; email: string },
-  passwordHash: string
+  passwordHash: string,
+  accountType: AccountType = "staff"
 ) {
   return database.transaction(async (transaction) => {
     const [existing] = await transaction
@@ -372,7 +374,12 @@ async function addPerson(
     if (!personId) {
       const [created] = await transaction
         .insert(people)
-        .values({ name: person.name, email: person.email, emailVerified: true })
+        .values({
+          name: person.name,
+          email: person.email,
+          emailVerified: true,
+          accountType,
+        })
         .returning({ id: people.id })
 
       personId = created!.id
@@ -487,7 +494,12 @@ export async function seed(url: string): Promise<SeedUser[]> {
 
       await addRequest(database, project, projectId)
 
-      const client = await addPerson(database, project.client, passwordHash)
+      const client = await addPerson(
+        database,
+        project.client,
+        passwordHash,
+        "client"
+      )
 
       await giveProjectRole(database, client.id, projectId, "Client")
 

@@ -3,6 +3,7 @@ import { approvalNeeded, type ApprovalNeededData } from "./approval-needed"
 import { assigned, type AssignedData } from "./assigned"
 import type { RenderedEmail } from "./html"
 import { newRequest, type NewRequestData } from "./new-request"
+import { verifyEmail, type VerifyEmailData } from "./verify-email"
 
 export type { RenderedEmail } from "./html"
 
@@ -13,6 +14,7 @@ export type EmailDataByKind = {
   assigned: AssignedData
   approval_needed: ApprovalNeededData
   acknowledgement: AcknowledgementData
+  verify_email: VerifyEmailData
 }
 
 export type EmailKind = keyof EmailDataByKind
@@ -27,6 +29,7 @@ const templates: Templates = {
   assigned,
   approval_needed: approvalNeeded,
   acknowledgement,
+  verify_email: verifyEmail,
 }
 
 // SAFETY: templates is an object literal typed Templates, so its keys are

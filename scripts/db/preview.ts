@@ -91,6 +91,14 @@ const previews: Preview[] = [
       "Kwaku Ampofo, a client, sees their projects, and the last square of the grid is Start new project with a plus. Press it, choose Tier 1 (Custom Engineering & Factory Solutions) or Tier 3 (Engineering Drafting & Digitization), and fill the same form as on the IMHOGEN website. Send request creates the project with D1.1 locked and opens it; it waits for the IT/Admin to assign a team. The form has no file upload yet.",
   },
   {
+    screen: "Client sign-up and confirm email",
+    loginAs: "Client",
+    email: "nobody: sign up with an email you can open",
+    path: () => "/sign-up",
+    expect:
+      "Create your account asks for full name, email and password; the sign-in page links here with Create an account. Create account opens Check your email with the address and Send the link again; signing in before confirming opens it too. The link really is emailed (an address ending in .test or example.com never is). Once confirmed, the client lands on Your projects with only Start new project, and any website request made with that email is already theirs.",
+  },
+  {
     screen: "Form tools on the same sheet (dev preview)",
     loginAs: "PM",
     path: () => "/dev/form-preview",

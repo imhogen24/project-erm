@@ -11,6 +11,7 @@ import {
   type ServiceTrack,
 } from "@/db/schema"
 
+import { attachClientIn } from "@/server/accounts/accounts"
 import type { Transaction } from "@/server/audit/audit"
 import { requireEnv } from "@/server/database"
 import { sendEmail, type Transport } from "@/server/email/email"
@@ -32,6 +33,10 @@ export type IntakeSummary = {
   skipped: string[]
   failed: string[]
 }
+
+// The address the client gave on the form. A request without one is still
+// pulled in; it just matches no account.
+const requestEmail = z.string().min(1)
 
 export type IntakeOptions = {
   baseURL?: string
@@ -145,6 +150,12 @@ export async function pullIn(
   })
 
   await lockDraftIn(transaction, systemActor, record.id)
+
+  const email = requestEmail.safeParse(submission.row.email)
+
+  if (email.success) {
+    await attachClientIn(transaction, project.id, email.data)
+  }
 
   const admins = await itAdmins(transaction)
 

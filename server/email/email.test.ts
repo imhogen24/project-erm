@@ -47,6 +47,7 @@ const sampleData: EmailDataByKind = {
     subject: "Acknowledgement of Boiler request",
     body: "Dear Ama,\n\nThank you.",
   },
+  verify_email: { name: "Kwaku", link: "https://erm.example.com/d" },
 }
 
 function failingTransport(): Transport {
@@ -235,6 +236,44 @@ describe("sendEmail", () => {
     )
   })
 
+  it("never hands an email for a reserved test domain to the real provider", async () => {
+    const send = vi.fn<Transport["send"]>(async () => ({ id: "real-1" }))
+
+    for (const to of ["kwaku@temafoods.test", "it@example.com"]) {
+      const row = await sendEmail(
+        database,
+        {
+          to,
+          kind: "assigned",
+          data: sampleData.assigned,
+          key: `assigned:${to}`,
+        },
+        { name: "resend", send }
+      )
+
+      expect(row.status).toBe("sent")
+    }
+
+    expect(send).not.toHaveBeenCalled()
+  })
+
+  it("hands a real address to the real provider", async () => {
+    const send = vi.fn<Transport["send"]>(async () => ({ id: "real-2" }))
+
+    await sendEmail(
+      database,
+      {
+        to: "kwaku@temafoods.com.gh",
+        kind: "assigned",
+        data: sampleData.assigned,
+        key: "assigned:real",
+      },
+      { name: "resend", send }
+    )
+
+    expect(send).toHaveBeenCalledOnce()
+  })
+
   it("refuses an address that is not an email and sends nothing", async () => {
     const transport = createFakeTransport()
 
@@ -257,18 +296,19 @@ describe("sendEmail", () => {
 })
 
 describe("templates", () => {
-  it("covers the three staff kinds and the client's acknowledgement", () => {
+  it("covers the three staff kinds and the two client kinds", () => {
     expect([...emailKinds].sort()).toEqual([
       "acknowledgement",
       "approval_needed",
       "assigned",
       "new_request",
+      "verify_email",
     ])
   })
 
   it("marks every staff wording as placeholder", () => {
     for (const kind of emailKinds.filter(
-      (each) => each !== "acknowledgement"
+      (each) => each !== "acknowledgement" && each !== "verify_email"
     )) {
       const email = renderEmail(kind, sampleData[kind])
 

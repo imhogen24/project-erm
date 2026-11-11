@@ -127,6 +127,20 @@
       "when": 1793726229741,
       "tag": "0017_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1794408754954,
+      "tag": "0018_account_type",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794410730446,
+      "tag": "0019_signed_up",
+      "breakpoints": true
     }
   ]
 }

@@ -27,7 +27,7 @@ type LogLine = {
 
 async function addPerson(email = EMAIL) {
   const { rows } = await database.pool.query<{ id: string }>(
-    "INSERT INTO people (name, email) VALUES ('Ama', $1) RETURNING id",
+    "INSERT INTO people (name, email, email_verified) VALUES ('Ama', $1, true) RETURNING id",
     [email]
   )
 

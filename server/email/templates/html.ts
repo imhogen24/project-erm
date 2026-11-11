@@ -17,8 +17,12 @@ export function escapeHtml(value: string) {
 }
 
 // Every template shares this shell, so a kind writes only its own lines.
-export function layout(lines: string[], link: string) {
+export function layout(
+  lines: string[],
+  link: string,
+  linkText = "Open in the ERM"
+) {
   const paragraphs = lines.map((line) => `<p>${escapeHtml(line)}</p>`).join("")
 
-  return `<!doctype html><html><body>${paragraphs}<p><a href="${escapeHtml(link)}">Open in the ERM</a></p></body></html>`
+  return `<!doctype html><html><body>${paragraphs}<p><a href="${escapeHtml(link)}">${escapeHtml(linkText)}</a></p></body></html>`
 }

@@ -1,6 +1,7 @@
 "use server"
 
 import {
+  InvalidInviteInputError,
   InviteExpiredError,
   InviteNotFoundError,
   InviteUsedError,
@@ -43,7 +44,10 @@ export async function acceptInviteAction({
       return { status: "error", message: "This invite does not exist." }
     }
 
-    if (error instanceof WeakPasswordError) {
+    if (
+      error instanceof WeakPasswordError ||
+      error instanceof InvalidInviteInputError
+    ) {
       return { status: "error", message: error.message }
     }
 

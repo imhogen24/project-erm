@@ -436,3 +436,43 @@ describe("pullNewRequests", () => {
     expect(fetch).not.toHaveBeenCalled()
   })
 })
+
+describe("a client who already has an account", () => {
+  async function addClientAccount(verified: boolean) {
+    const { rows } = await database.pool.query<{ id: string }>(
+      "INSERT INTO people (name, email, email_verified, account_type) VALUES ('Ama', 'AMA@client.example.com', $1, 'client') RETURNING id",
+      [verified]
+    )
+
+    return rows[0]!.id
+  }
+
+  async function clientRolesOf(personId: string) {
+    const { rows } = await database.pool.query<{ project_id: string }>(
+      "SELECT project_id FROM person_project_roles WHERE person_id = $1 AND role = 'Client'",
+      [personId]
+    )
+
+    return rows.map((row) => row.project_id)
+  }
+
+  it("is put on the project when the request's email is theirs and confirmed", async () => {
+    const client = await addClientAccount(true)
+
+    await addTier1({ requestId: "T1-100" })
+    await pull()
+
+    expect(await clientRolesOf(client)).toEqual([
+      (await projectFor("T1-100"))!.id,
+    ])
+  })
+
+  it("is not put on it while their email is unconfirmed", async () => {
+    const client = await addClientAccount(false)
+
+    await addTier1({ requestId: "T1-100" })
+    await pull()
+
+    expect(await clientRolesOf(client)).toEqual([])
+  })
+})

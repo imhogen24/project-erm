@@ -4,7 +4,11 @@ import { hashPassword } from "better-auth/crypto"
 import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
 import type { Role } from "@/db/schema"
-import { createTestDatabase, resetTestData } from "@/db/testing"
+import {
+  createTestDatabase,
+  resetTestData,
+  restoreSystemPerson,
+} from "@/db/testing"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import { createAuth } from "@/server/auth/auth"
 
@@ -48,7 +52,7 @@ async function addProject(name: string) {
 
 async function addPerson(email: string, held: [string, Role][] = []) {
   const { rows } = await database.pool.query<{ id: string }>(
-    "INSERT INTO people (name, email) VALUES ('Existing', $1) RETURNING id",
+    "INSERT INTO people (name, email, email_verified) VALUES ('Existing', $1, true) RETURNING id",
     [email]
   )
 
@@ -1041,5 +1045,186 @@ describe("reading an invite before accepting it", () => {
     await expect(getInvite(database, token)).rejects.toBeInstanceOf(
       InviteUsedError
     )
+  })
+})
+
+describe("account types", () => {
+  async function accountOf(email: string) {
+    const { rows } = await database.pool.query<{
+      account_type: string
+      email_verified: boolean
+    }>("SELECT account_type, email_verified FROM people WHERE email = $1", [
+      email,
+    ])
+
+    return rows[0]
+  }
+
+  async function addClientAccount(email: string) {
+    const { rows } = await database.pool.query<{ id: string }>(
+      "INSERT INTO people (name, email, email_verified, account_type) VALUES ('Kwaku', $1, true, 'client') RETURNING id",
+      [email]
+    )
+
+    return rows[0]!.id
+  }
+
+  it("makes a staff account with the email confirmed when the invite has a staff role", async () => {
+    await acceptInvite(database, await invitedToken(), PASSWORD)
+
+    expect(await accountOf("kofi@example.com")).toEqual({
+      account_type: "staff",
+      email_verified: true,
+    })
+  })
+
+  it("makes a client account when Client is the invite's only role", async () => {
+    await acceptInvite(
+      database,
+      await invitedToken({ roles: ["Client"] }),
+      PASSWORD
+    )
+
+    expect((await accountOf("kofi@example.com"))?.account_type).toBe("client")
+  })
+
+  it("refuses to give a staff role to a client account", async () => {
+    await addPassword(await addClientAccount("kofi@example.com"))
+
+    await expect(newInvite()).rejects.toBeInstanceOf(InvalidInviteInputError)
+    expect(await rolesOf("kofi@example.com", projectId)).toEqual([])
+  })
+
+  it("refuses at accept time when the email became a client account after the invite", async () => {
+    const token = await invitedToken()
+
+    await addClientAccount("kofi@example.com")
+
+    await expect(
+      acceptInvite(database, token, PASSWORD)
+    ).rejects.toBeInstanceOf(InvalidInviteInputError)
+    expect(await rolesOf("kofi@example.com", projectId)).toEqual([])
+  })
+
+  it("lets a client account be made Client on another project", async () => {
+    await addPassword(await addClientAccount("kofi@example.com"))
+
+    await newInvite({ roles: ["Client"] })
+
+    expect(await rolesOf("kofi@example.com", projectId)).toEqual(["Client"])
+  })
+})
+
+describe("an account someone made by signing up with another person's email", () => {
+  // Signed up through the public form: unconfirmed, with a password the
+  // owner of the inbox never chose.
+  async function squatter(accountType: "client" | "staff" = "client") {
+    const { rows } = await database.pool.query<{ id: string }>(
+      "INSERT INTO people (name, email, email_verified, account_type) VALUES ('Mallory', 'kofi@example.com', false, $1) RETURNING id",
+      [accountType]
+    )
+
+    await addPassword(rows[0]!.id, "mallory-knows-this")
+
+    return rows[0]!.id
+  }
+
+  it("gets an invite link, not the roles straight away", async () => {
+    await squatter()
+
+    expect((await newInvite()).status).toBe("invited")
+    expect(await rolesOf("kofi@example.com", projectId)).toEqual([])
+  })
+
+  it("does not block a staff invite to the email's owner", async () => {
+    await squatter()
+
+    await expect(newInvite()).resolves.toMatchObject({ status: "invited" })
+  })
+
+  it("takes the password and type the invite's owner chooses, and loses its sessions", async () => {
+    const id = await squatter()
+
+    await database.pool.query(
+      "INSERT INTO sessions (person_id, token, expires_at) VALUES ($1, 'mallory-session', now() + interval '1 day')",
+      [id]
+    )
+
+    await acceptInvite(database, await invitedToken(), PASSWORD)
+
+    const { rows } = await database.pool.query<{
+      account_type: string
+      email_verified: boolean
+    }>("SELECT account_type, email_verified FROM people WHERE id = $1", [id])
+
+    expect(rows[0]).toEqual({ account_type: "staff", email_verified: true })
+    expect((await signIn("kofi@example.com", PASSWORD)).user.id).toBe(id)
+    await expect(
+      signIn("kofi@example.com", "mallory-knows-this")
+    ).rejects.toThrow()
+
+    const left = await database.pool.query(
+      "SELECT 1 FROM sessions WHERE token = 'mallory-session'"
+    )
+
+    expect(left.rowCount).toBe(0)
+  })
+})
+
+describe("two invites for the same unconfirmed email, accepted at once", () => {
+  it("never leave a client account holding a staff role", async () => {
+    await database.pool.query(
+      "INSERT INTO people (name, email, email_verified, account_type) VALUES ('Mallory', 'kofi@example.com', false, 'client')"
+    )
+
+    const staffToken = await invitedToken({ roles: ["PM"] })
+
+    const clientToken = await invitedToken({
+      projectId: otherProjectId,
+      roles: ["Client"],
+    })
+
+    await restoreSystemPerson(database)
+
+    await Promise.allSettled([
+      acceptInvite(database, staffToken, PASSWORD),
+      acceptInvite(database, clientToken, PASSWORD),
+    ])
+
+    const { rows } = await database.pool.query<{ account_type: string }>(
+      "SELECT account_type FROM people WHERE email = 'kofi@example.com'"
+    )
+
+    const staffRoles = await rolesOf("kofi@example.com", projectId)
+
+    if (rows[0]!.account_type === "client") {
+      expect(staffRoles).toEqual([])
+    } else {
+      expect(staffRoles).toEqual(["PM"])
+    }
+  })
+})
+
+describe("a client who joins by invite", () => {
+  beforeEach(async () => {
+    await restoreSystemPerson(database)
+  })
+
+  it("gets their other website requests too", async () => {
+    const other = await addProject("Their website request")
+
+    await database.pool.query(
+      "INSERT INTO intake_submissions (request_id, service_track, project_id, submission) VALUES ('T1-web', 'Tier_1', $1, $2)",
+      [other, JSON.stringify({ email: "Kofi@Example.com" })]
+    )
+
+    await acceptInvite(
+      database,
+      await invitedToken({ roles: ["Client"] }),
+      PASSWORD
+    )
+
+    expect(await rolesOf("kofi@example.com", projectId)).toEqual(["Client"])
+    expect(await rolesOf("kofi@example.com", other)).toEqual(["Client"])
   })
 })

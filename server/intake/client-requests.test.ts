@@ -83,18 +83,14 @@ async function addToProject(personId: string, projectId: string, role: Role) {
   )
 }
 
-// A client is Client on a project already, as a website request makes them.
+// A client made their own account at /sign-up and confirmed their email.
 async function addClient(name: string) {
-  const person = await addPerson(name)
-
   const { rows } = await database.pool.query<{ id: string }>(
-    "INSERT INTO projects (name, request_id, service_track) VALUES ('Earlier', $1, 'Tier_1') RETURNING id",
-    [`T1-${crypto.randomUUID()}`]
+    "INSERT INTO people (name, email, email_verified, account_type) VALUES ($1, $2, true, 'client') RETURNING id",
+    [name, `${name.toLowerCase()}-${Math.random()}@example.com`]
   )
 
-  await addToProject(person, rows[0]!.id, "Client")
-
-  return person
+  return rows[0]!.id
 }
 
 function start(
@@ -137,31 +133,21 @@ afterAll(async () => {
 })
 
 describe("isClientAccount", () => {
-  it("is true for a Client on a project with no staff role anywhere", async () => {
+  it("is true for a client account, even before it is on any project", async () => {
     expect(await isClientAccount(database, await addClient("Kwaku"))).toBe(true)
   })
 
-  it("is false for a person with no role at all, who may be staff", async () => {
+  it("is false for a staff account with no role yet", async () => {
     expect(await isClientAccount(database, await addPerson("Yaw"))).toBe(false)
   })
 
-  it("is false for a Client who also holds a staff role", async () => {
-    const both = await addClient("Esi")
+  it("is false for a staff account that is Client on a project", async () => {
+    const staff = await addPerson("Esi")
+    const projectId = await start(await addClient("Kwaku"))
 
-    const { rows } = await database.pool.query<{ project_id: string }>(
-      "SELECT project_id FROM person_project_roles WHERE person_id = $1",
-      [both]
-    )
+    await addToProject(staff, projectId, "Client")
 
-    await addToProject(both, rows[0]!.project_id, "OM")
-
-    expect(await isClientAccount(database, both)).toBe(false)
-  })
-
-  it("is false for a person with a company role", async () => {
-    const admin = await addPerson("Kofi", ["IT/Admin"])
-
-    expect(await isClientAccount(database, admin)).toBe(false)
+    expect(await isClientAccount(database, staff)).toBe(false)
   })
 })
 

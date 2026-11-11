@@ -4,7 +4,7 @@ import { z } from "zod"
 import type { Database } from "@/db"
 import {
   intakeSubmissions,
-  personCompanyRoles,
+  people,
   personProjectRoles,
   toolRecords,
   type JsonObject,
@@ -30,31 +30,17 @@ const prefix: Record<Tier, string> = { Tier_1: "T1", Tier_3: "T3" }
 
 const answerValue = z.union([z.string(), z.array(z.string())])
 
-// A client account is one that is Client on at least one project and holds no
-// staff role anywhere: no company-wide role, and only Client on any project.
-// Only a client starts a project. A person with no role at all is not one yet:
-// until accounts carry their type from sign-up, a new client and a member of
-// staff waiting for a role look the same.
+// A client made their own account at /sign-up. Only a client starts a project.
 export async function isClientAccount(
   database: Pick<Database, "select">,
   personId: string
 ): Promise<boolean> {
-  const [staff] = await database
-    .select({ role: personCompanyRoles.role })
-    .from(personCompanyRoles)
-    .where(eq(personCompanyRoles.personId, personId))
-    .limit(1)
+  const [person] = await database
+    .select({ accountType: people.accountType })
+    .from(people)
+    .where(eq(people.id, personId))
 
-  if (staff) {
-    return false
-  }
-
-  const held = await database
-    .select({ role: personProjectRoles.role })
-    .from(personProjectRoles)
-    .where(eq(personProjectRoles.personId, personId))
-
-  return held.length > 0 && held.every((row) => row.role === "Client")
+  return person?.accountType === "client"
 }
 
 // The answers checked against the web form's rules, or the messages for each

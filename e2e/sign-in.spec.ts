@@ -28,7 +28,7 @@ test.beforeAll(async () => {
 
     if (!personId) {
       const { rows: created } = await database.pool.query<{ id: string }>(
-        "INSERT INTO people (name, email) VALUES ($1, $2) RETURNING id",
+        "INSERT INTO people (name, email, email_verified) VALUES ($1, $2, true) RETURNING id",
         ["Sign In Page", email]
       )
 

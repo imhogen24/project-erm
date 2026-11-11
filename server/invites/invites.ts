@@ -8,6 +8,7 @@ import type { Database } from "@/db"
 import {
   accessLog,
   accounts,
+  sessions,
   invitations,
   people,
   personProjectRoles,
@@ -15,6 +16,7 @@ import {
   type Role,
 } from "@/db/schema"
 import type { Transaction } from "@/server/audit/audit"
+import { attachRequestsIn } from "@/server/accounts/accounts"
 import { addCompanyRoles } from "@/server/company-roles/company-roles"
 import {
   PermissionDeniedError,
@@ -95,6 +97,31 @@ function cleanRoles(values: string[], projectId: string | null) {
   return cleaned
 }
 
+// An invite whose only role is Client makes a client account. Any other role
+// makes staff.
+function accountTypeFor(held: Role[]) {
+  return held.every((role) => role === "Client") ? "client" : "staff"
+}
+
+// A client account never becomes staff: staff use their own work email. Only
+// a confirmed account counts: anyone can sign up with an address they do not
+// own, and that must not block an invite to its real owner.
+function assertFitsAccount(
+  person:
+    { accountType: "client" | "staff"; emailVerified: boolean } | undefined,
+  held: Role[]
+) {
+  if (
+    person?.emailVerified &&
+    person.accountType === "client" &&
+    accountTypeFor(held) === "staff"
+  ) {
+    throw new InvalidInviteInputError(
+      "This email belongs to a client account. Invite staff with their work email."
+    )
+  }
+}
+
 // Only a company-wide IT/Admin gives access. IT/Admin on one project is not
 // enough.
 async function assertItAdmin(database: Database, actor: string) {
@@ -103,11 +130,19 @@ async function assertItAdmin(database: Database, actor: string) {
   }
 }
 
-async function findPerson(database: Database, address: string) {
-  const [person] = await database
-    .select({ id: people.id })
+function personQuery(database: Pick<Database, "select">, address: string) {
+  return database
+    .select({
+      id: people.id,
+      accountType: people.accountType,
+      emailVerified: people.emailVerified,
+    })
     .from(people)
     .where(sql`lower(${people.email}) = ${address}`)
+}
+
+async function findPerson(database: Pick<Database, "select">, address: string) {
+  const [person] = await personQuery(database, address)
 
   return person
 }
@@ -204,9 +239,14 @@ export async function createInvite(
     throw new InvalidInviteInputError("The system cannot be invited")
   }
 
+  assertFitsAccount(existing, held)
+
   // Each change is written in one transaction with its access_log line, so a
   // failed log line undoes the change.
-  if (existing && (await hasPassword(database, existing.id))) {
+  // Roles go straight to a confirmed account. An unconfirmed one may be a
+  // sign-up by someone who does not own the address, so it gets the link,
+  // which only the inbox's owner can open.
+  if (existing?.emailVerified && (await hasPassword(database, existing.id))) {
     await database.transaction(async (transaction) => {
       const added = await giveRoles(
         transaction,
@@ -326,27 +366,62 @@ export async function acceptInvite(
       throw new InviteExpiredError("This invite has expired")
     }
 
-    const [existing] = await transaction
-      .select({ id: people.id })
-      .from(people)
-      .where(sql`lower(${people.email}) = ${invite.email}`)
+    // Locked like the invite, so two invites for the same person are accepted
+    // one after the other, each seeing what the other wrote.
+    const [existing] = await personQuery(transaction, invite.email).for(
+      "update"
+    )
+
+    assertFitsAccount(existing, invite.roles)
 
     let personId = existing?.id
 
+    // The invite link reached their inbox, which confirms the email.
     if (!personId) {
       const [created] = await transaction
         .insert(people)
-        .values({ name: invite.name, email: invite.email })
+        .values({
+          name: invite.name,
+          email: invite.email,
+          emailVerified: true,
+          accountType: accountTypeFor(invite.roles),
+        })
         .returning({ id: people.id })
 
       personId = created!.id
 
       await setPassword(transaction, personId, passwordHash)
-    } else if (!(await hasPassword(transaction, personId))) {
-      await setPassword(transaction, personId, passwordHash)
+    } else {
+      // A password and type are kept only on an account whose owner proved
+      // the email. Anyone can sign up with an address they do not own, so an
+      // unconfirmed account takes what this invite says, from the person who
+      // opened it in that inbox, and its sessions end.
+      const confirmed = existing!.emailVerified
+
+      if (!confirmed || !(await hasPassword(transaction, personId))) {
+        await setPassword(transaction, personId, passwordHash)
+      }
+
+      await transaction
+        .update(people)
+        .set({
+          emailVerified: true,
+          ...(!confirmed && { accountType: accountTypeFor(invite.roles) }),
+        })
+        .where(eq(people.id, personId))
+
+      if (!confirmed) {
+        await transaction
+          .delete(sessions)
+          .where(eq(sessions.personId, personId))
+      }
     }
 
     await giveRoles(transaction, personId, invite.projectId, invite.roles)
+
+    // A client's other website requests become theirs, as when they confirm
+    // the email after signing up.
+    await attachRequestsIn(transaction, personId)
 
     await transaction
       .update(invitations)

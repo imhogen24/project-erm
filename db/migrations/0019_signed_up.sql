@@ -1,0 +1,1 @@
+ALTER TYPE "public"."access_action" ADD VALUE 'signed_up';

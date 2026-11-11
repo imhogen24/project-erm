@@ -1,6 +1,7 @@
 import { randomUUID } from "node:crypto"
 
 import { expect, type Page } from "@playwright/test"
+import { createEmailVerificationToken } from "better-auth/api"
 import { hashPassword } from "better-auth/crypto"
 import { eq } from "drizzle-orm"
 
@@ -59,7 +60,7 @@ export async function makePerson(name = `Person ${tag()}`) {
   const id = await withDatabase(async (database) => {
     const [person] = await database
       .insert(people)
-      .values({ name, email })
+      .values({ name, email, emailVerified: true })
       .returning({ id: people.id })
 
     await database.insert(accounts).values({
@@ -287,4 +288,35 @@ export async function lockEarlierTools(projectId: string) {
   ]) {
     await addRecord(projectId, toolId, "locked")
   }
+}
+
+// The account a person made at /sign-up, or nothing yet.
+export async function accountOf(email: string) {
+  return withDatabase(async (database) => {
+    const [person] = await database
+      .select({
+        accountType: people.accountType,
+        emailVerified: people.emailVerified,
+      })
+      .from(people)
+      .where(eq(people.email, email))
+
+    return person
+  })
+}
+
+// The link in the confirm-email message. It is never stored, and a test never
+// reads a real inbox, so the test signs the same token the server would.
+export async function confirmLink(email: string) {
+  const secret = process.env.BETTER_AUTH_SECRET
+
+  if (!secret) {
+    throw new Error(
+      "BETTER_AUTH_SECRET is not set. Run with `bun run test:e2e`."
+    )
+  }
+
+  const token = await createEmailVerificationToken(secret, email)
+
+  return `/api/auth/verify-email?token=${token}&callbackURL=%2F`
 }

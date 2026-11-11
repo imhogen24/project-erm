@@ -89,6 +89,7 @@ function shown(id: string, state: ToolState) {
     workbook: "D1",
     state,
     waitingOn: null,
+    note: null,
   }
 }
 

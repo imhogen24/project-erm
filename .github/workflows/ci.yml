@@ -83,6 +83,9 @@ jobs:
       BETTER_AUTH_URL: http://localhost:3000
     steps:
       - uses: actions/checkout@v4
+      # The checkout belongs to another user than the container's, and the
+      # git hooks that install runs refuse such a folder unless told it is safe.
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - run: npm install -g bun@1.4.3
       - run: bun install --frozen-lockfile
       - run: bun run db:migrate

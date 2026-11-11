@@ -21,7 +21,6 @@ function files(links: string[]) {
     label: `File ${index + 1}`,
     dateUploaded: "2026-11-03",
     fileLink,
-    status: "Pending",
   }))
 }
 
@@ -32,7 +31,7 @@ async function setUp(links = [ONE, TWO], state: "draft" | "locked" = "draft") {
   await giveRoles(om.id, project.id, ["OM"])
 
   const recordId = await addRecord(project.id, "D1.1", state, {
-    payload: { requestStatus: "Pending", attachedFiles: files(links) },
+    payload: { attachedFiles: files(links) },
   })
 
   return { project, om, recordId }

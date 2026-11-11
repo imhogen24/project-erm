@@ -76,7 +76,7 @@ type Section =
   | { kind: "rows"; fields: ToolField[]; title?: string }
   | { kind: "group"; field: ToolField }
 
-const rowWidths = "minmax(0,16rem) minmax(0,1fr)"
+const rowWidths = "minmax(0,calc(100%/var(--page-columns,3))) minmax(0,1fr)"
 
 function isGroup(field: ToolField) {
   return (

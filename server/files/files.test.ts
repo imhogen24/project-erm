@@ -40,7 +40,8 @@ const brief = "https://utfs.io/f/brief-key"
 
 let projectId: string
 
-// Holds every role, so permissions never get in the way of building records.
+// Holds every role, the Client too since only the client writes D1.1, so
+// permissions never get in the way of building records.
 let actor: string
 
 async function addProject() {
@@ -91,7 +92,7 @@ beforeEach(async () => {
   await resetTestData(database)
 
   projectId = await addProject()
-  actor = await addPerson("Everyone", ["PM", "OM", "IT/Admin"])
+  actor = await addPerson("Everyone", ["Client", "PM", "OM", "IT/Admin"])
 })
 
 afterAll(async () => {
@@ -142,7 +143,7 @@ describe("opening a file on a record", () => {
     await addRecord(
       filesPayload(second),
       other,
-      await addPerson("Ola", ["OM"], other)
+      await addPerson("Ola", ["Client"], other)
     )
 
     await expect(

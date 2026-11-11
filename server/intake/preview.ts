@@ -3,21 +3,22 @@ import { eq } from "drizzle-orm"
 import type { Database } from "@/db"
 import { intakeSubmissions, type Role } from "@/db/schema"
 import type { ClientRequest } from "@/lib/client-request"
-import { rolesOn } from "@/server/permissions/permissions"
+import { roleAllows, rolesOn } from "@/server/permissions/permissions"
 
 import { requestSheetOf } from "./request-sheet"
 
 export type ClientRequestPreview = ClientRequest
 
-// Only staff on the project, and a company-wide IT/Admin, may read the saved
-// web request, wherever its answers are shown.
+// The saved web request is D1.1, so whoever may read D1.1 reads it, wherever
+// its answers are shown: the client who wrote it, and the OM, PM, CR and
+// IT/Admin (server/permissions/matrix.ts).
 export function mayReadRequest(held: Role[]) {
-  return held.some((role) => role !== "Client")
+  return roleAllows(held, "D1.1", "read")
 }
 
-// What the client filled in on the website form, from the ERM's saved copy of
-// it. A client, a person on another project and a project that does not exist
-// all get nothing. It only reads, and the answers hold client details, so
+// What the client filled in on the web form, from the ERM's saved copy of it.
+// A person who may not read D1.1, a person on another project and a project
+// that does not exist all get nothing. It only reads, and the answers hold client details, so
 // nothing here puts them in a log or an error message.
 export async function getClientRequestPreview(
   database: Database,

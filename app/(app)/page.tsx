@@ -1,4 +1,4 @@
-import { ArrowUpRightIcon } from "@phosphor-icons/react/ssr"
+import { ArrowUpRightIcon, PlusIcon } from "@phosphor-icons/react/ssr"
 import Link from "next/link"
 
 import { AppSidebar } from "@/components/app-sidebar"
@@ -10,6 +10,7 @@ import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
 import { getDatabase } from "@/server/database"
+import { isClientAccount } from "@/server/intake/client-requests"
 import { listProjectsFor } from "@/server/projects/projects"
 
 // Every box is a whole number of grid squares: the title is 2 squares tall and
@@ -19,15 +20,34 @@ const square = "grid-square relative isolate bg-background"
 export default async function Page() {
   const session = await requireSession()
 
-  const [projects, canInvite] = await Promise.all([
+  const [projects, canInvite, client] = await Promise.all([
     listProjectsFor(getDatabase(), session.user.id),
     isItAdmin(session.user.id),
+    isClientAccount(getDatabase(), session.user.id),
   ])
+
+  // A client starts their own projects from the last square of the grid.
+  const start = client ? (
+    <li className={`${square} min-w-0`}>
+      <Grain />
+      <Link
+        href="/projects/new"
+        className="group flex h-full flex-col items-center justify-center gap-3 p-6 text-muted-foreground transition-colors outline-none hover:bg-primary/5 hover:text-primary focus-visible:bg-primary/10"
+      >
+        <span className="flex size-12 items-center justify-center rounded-[var(--radius-control)] bg-[var(--surface-tile)] transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+          <PlusIcon aria-hidden className="size-6" />
+        </span>
+        <span className="text-lg text-foreground">Start new project</span>
+      </Link>
+    </li>
+  ) : null
+
+  const empty = projects.length === 0 && !client
 
   return (
     <>
       <MobileBar className="xl:hidden" canInvite={canInvite} />
-      <div className="drafting-grid min-h-svh py-[var(--cell)]">
+      <div className="drafting-grid min-h-svh py-[var(--inset)]">
         <AppSidebar name={session.user.name} canInvite={canInvite} />
         <main className="table-project table-home">
           <PageSheet
@@ -39,9 +59,9 @@ export default async function Page() {
                   : `${projects.length} projects`}
               </p>
             }
-            flush={projects.length > 0}
+            flush={!empty}
           >
-            {projects.length === 0 ? (
+            {empty ? (
               <p className="text-muted-foreground">
                 You are not on any project yet.
               </p>
@@ -75,6 +95,7 @@ export default async function Page() {
                     </Link>
                   </li>
                 ))}
+                {start}
               </ul>
             )}
           </PageSheet>

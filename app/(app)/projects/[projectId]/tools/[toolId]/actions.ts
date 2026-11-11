@@ -11,6 +11,7 @@ import {
   sendAcknowledgement,
 } from "@/server/acknowledgement/acknowledgement"
 import { getDatabase } from "@/server/database"
+import { resubmitClientRequest } from "@/server/intake/client-requests"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import {
   InvalidTransitionError,
@@ -23,7 +24,6 @@ import {
   ValidationError,
   approveRecord,
   saveDraft,
-  setReviewStatus,
   signField,
   submitRecord,
   type ToolRecord,
@@ -41,12 +41,6 @@ const saveInput = z.object({
 })
 
 const recordInput = z.object({ recordId: z.uuid() })
-
-const reviewInput = z.object({
-  recordId: z.uuid(),
-  target: z.union([z.literal("request"), z.number().int().min(0)]),
-  status: z.string().min(1),
-})
 
 const signInput = z.object({ recordId: z.uuid(), fieldKey: z.string().min(1) })
 
@@ -244,47 +238,6 @@ export async function approveRecordAction(values: {
   })
 }
 
-// The OM's switch of the request, or one file, on the D1.1 review screen.
-export async function setReviewStatusAction(values: {
-  recordId: string
-  target: "request" | number
-  status: string
-}): Promise<RecordResult> {
-  const parsed = reviewInput.safeParse(values)
-
-  if (!parsed.success) {
-    return { status: "error", message: "Check the form and try again." }
-  }
-
-  const input = parsed.data
-
-  return attempt(async (actor) =>
-    done(
-      await setReviewStatus(getDatabase(), actor, input.recordId, {
-        target: input.target,
-        status: input.status,
-      })
-    )
-  )
-}
-
-// Sends the reviewed record for approval, as it is saved.
-export async function submitReviewAction(values: {
-  recordId: string
-}): Promise<RecordResult> {
-  const parsed = recordInput.safeParse(values)
-
-  if (!parsed.success) {
-    return { status: "error", message: "Check the form and try again." }
-  }
-
-  const input = parsed.data
-
-  return attempt(async (actor) =>
-    done(await submitRecord(getDatabase(), actor, input.recordId))
-  )
-}
-
 // The PM's Send on D1.4. What stops it comes back in words for the button.
 export async function sendAcknowledgementAction(values: {
   recordId: string
@@ -313,4 +266,53 @@ export async function sendAcknowledgementAction(values: {
       throw error
     }
   })
+}
+
+const resubmitInput = z.object({
+  projectId: z.uuid(),
+  answers: z.record(z.string(), z.union([z.string(), z.array(z.string())])),
+})
+
+// The client sends their web form again after a change request on D1.1 was
+// approved. D1.1 locks at once.
+export async function resubmitClientRequestAction(values: {
+  projectId: string
+  answers: Record<string, string | string[]>
+}): Promise<
+  | { status: "done"; path: string }
+  | { status: "invalid"; errors: { field: string; message: string }[] }
+  | { status: "error"; message: string }
+> {
+  const parsed = resubmitInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Check the form and try again." }
+  }
+
+  const input = parsed.data
+
+  const result = await attempt(async (actor) => {
+    await resubmitClientRequest(
+      getDatabase(),
+      actor,
+      input.projectId,
+      input.answers
+    )
+
+    return { status: "done", recordId: input.projectId, updatedAt: "" }
+  })
+
+  if (result.status === "done") {
+    return { status: "done", path: `/projects/${input.projectId}/tools/D1.1` }
+  }
+
+  if (result.status === "invalid") {
+    return result
+  }
+
+  return {
+    status: "error",
+    message:
+      result.status === "stale" ? "Reload and try again." : result.message,
+  }
 }

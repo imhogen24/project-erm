@@ -47,12 +47,6 @@ import {
 } from "./inherited"
 import { keepReadOnly } from "./read-only"
 import {
-  approvedPayload,
-  pendingReview,
-  withReviewStatus,
-  type ReviewChange,
-} from "./review"
-import {
   signatureField,
   signaturesOf,
   unsignedFields,
@@ -761,66 +755,6 @@ export async function signField(
   })
 }
 
-// The OM's switch on the D1.1 review screen: the request, or one file, between
-// Pending and Reviewed, while the record is still a draft. It is its own write
-// because the files table is read-only to the form, and Approved can never be
-// chosen. Only the OM reviews, though a Client may also write D1.1.
-export async function setReviewStatus(
-  database: Database,
-  actor: string,
-  recordId: string,
-  change: ReviewChange
-): Promise<ToolRecord> {
-  const record = await loadRecord(database, recordId)
-
-  await assertMay(database, actor, record.projectId, record.toolId, "write")
-
-  if (
-    actor !== systemActor &&
-    !(await rolesOn(database, actor, record.projectId)).includes("OM")
-  ) {
-    throw new PermissionDeniedError(`Only the OM may review ${record.toolId}`)
-  }
-
-  return database.transaction(async (transaction) => {
-    await assertProjectActive(transaction, record.projectId)
-
-    const current = await lockRecord(transaction, recordId)
-
-    if (current.state !== "draft") {
-      throw new RecordNotEditableError(
-        `A ${current.state} record cannot be reviewed`
-      )
-    }
-
-    const payload = withReviewStatus(current.toolId, current.payload, change)
-
-    if (isDeepStrictEqual(payload, current.payload)) {
-      return current
-    }
-
-    const [updated] = await transaction
-      .update(toolRecords)
-      .set({ payload, updatedAt: nextUpdatedAt(current) })
-      .where(eq(toolRecords.id, recordId))
-      .returning(columns)
-
-    await writeAudit(
-      transaction,
-      {
-        recordId,
-        projectId: current.projectId,
-        actor,
-        action: "updated",
-        reason: "Review status changed",
-      },
-      payloadChanges(current.payload, payload)
-    )
-
-    return updated!
-  })
-}
-
 // Approves a submitted record and locks it in one transaction, since the next
 // tool opens when this one is locked. The person who submitted it may not
 // approve it, even when they also hold a role that approves: the check is on
@@ -851,62 +785,55 @@ export async function approveRecord(
       )
     }
 
-    const pending = pendingReview(current.toolId, current.payload)
-
-    if (pending.length > 0) {
-      throw new ValidationError(pending)
-    }
-
-    const reviewed = await markApproved(transaction, actor, current)
-    const approved = await move(transaction, actor, reviewed, "approved")
+    const approved = await move(transaction, actor, current, "approved")
 
     return move(transaction, actor, approved, "locked")
   })
 }
 
-// For a tool whose approval is sending something, such as D1.4's email: once
-// it has gone, the draft takes the system's values (who sent it, when) and is
-// approved and locked in one transaction, so the next tools open as with any
-// lock. Nobody submitted it, so the document control block names the
-// project's writer as the one who prepared it. A record already locked is
-// returned as it is, so a second press after a first that finished does no
-// harm. The caller checks the permission and that the send succeeded.
-export async function lockSentDraft(
-  database: Database,
+// Locks a draft at once, with no one to approve it: D1.4 once its email has
+// gone, and D1.1 the moment the client's form comes in. The draft takes the
+// system's values, if any, and moves to approved and locked in the caller's
+// transaction, so the next tools open as with any lock. Nobody submitted it,
+// so the document control block names the project's writer as the one who
+// prepared it. A record already locked is returned as it is, so a second call
+// after a first that finished does no harm.
+export async function lockDraftIn(
+  transaction: Transaction,
   actor: string,
   recordId: string,
-  systemValues: JsonObject
+  systemValues: JsonObject = {}
 ): Promise<ToolRecord> {
-  return database.transaction(async (transaction) => {
-    const current = await lockRecord(transaction, recordId)
+  const current = await lockRecord(transaction, recordId)
 
-    if (current.state === "locked") {
-      return current
-    }
+  if (current.state === "locked") {
+    return current
+  }
 
-    await assertProjectActive(transaction, current.projectId)
+  await assertProjectActive(transaction, current.projectId)
 
-    if (current.state !== "draft") {
-      throw new InvalidTransitionError(
-        `A ${current.state} record cannot be sent`
-      )
-    }
+  if (current.state !== "draft") {
+    throw new InvalidTransitionError(
+      `A ${current.state} record cannot be locked straight away`
+    )
+  }
 
-    const payload = { ...current.payload, ...systemValues }
-    const now = new Date()
+  const payload = { ...current.payload, ...systemValues }
+  const now = new Date()
 
-    const [approved] = await transaction
-      .update(toolRecords)
-      .set({
-        state: "approved",
-        payload,
-        updatedAt: nextUpdatedAt(current),
-        approvedBy: actor,
-        approvedAt: now,
-      })
-      .where(eq(toolRecords.id, current.id))
-      .returning(columns)
+  const [approved] = await transaction
+    .update(toolRecords)
+    .set({
+      state: "approved",
+      payload,
+      updatedAt: nextUpdatedAt(current),
+      approvedBy: actor,
+      approvedAt: now,
+    })
+    .where(eq(toolRecords.id, current.id))
+    .returning(columns)
 
+  if (!isDeepStrictEqual(payload, current.payload)) {
     await writeAudit(
       transaction,
       {
@@ -914,45 +841,11 @@ export async function lockSentDraft(
         projectId: current.projectId,
         actor,
         action: "updated",
-        reason: "Sent: filled in by the system",
+        reason: "Filled in by the system",
       },
       payloadChanges(current.payload, payload)
     )
-
-    await writeAudit(
-      transaction,
-      {
-        recordId: current.id,
-        projectId: current.projectId,
-        actor,
-        action: "transitioned",
-        reason: "Sent",
-      },
-      [stateChange("draft", "approved")]
-    )
-
-    return move(transaction, actor, approved!, "locked")
-  })
-}
-
-// Sets what approval sets, such as D1.1's statuses, on a record the caller has
-// locked, so the change and the lock are saved together or not at all.
-async function markApproved(
-  transaction: Transaction,
-  actor: string,
-  current: ToolRecord
-): Promise<ToolRecord> {
-  const payload = approvedPayload(current.toolId, current.payload)
-
-  if (isDeepStrictEqual(payload, current.payload)) {
-    return current
   }
-
-  const [updated] = await transaction
-    .update(toolRecords)
-    .set({ payload, updatedAt: nextUpdatedAt(current) })
-    .where(eq(toolRecords.id, current.id))
-    .returning(columns)
 
   await writeAudit(
     transaction,
@@ -960,11 +853,23 @@ async function markApproved(
       recordId: current.id,
       projectId: current.projectId,
       actor,
-      action: "updated",
-      reason: "Approved with the record",
+      action: "transitioned",
+      reason: "Locked without approval",
     },
-    payloadChanges(current.payload, payload)
+    [stateChange("draft", "approved")]
   )
 
-  return updated!
+  return move(transaction, actor, approved!, "locked")
+}
+
+// D1.4's Send, after the email has gone. The caller checks the permission.
+export async function lockSentDraft(
+  database: Database,
+  actor: string,
+  recordId: string,
+  systemValues: JsonObject
+): Promise<ToolRecord> {
+  return database.transaction((transaction) =>
+    lockDraftIn(transaction, actor, recordId, systemValues)
+  )
 }

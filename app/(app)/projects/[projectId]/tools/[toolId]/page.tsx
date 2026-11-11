@@ -5,10 +5,10 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { ClientRequestPanel } from "@/components/client-request-panel"
 import { MobileBar } from "@/components/mobile-bar"
 import { RecordForm } from "@/components/record-form"
-import { ReviewScreen } from "@/components/review-screen"
+import { ClientRequestForm } from "@/components/client-request-form"
+import { ClientRequestTables } from "@/components/client-request-tables"
 import { ToolSheet } from "@/components/tool-sheet"
 import { TriageScreen } from "@/components/triage-screen"
-import { reviewPayload } from "@/lib/review"
 import { triagePayload } from "@/lib/triage"
 import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
@@ -21,6 +21,7 @@ import {
   sendableOf,
 } from "@/server/acknowledgement/acknowledgement"
 import { getDatabase } from "@/server/database"
+import { clientAnswersOf } from "@/server/intake/client-requests"
 import { getClientRequestPreview } from "@/server/intake/preview"
 import { getRequestDetails } from "@/server/intake/request-details"
 import type { DocumentControl } from "@/server/document-control/document-control"
@@ -32,10 +33,9 @@ import { UnknownToolError } from "@/server/records/validate"
 import {
   approveRecordAction,
   saveDraftAction,
-  setReviewStatusAction,
   signFieldAction,
   submitRecordAction,
-  submitReviewAction,
+  resubmitClientRequestAction,
   sendAcknowledgementAction,
 } from "./actions"
 import { projectNav } from "../../sidebar"
@@ -48,8 +48,10 @@ const when = new Intl.DateTimeFormat("en-GB", {
   timeZone: "UTC",
 })
 
+// Short, so the document control fits one row. Every time is UTC, which is
+// also Ghana's local time, the zone the people using the ERM work in.
 function time(value: Date | null) {
-  return value ? `${when.format(value)} UTC` : "-"
+  return value ? when.format(value) : "-"
 }
 
 function duration(seconds: number | null) {
@@ -59,26 +61,23 @@ function duration(seconds: number | null) {
 
   const minutes = Math.round(seconds / 60)
 
-  return minutes < 60
-    ? ` (${minutes} min)`
-    : ` (${Math.floor(minutes / 60)} h ${minutes % 60} min)`
-}
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
 
-function person(who: DocumentControl["preparedBy"]) {
-  if (!who) {
-    return "Not assigned"
+  if (hours === 0) {
+    return ` (${minutes} min)`
   }
 
-  return who.role ? `${who.name} (${who.role})` : who.name
+  return rest === 0 ? ` (${hours} h)` : ` (${hours} h ${rest} min)`
 }
 
-const statusLine = {
-  notStarted: "Nobody has started this tool yet.",
-  draft:
-    "This record is a draft. Save it as often as you like, then submit it.",
-  submitted: "Submitted. It is waiting for approval.",
-  approved: "Approved.",
-  locked: "Locked. This record is final.",
+// A person in the document control: the name, with the role as a badge.
+function person(who: DocumentControl["preparedBy"]) {
+  if (!who) {
+    return { value: "Not assigned" }
+  }
+
+  return { value: who.name, badge: who.role ?? undefined }
 }
 
 export default async function Page({
@@ -163,9 +162,15 @@ export default async function Page({
   // was written, so each value has the type its field holds.
   const values = (view.record?.payload ?? {}) as FormValues
 
-  // D1.1 is reviewed on its own screen once it has a record. The OM switches the
-  // statuses while it is a draft, and everyone else reads them.
-  const review = toolId === "D1.1" && view.record ? view.record : null
+  // D1.1 is the client's web form. Everyone who may read it sees the answers.
+  // The client changes it only after a change request was approved, when it
+  // is a draft again.
+  const webForm = toolId === "D1.1"
+
+  const editingWebForm =
+    webForm && view.state === "draft" && view.can.write
+      ? await clientAnswersOf(getDatabase(), session.user.id, projectId)
+      : null
 
   // D1.2 has its own screen: the files, the three checks and the decision. It
   // opens before D1.2 has a record, for the person who may write it.
@@ -218,18 +223,42 @@ export default async function Page({
       : []
   )
 
-  const body = review ? (
-    <ReviewScreen
-      key={review.updatedAt.toISOString()}
-      recordId={review.id}
-      requestStatus={reviewPayload.parse(review.payload).requestStatus}
-      files={reviewPayload.parse(review.payload).attachedFiles}
-      canReview={view.can.review}
-      canApprove={view.can.approve}
-      setStatus={setReviewStatusAction}
-      submit={submitReviewAction}
-      approve={approveRecordAction}
+  const body = editingWebForm ? (
+    <ClientRequestForm
+      track={editingWebForm.track}
+      saved={editingWebForm.answers}
+      submitLabel="Send the changes"
+      submit={async (answers) => {
+        "use server"
+
+        return resubmitClientRequestAction({ projectId, answers })
+      }}
     />
+  ) : webForm ? (
+    <div className="flex flex-col gap-8">
+      {clientRequest ? (
+        <ClientRequestTables request={clientRequest} />
+      ) : (
+        <p className="text-muted-foreground">This project has no web form.</p>
+      )}
+      {view.record && (
+        <RecordForm
+          tool={tool}
+          projectId={projectId}
+          cycle={view.cycle}
+          values={values}
+          recordId={view.record.id}
+          updatedAt={view.record.updatedAt.toISOString()}
+          canWrite={false}
+          canApprove={false}
+          signable={[]}
+          save={saveDraftAction}
+          submit={submitRecordAction}
+          sign={signFieldAction}
+          approve={approveRecordAction}
+        />
+      )}
+    </div>
   ) : triage ? (
     <TriageScreen
       projectId={projectId}
@@ -273,7 +302,7 @@ export default async function Page({
   return (
     <>
       <MobileBar className="xl:hidden" canInvite={canInvite} />
-      <div className="drafting-grid min-h-svh py-[var(--cell)]">
+      <div className="drafting-grid min-h-svh py-[var(--inset)]">
         <AppSidebar
           name={session.user.name}
           canInvite={canInvite}
@@ -281,47 +310,64 @@ export default async function Page({
         />
         <main className="table-wide table-home">
           <ToolSheet
-            backHref={`/projects/${projectId}`}
-            backLabel="Project overview"
-            title={`${view.toolId} ${view.toolName}`}
-            state={view.state}
-            statusLine={
-              // A tool that saves by itself needs no line explaining how.
-              view.state === "notStarted" || tool.autosave
-                ? undefined
-                : statusLine[view.state]
-            }
-            action={
-              clientRequest ? (
-                <ClientRequestPanel request={clientRequest} />
-              ) : undefined
-            }
-            facts={[
-              { label: "Project", value: view.project.name },
-              {
-                label: "Request ID",
-                value:
-                  view.control?.requestId ?? clientRequest?.requestId ?? "-",
-              },
-              {
-                label: "Prepared by",
-                value: view.control ? person(view.control.preparedBy) : "-",
-              },
-              {
-                label: "Checked by",
-                value: view.control ? person(view.control.checkedBy) : "-",
-              },
-              {
-                label: "Started",
-                value: view.control ? time(view.control.startedAt) : "-",
-              },
-              {
-                label: "Completed",
-                value: view.control
-                  ? `${time(view.control.completedAt)}${duration(view.control.durationSeconds)}`
-                  : "-",
-              },
-            ]}
+            columns={Math.max(
+              2,
+              ...tool.fields.map((field) =>
+                field.type === "table" ? field.columns.length : 2
+              )
+            )}
+            topBar={{
+              title: `${view.toolId} ${view.toolName}`,
+              iteration: view.control?.iteration,
+              state: view.state,
+              action:
+                clientRequest && !webForm ? (
+                  <ClientRequestPanel request={clientRequest} />
+                ) : undefined,
+              projectHref: `/projects/${projectId}`,
+              projectName: view.project.name,
+              tier: overview?.serviceTrack.replace("_", " "),
+              requestId:
+                view.control?.requestId ??
+                clientRequest?.requestId ??
+                undefined,
+              control: view.control
+                ? [
+                    {
+                      label: "Prepared by",
+                      ...person(view.control.preparedBy),
+                    },
+                    { label: "Checked by", ...person(view.control.checkedBy) },
+                    {
+                      label: "Date checked",
+                      value: time(view.control.checkedAt),
+                    },
+                    {
+                      label: "Date approved",
+                      value: time(view.control.approvedAt),
+                    },
+                    {
+                      label: "Started",
+                      value: time(view.control.startedAt),
+                    },
+                    {
+                      label: "Completed",
+                      value: time(view.control.completedAt),
+                      badge:
+                        duration(view.control.durationSeconds)
+                          .trim()
+                          .slice(1, -1) || undefined,
+                    },
+                  ]
+                : [
+                    "Prepared by",
+                    "Checked by",
+                    "Date checked",
+                    "Date approved",
+                    "Started",
+                    "Completed",
+                  ].map((label) => ({ label, value: "-" })),
+            }}
           >
             {body}
           </ToolSheet>

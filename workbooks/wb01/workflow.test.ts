@@ -5,6 +5,7 @@ import { createTestDatabase, resetTestData } from "@/db/testing"
 import {
   ToolNotAvailableError,
   createRecord,
+  lockSentDraft,
   signField,
   transitionRecord,
   updateRecord,
@@ -48,7 +49,7 @@ const spam = triage("Reject as Spam", "Fail")
 
 // The answers that keep the route going.
 const answers = new Map<string, JsonObject>([
-  ["D1.1", { requestStatus: "Reviewed" }],
+  ["D1.1", { attachedFiles: [] }],
   ["D1.2", triage("Proceed to D1.3", "Pass")],
   [
     "T3.D1.3a",
@@ -140,6 +141,12 @@ async function recordIn(
     toolId,
     payload,
   })
+
+  // D1.1 is the client's web form: it has no approver and locks the moment
+  // it is sent.
+  if (toolId === "D1.1" && state !== "draft") {
+    return lockSentDraft(database, actor, record.id, {})
+  }
 
   const order: RecordState[] = ["draft", "submitted", "approved", "locked"]
 

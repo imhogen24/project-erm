@@ -16,7 +16,12 @@ import {
   notifyChangeDecided,
   notifyChangeWaiting,
 } from "@/server/notifications/raise"
-import { assertCan, assertHoldsRole } from "@/server/permissions/permissions"
+import {
+  PermissionDeniedError,
+  assertHoldsRole,
+  mayRequestChange,
+  rolesOn,
+} from "@/server/permissions/permissions"
 import {
   getRecord,
   lockRecord,
@@ -99,7 +104,16 @@ export async function requestChange(
 ): Promise<ChangeRequest> {
   const record = await getRecord(database, actor, recordId)
 
-  await assertCan(database, actor, record.projectId, record.toolId, "write")
+  if (
+    !mayRequestChange(
+      await rolesOn(database, actor, record.projectId),
+      record.toolId
+    )
+  ) {
+    throw new PermissionDeniedError(
+      `This person may not ask for a change to ${record.toolId}`
+    )
+  }
 
   const why = requireReason(reason, "A change request")
 

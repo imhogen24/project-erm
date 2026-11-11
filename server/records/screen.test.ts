@@ -158,7 +158,7 @@ describe("a tool with no record yet", () => {
       record: null,
       waiting: null,
       control: null,
-      can: { write: true, approve: false, sign: [], review: false },
+      can: { write: true, approve: false, sign: [] },
     })
     expect(view.project).toMatchObject({ id: projectId, status: "active" })
   })
@@ -168,7 +168,6 @@ describe("a tool with no record yet", () => {
       write: false,
       approve: false,
       sign: [],
-      review: false,
     })
   })
 
@@ -198,7 +197,6 @@ describe("a draft", () => {
       write: true,
       approve: false,
       sign: ["leadSignature"],
-      review: false,
     })
   })
 
@@ -250,7 +248,6 @@ describe("a submitted record", () => {
       write: false,
       approve: true,
       sign: [],
-      review: false,
     })
   })
 
@@ -286,7 +283,6 @@ describe("a locked record", () => {
       write: false,
       approve: false,
       sign: [],
-      review: false,
     })
     expect(view.control?.completedAt).toBeInstanceOf(Date)
   })
@@ -318,7 +314,6 @@ describe("a project that is not active", () => {
       write: false,
       approve: false,
       sign: [],
-      review: false,
     })
   })
 

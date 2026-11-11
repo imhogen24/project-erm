@@ -53,8 +53,10 @@ function sumOf(rows: RawRow[], key: string) {
   }, 0)
 }
 
+// Wide, the first column is the sheet-wide --first-column and the others
+// share the rest, so every table's first column lines up.
 const rowGrid =
-  "grid-cols-2 gap-3 @xl:grid-cols-[repeat(var(--cols),minmax(0,1fr))] @xl:gap-0"
+  "grid-cols-2 gap-3 @xl:grid-cols-[minmax(0,calc(100%/var(--page-columns,3)))_repeat(var(--rest),minmax(0,1fr))] @xl:gap-0"
 
 // A table is one set of inputs. Wide, it is a grid with shared borders. Narrow,
 // each row becomes a card, so nothing scrolls sideways.
@@ -115,12 +117,15 @@ export function TableEditor({
       <div
         role="table"
         aria-label={field.label}
-        style={vars({ "--cols": columns.length })}
+        style={vars({
+          "--cols": columns.length,
+          "--rest": Math.max(columns.length - 1, 1),
+        })}
         className="flex flex-col"
       >
         <div
           role="row"
-          className={`hidden border-b border-foreground/20 text-xs text-muted-foreground @xl:grid ${rowGrid}`}
+          className={`column-header-row hidden border-b border-foreground/20 @xl:grid ${rowGrid}`}
         >
           {columns.map((column) => (
             <div
@@ -138,7 +143,9 @@ export function TableEditor({
               role="cell"
               className="px-4 py-4 text-sm text-muted-foreground"
             >
-              Nothing here yet. Press Add row to start the list.
+              {shownOnly
+                ? "None."
+                : "Nothing here yet. Press Add row to start the list."}
             </div>
           </div>
         )}

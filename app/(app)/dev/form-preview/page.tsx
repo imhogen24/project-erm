@@ -129,7 +129,7 @@ export default async function Page({
   const { errors } = await searchParams
 
   return (
-    <div className="drafting-grid min-h-svh py-[var(--cell)]">
+    <div className="drafting-grid min-h-svh py-[var(--inset)]">
       <main className="table-home">
         <div
           className={`${square} flex min-h-[calc(var(--cell)*2)] flex-col justify-end gap-2 px-6 py-6`}

@@ -6,9 +6,10 @@ export type Action = "read" | "write" | "approve"
 
 // For each tool, the access each role has. A role that is missing has none.
 export const permissionMatrix = {
-  // The OM prepares D1.1 to D1.7 and the PM approves them, since reviewing is
-  // not approving.
-  "D1.1": { Client: "RW", OM: "RW", PM: "RA", LO: "RO", CR: "RO" },
+  // D1.1 is the client's own web form: only the client writes it, and it locks
+  // as soon as it is submitted, so it has no approver. The OM prepares D1.2 to
+  // D1.7 and the PM approves them, since reviewing is not approving.
+  "D1.1": { Client: "RW", OM: "RO", PM: "RO", CR: "RO", "IT/Admin": "RO" },
   "D1.2": { OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" },
   "D1.3": { OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" },
   "D1.4": { Client: "RO", OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" },
@@ -246,3 +247,9 @@ export function accessRow(
 ): Row | undefined {
   return Object.hasOwn(table, toolId) ? table[toolId] : undefined
 }
+
+// Roles that may ask for a change to a locked record although they only read
+// it. The OM may ask for a change to the client's D1.1; the client makes it.
+export const extraChangeRequesters = new Map<string, readonly Role[]>([
+  ["D1.1", ["OM"]],
+])

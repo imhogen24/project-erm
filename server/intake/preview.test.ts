@@ -257,14 +257,14 @@ describe("getClientRequestPreview", () => {
     expect(JSON.stringify(preview)).not.toContain("secret-key")
   })
 
-  it("gives it to every staff role on the project and to a company-wide IT/Admin", async () => {
+  it("gives it to every role that may read D1.1, and to a company-wide IT/Admin", async () => {
     await addTier1({ requestId: "T1-6" })
     await pull()
 
     const projectId = await projectOf("T1-6")
     const admin = await addItAdmin("Admin")
 
-    for (const role of ["PM", "OM", "LE", "CR"]) {
+    for (const role of ["Client", "PM", "OM", "CR"]) {
       const person = await addToProject(projectId, role)
 
       expect(
@@ -297,16 +297,19 @@ describe("getClientRequestPreview", () => {
     ).toBeNull()
   })
 
-  it("gives nothing to a client", async () => {
+  it("gives nothing to a role that may not read D1.1", async () => {
     await addTier1({ requestId: "T1-9" })
     await pull()
 
     const projectId = await projectOf("T1-9")
-    const client = await addToProject(projectId, "Client")
 
-    expect(
-      await getClientRequestPreview(database, client, projectId)
-    ).toBeNull()
+    for (const role of ["LE", "CA"]) {
+      const person = await addToProject(projectId, role)
+
+      expect(
+        await getClientRequestPreview(database, person, projectId)
+      ).toBeNull()
+    }
   })
 
   it("gives nothing for a project with no saved copy", async () => {

@@ -15,7 +15,9 @@ const NOT_FOUND = "This page could not be found."
 
 const STALE = "Someone else saved this record. Reload to see their changes."
 
-// On D1.1 (Client Email / Web Form) the OM writes and the PM approves. On D1.8
+// D1.1 (Client Email / Web Form) is the client's own form, which the OM and PM
+// read. On D1.3 (Received Request Record) the OM writes and the PM approves.
+// On D1.8
 // (Needs Assessment Notes) the LE writes and signs, the PM approves and the OM
 // only reads.
 async function setUp() {
@@ -41,8 +43,7 @@ async function open(
   await page.goto(`/projects/${projectId}/tools/${toolId}`)
 }
 
-// D1.1 has the review screen as soon as it has a record, so the plain form is
-// tried on tools that keep it. D1.8 has no required field. D1.10 has one, and
+// D1.8 has no required field. D1.10 has one, and
 // opens once D1.9 is locked.
 async function lockThroughD19(projectId: string) {
   await lockEarlierTools(projectId)
@@ -59,11 +60,13 @@ function capability(page: Page) {
 }
 
 function control(page: Page) {
-  return page.getByRole("region", { name: "Document control" })
+  return page.locator('header[aria-label="Document control"]')
 }
 
-function requestStatus(page: Page) {
-  return page.getByRole("combobox", { name: "Request status" })
+// D1.3 opens once D1.1 and D1.2 are locked.
+async function openD13(projectId: string) {
+  await addRecord(projectId, "D1.1", "locked")
+  await addRecord(projectId, "D1.2", "locked")
 }
 
 test("a tool row on the overview opens its page, with its name and state", async ({
@@ -117,18 +120,6 @@ test("Save draft keeps the values after a reload", async ({ page }) => {
 
   await expect(notes(page)).toHaveValue("Lea")
   await expect(page.getByText("Draft", { exact: true })).toBeVisible()
-})
-
-test("Approved is shown in the request status but cannot be chosen", async ({
-  page,
-}) => {
-  const { project, om } = await setUp()
-
-  await open(page, om.email, project.id)
-  await requestStatus(page).click()
-
-  await expect(page.getByRole("option", { name: "Approved" })).toBeDisabled()
-  await expect(page.getByRole("option", { name: "Reviewed" })).toBeEnabled()
 })
 
 test("submitting with a required field empty shows the error and stays a draft", async ({
@@ -211,19 +202,17 @@ test("the PM approves a submitted record, and it locks and opens the next tool",
 }) => {
   const { project, om, pm } = await setUp()
 
-  await addRecord(project.id, "D1.1", "submitted", {
-    payload: { requestStatus: "Reviewed" },
-    submittedBy: om.id,
-  })
-  await open(page, pm.email, project.id)
+  await openD13(project.id)
+  await addRecord(project.id, "D1.3", "submitted", { submittedBy: om.id })
+  await open(page, pm.email, project.id, "D1.3")
   await page.getByRole("button", { name: "Approve" }).click()
 
   await expect(page.getByText("Locked", { exact: true })).toBeVisible()
   await expect(page.getByRole("button", { name: "Approve" })).toHaveCount(0)
 
-  await page.goto(`/projects/${project.id}/tools/D1.2`)
+  await page.goto(`/projects/${project.id}/tools/D1.4`)
 
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("D1.2")
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("D1.4")
   await expect(page.getByText(/This tool opens after/)).toHaveCount(0)
 })
 
@@ -234,11 +223,9 @@ test("the person who submitted a record has no Approve button", async ({
   const both = await makePerson()
 
   await giveRoles(both.id, project.id, ["OM", "PM"])
-  await addRecord(project.id, "D1.1", "submitted", {
-    payload: { requestStatus: "Reviewed" },
-    submittedBy: both.id,
-  })
-  await open(page, both.email, project.id)
+  await openD13(project.id)
+  await addRecord(project.id, "D1.3", "submitted", { submittedBy: both.id })
+  await open(page, both.email, project.id, "D1.3")
 
   await expect(page.getByText("Submitted", { exact: true })).toBeVisible()
   await expect(page.getByRole("button", { name: "Approve" })).toHaveCount(0)
@@ -296,19 +283,26 @@ test("a tool that is not open yet cannot be opened, and its tile says what it wa
   await expect(tile.getByRole("link")).toHaveCount(0)
 })
 
-test("the document control block shows the request ID, the people and the start", async ({
+test("the document control shows the people, with their roles, and the start", async ({
   page,
 }) => {
   const { project, om, pm } = await setUp()
 
-  await addRecord(project.id, "D1.1", "draft", {
-    payload: { requestStatus: "Pending" },
-  })
-  await open(page, om.email, project.id)
+  await openD13(project.id)
+  await addRecord(project.id, "D1.3", "draft")
+  await open(page, om.email, project.id, "D1.3")
 
-  await expect(control(page)).toContainText(project.requestId)
-  await expect(control(page)).toContainText(`${om.name} (OM)`)
-  await expect(control(page)).toContainText(`${pm.name} (PM)`)
+  // On a wide screen the sidebar names the project and its request ID.
+  await expect(page.getByText(project.requestId).first()).toBeVisible()
+  // The facts are drawn twice: in one row, and folded away for phones.
+  await expect(control(page)).toContainText(om.name)
+  await expect(control(page)).toContainText(pm.name)
+  await expect(
+    control(page).getByText("OM", { exact: true }).first()
+  ).toBeVisible()
+  await expect(
+    control(page).getByText("PM", { exact: true }).first()
+  ).toBeVisible()
   await expect(control(page)).toContainText("Started")
   await expect(control(page)).toContainText("Completed")
 })
@@ -316,17 +310,11 @@ test("the document control block shows the request ID, the people and the start"
 test("a locked record is read only, with no buttons", async ({ page }) => {
   const { project, om } = await setUp()
 
-  await addRecord(project.id, "D1.1", "locked", {
-    payload: { requestStatus: "Reviewed" },
-  })
-  await open(page, om.email, project.id)
+  await openD13(project.id)
+  await addRecord(project.id, "D1.3", "locked")
+  await open(page, om.email, project.id, "D1.3")
 
-  await expect(page.getByText("Locked. This record is final.")).toBeVisible()
-  await expect(page.getByRole("radio", { name: "Reviewed" })).toBeDisabled()
-  await expect(page.getByRole("radio", { name: "Reviewed" })).toHaveAttribute(
-    "aria-checked",
-    "true"
-  )
+  await expect(page.getByText("Locked", { exact: true })).toBeVisible()
 
   for (const name of ["Save draft", "Submit", "Approve"]) {
     await expect(page.getByRole("button", { name })).toHaveCount(0)

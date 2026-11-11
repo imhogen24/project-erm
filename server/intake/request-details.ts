@@ -8,7 +8,7 @@ import {
   type RequestDetails,
   type RequestMetadata,
 } from "@/lib/request-details"
-import { reviewPayload } from "@/lib/review"
+import { clientFilesPayload } from "@/lib/client-files"
 import { roleAllows, rolesOn } from "@/server/permissions/permissions"
 
 // The two columns of the website row that D1.2 shows.
@@ -50,12 +50,18 @@ export async function getRequestDetails(
     return null
   }
 
+  // The sender and the files come from the client's request, D1.1, so a
+  // person who may read D1.2 but not D1.1, such as the LO, gets neither.
+  if (!roleAllows(held, "D1.1", "read")) {
+    return { metadata: null, files: [], filesRecordId: null }
+  }
+
   const [copy] = await database
     .select({ submission: intakeSubmissions.submission })
     .from(intakeSubmissions)
     .where(eq(intakeSubmissions.projectId, projectId))
 
-  const [review] = await database
+  const [d11] = await database
     .select({ id: toolRecords.id, payload: toolRecords.payload })
     .from(toolRecords)
     .where(
@@ -70,7 +76,7 @@ export async function getRequestDetails(
 
   return {
     metadata: copy ? metadataOf(copy.submission) : null,
-    files: review ? reviewPayload.parse(review.payload).attachedFiles : [],
-    filesRecordId: review?.id ?? null,
+    files: d11 ? clientFilesPayload.parse(d11.payload).attachedFiles : [],
+    filesRecordId: d11?.id ?? null,
   }
 }

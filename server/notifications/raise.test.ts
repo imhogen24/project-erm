@@ -12,6 +12,7 @@ import {
   approveRecord,
   createRecord,
   getRecord,
+  lockSentDraft,
   submitRecord,
 } from "@/server/records/records"
 import { assignStaff } from "@/server/staff/staff"
@@ -26,24 +27,25 @@ registerTestD11()
 
 registerTestTools({ wb01: ["D1.2", "D1.3", "D1.4", "D1.9"] })
 
-// One tool after another, as in the real route. D1.9, which the HE approves
-// rather than the PM, is open from the start.
+// One tool after another. D1.3 stands for any tool the OM writes and the PM
+// approves, and opens first; D1.1, the client's own form, comes after D1.2.
+// D1.9, which the HE approves rather than the PM, is open from the start.
 const route = [
   { tool: "D1.9" },
-  { tool: "D1.1" },
-  { tool: "D1.2", after: { all: ["D1.1"] } },
-  { tool: "D1.3", after: { all: ["D1.2"] } },
-  { tool: "D1.4", after: { all: ["D1.3"] } },
+  { tool: "D1.3" },
+  { tool: "D1.2", after: { all: ["D1.3"] } },
+  { tool: "D1.1", after: { all: ["D1.2"] } },
+  { tool: "D1.4", after: { all: ["D1.1"] } },
 ]
 
-// Locking D1.2 opens D1.1, which the Client and the OM write, and D1.3. D1.4
-// is open from the start, so locking D1.2 does not open it.
+// Locking D1.2 opens D1.3, which the OM writes, and D1.1, which only the
+// client writes. D1.4 is open from the start, so locking D1.2 does not open it.
 const fork = [
   { tool: "D1.2" },
   { tool: "D1.4" },
   { tool: "D1.9" },
-  { tool: "D1.1", after: { all: ["D1.2"] } },
   { tool: "D1.3", after: { all: ["D1.2"] } },
+  { tool: "D1.1", after: { all: ["D1.2"] } },
 ]
 
 let projectId: string
@@ -108,22 +110,18 @@ async function emails() {
   return rows
 }
 
-async function draftOf(writer: Person, toolId = "D1.1") {
+async function draftOf(writer: Person, toolId = "D1.3") {
   const record = await createRecord(database, writer.id, {
     projectId,
     toolId,
-    // A D1.1 is Reviewed, so the PM may approve it.
-    payload:
-      toolId === "D1.1"
-        ? { requestStatus: "Reviewed", attachedFiles: [] }
-        : { note: "Ready" },
+    payload: toolId === "D1.1" ? { attachedFiles: [] } : { note: "Ready" },
   })
 
   return record.id
 }
 
 // Written and submitted by the writer, then approved and locked by the PM.
-async function approvedBy(pm: Person, writer: Person, toolId = "D1.1") {
+async function approvedBy(pm: Person, writer: Person, toolId = "D1.3") {
   const recordId = await draftOf(writer, toolId)
 
   await submitRecord(database, writer.id, recordId, createFakeTransport())
@@ -269,16 +267,16 @@ describe("submitting a record", () => {
     expect(others).toEqual([])
     expect(notification).toMatchObject({
       kind: "approval_needed",
-      title: "D1.1 is waiting for your approval",
+      title: "D1.3 is waiting for your approval",
       projectId,
       recordId,
-      path: `/projects/${projectId}/tools/D1.1`,
+      path: `/projects/${projectId}/tools/D1.3`,
     })
 
     expect(transport.sent).toHaveLength(1)
     expect(transport.sent[0]).toMatchObject({ to: pm.email })
     expect(transport.sent[0]!.text).toContain(
-      `/projects/${projectId}/tools/D1.1`
+      `/projects/${projectId}/tools/D1.3`
     )
 
     expect(await emails()).toEqual([
@@ -377,8 +375,9 @@ describe("approving a record", () => {
 
     await approvedBy(pm, om, "D1.2")
 
+    // D1.1 opens too, but only the client writes it, and clients are not
+    // notified.
     expect(await opened(om.id)).toEqual([
-      ["D1.1 is open", `/projects/${projectId}/tools/D1.1`],
       ["D1.3 is open", `/projects/${projectId}/tools/D1.3`],
     ])
   })
@@ -422,11 +421,11 @@ describe("change requests", () => {
 
     expect(await latest(pm.id, "change_waiting")).toEqual([
       expect.objectContaining({
-        title: "A change to D1.1 is waiting for your decision",
+        title: "A change to D1.3 is waiting for your decision",
         text: reason,
         projectId,
         recordId,
-        path: `/projects/${projectId}/tools/D1.1`,
+        path: `/projects/${projectId}/tools/D1.3`,
       }),
     ])
   })
@@ -438,10 +437,10 @@ describe("change requests", () => {
 
     expect(await latest(om.id, "change_decided")).toEqual([
       expect.objectContaining({
-        title: "Your change to D1.1 was approved",
+        title: "Your change to D1.3 was approved",
         text: null,
         recordId,
-        path: `/projects/${projectId}/tools/D1.1`,
+        path: `/projects/${projectId}/tools/D1.3`,
       }),
     ])
     expect(await latest(pm.id, "change_decided")).toEqual([])
@@ -457,7 +456,7 @@ describe("change requests", () => {
 
     expect(await latest(om.id, "change_decided")).toEqual([
       expect.objectContaining({
-        title: "Your change to D1.1 was rejected",
+        title: "Your change to D1.3 was rejected",
         text: "The date matches the website",
       }),
     ])
@@ -465,7 +464,15 @@ describe("change requests", () => {
 
   it("never tells the client, who may ask for a change to a tool they write", async () => {
     const client = await addPerson(["Client"])
-    const request = await requestChange(database, client.id, recordId, reason)
+
+    // D1.2 locked opens D1.1, the client's form, which locks once sent.
+    await approvedBy(pm, om, "D1.2")
+
+    const form = await draftOf(client, "D1.1")
+
+    await lockSentDraft(database, client.id, form, {})
+
+    const request = await requestChange(database, client.id, form, reason)
 
     await decideChange(database, pm.id, request.id, { outcome: "approved" })
 

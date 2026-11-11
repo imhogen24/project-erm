@@ -164,6 +164,80 @@ export async function sendEmail<K extends EmailKind>(
   }
 }
 
+// What became of a sent email, as the delivery check reads it. Sent means no
+// final answer yet.
+export type Delivery = "sent" | "delivered" | "bounced" | "complained"
+
+export type DeliveryLookup = {
+  name: string
+  status: (messageId: string) => Promise<Delivery>
+}
+
+// Resend gives the last thing that happened to an email. Opened and clicked
+// come after delivery. An email that could not reach the address counts as a
+// bounce, so the PM can correct it.
+export function deliveryOf(lastEvent: string): Delivery {
+  switch (lastEvent) {
+    case "delivered":
+    case "opened":
+    case "clicked":
+      return "delivered"
+    case "bounced":
+    case "suppressed":
+    case "failed":
+    case "canceled":
+      return "bounced"
+    case "complained":
+      return "complained"
+    default:
+      return "sent"
+  }
+}
+
+function createResendLookup(apiKey: string): DeliveryLookup {
+  const resend = new Resend(apiKey)
+
+  return {
+    name: "resend",
+    status: async (messageId) => {
+      const { data, error } = await resend.emails.get(messageId)
+
+      if (error || !data) {
+        throw new Error(error?.message ?? "Resend returned no email")
+      }
+
+      return deliveryOf(data.last_event)
+    },
+  }
+}
+
+// Local development sends nothing, so every email counts as delivered and the
+// tools after it open.
+const localLookup: DeliveryLookup = {
+  name: "fake",
+  status: async () => "delivered",
+}
+
+// Production with no key has no answer, so its emails stay at sent.
+const missingKeyLookup: DeliveryLookup = {
+  name: "missing-key",
+  status: async () => {
+    throw new Error("RESEND_API_KEY is not set")
+  },
+}
+
+export function getLookup(): DeliveryLookup {
+  const apiKey = process.env.RESEND_API_KEY
+
+  if (apiKey) {
+    return createResendLookup(apiKey)
+  }
+
+  return process.env.VERCEL_ENV === "production"
+    ? missingKeyLookup
+    : localLookup
+}
+
 // Moves a failed row back to queued, so only one retry sends it.
 async function claimFailed(database: Database, key: string) {
   const [row] = await database

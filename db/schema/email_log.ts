@@ -35,6 +35,9 @@ export const emailLog = pgTable("email_log", {
   status: emailStatusEnum().notNull().default("queued"),
   error: text(),
   key: text().notNull().unique(),
+  // Set when the delivery check gave up on an email still at sent, after 72
+  // hours with no answer. It is not checked again.
+  unconfirmedAt: timestamp("unconfirmed_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

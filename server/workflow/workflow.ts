@@ -328,6 +328,28 @@ class Route {
     return { cycle: at, missing }
   }
 
+  // What the tool's condition says while it holds the tool closed: its tool is
+  // locked, but without one of the values. Null otherwise.
+  noteFor(toolId: string, cycle: number): string | null {
+    const tool = this.catalog.get(toolId)!
+    const map = this.maps.find((entry) => entry.workbook === tool.workbook)
+    const rule = map?.tools.find((entry) => entry.tool === toolId)
+    const condition = rule?.when
+
+    if (!condition?.note) {
+      return null
+    }
+
+    const record = this.locked(
+      condition.tool,
+      this.cycleFor(rule, condition.tool, cycle)
+    )
+
+    return record && !isOneOf(condition.oneOf, record.payload[condition.field])
+      ? condition.note
+      : null
+  }
+
   // The earlier tools that still have to be locked before this one can start,
   // for a screen that says what a tool is waiting for. An `any` requirement
   // that one locked tool already meets waits on nothing.
@@ -406,11 +428,13 @@ async function routeOf(
 }
 
 // Whether a tool with no record yet can be started, for a screen that says why
-// not. `waitingOn` names the earlier tools still to be locked.
+// not. `waitingOn` names the earlier tools still to be locked, and `note` is
+// what an unmet condition says, such as a delivery D1.5 waits for.
 export type ToolStatus = {
   cycle: number
   missing: string[]
   waitingOn: string[]
+  note: string | null
 }
 
 export async function toolStatus(
@@ -426,6 +450,7 @@ export async function toolStatus(
       cycle,
       missing,
       waitingOn: missing.length === 0 ? [] : route.waitingOn(toolId, cycle),
+      note: missing.length === 0 ? null : route.noteFor(toolId, cycle),
     }
   })
 }
@@ -458,6 +483,33 @@ export async function toolGates(
         ]
       })
     )
+  })
+}
+
+// What each closed tool's condition says, for the tools that have one to say.
+export async function toolNotes(
+  database: Database,
+  projectId: string,
+  toolIds: readonly string[]
+): Promise<Map<string, string>> {
+  return database.transaction(async (transaction) => {
+    const route = await routeOf(transaction, projectId)
+    const notes = new Map<string, string>()
+
+    for (const toolId of toolIds) {
+      if (!tools.getTool(toolId)) {
+        continue
+      }
+
+      const { cycle, missing } = route.verdict(toolId)
+      const note = missing.length === 0 ? null : route.noteFor(toolId, cycle)
+
+      if (note) {
+        notes.set(toolId, note)
+      }
+    }
+
+    return notes
   })
 }
 

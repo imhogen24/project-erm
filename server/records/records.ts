@@ -864,6 +864,77 @@ export async function approveRecord(
   })
 }
 
+// For a tool whose approval is sending something, such as D1.4's email: once
+// it has gone, the draft takes the system's values (who sent it, when) and is
+// approved and locked in one transaction, so the next tools open as with any
+// lock. Nobody submitted it, so the document control block names the
+// project's writer as the one who prepared it. A record already locked is
+// returned as it is, so a second press after a first that finished does no
+// harm. The caller checks the permission and that the send succeeded.
+export async function lockSentDraft(
+  database: Database,
+  actor: string,
+  recordId: string,
+  systemValues: JsonObject
+): Promise<ToolRecord> {
+  return database.transaction(async (transaction) => {
+    const current = await lockRecord(transaction, recordId)
+
+    if (current.state === "locked") {
+      return current
+    }
+
+    await assertProjectActive(transaction, current.projectId)
+
+    if (current.state !== "draft") {
+      throw new InvalidTransitionError(
+        `A ${current.state} record cannot be sent`
+      )
+    }
+
+    const payload = { ...current.payload, ...systemValues }
+    const now = new Date()
+
+    const [approved] = await transaction
+      .update(toolRecords)
+      .set({
+        state: "approved",
+        payload,
+        updatedAt: nextUpdatedAt(current),
+        approvedBy: actor,
+        approvedAt: now,
+      })
+      .where(eq(toolRecords.id, current.id))
+      .returning(columns)
+
+    await writeAudit(
+      transaction,
+      {
+        recordId: current.id,
+        projectId: current.projectId,
+        actor,
+        action: "updated",
+        reason: "Sent: filled in by the system",
+      },
+      payloadChanges(current.payload, payload)
+    )
+
+    await writeAudit(
+      transaction,
+      {
+        recordId: current.id,
+        projectId: current.projectId,
+        actor,
+        action: "transitioned",
+        reason: "Sent",
+      },
+      [stateChange("draft", "approved")]
+    )
+
+    return move(transaction, actor, approved!, "locked")
+  })
+}
+
 // Sets what approval sets, such as D1.1's statuses, on a record the caller has
 // locked, so the change and the lock are saved together or not at all.
 async function markApproved(

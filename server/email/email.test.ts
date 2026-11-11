@@ -43,6 +43,10 @@ const sampleData: EmailDataByKind = {
     recordTitle: "D1.1 review",
     link: "https://erm.example.com/c",
   },
+  acknowledgement: {
+    subject: "Acknowledgement of Boiler request",
+    body: "Dear Ama,\n\nThank you.",
+  },
 }
 
 function failingTransport(): Transport {
@@ -253,22 +257,74 @@ describe("sendEmail", () => {
 })
 
 describe("templates", () => {
-  it("covers the three staff kinds", () => {
+  it("covers the three staff kinds and the client's acknowledgement", () => {
     expect([...emailKinds].sort()).toEqual([
+      "acknowledgement",
       "approval_needed",
       "assigned",
       "new_request",
     ])
   })
 
-  it("marks every wording as placeholder", () => {
-    for (const kind of emailKinds) {
+  it("marks every staff wording as placeholder", () => {
+    for (const kind of emailKinds.filter(
+      (each) => each !== "acknowledgement"
+    )) {
       const email = renderEmail(kind, sampleData[kind])
 
       expect(email.subject).toContain("PLACEHOLDER")
       expect(email.text).toContain("PLACEHOLDER")
       expect(email.html).toContain("PLACEHOLDER")
     }
+  })
+})
+
+describe("the acknowledgement", () => {
+  it("sends the OM's own subject and text, unchanged, one paragraph per blank line", () => {
+    const email = renderEmail("acknowledgement", {
+      subject: "Acknowledgement of Boiler request",
+      body: "Dear Ama,\n\nWe received it <today>.\nThanks.",
+    })
+
+    expect(email.subject).toBe("Acknowledgement of Boiler request")
+    expect(email.text).toBe("Dear Ama,\n\nWe received it <today>.\nThanks.")
+    expect(email.html).toContain("<p>Dear Ama,</p>")
+    expect(email.html).toContain(
+      "<p>We received it &lt;today&gt;.<br>Thanks.</p>"
+    )
+  })
+
+  it("copies the CC addresses, and refuses a bad one before anything is written", async () => {
+    const transport = createFakeTransport()
+
+    await sendEmail(
+      database,
+      {
+        to: "client@example.com",
+        cc: ["om@example.com", "pm@example.com"],
+        kind: "acknowledgement",
+        data: sampleData.acknowledgement,
+        key: "acknowledgement:cc",
+      },
+      transport
+    )
+
+    expect(transport.sent[0]!.cc).toEqual(["om@example.com", "pm@example.com"])
+
+    await expect(
+      sendEmail(
+        database,
+        {
+          to: "client@example.com",
+          cc: ["not an email"],
+          kind: "acknowledgement",
+          data: sampleData.acknowledgement,
+          key: "acknowledgement:bad-cc",
+        },
+        transport
+      )
+    ).rejects.toThrow()
+    expect(transport.sent).toHaveLength(1)
   })
 })
 

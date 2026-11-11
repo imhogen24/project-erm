@@ -5,6 +5,11 @@ import { z } from "zod"
 
 import { ensureToolsRegistered } from "@/lib/tools"
 import { requireSession } from "@/lib/session"
+import {
+  EmailRefusedError,
+  SendNotReadyError,
+  sendAcknowledgement,
+} from "@/server/acknowledgement/acknowledgement"
 import { getDatabase } from "@/server/database"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import {
@@ -278,4 +283,34 @@ export async function submitReviewAction(values: {
   return attempt(async (actor) =>
     done(await submitRecord(getDatabase(), actor, input.recordId))
   )
+}
+
+// The PM's Send on D1.4. What stops it comes back in words for the button.
+export async function sendAcknowledgementAction(values: {
+  recordId: string
+}): Promise<RecordResult> {
+  const parsed = recordInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Check the form and try again." }
+  }
+
+  const input = parsed.data
+
+  return attempt(async (actor) => {
+    try {
+      return done(
+        await sendAcknowledgement(getDatabase(), actor, input.recordId)
+      )
+    } catch (error) {
+      if (
+        error instanceof SendNotReadyError ||
+        error instanceof EmailRefusedError
+      ) {
+        return { status: "error", message: error.message }
+      }
+
+      throw error
+    }
+  })
 }

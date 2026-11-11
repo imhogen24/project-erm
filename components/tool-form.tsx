@@ -1,6 +1,6 @@
 "use client"
 
-import type { ReactNode } from "react"
+import { useEffect, useRef, type ReactNode } from "react"
 import { Controller, useForm } from "react-hook-form"
 import { z } from "zod"
 
@@ -62,12 +62,19 @@ type Props = {
   // Submit, such as Approve. Both sit in the sheet's action row.
   message?: string
   extraActions?: ReactNode
+  // The tool saves by itself: no Save draft or Submit, and onSave is called a
+  // moment after the person stops typing.
+  autosave?: boolean
 }
+
+// How long after the last keystroke an autosave goes.
+const AUTOSAVE_DELAY = 800
 
 // A run of plain fields shares one box of rows. A table, a checklist and the
 // blocks that are only shown each get a box of their own.
 type Section =
-  { kind: "rows"; fields: ToolField[] } | { kind: "group"; field: ToolField }
+  | { kind: "rows"; fields: ToolField[]; title?: string }
+  | { kind: "group"; field: ToolField }
 
 const rowWidths = "minmax(0,16rem) minmax(0,1fr)"
 
@@ -87,10 +94,10 @@ function sectionsOf(fields: ToolField[]): Section[] {
 
     if (isGroup(field)) {
       sections.push({ kind: "group", field })
-    } else if (last?.kind === "rows") {
+    } else if (last?.kind === "rows" && last.title === field.section) {
       last.fields.push(field)
     } else {
-      sections.push({ kind: "rows", fields: [field] })
+      sections.push({ kind: "rows", fields: [field], title: field.section })
     }
   }
 
@@ -260,6 +267,7 @@ export function ToolForm({
   recordId,
   message: said,
   extraActions,
+  autosave = false,
 }: Props) {
   const form = useForm<Record<string, RawValue>>({
     defaultValues: Object.fromEntries(
@@ -280,10 +288,65 @@ export function ToolForm({
     return toValues(tool, form.getValues())
   }
 
+  // Each change restarts the wait, so a save goes only once typing stops.
+  // Saving never needs the form complete, so a half-written draft is kept.
+  const save = useRef(onSave)
+
+  useEffect(() => {
+    save.current = onSave
+  })
+
+  useEffect(() => {
+    if (!autosave || readOnly) {
+      return
+    }
+
+    let timer: ReturnType<typeof setTimeout> | undefined
+
+    // Only a change the person makes counts, not the form filling in.
+    const unsubscribe = form.subscribe({
+      formState: { values: true },
+      callback: ({ type }) => {
+        if (type !== "change") {
+          return
+        }
+
+        clearTimeout(timer)
+        timer = setTimeout(
+          () => save.current(toValues(tool, form.getValues())),
+          AUTOSAVE_DELAY
+        )
+      },
+    })
+
+    return () => {
+      clearTimeout(timer)
+      unsubscribe()
+    }
+  }, [autosave, readOnly, form, tool])
+
   // One field's input, wired to the form, with its error under it.
-  function input(field: ToolField) {
+  function input(field: ToolField, inputClassName?: string) {
     const message = messages.get(field.key)
     const errorId = `${field.key}-error`
+
+    // What the system fills reads as text, not as a box to type in: the
+    // value, or a grey note until the system fills it.
+    if (field.systemFilled) {
+      const shown = textOf(rawCell(field, values[field.key])) ?? ""
+
+      return (
+        <output
+          id={field.key}
+          data-empty={shown === ""}
+          className="system-value"
+        >
+          {shown === ""
+            ? (field.systemNote ?? "Filled in by the system")
+            : shown}
+        </output>
+      )
+    }
 
     // A true/false field is a box with its label beside it.
     const isBox =
@@ -306,6 +369,7 @@ export function ToolForm({
                     : control.value
               }
               onChange={control.onChange}
+              inputClassName={inputClassName}
               required={isBox || !isGroup(field) ? field.required : undefined}
               invalid={Boolean(message)}
               describedBy={message ? errorId : undefined}
@@ -384,11 +448,33 @@ export function ToolForm({
     )
   }
 
-  function rows(fields: ToolField[], first: boolean) {
+  function rows(fields: ToolField[], first: boolean, title?: string) {
+    const heading = title ?? (first ? "Details" : "More details")
+    const only = fields.length === 1 ? fields[0] : undefined
+
+    // A box that holds one long text, such as an email, is the text alone,
+    // across the whole box.
+    if (only?.type === "longText" && title) {
+      return (
+        <TableBox title={heading}>
+          <fieldset
+            disabled={readOnly}
+            data-final={readOnly}
+            className="min-w-0 border-0 p-4"
+          >
+            <FieldLabel htmlFor={only.key} className="sr-only">
+              {only.label}
+            </FieldLabel>
+            {input(only, "min-h-80")}
+          </fieldset>
+        </TableBox>
+      )
+    }
+
     return (
-      <TableBox title={first ? "Details" : "More details"}>
+      <TableBox title={heading}>
         <DataTable
-          label={first ? "Details" : "More details"}
+          label={heading}
           columns={["Field", "Answer"]}
           widths={rowWidths}
         >
@@ -434,14 +520,15 @@ export function ToolForm({
           <div key={section.fields[0].key}>
             {rows(
               section.fields,
-              sections.findIndex((each) => each.kind === "rows") === index
+              sections.findIndex((each) => each.kind === "rows") === index,
+              section.title
             )}
           </div>
         )
       )}
-      {(!readOnly || extraActions || said) && (
+      {((!readOnly && !autosave) || extraActions || said) && (
         <SheetActions message={said}>
-          {!readOnly && (
+          {!readOnly && !autosave && (
             <>
               <ActionButton
                 variant="secondary"

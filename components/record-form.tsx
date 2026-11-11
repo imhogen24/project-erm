@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useEffect, useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 
 import { ActionButton } from "@/components/sheet-actions"
@@ -48,7 +48,15 @@ type Props = {
   submit: (values: Save) => Promise<Result>
   sign: (values: { recordId: string; fieldKey: string }) => Promise<Result>
   approve: (values: { recordId: string }) => Promise<Result>
+  // A tool whose approval is sending something, such as D1.4: the button, and
+  // what still stops it, said in words. Only given to whoever may send.
+  send?: {
+    missing: string[]
+    run: (values: { recordId: string }) => Promise<Result>
+  }
 }
+
+type Autosaved = "idle" | "saving" | "saved" | "failed"
 
 // Typed text that is empty is left out, since the server refuses an empty date
 // or number and an empty text is the same as none. An inherited or
@@ -86,6 +94,7 @@ export function RecordForm({
   submit,
   sign,
   approve,
+  send,
 }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -105,6 +114,92 @@ export function RecordForm({
   const [errors, setErrors] = useState<FieldError[]>([])
   const [message, setMessage] = useState<string>()
   const [stale, setStale] = useState(false)
+
+  // Autosave reads the newest record and time from refs, since saves follow
+  // each other faster than the screen renders. A change made while a save is
+  // on its way is saved right after it, so nothing typed is lost.
+  const [autosaved, setAutosaved] = useState<Autosaved>("idle")
+  const [autosaveError, setAutosaveError] = useState<string>()
+  const latest = useRef({ recordId, updatedAt })
+  const busy = useRef(false)
+  const waiting = useRef<FormValues | null>(null)
+
+  // Kept in step with the record the screen holds, such as after a reload.
+  useEffect(() => {
+    if (!busy.current) {
+      latest.current = { recordId, updatedAt }
+    }
+  }, [recordId, updatedAt])
+
+  async function autosave(held: FormValues) {
+    if (busy.current) {
+      waiting.current = held
+
+      return
+    }
+
+    busy.current = true
+    setAutosaved("saving")
+
+    // A failed save drops what was queued behind it: the next edit saves the
+    // whole form again, so nothing typed is lost.
+    function failed(reason: string) {
+      waiting.current = null
+      setAutosaved("failed")
+      setAutosaveError(reason)
+    }
+
+    try {
+      let next: FormValues | null = held
+
+      while (next) {
+        const result: Result = await save({
+          projectId,
+          toolId: tool.id,
+          cycle,
+          values: sendable(tool, next),
+          expectedUpdatedAt: latest.current.updatedAt,
+        })
+
+        next = null
+
+        if (result.status === "done") {
+          latest.current = {
+            recordId: result.recordId,
+            updatedAt: result.updatedAt,
+          }
+          setRecordId(result.recordId)
+          setUpdatedAt(result.updatedAt)
+          setErrors([])
+          setAutosaved("saved")
+          next = waiting.current
+          waiting.current = null
+        } else if (result.status === "stale") {
+          setStale(true)
+          failed("Someone else saved this record.")
+        } else if (result.status === "invalid") {
+          setErrors(result.errors)
+          failed("Check the highlighted field.")
+        } else {
+          failed(result.message)
+        }
+      }
+    } catch {
+      failed("The connection failed.")
+    } finally {
+      busy.current = false
+    }
+  }
+
+  let autosaveLine: string | undefined
+
+  if (autosaved === "saving") {
+    autosaveLine = "Saving…"
+  } else if (autosaved === "saved") {
+    autosaveLine = "✓ Saved"
+  } else if (autosaved === "failed") {
+    autosaveLine = `Not saved. ${autosaveError ?? ""} What you typed is still here.`
+  }
 
   function run(send: () => Promise<Result>, saidDone: string) {
     setMessage(undefined)
@@ -163,9 +258,28 @@ export function RecordForm({
         pending={pending}
         recordId={recordId}
         signable={signable}
-        message={message}
+        message={message ?? (tool.autosave ? autosaveLine : undefined)}
+        autosave={tool.autosave}
         extraActions={
-          canApprove && recordId ? (
+          send ? (
+            <div className="flex flex-col gap-2 @md:items-end">
+              <ActionButton
+                disabled={pending || send.missing.length > 0 || !recordId}
+                onClick={() => {
+                  if (recordId) {
+                    run(() => send.run({ recordId }), "Sent.")
+                  }
+                }}
+              >
+                Send
+              </ActionButton>
+              {send.missing.length > 0 && (
+                <p className="text-sm text-muted-foreground @md:text-right">
+                  Send needs: {send.missing.join("; ")}.
+                </p>
+              )}
+            </div>
+          ) : canApprove && recordId ? (
             <ActionButton
               disabled={pending}
               onClick={() => run(() => approve({ recordId }), "Approved.")}
@@ -174,7 +288,11 @@ export function RecordForm({
             </ActionButton>
           ) : undefined
         }
-        onSave={(held) => run(() => save(saving(held)), "Draft saved.")}
+        onSave={(held) =>
+          tool.autosave
+            ? void autosave(held)
+            : run(() => save(saving(held)), "Draft saved.")
+        }
         onSubmit={(held) => run(() => submit(saving(held)), "Submitted.")}
         onSign={(fieldKey) => {
           if (recordId) {

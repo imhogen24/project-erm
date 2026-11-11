@@ -31,11 +31,18 @@ export type RequestLink = z.output<typeof requestLink>
 
 // `systemFilled` is shown in the form but filled by the system from outside
 // the tool, such as the saved website request, so the form never writes it.
+// `section` names the box a field is drawn in, such as "1.0 Dispatch
+// metadata": fields next to each other with the same section share one box.
+// Only shown; a table cell ignores it.
 const cellBase = {
   key: fieldKey,
   label: z.string().min(1),
   inherited: inheritedLink.optional(),
   systemFilled: z.boolean().optional(),
+  // What a system-filled field says while it is still empty, such as "Filled
+  // in when the email is sent". Only shown.
+  systemNote: z.string().min(1).optional(),
+  section: z.string().min(1).optional(),
 }
 
 const distinctTexts = z
@@ -345,6 +352,9 @@ const toolDefinition = z
       .union([z.literal(1), z.literal(3), z.literal("both")])
       .default("both"),
     replaces: z.string().min(1).optional(),
+    // The record screen saves edits by itself a moment after typing stops,
+    // and shows no Save draft or Submit button.
+    autosave: z.boolean().optional(),
     fields: z.array(field).min(1),
   })
   .refine(

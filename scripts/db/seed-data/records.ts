@@ -14,8 +14,9 @@ import { qualityGateQuestions } from "@/workbooks/wb01/tools/t3-d1-3a"
 // - Nana Adjei: D1.1 waiting for approval on Sunyani Timber Kiln.
 // - Yaw Boateng: D1.1 still with the OM on Kumasi Cocoa.
 //
-// Tarkwa Mine Pump Station Drawings is the Tier 3 match for Tema Foods: D1.1
-// and D1.2 locked, so T3.D1.3a is open.
+// Tema Foods Boiler Skid (Tier 1) and Tarkwa Mine Pump Station Drawings (Tier
+// 3) are where the tool being built is open: their records are locked up to
+// the tool before it. Today that is D1.4 on both.
 
 export type SeedState = "draft" | "submitted" | "locked"
 
@@ -260,7 +261,48 @@ export const projectRecords = new Map(
           "Proceed to D1.3"
         ),
       },
-      // D1.3 is left open, so the D1.3 sheet can be worked on here.
+      {
+        toolId: "D1.3",
+        state: "locked",
+        day: 2,
+        payload: d13({
+          core: [
+            "A packaged steam boiler skid for the juice line, ready to connect to the existing steam header.",
+            "One skid with drawings, a test report and an O&M manual.",
+            "The skid must fit the old boiler's plinth and be installed during the plant's two-week shutdown.",
+          ],
+          operands: {
+            M: [
+              "Feed water, carbon steel plate, stainless piping",
+              "Steam at 10 bar to the juice line",
+            ],
+            E: [
+              "415 V supply, diesel for the burner",
+              "Heat to the process, flue gas to the stack",
+            ],
+            I: [
+              "PLC signals from the plant controller",
+              "Pressure, level and alarm signals back to the controller",
+            ],
+            L: ["Boiler operators on each shift", "None"],
+          },
+          operators: [
+            "Two certified boiler operators per shift and the maintenance supervisor",
+            "Burner, feed pumps, safety valves and the plant PLC",
+            "Hot, humid plant room near the coast",
+            "Shift logbook and the plant controller's history",
+            "Plant manager approves shutdowns and safety checks",
+          ],
+          missing: [
+            [
+              "Steam demand at peak production",
+              "Kwaku Ampofo",
+              "Asked by email",
+            ],
+          ],
+        }),
+      },
+      // D1.4 is left open, so the acknowledgement email can be worked on here.
     ],
     "Tamale Shea Butter Processing Plant": [
       {
@@ -438,7 +480,61 @@ export const projectRecords = new Map(
           "Proceed to D1.3"
         ),
       },
-      // T3.D1.3a is left open, so the Tier 3 sheet can be worked on here.
+      {
+        toolId: "T3.D1.3a",
+        state: "locked",
+        day: 2,
+        payload: {
+          sourceAssets: [
+            {
+              assetType: "Blueprints",
+              formatDescription: "1998 paper blueprints, scanned at 300 dpi",
+              condition: "Faded; pipe sizes hard to read on two sheets",
+              actionRequired: "Confirm pipe sizes against the site photos",
+              notes: "",
+            },
+            {
+              assetType: "Photographs",
+              formatDescription: "42 site photos of the pump station",
+              condition: "Clear",
+              actionRequired: "None",
+              notes: "Taken after the 2024 pump replacement",
+            },
+          ],
+          draftingSpecs: [
+            {
+              requirement: "3D Modelling",
+              standard: "ISO",
+              toleranceClass: "General",
+              fileFormat: "STEP",
+              notes: "",
+            },
+            {
+              requirement: "General Arrangement/Assembly",
+              standard: "ISO",
+              toleranceClass: "General",
+              fileFormat: "PDF, DWG",
+              notes: "",
+            },
+            {
+              requirement: "Manuals/Technical Illustrations",
+              standard: "ISO",
+              toleranceClass: "General",
+              fileFormat: "PDF",
+              notes: "For the maintenance crew",
+            },
+          ],
+          qualityGate: qualityGateQuestions.map((question, index) => ({
+            question,
+            answer: index === 0 ? "Yes" : "No",
+            reason:
+              index === 0
+                ? "General tolerances are enough for maintenance drawings"
+                : "The photos and blueprints cover every part",
+          })),
+        },
+      },
+      // D1.4 is left open, so the acknowledgement email can be tried on Tier 3.
     ],
     "Takoradi Port Conveyor Upgrade": [
       {

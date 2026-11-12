@@ -10,12 +10,14 @@ import { recordUpload } from "./uploads"
 
 const upload = createUploadthing()
 
-// The website's limits: images and PDFs, 16MB each. Every file is private, so
-// it opens only through the ERM.
+// The website's limits: images and PDFs, 16MB each. Files are public, as the
+// website's are, since UploadThing's free plan refuses private ones: the ERM
+// never shows the storage link, but whoever has it can open the file. Moving
+// to Cloudflare R2 makes them private (docs/CLIENT_FILES/_.md).
 const kind = {
   maxFileSize: "16MB",
   maxFileCount: MAX_FILES,
-  acl: "private",
+  acl: "public-read",
 } as const
 
 export const uploadRouter = {

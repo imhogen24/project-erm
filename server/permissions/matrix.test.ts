@@ -96,42 +96,48 @@ describe("permission matrix", () => {
     expect(accessRow(id)).toEqual(documentedRows()[id])
   })
 
+  // The WB01 sheet of 12 Nov 2026. Who approves D1.2 and D1.4 to D1.6 is
+  // in extraApprovers, not here.
   it.each([
-    ["D1.2", { OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" }],
+    ["D1.2", { OM: "RW", PM: "RO", CA: "RO", CR: "RO", "IT/Admin": "RO" }],
     [
       "D1.4",
-      { Client: "RO", OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" },
+      {
+        Client: "RO",
+        OM: "RW",
+        PM: "RO",
+        CA: "RO",
+        CR: "RO",
+        "IT/Admin": "RO",
+      },
     ],
     [
       "D1.5",
       {
         Client: "RO",
         OM: "RW",
-        PM: "RA",
+        PM: "RO",
         LE: "RO",
         CA: "RO",
-        LO: "RO",
         CR: "RO",
+        "IT/Admin": "RO",
       },
     ],
     [
       "D1.6",
       {
-        Client: "RO",
+        Client: "RW",
         OM: "RW",
-        PM: "RA",
+        PM: "RO",
         LE: "RO",
         CA: "RO",
-        LO: "RO",
         CR: "RO",
+        "IT/Admin": "RO",
       },
     ],
-  ])(
-    "gives %s the access agreed on the 24 Oct 2026 onboarding call",
-    (id, row) => {
-      expect(accessRow(id)).toEqual(row)
-    }
-  )
+  ])("gives %s the access in the WB01 sheet", (id, row) => {
+    expect(accessRow(id)).toEqual(row)
+  })
 
   it("gives T3.D1.3a the access of D1.3, which it replaces", () => {
     expect(accessRow("T3.D1.3a")).toEqual(permissionMatrix["D1.3"])
@@ -150,7 +156,7 @@ describe("permission matrix", () => {
       LD: "RO",
       HE: "RO",
       QA: "RO",
-      CR: "RO",
+      "IT/Admin": "RO",
     })
   })
 
@@ -160,7 +166,7 @@ describe("permission matrix", () => {
       OM: "RO",
       PM: "RA",
       LE: "RW",
-      CR: "RO",
+      "IT/Admin": "RO",
     })
   })
 

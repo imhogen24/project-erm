@@ -875,22 +875,28 @@ export async function lockSentDraft(
   )
 }
 
-// Writes system-filled values, such as D1.4's delivery status, on a locked
-// record inside the caller's transaction, with an audit line for each change.
-// The record stays locked: these fields are never typed, so locking does not
-// freeze them. Any other field is refused, so what was locked stays as it was.
+// Writes system-filled values, such as D1.4's delivery status, inside the
+// caller's transaction, with an audit line for each change. On a locked record
+// (the default) the record stays locked: these fields are never typed, so
+// locking does not freeze them. On a draft, such as D1.5 while the client
+// chooses a time, a read-only table may be written too. Any other field is
+// refused. A null value removes the field.
 export async function setSystemValues(
   transaction: Transaction,
   actor: string,
   recordId: string,
-  systemValues: JsonObject,
-  reason: string
+  systemValues: Record<string, JsonObject[string] | null>,
+  reason: string,
+  state: "locked" | "draft" = "locked"
 ): Promise<ToolRecord> {
   const current = await lockRecord(transaction, recordId)
 
   const systemFilled = new Set(
     (tools.getTool(current.toolId)?.fields ?? []).flatMap((field) =>
-      field.systemFilled ? [field.key] : []
+      field.systemFilled ||
+      (state === "draft" && field.type === "table" && field.readOnly)
+        ? [field.key]
+        : []
     )
   )
 
@@ -907,13 +913,38 @@ export async function setSystemValues(
     )
   }
 
-  if (current.state !== "locked") {
+  if (current.state !== state) {
     throw new InvalidTransitionError(
-      `A ${current.state} record has no system values to fill in yet`
+      state === "locked"
+        ? `A ${current.state} record has no system values to fill in yet`
+        : `A ${current.state} record cannot be changed here`
     )
   }
 
-  const payload = { ...current.payload, ...systemValues }
+  // A draft is still being worked on, so it follows the same gate as any
+  // edit. A locked record keeps every value it was locked with.
+  if (state === "draft") {
+    await assertProjectActive(transaction, current.projectId)
+  } else if (Object.values(systemValues).some((value) => value === null)) {
+    throw new ValidationError(
+      Object.entries(systemValues).flatMap(([field, value]) =>
+        value === null
+          ? [{ field, message: "A locked record's value cannot be removed" }]
+          : []
+      )
+    )
+  }
+
+  const payload: JsonObject = { ...current.payload }
+
+  for (const [key, value] of Object.entries(systemValues)) {
+    if (value === null) {
+      delete payload[key]
+    } else {
+      payload[key] = value
+    }
+  }
+
   const changes = payloadChanges(current.payload, payload)
 
   if (changes.length === 0) {

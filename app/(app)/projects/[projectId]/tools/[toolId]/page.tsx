@@ -5,6 +5,8 @@ import { z } from "zod"
 import { AppSidebar } from "@/components/app-sidebar"
 import { ClientRequestPanel } from "@/components/client-request-panel"
 import { DeliveryChip } from "@/components/delivery-chip"
+import { MeetingChoice } from "@/components/meeting-choice"
+import { MeetingProposalScreen } from "@/components/meeting-proposal-screen"
 import { MobileBar } from "@/components/mobile-bar"
 import { RecordForm } from "@/components/record-form"
 import { ClientRequestForm } from "@/components/client-request-form"
@@ -28,16 +30,29 @@ import { acknowledgementDelivery } from "@/server/acknowledgement/delivery"
 import { getDatabase } from "@/server/database"
 import { clientAnswersOf } from "@/server/intake/client-requests"
 import { getClientRequestPreview } from "@/server/intake/preview"
+import {
+  MEETING_PROPOSAL,
+  proposalOf,
+  schedulingContext,
+} from "@/server/meetings/meeting-proposal"
 import { getRequestDetails } from "@/server/intake/request-details"
 import type { DocumentControl } from "@/server/document-control/document-control"
-import { PermissionDeniedError, can } from "@/server/permissions/permissions"
+import {
+  PermissionDeniedError,
+  can,
+  rolesOn,
+} from "@/server/permissions/permissions"
 import { getProjectOverview } from "@/server/projects/projects"
 import { getRecordScreen } from "@/server/records/screen"
 import { UnknownToolError } from "@/server/records/validate"
 
 import {
   approveRecordAction,
+  chooseMeetingTimeAction,
+  confirmMeetingAction,
+  proposeMeetingTimeAction,
   saveDraftAction,
+  sendMeetingTimesAction,
   signFieldAction,
   submitRecordAction,
   resubmitClientRequestAction,
@@ -270,13 +285,54 @@ export default async function Page({
     }
   }
 
+  // D1.5: the client chooses a time on their own screen; the IMHOGEN team
+  // works on the sheet.
+  const meeting =
+    toolId === MEETING_PROPOSAL
+      ? {
+          saved: proposalOf(view.record?.payload ?? {}),
+          asClient:
+            !view.can.write &&
+            (await rolesOn(getDatabase(), session.user.id, projectId)).includes(
+              "Client"
+            ),
+          context: await schedulingContext(getDatabase(), projectId),
+        }
+      : null
+
   const checks = tool.fields.flatMap((field) =>
     field.type === "table" && field.key === "triageChecklist"
       ? (field.prefilledRows ?? [])
       : []
   )
 
-  const body = editingWebForm ? (
+  const body = meeting?.asClient ? (
+    <MeetingChoice
+      recordId={view.record?.id}
+      saved={meeting.saved}
+      locked={view.state === "locked"}
+      open={view.project.status === "active" && view.state === "draft"}
+      choose={chooseMeetingTimeAction}
+      propose={proposeMeetingTimeAction}
+    />
+  ) : meeting && (hasRecord || view.can.write) ? (
+    <MeetingProposalScreen
+      projectId={projectId}
+      cycle={view.cycle}
+      recordId={view.record?.id}
+      updatedAt={view.record?.updatedAt.toISOString()}
+      saved={meeting.saved}
+      context={meeting.context}
+      canWrite={
+        view.can.write &&
+        view.state !== "locked" &&
+        view.project.status === "active"
+      }
+      save={saveDraftAction}
+      sendTimes={sendMeetingTimesAction}
+      confirm={confirmMeetingAction}
+    />
+  ) : editingWebForm ? (
     <ClientRequestForm
       track={editingWebForm.track}
       saved={editingWebForm.answers}

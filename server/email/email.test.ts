@@ -50,6 +50,11 @@ const sampleData: EmailDataByKind = {
     body: "Dear Ama,\n\nThank you.",
   },
   verify_email: { name: "Kwaku", link: "https://erm.example.com/d" },
+  meeting_times: {
+    subject: "Choose a time for your discovery meeting",
+    body: "Dear Ama,\n\n- Option 1: 11/08/2026 at 14:00 GMT",
+    link: "https://erm.example.com/e",
+  },
 }
 
 function failingTransport(): Transport {
@@ -298,11 +303,12 @@ describe("sendEmail", () => {
 })
 
 describe("templates", () => {
-  it("covers the three staff kinds and the two client kinds", () => {
+  it("covers the three staff kinds and the three client kinds", () => {
     expect([...emailKinds].sort()).toEqual([
       "acknowledgement",
       "approval_needed",
       "assigned",
+      "meeting_times",
       "new_request",
       "verify_email",
     ])
@@ -310,7 +316,10 @@ describe("templates", () => {
 
   it("marks every staff wording as placeholder", () => {
     for (const kind of emailKinds.filter(
-      (each) => each !== "acknowledgement" && each !== "verify_email"
+      (each) =>
+        each !== "acknowledgement" &&
+        each !== "verify_email" &&
+        each !== "meeting_times"
     )) {
       const email = renderEmail(kind, sampleData[kind])
 

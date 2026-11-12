@@ -16,6 +16,14 @@ import {
 } from "@/server/acknowledgement/delivery"
 import { getDatabase } from "@/server/database"
 import { resubmitClientRequest } from "@/server/intake/client-requests"
+import {
+  MeetingEmailRefusedError,
+  MeetingNotReadyError,
+  chooseMeetingTime,
+  confirmMeeting,
+  proposeMeetingTime,
+  sendMeetingTimes,
+} from "@/server/meetings/meeting-proposal"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import {
   InvalidTransitionError,
@@ -362,4 +370,108 @@ export async function resubmitClientRequestAction(values: {
     message:
       result.status === "stale" ? "Reload and try again." : result.message,
   }
+}
+
+// What stops a D1.5 step comes back in words for the button.
+function meetingStep(
+  run: (actor: string) => Promise<ToolRecord>
+): Promise<RecordResult> {
+  return attempt(async (actor) => {
+    try {
+      return done(await run(actor))
+    } catch (error) {
+      if (
+        error instanceof MeetingNotReadyError ||
+        error instanceof MeetingEmailRefusedError
+      ) {
+        return { status: "error", message: error.message }
+      }
+
+      throw error
+    }
+  })
+}
+
+// The OM's Send to client on D1.5.
+export async function sendMeetingTimesAction(values: {
+  recordId: string
+}): Promise<RecordResult> {
+  const parsed = recordInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Reload and try again." }
+  }
+
+  return meetingStep((actor) =>
+    sendMeetingTimes(getDatabase(), actor, parsed.data.recordId)
+  )
+}
+
+// The OM's Confirm meeting on D1.5, which locks it.
+export async function confirmMeetingAction(values: {
+  recordId: string
+}): Promise<RecordResult> {
+  const parsed = recordInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Reload and try again." }
+  }
+
+  return meetingStep((actor) =>
+    confirmMeeting(getDatabase(), actor, parsed.data.recordId)
+  )
+}
+
+const chooseInput = z.object({
+  recordId: z.uuid(),
+  slot: z.number().int().min(1),
+  comment: z.string().optional(),
+})
+
+// The client's choice of a meeting time on D1.5.
+export async function chooseMeetingTimeAction(values: {
+  recordId: string
+  slot: number
+  comment?: string
+}): Promise<RecordResult> {
+  const parsed = chooseInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Choose one of the times." }
+  }
+
+  const { recordId, ...choice } = parsed.data
+
+  return meetingStep((actor) =>
+    chooseMeetingTime(getDatabase(), actor, recordId, choice)
+  )
+}
+
+const proposeInput = z.object({
+  recordId: z.uuid(),
+  date: z.string(),
+  time: z.string(),
+  timeZone: z.string(),
+  comment: z.string().optional(),
+})
+
+// The client's own time on D1.5, when none of the times suit.
+export async function proposeMeetingTimeAction(values: {
+  recordId: string
+  date: string
+  time: string
+  timeZone: string
+  comment?: string
+}): Promise<RecordResult> {
+  const parsed = proposeInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Give a date and a time." }
+  }
+
+  const { recordId, ...proposed } = parsed.data
+
+  return meetingStep((actor) =>
+    proposeMeetingTime(getDatabase(), actor, recordId, proposed)
+  )
 }

@@ -10,6 +10,7 @@ import {
 
 import {
   accessRow,
+  extraApprovers,
   extraChangeRequesters,
   type Access,
   type Action,
@@ -43,6 +44,10 @@ export function roleAllows(
 
   return roles.some((role) => {
     const access = row[role]
+
+    if (action === "approve" && extraApprovers.get(toolId)?.includes(role)) {
+      return access !== undefined
+    }
 
     return access !== undefined && grants[access].includes(action)
   })

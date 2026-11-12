@@ -1,6 +1,9 @@
 import type { JsonObject } from "@/db/schema"
 
+import { schedulingEmail } from "@/lib/meeting-proposal"
 import { qualityGateQuestions } from "@/workbooks/wb01/tools/t3-d1-3a"
+
+import { featuredProject, requestIdOf } from "./projects"
 
 // Where each project has got to in Workbook 1, so every role has something to
 // open. A tool only opens once the one before it is locked, so each project's
@@ -19,7 +22,9 @@ import { qualityGateQuestions } from "@/workbooks/wb01/tools/t3-d1-3a"
 //
 // Tema Foods Boiler Skid (Tier 1) and Tarkwa Mine Pump Station Drawings (Tier
 // 3) are where the tool being built is open: their records are locked up to
-// the tool before it. Today that is D1.4 on both.
+// the tool before it. On Tema Foods that is D1.5: D1.4 is sent and delivered,
+// and the OM has sent the client three meeting times to choose from. On
+// Tarkwa, D1.4 is still open.
 
 export type SeedState = "draft" | "submitted" | "locked"
 
@@ -241,6 +246,39 @@ const koforiduaFiles: File[] = [
 ]
 
 // By project name, as in projects.ts.
+// Keeps one record's payload its own type, so the list of records is not
+// widened into one shape.
+function payloadOf(payload: JsonObject): JsonObject {
+  return payload
+}
+
+// The next `count` weekdays, starting a few days from when the seed runs, as
+// "2026-11-17".
+function weekdaysAhead(count: number) {
+  const days: string[] = []
+  const day = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000)
+
+  while (days.length < count) {
+    if (day.getUTCDay() !== 0 && day.getUTCDay() !== 6) {
+      days.push(day.toISOString().slice(0, 10))
+    }
+
+    day.setUTCDate(day.getUTCDate() + 1)
+  }
+
+  return days
+}
+
+const [firstDay, secondDay, thirdDay] = weekdaysAhead(3)
+
+// The meeting times the OM sent Tema Foods: always ahead of today, so the
+// client can choose one.
+const temaSlots = [
+  { date: firstDay!, time: "11:00", timeZone: "Africa/Accra" },
+  { date: secondDay!, time: "14:00", timeZone: "Africa/Accra" },
+  { date: thirdDay!, time: "10:00", timeZone: "Africa/Accra" },
+]
+
 export const projectRecords = new Map<string, SeedRecord[]>(
   Object.entries({
     "Tema Foods Boiler Skid": [
@@ -305,7 +343,40 @@ export const projectRecords = new Map<string, SeedRecord[]>(
           ],
         }),
       },
-      // D1.4 is left open, so the acknowledgement email can be worked on here.
+      {
+        toolId: "D1.4",
+        state: "locked",
+        day: 3,
+        payload: payloadOf({
+          sentTo: "kwaku.ampofo@temafoods.test",
+          sentBy: "kwabena.asante@imhogen.test",
+          subject:
+            "Acknowledgement of Packaged boiler skid for the juice line request",
+          body: "Dear Kwaku Ampofo,\n\nThank you for reaching out to IMHOGEN LTD. We have successfully received your project inquiry.\n\nBest regards",
+          dateSent: "2026-11-04",
+          timeSent: "10:15",
+          deliveryStatus: "Delivered",
+        }),
+      },
+      // D1.5: three times sent, waiting for Kwaku Ampofo to choose.
+      {
+        toolId: "D1.5",
+        state: "draft",
+        day: 4,
+        payload: payloadOf({
+          slots: temaSlots,
+          offeredSlots: temaSlots,
+          sentToClientAt: new Date().toISOString(),
+          emailText: schedulingEmail(
+            {
+              contact: "Kwaku Ampofo",
+              title: "Packaged boiler skid for the juice line",
+              requestId: requestIdOf(featuredProject),
+            },
+            temaSlots
+          ),
+        }),
+      },
     ],
     "Tamale Shea Butter Processing Plant": [
       {

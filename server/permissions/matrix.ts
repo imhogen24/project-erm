@@ -30,7 +30,7 @@ export const permissionMatrix = {
     "IT/Admin": "RO",
   },
   "D1.6": {
-    Client: "RW",
+    Client: "RO",
     OM: "RW",
     PM: "RO",
     LE: "RO",
@@ -256,15 +256,13 @@ export function accessRow(
 }
 
 // Who approves (locks) a tool is decided with the tool, not read from RA:
-// a tool may name a role that only reads it. The PM approves D1.2, sends D1.4
-// (its approval), and approves D1.6 until it is built and says otherwise, as
-// agreed on the 24 Oct 2026 onboarding call. D1.5 has no approver: the OM's
-// submit locks it once the client has chosen a time. See
+// a tool may name a role that only reads it. The PM approves D1.2 and sends
+// D1.4 (its approval), as agreed on the 24 Oct 2026 onboarding call. D1.5 and
+// D1.6 have no approver: the OM's own step locks each. See
 // docs/WB01_PERMISSIONS/_.md.
 export const extraApprovers = new Map<string, readonly Role[]>([
   ["D1.2", ["PM"]],
   ["D1.4", ["PM"]],
-  ["D1.6", ["PM"]],
 ])
 
 // Roles that may ask for a change to a locked record although they only read

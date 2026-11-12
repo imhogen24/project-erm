@@ -18,6 +18,14 @@ export type EmailMessage = {
   subject: string
   text: string
   html: string
+  // Files sent with it, such as a calendar invite.
+  attachments?: EmailAttachment[]
+}
+
+export type EmailAttachment = {
+  filename: string
+  content: string
+  contentType: string
 }
 
 // The idempotency key is the email's own key, so a provider that accepted an
@@ -69,7 +77,18 @@ function createResendTransport(apiKey: string): Transport {
   return {
     name: RESEND,
     send: async (message, options) => {
-      const { data, error } = await resend.emails.send(message, options)
+      const { data, error } = await resend.emails.send(
+        {
+          ...message,
+          // Resend reads a string as base64, so the file goes as bytes.
+          attachments: message.attachments?.map((file) => ({
+            filename: file.filename,
+            content: Buffer.from(file.content),
+            contentType: file.contentType,
+          })),
+        },
+        options
+      )
 
       if (error || !data) {
         throw new Error(error?.message ?? "Resend returned no message ID")

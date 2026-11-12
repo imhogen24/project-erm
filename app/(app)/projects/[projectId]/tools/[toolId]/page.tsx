@@ -3,6 +3,7 @@ import type { ReactNode } from "react"
 import { z } from "zod"
 
 import { AppSidebar } from "@/components/app-sidebar"
+import { CalendarAgendaScreen } from "@/components/calendar-agenda-screen"
 import { ClientRequestPanel } from "@/components/client-request-panel"
 import { DeliveryChip } from "@/components/delivery-chip"
 import { MeetingChoice } from "@/components/meeting-choice"
@@ -30,6 +31,13 @@ import { acknowledgementDelivery } from "@/server/acknowledgement/delivery"
 import { getDatabase } from "@/server/database"
 import { clientAnswersOf } from "@/server/intake/client-requests"
 import { getClientRequestPreview } from "@/server/intake/preview"
+import { agendaOf } from "@/lib/calendar-agenda"
+import {
+  CALENDAR_AGENDA,
+  clientAttendees,
+  meetingDetails,
+  projectTeam,
+} from "@/server/meetings/calendar-invite"
 import {
   MEETING_PROPOSAL,
   proposalOf,
@@ -51,7 +59,9 @@ import {
   chooseMeetingTimeAction,
   confirmMeetingAction,
   proposeMeetingTimeAction,
+  readyForMeetingAction,
   saveDraftAction,
+  sendCalendarInviteAction,
   sendMeetingTimesAction,
   signFieldAction,
   submitRecordAction,
@@ -300,13 +310,50 @@ export default async function Page({
         }
       : null
 
+  // D1.6: the meeting from D1.5, the team to choose attendees from, and who
+  // attends from the client.
+  const agenda =
+    toolId === CALENDAR_AGENDA
+      ? {
+          saved: agendaOf(view.record?.payload ?? {}),
+          meeting: await meetingDetails(getDatabase(), projectId),
+          team: await projectTeam(getDatabase(), projectId),
+          client: (await clientAttendees(getDatabase(), projectId)).map(
+            (each) => each.name
+          ),
+        }
+      : null
+
   const checks = tool.fields.flatMap((field) =>
     field.type === "table" && field.key === "triageChecklist"
       ? (field.prefilledRows ?? [])
       : []
   )
 
-  const body = meeting?.asClient ? (
+  const body = agenda ? (
+    <CalendarAgendaScreen
+      projectId={projectId}
+      cycle={view.cycle}
+      recordId={view.record?.id}
+      updatedAt={view.record?.updatedAt.toISOString()}
+      saved={agenda.saved}
+      meeting={agenda.meeting}
+      team={agenda.team.map(({ personId, name, roles }) => ({
+        personId,
+        name,
+        roles,
+      }))}
+      client={agenda.client}
+      canWrite={
+        view.can.write &&
+        view.state !== "locked" &&
+        view.project.status === "active"
+      }
+      save={saveDraftAction}
+      sendInvite={sendCalendarInviteAction}
+      ready={readyForMeetingAction}
+    />
+  ) : meeting?.asClient ? (
     <MeetingChoice
       recordId={view.record?.id}
       saved={meeting.saved}

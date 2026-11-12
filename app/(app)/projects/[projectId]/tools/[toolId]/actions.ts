@@ -17,6 +17,12 @@ import {
 import { getDatabase } from "@/server/database"
 import { resubmitClientRequest } from "@/server/intake/client-requests"
 import {
+  AgendaNotReadyError,
+  InviteRefusedError,
+  readyForMeeting,
+  sendCalendarInvite,
+} from "@/server/meetings/calendar-invite"
+import {
   MeetingEmailRefusedError,
   MeetingNotReadyError,
   chooseMeetingTime,
@@ -473,5 +479,55 @@ export async function proposeMeetingTimeAction(values: {
 
   return meetingStep((actor) =>
     proposeMeetingTime(getDatabase(), actor, recordId, proposed)
+  )
+}
+
+// What stops a D1.6 step comes back in words for the button.
+function agendaStep(
+  run: (actor: string) => Promise<ToolRecord>
+): Promise<RecordResult> {
+  return attempt(async (actor) => {
+    try {
+      return done(await run(actor))
+    } catch (error) {
+      if (
+        error instanceof AgendaNotReadyError ||
+        error instanceof InviteRefusedError
+      ) {
+        return { status: "error", message: error.message }
+      }
+
+      throw error
+    }
+  })
+}
+
+// The OM's Send calendar invite on D1.6.
+export async function sendCalendarInviteAction(values: {
+  recordId: string
+}): Promise<RecordResult> {
+  const parsed = recordInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Reload and try again." }
+  }
+
+  return agendaStep((actor) =>
+    sendCalendarInvite(getDatabase(), actor, parsed.data.recordId)
+  )
+}
+
+// The OM's Ready for the meeting on D1.6, which locks it.
+export async function readyForMeetingAction(values: {
+  recordId: string
+}): Promise<RecordResult> {
+  const parsed = recordInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Reload and try again." }
+  }
+
+  return agendaStep((actor) =>
+    readyForMeeting(getDatabase(), actor, parsed.data.recordId)
   )
 }

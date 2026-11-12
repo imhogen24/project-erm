@@ -399,17 +399,20 @@ describe("the OM and PM on D1.1 to D1.6", () => {
     }
   )
 
-  it.each(["D1.2", "D1.4", "D1.6"])("lets a PM approve %s", async (toolId) => {
+  it.each(["D1.2", "D1.4"])("lets a PM approve %s", async (toolId) => {
     const pm = await addPerson(projectId, ["PM"])
 
     expect(await can(database, pm, projectId, toolId, "approve")).toBe(true)
   })
 
-  it("lets nobody approve D1.5, which the OM's confirm locks", async () => {
-    const pm = await addPerson(projectId, ["PM"])
+  it.each(["D1.5", "D1.6"])(
+    "lets nobody approve %s, which the OM's own step locks",
+    async (toolId) => {
+      const pm = await addPerson(projectId, ["PM"])
 
-    expect(await can(database, pm, projectId, "D1.5", "approve")).toBe(false)
-  })
+      expect(await can(database, pm, projectId, toolId, "approve")).toBe(false)
+    }
+  )
 
   it("still refuses an LE on D1.2", async () => {
     const le = await addPerson(projectId, ["LE"])

@@ -22,9 +22,9 @@ import { featuredProject, requestIdOf } from "./projects"
 //
 // Tema Foods Boiler Skid (Tier 1) and Tarkwa Mine Pump Station Drawings (Tier
 // 3) are where the tool being built is open: their records are locked up to
-// the tool before it. On Tema Foods that is D1.5: D1.4 is sent and delivered,
-// and the OM has sent the client three meeting times to choose from. On
-// Tarkwa, D1.4 is still open.
+// the tool before it. On Tema Foods that is D1.6: D1.4 is delivered, and on
+// D1.5 the client chose a meeting time and the OM confirmed it. On Tarkwa,
+// D1.4 is still open.
 
 export type SeedState = "draft" | "submitted" | "locked"
 
@@ -272,7 +272,7 @@ function weekdaysAhead(count: number) {
 const [firstDay, secondDay, thirdDay] = weekdaysAhead(3)
 
 // The meeting times the OM sent Tema Foods: always ahead of today, so the
-// client can choose one.
+// meeting they agreed on is still to come.
 const temaSlots = [
   { date: firstDay!, time: "11:00", timeZone: "Africa/Accra" },
   { date: secondDay!, time: "14:00", timeZone: "Africa/Accra" },
@@ -358,10 +358,11 @@ export const projectRecords = new Map<string, SeedRecord[]>(
           deliveryStatus: "Delivered",
         }),
       },
-      // D1.5: three times sent, waiting for Kwaku Ampofo to choose.
+      // D1.5: three times were sent and Kwaku Ampofo chose the second; the
+      // OM confirmed it, so D1.6 is open.
       {
         toolId: "D1.5",
-        state: "draft",
+        state: "locked",
         day: 4,
         payload: payloadOf({
           slots: temaSlots,
@@ -375,6 +376,15 @@ export const projectRecords = new Map<string, SeedRecord[]>(
             },
             temaSlots
           ),
+          chosenSlot: 2,
+          clientComment: "Our plant manager will join.",
+          agreedDate: temaSlots[1]!.date,
+          agreedTime: temaSlots[1]!.time,
+          agreedTimeZone: temaSlots[1]!.timeZone,
+          clientConfirmed: true,
+          platform: "Google Meet",
+          meetingLink: "https://meet.google.com/zpr-zhib-amp",
+          calendarInviteSent: false,
         }),
       },
     ],

@@ -82,26 +82,25 @@ export const previews: Preview[] = [
       "On Tarkwa Mine Pump Station Drawings, after Send, the D1.4 tile shows Locked and a grey Sent chip, and the T3.D1.8a tile is greyed with This tool opens after D1.4 is delivered. Start the Inngest dev server (docs/DEPLOYMENT) and within 5 minutes the delivery check runs: with no RESEND_API_KEY every email counts as delivered, so the chip turns orange with a tick, Delivered, and T3.D1.8a opens. Open D1.4: the same chip sits beside Locked in the title block and Delivery Status reads Delivered. With a real key, an address that bounces turns the chip red, Bounced; the PM gets a notification, and D1.4 shows a red box above the form, This email bounced. Correct the address and try again., with Sent To and Retry. A bad address is refused next to the button. Retry sends the same email again and the chip goes back to Sent. The OM sees This email bounced. The Project Manager has been told. and no Retry. On Tema Foods Boiler Skid, D1.4 is already Delivered.",
   },
   {
-    screen: "D1.5 meeting time proposal, as the OM",
+    screen: "D1.5 meeting time proposal, confirmed",
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.5`,
     expect:
-      "D1.4 is Delivered, so D1.5 is open, and three times were already sent to the client. 1.0 Proposed meeting times lists them: Slot No., Date, Time (Zone) such as 14:00 GMT, Status Pending (orange) and Client comments. 3.0 Standard scheduling email is the email the client got, with Option 1 to 3. 4.0 Final meeting confirmation: Agreed Date and Agreed Time are - until the client chooses; Meeting Platform/Location to choose, Direct Meeting Link (gone for In person), Calendar Invite Sent? Yes or No, Client Confirmed? No, and a Note; each edit saves by itself (Saving..., then ✓ Saved). At the foot, Confirm meeting is off and says the client has not chosen a time. Press Change the times: the slots open to edit (date picker, time, time zone from GMT, WAT, SAST, EAT, UK, CET, US Eastern, GST), with Add a time and a cross per slot, and the email under them follows as you type; a slot in the past or half filled keeps Send to client off and says which. Send to client emails the times and the client sees them; the same times twice send once. Once the client chooses (log in as kwaku.ampofo@temafoods.test), reload: their slot is Accepted with a tick and their comment, the others Declined, Agreed Date and Time fill in, Client Confirmed? Yes, and the bell says The client chose a meeting time. Choose Google Meet, paste https://meet.google.com/abc-defg-hij and press Confirm meeting: D1.5 locks and D1.6 opens. If the client proposed another time, a row under the slots says The client proposed ... with their comment and Add as a time.",
+      "D1.5 on Tema Foods is Locked: 1.0 lists the three times sent, the second Accepted with a tick and the client's comment Our plant manager will join., the others Declined. 3.0 is the email the client got. 4.0 shows the agreed date and time, Google Meet and its link, and Client Confirmed? Yes. Nothing can be edited. The browser tests walk the whole flow (e2e/d15-meeting.spec.ts): the OM's Send to client and Change the times, the client's Choose this time and None of these suit me, and Confirm meeting. Log in as the client, kwaku.ampofo@temafoods.test: D1.5 shows Your discovery meeting with the time, Google Meet and Join the meeting.",
   },
   {
-    screen: "D1.5 meeting time proposal, as the PM (read only)",
+    screen: "D1.6 calendar invite and agenda, as the OM",
+    loginAs: "OM",
+    path: (id) => `/projects/${id}/tools/D1.6`,
+    expect:
+      "D1.5 is confirmed, so D1.6 is open. 1.0 Finalized meeting details: Meeting Date, Meeting Time (Zone) such as 14:00 GMT, Platform/Location Google Meet and Meeting ID/PIN with the link, all from D1.5 and read only; IMHOGEN Attendees as tiles to tick, one per person on the project with their roles (Ama Owusu PM, Kojo Antwi LE...); Client Attendees Kwaku Ampofo. 2.0 Calendar integration: the sheet's five agenda topics (5 min Introductions & Project Overview, Project Manager, ...) to edit, with Add a topic and a cross per topic. 4.0 Pre-meeting checklist: the three fixed tasks with an assignee to type and Done / Not done. Notes. Each edit saves by itself (Saving..., then ✓ Saved). At the foot, Send calendar invite is off until someone from IMHOGEN is ticked; press it: the client gets an email with the meeting and an invite.ics calendar file, copied to the ticked people (the seeded addresses end in .test, a reserved test domain the ERM never hands to Resend, so no email leaves the machine), a chip says Invite sent with the time, and pressing again sends nothing new unless the agenda or attendees changed, which goes as an update. Ready for the meeting stays off until the invite is sent and all three checks are Done; it then locks D1.6 and D1.7 opens.",
+  },
+  {
+    screen: "D1.6 calendar invite and agenda, read only",
     loginAs: "PM",
-    path: (id) => `/projects/${id}/tools/D1.5`,
+    path: (id) => `/projects/${id}/tools/D1.6`,
     expect:
-      "The same sheet with no buttons and nothing to edit: the PM, LE, CA, CR and IT/Admin only read D1.5. The PM is told on the bell when the client chooses or proposes a time.",
-  },
-  {
-    screen: "D1.5: the client chooses a meeting time",
-    loginAs: "Client",
-    email: "kwaku.ampofo@temafoods.test",
-    path: (id) => `/projects/${id}/tools/D1.5`,
-    expect:
-      "Kwaku Ampofo, the client, sees Choose a time for your discovery meeting: the three times as tiles, such as Mon 16 Nov 2026, 14:00 GMT, and under each the same moment in their own time when their computer is in another zone (try a browser set to another time zone). A Comment box (optional), then None of these suit me and Choose this time at the foot. Pick one, write a comment and press Choose this time: it says Chosen. and the tile shows Your choice; choosing again changes it until the OM confirms. None of these suit me opens Propose another time (date, time and time zone, set to their own) and Propose this time; the times are then all Declined for the OM. Before any times are sent it says No times yet. You will get an email when IMHOGEN proposes some. Once the OM confirms, it shows Your discovery meeting with the time, the platform and Join the meeting.",
+      "The same sheet with nothing to edit and no buttons: the PM, LE, CA, CR, IT/Admin and the client (kwaku.ampofo@temafoods.test) only read D1.6. Before the OM ticks anyone, IMHOGEN Attendees is -.",
   },
   {
     screen: "D1.1 client web form",

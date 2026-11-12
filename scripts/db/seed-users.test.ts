@@ -3,7 +3,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { createAuth } from "@/server/auth/auth"
 import { validateRecord } from "@/server/records/validate"
-import { availableTools, toolStatus } from "@/server/workflow/workflow"
+import { availableTools } from "@/server/workflow/workflow"
 import { tools } from "@/server/tools/registry"
 
 import { registerAllTools } from "@/workbooks"
@@ -200,7 +200,7 @@ describe("the projects", () => {
     expect(rows).toHaveLength(18)
   })
 
-  it("has D1.1 to D1.4 locked on the featured project, and D1.5 open with times sent", async () => {
+  it("has D1.1 to D1.5 locked on the featured project, so D1.6 is open", async () => {
     await seed(url)
 
     const { rows } = await database.pool.query<{
@@ -216,18 +216,14 @@ describe("the projects", () => {
       { tool_id: "D1.2", state: "locked" },
       { tool_id: "D1.3", state: "locked" },
       { tool_id: "D1.4", state: "locked" },
-      { tool_id: "D1.5", state: "draft" },
+      { tool_id: "D1.5", state: "locked" },
     ])
 
-    const d15 = await toolStatus(
-      database,
-      await projectIdOf(featuredProject.name),
-      "D1.5"
-    )
+    const open = (
+      await availableTools(database, await projectIdOf(featuredProject.name))
+    ).map((tool) => tool.toolId)
 
-    // It already has its record, so it waits on no tool before it.
-    expect(d15.waitingOn).toEqual([])
-    expect(d15.note).toBeNull()
+    expect(open).toContain("D1.6")
   })
 })
 

@@ -85,7 +85,7 @@ type Details = {
 }
 
 const editWidths =
-  "minmax(0,calc(100%/var(--page-columns,5))) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.4fr) auto"
+  "minmax(0,calc(100%/var(--page-columns,5))) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.4fr) 3.5rem"
 
 const sentWidths =
   "minmax(0,calc(100%/var(--page-columns,5))) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr)"

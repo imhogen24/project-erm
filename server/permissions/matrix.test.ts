@@ -97,7 +97,6 @@ describe("permission matrix", () => {
   })
 
   it.each([
-    ["D1.1", { Client: "RW", OM: "RW", PM: "RA", LO: "RO", CR: "RO" }],
     ["D1.2", { OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" }],
     [
       "D1.4",

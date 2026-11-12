@@ -114,12 +114,12 @@ export const projects: readonly SeedProject[] = [
       HE: ["kwesi.appiah"],
     },
     request: {
-      inputMaterialType: "Site photos and faded blueprints from 1998",
+      inputMaterialType: "Legacy 2D Drawings/PDFs",
       assetCondition: "In service, blueprints faded and out of date",
       services: [
-        "3D Modelling",
-        "General Arrangement/Assembly",
-        "Manuals/Technical Illustrations",
+        "3D Solid Modeling (STEP/IGES)",
+        "General Arrangement / Assembly",
+        "Exploded Views for Manuals",
       ],
       endGoal:
         "Up-to-date drawings of the pump station and an illustrated manual for the maintenance crew",
@@ -141,11 +141,11 @@ export const projects: readonly SeedProject[] = [
     },
     team: {},
     request: {
-      inputMaterialType: "Site photos and hand measurements of the conveyor",
+      inputMaterialType: "Physical Part / Machine",
       assetCondition: "In service, no drawings kept",
       services: [
-        "3D Modelling",
-        "General Arrangement/Assembly",
+        "3D Solid Modeling (STEP/IGES)",
+        "General Arrangement / Assembly",
         "2D Manufacturing Drawings (GD&T)",
       ],
       endGoal: "Drawings the workshop can build a replacement drive frame from",
@@ -194,9 +194,9 @@ export const projects: readonly SeedProject[] = [
     },
     team: { OM: ["abena.frimpong"] },
     request: {
-      inputMaterialType: "Old paper drawings, scanned, and a supplier manual",
+      inputMaterialType: "Legacy 2D Drawings/PDFs",
       assetCondition: "In service, drawings partly missing",
-      services: ["Automated BOM Extraction", "Manuals/Technical Illustrations"],
+      services: ["Automated BOM Extraction", "Exploded Views for Manuals"],
       endGoal: "A parts list and an illustrated manual for the bottling line",
       standard: "ISO",
       outputFormats: ["PDF"],
@@ -344,9 +344,12 @@ export const projects: readonly SeedProject[] = [
       OM: ["selorm.dzigbordi"],
     },
     request: {
-      inputMaterialType: "Site survey sketches and photos",
+      inputMaterialType: "Hand Sketches / Concepts",
       assetCondition: "In service, drawings lost",
-      services: ["3D Modelling", "2D Manufacturing Drawings (GD&T)"],
+      services: [
+        "3D Solid Modeling (STEP/IGES)",
+        "2D Manufacturing Drawings (GD&T)",
+      ],
       endGoal: "Drawings to re-fabricate a worn crane rail section",
       standard: "ISO",
       outputFormats: ["PDF", "DXF"],

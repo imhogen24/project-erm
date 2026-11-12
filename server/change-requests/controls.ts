@@ -9,6 +9,7 @@ import {
 } from "@/db/schema"
 import {
   PermissionDeniedError,
+  mayRequestChange,
   roleAllows,
   rolesOn,
 } from "@/server/permissions/permissions"
@@ -108,7 +109,7 @@ export async function changeControlsFor(
       canRequest:
         record.state === "locked" &&
         request === undefined &&
-        roleAllows(held, record.toolId, "write"),
+        mayRequestChange(held, record.toolId),
       ...(request && { request: { id: request.id, status: request.status } }),
     })
   }

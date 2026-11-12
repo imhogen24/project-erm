@@ -13,6 +13,7 @@ import {
   roleAllows,
   rolesOn,
   type Action,
+  mayRequestChange,
 } from "./permissions"
 
 const database = createTestDatabase()
@@ -369,17 +370,28 @@ describe("Tier 3 tools", () => {
 })
 
 describe("the OM and PM on D1.1 to D1.6", () => {
-  it("lets an OM write D1.1", async () => {
-    const om = await addPerson(projectId, ["OM"])
+  it("lets only the client write D1.1, their own web form", async () => {
+    const client = await addPerson(projectId, ["Client"])
 
-    expect(await can(database, om, projectId, "D1.1", "write")).toBe(true)
+    expect(await answers(client, projectId, "D1.1")).toEqual([
+      true,
+      true,
+      false,
+    ])
   })
 
-  it("lets a PM approve D1.1 but not write it", async () => {
-    const pm = await addPerson(projectId, ["PM"])
+  it.each(["OM", "PM"] as const)(
+    "lets the %s read D1.1, but not write or approve it",
+    async (role) => {
+      const person = await addPerson(projectId, [role])
 
-    expect(await answers(pm, projectId, "D1.1")).toEqual([true, false, true])
-  })
+      expect(await answers(person, projectId, "D1.1")).toEqual([
+        true,
+        false,
+        false,
+      ])
+    }
+  )
 
   it.each(["D1.2", "D1.4", "D1.5", "D1.6"])(
     "lets a PM approve %s",
@@ -400,5 +412,21 @@ describe("the OM and PM on D1.1 to D1.6", () => {
     const client = await addPerson(projectId, ["Client"])
 
     expect(await can(database, client, projectId, "D1.1", "write")).toBe(true)
+  })
+})
+
+describe("who may ask for a change", () => {
+  it("lets whoever writes a tool ask for a change to it", () => {
+    expect(mayRequestChange(["OM"], "D1.3")).toBe(true)
+    expect(mayRequestChange(["Client"], "D1.1")).toBe(true)
+  })
+
+  it("lets the OM ask for a change to D1.1, which only the client writes", () => {
+    expect(mayRequestChange(["OM"], "D1.1")).toBe(true)
+  })
+
+  it("does not let a role that only reads ask, unless named for the tool", () => {
+    expect(mayRequestChange(["PM"], "D1.1")).toBe(false)
+    expect(mayRequestChange(["CR"], "D1.3")).toBe(false)
   })
 })

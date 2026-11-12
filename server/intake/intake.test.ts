@@ -131,7 +131,7 @@ afterAll(async () => {
 })
 
 describe("pullNewRequests", () => {
-  it("makes a Tier 1 request an active Tier_1 project with a D1.1 draft", async () => {
+  it("makes a Tier 1 request an active Tier_1 project with D1.1 locked", async () => {
     await addTier1({ requestId: "T1-100" })
 
     await pull()
@@ -143,8 +143,9 @@ describe("pullNewRequests", () => {
       service_track: "Tier_1",
       status: "active",
     })
+    // D1.1 is the client's form: it locks the moment it comes in.
     expect(await recordsOf(project!.id)).toMatchObject([
-      { tool_id: "D1.1", state: "draft" },
+      { tool_id: "D1.1", state: "locked" },
     ])
   })
 
@@ -177,15 +178,7 @@ describe("pullNewRequests", () => {
     expect((await projectFor("T3-100"))!.name).toBe("Unnamed request T3-100")
   })
 
-  it("sets D1.1's request status to Pending", async () => {
-    await addTier1({ requestId: "T1-100" })
-
-    await pull()
-
-    expect((await d11Of("T1-100")).payload.requestStatus).toBe("Pending")
-  })
-
-  it("lists each file as a Pending row with its link and the submission date", async () => {
+  it("lists each file as a row with its label, link and the submission date", async () => {
     await addTier1({
       requestId: "T1-100",
       files: [link("one"), link("two"), link("three")],
@@ -198,13 +191,26 @@ describe("pullNewRequests", () => {
       label,
       dateUploaded: "2026-10-30",
       fileLink: link(key),
-      status: "Pending",
     })
 
     expect((await d11Of("T1-100")).payload.attachedFiles).toEqual([
       row("File 1", "one"),
       row("File 2", "two"),
       row("File 3", "three"),
+    ])
+  })
+
+  it("splits the website's link,name into the link and the client's file name", async () => {
+    await addTier1({
+      requestId: "T1-100",
+      files: [`${link("one")},boiler nameplate.jpg`, link("two")],
+    })
+
+    await pull()
+
+    expect((await d11Of("T1-100")).payload.attachedFiles).toMatchObject([
+      { label: "boiler nameplate.jpg", fileLink: link("one") },
+      { label: "File 2", fileLink: link("two") },
     ])
   })
 
@@ -235,10 +241,7 @@ describe("pullNewRequests", () => {
     const { payload } = await d11Of("T1-100")
     const [copy] = await copies()
 
-    expect(Object.keys(payload).sort()).toEqual([
-      "attachedFiles",
-      "requestStatus",
-    ])
+    expect(Object.keys(payload)).toEqual(["attachedFiles"])
     expect(JSON.stringify(payload)).not.toContain("ama@client.example.com")
     expect(copy!.submission).toMatchObject({
       email: "ama@client.example.com",
@@ -445,5 +448,45 @@ describe("pullNewRequests", () => {
 
     expect(summary.created).toEqual(["T1-100"])
     expect(fetch).not.toHaveBeenCalled()
+  })
+})
+
+describe("a client who already has an account", () => {
+  async function addClientAccount(verified: boolean) {
+    const { rows } = await database.pool.query<{ id: string }>(
+      "INSERT INTO people (name, email, email_verified, account_type) VALUES ('Ama', 'AMA@client.example.com', $1, 'client') RETURNING id",
+      [verified]
+    )
+
+    return rows[0]!.id
+  }
+
+  async function clientRolesOf(personId: string) {
+    const { rows } = await database.pool.query<{ project_id: string }>(
+      "SELECT project_id FROM person_project_roles WHERE person_id = $1 AND role = 'Client'",
+      [personId]
+    )
+
+    return rows.map((row) => row.project_id)
+  }
+
+  it("is put on the project when the request's email is theirs and confirmed", async () => {
+    const client = await addClientAccount(true)
+
+    await addTier1({ requestId: "T1-100" })
+    await pull()
+
+    expect(await clientRolesOf(client)).toEqual([
+      (await projectFor("T1-100"))!.id,
+    ])
+  })
+
+  it("is not put on it while their email is unconfirmed", async () => {
+    const client = await addClientAccount(false)
+
+    await addTier1({ requestId: "T1-100" })
+    await pull()
+
+    expect(await clientRolesOf(client)).toEqual([])
   })
 })

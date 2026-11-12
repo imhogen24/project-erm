@@ -39,11 +39,21 @@ export type Role = (typeof roles)[number]
 
 export const roleEnum = pgEnum("role", roles)
 
+// A client makes their own account at /sign-up. Staff join only by an
+// IT/Admin invite. Set when the account is made and never changed by the app.
+export const accountTypes = ["client", "staff"] as const
+
+export type AccountType = (typeof accountTypes)[number]
+
+export const accountTypeEnum = pgEnum("account_type", accountTypes)
+
 export const people = pgTable("people", {
   id: uuid().primaryKey().defaultRandom(),
   name: text().notNull(),
   email: text().notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
+  // Staff unless the account was made by sign-up, which always writes client.
+  accountType: accountTypeEnum("account_type").notNull().default("staff"),
   image: text(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()

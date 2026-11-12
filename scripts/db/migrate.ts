@@ -23,5 +23,3 @@ const database = createDatabase(url)
 await migrate(database, { migrationsFolder, migrationsSchema, migrationsTable })
 
 await database.pool.end()
-
-console.log("Migrations applied.")

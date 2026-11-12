@@ -1,5 +1,5 @@
 {
-  "id": "22b5528d-3124-4ddc-bcb9-be9d627e77a6",
+  "id": "e0302b22-93a2-4783-a04c-97e066ce32a2",
   "prevId": "23b3a497-cc78-466c-bc09-f1c37e5ddf03",
   "version": "7",
   "dialect": "postgresql",
@@ -33,6 +33,14 @@
           "primaryKey": false,
           "notNull": true,
           "default": false
+        },
+        "account_type": {
+          "name": "account_type",
+          "type": "account_type",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "'staff'"
         },
         "image": {
           "name": "image",
@@ -959,12 +967,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "unconfirmed_at": {
-          "name": "unconfirmed_at",
-          "type": "timestamp with time zone",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -1760,6 +1762,14 @@
     }
   },
   "enums": {
+    "public.account_type": {
+      "name": "account_type",
+      "schema": "public",
+      "values": [
+        "client",
+        "staff"
+      ]
+    },
     "public.project_status": {
       "name": "project_status",
       "schema": "public",
@@ -1854,8 +1864,7 @@
         "client_slots_ready",
         "client_brief_ready",
         "client_responded",
-        "intake_failed",
-        "email_unconfirmed"
+        "intake_failed"
       ]
     },
     "public.record_state": {

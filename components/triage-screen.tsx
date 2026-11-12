@@ -4,7 +4,6 @@ import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
 import { Button } from "@/components/ui/button"
-import { FileStatusChip } from "@/components/file-status-chip"
 import { SegmentedChoice } from "@/components/segmented-choice"
 import { ActionButton, SheetActions } from "@/components/sheet-actions"
 import {
@@ -15,7 +14,7 @@ import {
 } from "@/components/sheet-table"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
-import type { ReviewFile } from "@/lib/review"
+import type { ClientFile } from "@/lib/client-files"
 import type { FieldError, FormValues, TableRow } from "@/lib/tool-definition"
 import { PROCEED, REJECT, type TriageValues } from "@/lib/triage"
 
@@ -46,7 +45,7 @@ type Props = {
   recordId?: string
   updatedAt?: string
   // The files of D1.1, read live, and the D1.1 record they are opened through.
-  files: ReviewFile[]
+  files: ClientFile[]
   filesRecordId: string | null
   // The fixed checks, in order.
   checks: string[]
@@ -62,9 +61,11 @@ type Props = {
 }
 
 // How wide each column is when there is room. Narrow, the rows stack instead.
-const filesWidths = "minmax(0,1.3fr) 8.5rem 7rem minmax(0,2fr)"
+const filesWidths =
+  "minmax(0,calc(100%/var(--page-columns,3))) minmax(0,1fr) minmax(0,1fr)"
 
-const checksWidths = "minmax(0,1.4fr) 13rem minmax(0,2fr)"
+const checksWidths =
+  "minmax(0,calc(100%/var(--page-columns,3))) minmax(0,1fr) minmax(0,1fr)"
 
 const STALE = "Someone else saved this record. Reload to see their changes."
 
@@ -244,7 +245,7 @@ export function TriageScreen({
         ) : (
           <DataTable
             label="Files"
-            columns={["File", "Status", "", "Description"]}
+            columns={["File", "", "Description"]}
             widths={filesWidths}
           >
             {files.map((file, index) => (
@@ -256,9 +257,6 @@ export function TriageScreen({
                   <span className="text-xs text-muted-foreground">
                     Uploaded {file.dateUploaded}
                   </span>
-                </DataCell>
-                <DataCell label="Status">
-                  <FileStatusChip status={file.status} />
                 </DataCell>
                 <DataCell label="">
                   {file.fileLink && filesRecordId && (
@@ -396,33 +394,35 @@ export function TriageScreen({
           ))}
         </ul>
       )}
-      <SheetActions message={message}>
-        {canWrite && (
-          <>
+      {(canWrite || (canApprove && recordId) || message) && (
+        <SheetActions message={message}>
+          {canWrite && (
+            <>
+              <ActionButton
+                variant="outline"
+                disabled={pending}
+                onClick={() => run(() => save(typed()), "Draft saved.")}
+              >
+                Save draft
+              </ActionButton>
+              <ActionButton
+                disabled={pending}
+                onClick={() => run(() => submit(typed()), "Submitted.")}
+              >
+                Submit for approval
+              </ActionButton>
+            </>
+          )}
+          {canApprove && recordId && (
             <ActionButton
-              variant="outline"
               disabled={pending}
-              onClick={() => run(() => save(typed()), "Draft saved.")}
+              onClick={() => run(() => approve({ recordId }), "Approved.")}
             >
-              Save draft
+              Approve
             </ActionButton>
-            <ActionButton
-              disabled={pending}
-              onClick={() => run(() => submit(typed()), "Submitted.")}
-            >
-              Submit for approval
-            </ActionButton>
-          </>
-        )}
-        {canApprove && recordId && (
-          <ActionButton
-            disabled={pending}
-            onClick={() => run(() => approve({ recordId }), "Approved.")}
-          >
-            Approve
-          </ActionButton>
-        )}
-      </SheetActions>
+          )}
+        </SheetActions>
+      )}
       {stale && (
         <div
           role="alert"

@@ -12,7 +12,7 @@ export function ClientRequestTables({ request }: { request: RequestSheet }) {
             {group.rows.map((row) => (
               <div
                 key={row.label}
-                className="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)] not-last:border-b not-last:border-foreground/20"
+                className="grid grid-cols-[minmax(0,10rem)_minmax(0,1fr)] not-last:border-b not-last:border-foreground/20 @xl:grid-cols-[minmax(0,calc(100%/var(--page-columns,3)))_minmax(0,1fr)]"
               >
                 <dt className="border-r border-foreground/20 bg-muted/30 px-4 py-2.5 text-sm text-muted-foreground">
                   {row.label}

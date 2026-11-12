@@ -26,7 +26,7 @@ type Values = z.infer<typeof schema>
 
 export function SignInForm() {
   const router = useRouter()
-  const [failed, setFailed] = useState(false)
+  const [failed, setFailed] = useState<string | null>(null)
   const [shown, setShown] = useState(false)
 
   const form = useForm<Values>({
@@ -35,12 +35,24 @@ export function SignInForm() {
   })
 
   async function onSubmit(values: Values) {
-    setFailed(false)
+    setFailed(null)
 
     const { error } = await authClient.signIn.email(values)
 
+    // Not confirmed yet: Better-Auth has just sent the link again.
+    if (error?.status === 403) {
+      router.push(`/verify-email?email=${encodeURIComponent(values.email)}`)
+
+      return
+    }
+
+    // Only a wrong email or password is 401. Anything else is the server's.
     if (error) {
-      setFailed(true)
+      setFailed(
+        error.status === 401
+          ? "Wrong email or password."
+          : "Signing in did not work. Try again in a minute."
+      )
 
       return
     }
@@ -52,9 +64,7 @@ export function SignInForm() {
   return (
     <form noValidate onSubmit={form.handleSubmit(onSubmit)}>
       <FieldGroup className="gap-6">
-        {failed && (
-          <FieldError role="alert">Wrong email or password.</FieldError>
-        )}
+        {failed && <FieldError role="alert">{failed}</FieldError>}
         <Controller
           name="email"
           control={form.control}

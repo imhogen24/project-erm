@@ -101,7 +101,7 @@ export default async function Page({
   return (
     <>
       <MobileBar className="xl:hidden" canInvite={canInvite} />
-      <div className="drafting-grid min-h-svh py-[var(--cell)]">
+      <div className="drafting-grid min-h-svh py-[var(--inset)]">
         <AppSidebar name={session.user.name} project={projectNav(overview)} />
         <main className="table-wide table-home">
           <BackLink href="/" className="mb-3 border-y bg-background xl:hidden">

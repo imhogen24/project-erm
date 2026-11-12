@@ -1,7 +1,8 @@
-import { eq, inArray } from "drizzle-orm"
+import { and, asc, eq, inArray } from "drizzle-orm"
 
 import type { Database } from "@/db"
 import {
+  auditLog,
   people,
   personProjectRoles,
   projects,
@@ -11,6 +12,7 @@ import {
 } from "@/db/schema"
 import { accessRow, type Access } from "@/server/permissions/matrix"
 import { getRecord } from "@/server/records/records"
+import { systemActor } from "@/server/system/system"
 
 import { departments } from "./departments"
 
@@ -32,6 +34,12 @@ export type DocumentControl = {
   startedAt: Date
   completedAt: Date | null
   durationSeconds: number | null
+  // When a reviewer last acted on a submission, approving it or rejecting it.
+  // Empty until the first review.
+  checkedAt: Date | null
+  approvedAt: Date | null
+  // 1, plus one for every rejection.
+  iteration: number
 }
 
 type Assigned = { personId: string; name: string; role: Role }
@@ -146,23 +154,73 @@ export async function getDocumentControl(
 
   let preparedBy: Signer | null = null
 
+  // A tool only the client writes, such as D1.1, is prepared by the client.
+  const staffWriters = writers.filter((role) => role !== "Client")
+
   if (record.state !== "draft" && record.submittedBy) {
     preparedBy = actedBy(assigned, names, record.submittedBy, writers)
   } else {
     preparedBy =
-      onlyHolder(
-        assigned,
-        writers.filter((role) => role !== "Client")
-      ) ?? null
+      onlyHolder(assigned, staffWriters.length > 0 ? staffWriters : writers) ??
+      null
   }
 
   let checkedBy: Signer | null = null
   const approved = record.state === "approved" || record.state === "locked"
 
-  if (approved && record.approvedBy) {
+  // A record locked by the system, such as D1.1 when the client's form comes
+  // in, was checked by nobody.
+  if (approvers.length === 0 || record.approvedBy === systemActor) {
+    checkedBy = null
+  } else if (approved && record.approvedBy) {
     checkedBy = actedBy(assigned, names, record.approvedBy, approvers)
   } else {
     checkedBy = onlyHolder(assigned, ["PM"]) ?? null
+  }
+
+  // Every state move of the record, oldest first. A review is a move out of
+  // submitted by someone other than who submitted it, or any approval; a
+  // submitter taking their own work back is not one. A review back to draft is
+  // a rejection, and each one starts a new iteration.
+  const moves = await database
+    .select({
+      by: auditLog.actorId,
+      from: auditLog.oldValue,
+      to: auditLog.newValue,
+      at: auditLog.createdAt,
+    })
+    .from(auditLog)
+    .where(
+      and(
+        eq(auditLog.recordId, recordId),
+        eq(auditLog.action, "transitioned"),
+        eq(auditLog.field, "state")
+      )
+    )
+    .orderBy(asc(auditLog.createdAt))
+
+  let submitter: string | null = null
+  let checkedAt: Date | null = null
+  let rejections = 0
+
+  for (const move of moves) {
+    if (move.to === "submitted") {
+      submitter = move.by
+    } else if (
+      move.from === "submitted" &&
+      (move.to === "approved" || move.by !== submitter)
+    ) {
+      checkedAt = move.at
+      rejections += move.to === "draft" ? 1 : 0
+    }
+  }
+
+  const approvedAt = approved ? record.approvedAt : null
+
+  // An approval is a check, even one with no line in the audit log, unless
+  // nobody checked it.
+  if (checkedBy && approvedAt && (!checkedAt || approvedAt > checkedAt)) {
+    checkedAt = approvedAt
   }
 
   const startedAt = project!.startedAt
@@ -178,5 +236,8 @@ export async function getDocumentControl(
       completedAt === null
         ? null
         : Math.round((completedAt.getTime() - startedAt.getTime()) / 1000),
+    checkedAt,
+    approvedAt,
+    iteration: 1 + rejections,
   }
 }

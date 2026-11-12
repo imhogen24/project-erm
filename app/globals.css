@@ -122,9 +122,26 @@
   --sidebar-ring: oklch(0.553 0.013 58.071);
 }
 
+.dark {
+  --text-body: color-mix(in oklab, var(--foreground) 84%, var(--background));
+}
+
 /* Surfaces and marks for controls, made from the theme colours so light and
    dark follow on their own. Components use these, never a one-off opacity. */
 :root {
+  /* Three levels of text: headings and labels in full ink (--foreground),
+     content in --text-body, notes and counts in --muted-foreground. */
+  --text-body: color-mix(in oklab, var(--foreground) 70%, var(--background));
+  /* Every badge and chip is one size, whatever its colour, so badges in a
+     row line up: the shadcn Badge, .state-badge, .status-chip, .result-chip. */
+  --badge-height: 1.5rem;
+  /* Tables split the sheet's width into --page-columns equal parts, the
+     most columns any table on the page has (set on the sheet). The first
+     column of every table is one part, so first columns line up; the other
+     columns share the rest, so a table as wide as the widest is all equal. */
+  --page-columns: 3;
+  --badge-padding: 0.5rem;
+  --badge-text: 0.75rem;
   --surface-tile: color-mix(in oklab, var(--foreground) 5%, transparent);
   --surface-tile-hover: color-mix(in oklab, var(--foreground) 9%, transparent);
   --surface-chosen: color-mix(in oklab, var(--primary) 16%, transparent);
@@ -136,6 +153,7 @@
   --meter-on: var(--primary);
   --meter-off: color-mix(in oklab, var(--foreground) 15%, transparent);
   --meter-full: var(--muted-foreground);
+  --hatch-line: color-mix(in oklab, var(--foreground) 14%, transparent);
   --tile-padding: 1.25rem;
   /* Every field, select and the button beside it share one height. */
   --control-height: 3rem;
@@ -467,11 +485,11 @@
     flex-shrink: 0;
     align-items: center;
     gap: 0.375rem;
-    height: 1.75rem;
-    padding-inline: 0.625rem;
+    height: var(--badge-height);
+    padding-inline: var(--badge-padding);
     border-radius: var(--radius-control);
     background: var(--chip-done);
-    font-size: 0.75rem;
+    font-size: var(--badge-text);
     font-weight: 500;
     color: var(--foreground);
   }
@@ -501,11 +519,11 @@
     flex-shrink: 0;
     align-items: center;
     gap: 0.375rem;
-    height: 1.75rem;
-    padding-inline: 0.625rem;
+    height: var(--badge-height);
+    padding-inline: var(--badge-padding);
     border-radius: var(--radius-control);
     background: var(--chip-done);
-    font-size: 0.75rem;
+    font-size: var(--badge-text);
     font-weight: 500;
     color: var(--muted-foreground);
   }
@@ -620,6 +638,21 @@
     opacity: 1;
   }
 
+  /* The row of column names at the top of a table: a fine diagonal hatch
+     under strong text, so it stands apart from the quiet title above it and
+     the answers below it. */
+  .column-header-row {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--hatch-line) 0 1px,
+      transparent 1px 7px
+    );
+    color: var(--foreground);
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 600;
+  }
+
   /* A message that confirms something, such as a new invite link. */
   .note-panel {
     border-radius: var(--radius-control);
@@ -644,11 +677,11 @@
     flex-shrink: 0;
     align-items: center;
     gap: 0.375rem;
-    height: 1.75rem;
+    height: var(--badge-height);
     border-radius: var(--radius-control);
     background: var(--chip-done);
-    padding-inline: 0.625rem;
-    font-size: 0.75rem;
+    padding-inline: var(--badge-padding);
+    font-size: var(--badge-text);
     color: var(--muted-foreground);
   }
 
@@ -951,8 +984,33 @@
   * {
     @apply border-border outline-ring/50;
   }
+  /* Content reads in --text-body. Headings, labels, table headers and any
+     text set heavier stay in full ink, so weight and colour rise together.
+     A colour class on the element still wins. */
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background;
+    color: var(--text-body);
+  }
+  :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
+    label,
+    legend,
+    th,
+    strong,
+    b,
+    .font-medium,
+    .font-semibold,
+    .font-bold,
+    [data-slot="card-title"],
+    [data-slot="field-label"],
+    [data-slot="table-head"]
+  ) {
+    color: var(--foreground);
   }
   button:not(:disabled),
   [role="button"]:not(:disabled) {
@@ -984,31 +1042,36 @@
 .drafting-grid {
   --cell: calc(100vw / 4);
   /* The colour of a drawn line, opaque so two lines on one pixel stay one line. */
-  --rule: color-mix(in oklab, var(--foreground) 60%, var(--background));
+  /* The outline of a box is the paper's own major line, made opaque, so
+     boxes sit on the grid rather than being drawn over it. */
+  /* The paper's lines: one faint weight for every line, large squares and
+     small alike, so the grid guides the eye without competing with the
+     content. */
+  /* Every major line falls on a minor one, so the minor layer draws them all
+     and the major layer stays clear; two layers on one pixel would read
+     darker. */
+  --grid-minor: color-mix(in oklab, var(--foreground) 4.5%, transparent);
+  --grid-major: transparent;
+  /* The outline of the three parts of a page (sidebar, top bar, sheet): a
+     clear line, stronger than the paper's so the parts stand out from it. */
+  --rule: color-mix(in oklab, var(--foreground) 30%, var(--muted));
+  /* How far the sidebar and the page sit from the top and bottom of the
+     screen: a whole square on small screens, one small square on wide ones. */
+  --inset: var(--cell);
   /* Rules on the sheet read as drawn lines, not faint dividers. */
   --border: color-mix(in oklab, var(--foreground) 22%, transparent);
+}
+
+/* The squared paper of the drafting table. A tool page's pinned top bar sits
+   on the same paper, so the sheet slides under it unseen. */
+.drafting-grid,
+.paper-mat {
   background-color: var(--muted);
   background-image:
-    linear-gradient(
-      to right,
-      color-mix(in oklab, var(--foreground) 14%, transparent) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      color-mix(in oklab, var(--foreground) 14%, transparent) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to right,
-      color-mix(in oklab, var(--foreground) 5%, transparent) 1px,
-      transparent 1px
-    ),
-    linear-gradient(
-      to bottom,
-      color-mix(in oklab, var(--foreground) 5%, transparent) 1px,
-      transparent 1px
-    );
+    linear-gradient(to right, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(to right, var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid-minor) 1px, transparent 1px);
   /* In background-position, 100% is the width less the tile, which leaves the
      same remainder for a whole square; a small square adds its quarter back. */
   background-position:
@@ -1102,10 +1165,46 @@
 /* The floating sidebar, one square in from the centred grid's first line. For
    a fixed box, 100% is the window less its scroll bar: the same width the grid
    is centred in. */
+/* On a wide screen a tool page keeps its top bar, with the document control,
+   in view: the paper stays still, the bar is pinned level with the sidebar,
+   and only the sheet scrolls, passing under the bar's mat. */
+@media (min-width: 1280px) {
+  .drafting-grid {
+    --inset: calc(var(--cell) / 4);
+  }
+  .drafting-grid:has(.paper-mat),
+  .paper-mat {
+    background-attachment: fixed;
+  }
+  .paper-mat {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    margin-top: calc(var(--inset) * -1);
+    padding-top: var(--inset);
+    padding-bottom: calc(var(--cell) / 4);
+    /* One pixel wider on the right, over the line the sheet lends there. */
+    margin-right: -1px;
+    padding-right: 1px;
+  }
+  /* The sheet's top line, kept on the mat's lower edge: before scrolling it
+     lies on the sheet's own top border; while scrolling it stays, and the
+     sheet passes under it, so the sheet never loses its top edge. */
+  .paper-mat::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: -1px;
+    left: 0;
+    height: 1px;
+    background: var(--rule);
+  }
+}
+
 .sidebar-frame {
   position: fixed;
-  top: var(--cell);
-  bottom: var(--cell);
+  top: var(--inset);
+  bottom: var(--inset);
   left: calc(round(down, mod(100%, var(--cell)) / 2, 1px) + var(--cell));
   width: calc(var(--cell) * 3);
 }
@@ -1114,7 +1213,7 @@
    and the window scrolls. */
 .page-sheet {
   display: flex;
-  min-height: calc(100svh - var(--cell) * 2);
+  min-height: calc(100svh - var(--inset) * 2);
   flex-direction: column;
   background: var(--background);
 }

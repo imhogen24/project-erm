@@ -13,6 +13,7 @@ import {
   roles,
   toolRecords,
   type JsonObject,
+  type AccountType,
   type Role,
 } from "@/db/schema"
 
@@ -24,7 +25,6 @@ import {
   staffByHandle,
 } from "./seed-data/people"
 import {
-  featuredProject,
   isTier3,
   projects as seedProjects,
   requestIdOf,
@@ -333,32 +333,14 @@ async function addNotifications(
   }
 }
 
-// The id of the featured project, for the links the preview guide prints.
-export async function featuredProjectId(url: string) {
-  assertLocal(url)
-
-  const database = createDatabase(url)
-
-  try {
-    const [project] = await database
-      .select({ id: projects.id })
-      .from(projects)
-      .where(eq(projects.name, featuredProject.name))
-      .limit(1)
-
-    return project?.id
-  } finally {
-    await database.pool.end()
-  }
-}
-
 // Each person is checked before adding, so running this again changes nothing
 // and only what is missing is added back. A password already set is kept.
 // Returns the person's id and whether they were new.
 async function addPerson(
   database: Database,
   person: { name: string; email: string },
-  passwordHash: string
+  passwordHash: string,
+  accountType: AccountType = "staff"
 ) {
   return database.transaction(async (transaction) => {
     const [existing] = await transaction
@@ -372,7 +354,12 @@ async function addPerson(
     if (!personId) {
       const [created] = await transaction
         .insert(people)
-        .values({ name: person.name, email: person.email, emailVerified: true })
+        .values({
+          name: person.name,
+          email: person.email,
+          emailVerified: true,
+          accountType,
+        })
         .returning({ id: people.id })
 
       personId = created!.id
@@ -409,7 +396,7 @@ async function addPerson(
 
 // The roles each person holds on the project. "everyone" is one person for
 // every role, and every project has its client.
-function rolesOnProject(project: SeedProject) {
+export function rolesOnProject(project: SeedProject) {
   const held: { handle: string; role: Role }[] = []
 
   if (project.team === "everyone") {
@@ -487,7 +474,12 @@ export async function seed(url: string): Promise<SeedUser[]> {
 
       await addRequest(database, project, projectId)
 
-      const client = await addPerson(database, project.client, passwordHash)
+      const client = await addPerson(
+        database,
+        project.client,
+        passwordHash,
+        "client"
+      )
 
       await giveProjectRole(database, client.id, projectId, "Client")
 

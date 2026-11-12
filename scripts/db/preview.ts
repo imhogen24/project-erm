@@ -1,14 +1,10 @@
 import type { Role } from "@/db/schema"
 
-import { loginFor } from "./seed-data/people"
-import { SEED_PASSWORD } from "./seed-users"
-
-const BASE = "http://localhost:3000"
-
 // Each screen built so far, and how to see it. The issue that builds a screen
-// adds its line here, so `bun run dev` always says who to log in as, where to
-// go, and what should be there.
-type Preview = {
+// adds its line here, then runs `bun run accounts:doc`, so
+// docs/TEST_ACCOUNTS/_.md always says who to log in as, where to go, and what
+// should be there.
+export type Preview = {
   screen: string
   loginAs: Role
   // Someone other than the first person with the role, when the screen is on
@@ -18,7 +14,7 @@ type Preview = {
   expect: string
 }
 
-const previews: Preview[] = [
+export const previews: Preview[] = [
   {
     screen: "Projects that need a team (IT/Admin)",
     loginAs: "IT/Admin",
@@ -55,6 +51,13 @@ const previews: Preview[] = [
       "D1.3 on Tema Foods Boiler Skid is locked, so it reads as a finished sheet: Core Objectives and Scope, Input / Output Operands (M, E, I, L with Material, Energy, Information, Living thing under them), Operators and one missing item. Ho Water Treatment Dosing Skid has a D1.3 waiting for the PM. To fill in a D1.3 from empty, approve a D1.2 on another Tier 1 project.",
   },
   {
+    screen: "Top bar over every tool: the project and the document control",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.3`,
+    expect:
+      "Over the sheet, in its own box: a back arrow, the tool's title (the project name, tier and request ID are in the sidebar; on a phone they sit above the title) with its state badge, View client request at the right, with an Iteration badge beside the state, then the document control in one slim row under it (Prepared by, Checked by, Date checked, Date approved, Started, Completed): small grey labels over bold values, with the role (OM, PM) and the time taken as badges. The sheet below holds only the tool's tables. No sentence about the state is shown; the badge says it. Scroll on a wide screen: the bar stays put, level with the sidebar, and the sheet slides under it. On a phone the document control folds into a Document control row to tap. Every table title (Core Objectives and Scope, ...) is plain text on no fill, and the row of column names under it is hatched with bold text. On Tema Foods Boiler Skid, D1.3 is locked: Date checked and Date approved are both the approval time, and Iteration is 1. On Ho Water Treatment Dosing Skid, D1.3 waits for the PM: both dates are -, Iteration is 1. Iteration goes up each time someone other than the submitter moves a submitted record back to draft.",
+  },
+  {
     screen: "D1.4 acknowledgement email, as the OM (RDP-150)",
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.4`,
@@ -76,11 +79,27 @@ const previews: Preview[] = [
       "After Send, the D1.4 tile shows Locked and a grey Sent chip, and the D1.5 tile is greyed with This tool opens after D1.4 is delivered. Start the Inngest dev server (docs/DEPLOYMENT) and within 5 minutes the delivery check runs: with no RESEND_API_KEY every email counts as delivered, so the chip turns orange with a tick, Delivered, and D1.5 opens. Open D1.4: the same chip sits beside Locked in the title block and Delivery Status reads Delivered. With a real key, an address that bounces turns the chip red, Bounced; the PM gets a notification, and D1.4 shows a red box above the form, This email bounced. Correct the address and try again., with Sent To and Retry. A bad address is refused next to the button. Retry sends the same email again and the chip goes back to Sent. The OM sees This email bounced. The Project Manager has been told. and no Retry.",
   },
   {
-    screen: "D1.1 review sheet",
+    screen: "D1.1 client web form",
     loginAs: "PM",
     path: (id) => `/projects/${id}/tools/D1.1`,
     expect:
-      "The same sheet as D1.2: request status and the attached files as tables, with Pending | Reviewed, read only because D1.1 is locked.",
+      "D1.1 is the client's web form, locked the moment it came in: the answers in tables (Contact, Project, Systems, Submission) and the attached files, read only. The OM, PM, CR and IT/Admin read it; nobody else sees it. The PM sees a change request on it from the OM: approve it and the client can edit and resend the form, which locks D1.1 again.",
+  },
+  {
+    screen: "Client: start a new project",
+    loginAs: "Client",
+    email: "kwaku.ampofo@temafoods.test",
+    path: () => "/",
+    expect:
+      "Kwaku Ampofo, a client, sees their projects, and the last square of the grid is Start new project with a plus. Press it, choose Tier 1 (Custom Engineering & Factory Solutions) or Tier 3 (Engineering Drafting & Digitization), and fill the same form as on the IMHOGEN website. File attachments has Add files: choose images or PDFs and each uploads at once, listed by name with a cross to remove it (needs UPLOADTHING_TOKEN). Send request creates the project with D1.1 locked and opens it; it waits for the IT/Admin to assign a team. D1.1 lists the files by name, and Open file opens each one.",
+  },
+  {
+    screen: "Client sign-up and confirm email",
+    loginAs: "Client",
+    email: "nobody: sign up with an email you can open",
+    path: () => "/sign-up",
+    expect:
+      "Create your account asks for full name, email and password; the sign-in page links here with Create an account. Create account opens Check your email with the address and Send the link again; signing in before confirming opens it too. The link really is emailed (an address ending in .test or example.com never is). Once confirmed, the client lands on Your projects with only Start new project, and any website request made with that email is already theirs.",
   },
   {
     screen: "Form tools on the same sheet (dev preview)",
@@ -140,20 +159,3 @@ const previews: Preview[] = [
       "A bell at the top right of the sidebar header (on a narrow screen, in the top bar before Sign out) with the number 2 on it. Press it: newest first, D1.2 is waiting for your approval on Tamale Shea Butter Processing Plant, then A change to D1.1 is waiting for your decision on Tema Foods Boiler Skid, both with a dot for unread, then older read notes: tools locked two days ago and the projects Ama was added to. Click one: you go to its page and the number drops by 1. Press Mark all read: the number and the dots go. Log in as the OM, kwabena.asante@imhogen.test, to see the empty message: You have no notifications. Notifications cannot be deleted, so once read they stay read.",
   },
 ]
-
-// Printed on every start, so nobody has to ask who to log in as.
-export function printPreviews(projectId: string | undefined) {
-  if (!projectId) {
-    return
-  }
-
-  console.log(`\nSee it in the browser: ${BASE}/sign-in`)
-  console.log(`Password for everyone: ${SEED_PASSWORD}\n`)
-
-  for (const preview of previews) {
-    console.log(preview.screen)
-    console.log(`  Log in as: ${preview.email ?? loginFor(preview.loginAs)}`)
-    console.log(`  Visit:     ${BASE}${preview.path(projectId)}`)
-    console.log(`  You see:   ${preview.expect}\n`)
-  }
-}

@@ -9,15 +9,18 @@ import {
   submitRecord,
   transitionRecord,
 } from "@/server/records/records"
-import { registerTestD11 } from "@/server/tools/testing"
+import { registerTestTools } from "@/server/tools/testing"
+import { loadWorkflow } from "@/server/workflow/workflow"
 
 import { getDocumentControl } from "./document-control"
 
 const database = createTestDatabase()
 
-// The real workflow map is in force, so D1.1 opens on a new project. On D1.1
-// the OM and the Client write and the PM approves.
-registerTestD11()
+// D1.3 stands for any tool the OM writes and the PM approves, open from the
+// start of the project.
+registerTestTools({ wb01: ["D1.3"] })
+
+loadWorkflow([{ workbook: "wb01", tools: [{ tool: "D1.3" }] }])
 
 const REQUEST_ID = "T1-1789787898386"
 
@@ -42,10 +45,9 @@ async function addPerson(name: string, held: Role[] = []) {
 function draft(actor: string) {
   return saveDraft(database, actor, {
     projectId,
-    toolId: "D1.1",
+    toolId: "D1.3",
     cycle: 1,
-    // Reviewed, so the PM may approve it.
-    values: { requestStatus: "Reviewed", attachedFiles: [] },
+    values: { note: "Ready" },
   })
 }
 
@@ -90,16 +92,16 @@ describe("getDocumentControl", () => {
 
   it("names the person who submitted as preparer once submitted", async () => {
     const om = await addPerson("Efua", ["OM"])
-    const client = await addPerson("Kojo", ["Client"])
+    const other = await addPerson("Kojo", ["OM"])
     const record = await draft(om)
 
-    await submitRecord(database, client, record.id)
+    await submitRecord(database, other, record.id)
 
     expect((await block(om, record.id)).preparedBy).toEqual({
-      personId: client,
+      personId: other,
       name: "Kojo",
-      role: "Client",
-      department: "External",
+      role: "OM",
+      department: "Operations",
     })
   })
 

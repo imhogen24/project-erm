@@ -145,7 +145,7 @@ describe("the metadata", () => {
 })
 
 describe("the files", () => {
-  it("comes back in D1.1's order with the type, link and status", async () => {
+  it("comes back in D1.1's order with the label and link", async () => {
     await addTier1({
       requestId: "T1-1",
       files: [link("one"), link("two"), link("three")],
@@ -163,33 +163,6 @@ describe("the files", () => {
       link("three"),
     ])
     expect(details?.files.every((file) => file.label !== "")).toBe(true)
-    expect(details?.files.map((file) => file.status)).toEqual([
-      "Pending",
-      "Pending",
-      "Pending",
-    ])
-  })
-
-  it("shows the new status after D1.1 changes", async () => {
-    await addTier1({ requestId: "T1-1", files: [link("one"), link("two")] })
-    await pull()
-
-    const projectId = await projectOf("T1-1")
-    const om = await addToProject(projectId, "OM")
-
-    await database.pool.query(
-      `UPDATE tool_records
-       SET payload = jsonb_set(payload, '{attachedFiles,1,status}', '"Reviewed"')
-       WHERE project_id = $1 AND tool_id = 'D1.1'`,
-      [projectId]
-    )
-
-    const details = await getRequestDetails(database, om, projectId)
-
-    expect(details?.files.map((file) => file.status)).toEqual([
-      "Pending",
-      "Reviewed",
-    ])
   })
 
   it("names the D1.1 record the files are opened through", async () => {
@@ -245,6 +218,20 @@ describe("who may read it", () => {
     const client = await addToProject(projectId, "Client")
 
     expect(await getRequestDetails(database, client, projectId)).toBeNull()
+  })
+
+  it("gives the LO, who reads D1.2 but not D1.1, no sender and no files", async () => {
+    await addTier1({ requestId: "T1-1", files: [link("one")] })
+    await pull()
+
+    const projectId = await projectOf("T1-1")
+    const lo = await addToProject(projectId, "LO")
+
+    expect(await getRequestDetails(database, lo, projectId)).toEqual({
+      metadata: null,
+      files: [],
+      filesRecordId: null,
+    })
   })
 
   it("gives a person outside the project nothing", async () => {

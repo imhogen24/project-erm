@@ -24,7 +24,7 @@ export default async function Page() {
   return (
     <>
       <MobileBar className="xl:hidden" canInvite />
-      <div className="drafting-grid min-h-svh py-[var(--cell)]">
+      <div className="drafting-grid min-h-svh py-[var(--inset)]">
         <AppSidebar name={session.user.name} current="invites" canInvite />
         <main className="table-project table-home">
           <PageSheet

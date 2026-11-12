@@ -1,8 +1,9 @@
 import { randomUUID } from "node:crypto"
 
 import { expect, type Page } from "@playwright/test"
+import { createEmailVerificationToken } from "better-auth/api"
 import { hashPassword } from "better-auth/crypto"
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 
 import { createDatabase } from "@/db"
 
@@ -12,6 +13,7 @@ import { acceptInvite, createInvite } from "@/server/invites/invites"
 import {
   accounts,
   emailLog,
+  files,
   intakeSubmissions,
   people,
   personCompanyRoles,
@@ -60,7 +62,7 @@ export async function makePerson(name = `Person ${tag()}`) {
   const id = await withDatabase(async (database) => {
     const [person] = await database
       .insert(people)
-      .values({ name, email })
+      .values({ name, email, emailVerified: true })
       .returning({ id: people.id })
 
     await database.insert(accounts).values({
@@ -157,12 +159,14 @@ export async function addRecord(
   return record!.id
 }
 
+// Waits for the form to be ready before typing, and gives the first page after
+// sign-in time to compile on a cold dev server.
 export async function signIn(page: Page, email: string) {
-  await page.goto("/sign-in")
+  await page.goto("/sign-in", { waitUntil: "networkidle" })
   await page.getByLabel("Email").fill(email)
   await page.getByLabel("Password").fill(PASSWORD)
   await page.getByRole("button", { name: "Sign in" }).click()
-  await expect(page).toHaveURL(/\/$/)
+  await expect(page).toHaveURL(/\/$/, { timeout: 30_000 })
 }
 
 export async function sidewaysScroll(page: Page) {
@@ -313,4 +317,86 @@ export async function lockEarlierTools(projectId: string) {
       toolId === "D1.4" ? { payload: { deliveryStatus: "Delivered" } } : {}
     )
   }
+}
+
+// The account a person made at /sign-up, or nothing yet.
+export async function accountOf(email: string) {
+  return withDatabase(async (database) => {
+    const [person] = await database
+      .select({
+        accountType: people.accountType,
+        emailVerified: people.emailVerified,
+      })
+      .from(people)
+      .where(eq(people.email, email))
+
+    return person
+  })
+}
+
+// The link in the confirm-email message. It is never stored, and a test never
+// reads a real inbox, so the test signs the same token the server would.
+export async function confirmLink(email: string) {
+  const secret = process.env.BETTER_AUTH_SECRET
+
+  if (!secret) {
+    throw new Error(
+      "BETTER_AUTH_SECRET is not set. Run with `bun run test:e2e`."
+    )
+  }
+
+  const token = await createEmailVerificationToken(secret, email)
+
+  return `/api/auth/verify-email?token=${token}&callbackURL=%2F`
+}
+
+// A client who made their own account and confirmed their email.
+export async function makeClient(name = `Client ${tag()}`) {
+  const person = await makePerson(name)
+
+  await withDatabase((database) =>
+    database
+      .update(people)
+      .set({ accountType: "client" })
+      .where(eq(people.id, person.id))
+  )
+
+  return person
+}
+
+// What UploadThing's callback saves once a file is stored, for tests that
+// stand in for UploadThing.
+export async function addUpload(personId: string, key: string, name: string) {
+  return withDatabase(async (database) => {
+    const [file] = await database
+      .insert(files)
+      .values({
+        storage: "uploadthing",
+        key,
+        name,
+        size: 2048,
+        contentType: "application/pdf",
+        uploadedBy: personId,
+      })
+      .returning({ id: files.id, name: files.name })
+
+    return file!
+  })
+}
+
+// The files D1.1 lists on a project.
+export async function d11FilesOf(projectId: string) {
+  return withDatabase(async (database) => {
+    const [record] = await database
+      .select({ payload: toolRecords.payload })
+      .from(toolRecords)
+      .where(
+        and(
+          eq(toolRecords.projectId, projectId),
+          eq(toolRecords.toolId, "D1.1")
+        )
+      )
+
+    return record?.payload.attachedFiles
+  })
 }

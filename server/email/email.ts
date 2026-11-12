@@ -61,11 +61,13 @@ export function createFakeTransport(): FakeTransport {
   }
 }
 
+const RESEND = "resend"
+
 function createResendTransport(apiKey: string): Transport {
   const resend = new Resend(apiKey)
 
   return {
-    name: "resend",
+    name: RESEND,
     send: async (message, options) => {
       const { data, error } = await resend.emails.send(message, options)
 
@@ -89,6 +91,16 @@ const missingKeyTransport: Transport = {
   send: async () => {
     throw new Error("RESEND_API_KEY is not set")
   },
+}
+
+// Domains kept for testing (RFC 2606, RFC 6761). No inbox can exist there, so
+// an email to one is never handed to the real provider. Seed people and the
+// browser tests use them, so a real key in .env.development sends nothing.
+const reservedDomain =
+  /(\.(test|example|invalid|localhost)|@example\.(com|net|org))$/i
+
+export function isReservedAddress(address: string) {
+  return reservedDomain.test(address)
 }
 
 export function getTransport(): Transport {
@@ -141,7 +153,12 @@ export async function sendEmail<K extends EmailKind>(
   try {
     const email = renderEmail(input.kind, input.data)
 
-    const { id } = await transport.send(
+    const chosen =
+      transport.name === RESEND && isReservedAddress(to)
+        ? localTransport
+        : transport
+
+    const { id } = await chosen.send(
       {
         from: requireEnv("EMAIL_FROM"),
         to,

@@ -131,8 +131,29 @@
     {
       "idx": 18,
       "version": "7",
-      "when": 1794424135258,
-      "tag": "0018_email_delivery",
+      "when": 1794408754954,
+      "tag": "0018_account_type",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1794410730446,
+      "tag": "0019_signed_up",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1794444842594,
+      "tag": "0020_client_files",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794449127006,
+      "tag": "0021_email_delivery",
       "breakpoints": true
     }
   ]

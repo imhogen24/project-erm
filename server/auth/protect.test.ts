@@ -22,7 +22,7 @@ const PASSWORD = "correct-horse-battery"
 
 async function signedInCookie() {
   const { rows } = await database.pool.query<{ id: string }>(
-    "INSERT INTO people (name, email) VALUES ('Ama', $1) RETURNING id",
+    "INSERT INTO people (name, email, email_verified) VALUES ('Ama', $1, true) RETURNING id",
     [EMAIL]
   )
 
@@ -127,8 +127,27 @@ describe("route protection", () => {
     expect(redirectsToSignIn(await proxy(request(path)))).toBe(true)
   })
 
+  it("leaves the upload route open for UploadThing's callback, which checks its own signature", async () => {
+    expect(redirectsToSignIn(await proxy(request("/api/uploadthing")))).toBe(
+      false
+    )
+    expect(
+      redirectsToSignIn(await proxy(request("/api/uploadthing/other")))
+    ).toBe(true)
+  })
+
   it("does not open a path that only starts like /sign-in", async () => {
     expect(redirectsToSignIn(await proxy(request("/sign-in-admin")))).toBe(true)
+  })
+
+  it("leaves sign-up and the confirm-email page open, since there is no session yet", async () => {
+    for (const path of ["/sign-up", "/verify-email"]) {
+      expect(redirectsToSignIn(await proxy(request(path)))).toBe(false)
+    }
+  })
+
+  it("does not open a path that only starts like /sign-up", async () => {
+    expect(redirectsToSignIn(await proxy(request("/sign-up/admin")))).toBe(true)
   })
 
   it("leaves invite links open, since the person has no account yet", async () => {

@@ -83,5 +83,11 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run db:migrate
       - run: bun run db:seed
-      - run: bunx playwright install --with-deps chromium
+      # The runner already has Chrome's system libraries, so only the browser
+      # is fetched, from Playwright, never from Ubuntu's package servers.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('bun.lock') }}
+      - run: bunx playwright install chromium
       - run: bun run test:e2e

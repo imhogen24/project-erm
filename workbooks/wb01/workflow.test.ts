@@ -53,6 +53,21 @@ const answers = new Map<string, JsonObject>([
   ["D1.1", { attachedFiles: [] }],
   ["D1.2", triage("Proceed to D1.3", "Pass")],
   [
+    "T3.D1.8a",
+    {
+      equipment: [{ tool: "Tape Measure" }],
+      dimensions: [
+        {
+          feature: "Outline",
+          method: "Tape Measure",
+          value: "4200 x 1800",
+          confidence: "Medium",
+        },
+      ],
+      photos: [{ view: "All views", captured: "Yes" }],
+    },
+  ],
+  [
     "D1.7",
     {
       actualDate: "2026-11-17",

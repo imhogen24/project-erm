@@ -25,8 +25,8 @@ import { featuredProject, requestIdOf } from "./projects"
 // 3) are where the tool being built is open: their records are locked up to
 // the tool before it. On Tema Foods that is D1.8: D1.4 is delivered, on D1.5
 // the client chose a meeting time, on D1.6 the invite went out, and the PM
-// approved the D1.7 meeting notes. On Tarkwa,
-// D1.4 is still open.
+// approved the D1.7 meeting notes. On Tarkwa it is T3.D1.8a: D1.4 is
+// delivered.
 
 export type SeedState = "draft" | "submitted" | "locked"
 
@@ -718,7 +718,23 @@ export const projectRecords = new Map<string, SeedRecord[]>(
           })),
         },
       },
-      // D1.4 is left open, so the acknowledgement email can be tried on Tier 3.
+      // D1.4 went to the client and was delivered, so T3.D1.8a is open for
+      // the AE. Obuasi Workshop Crane Rail keeps a Tier 3 D1.4 open to try.
+      {
+        toolId: "D1.4",
+        state: "locked",
+        day: 3,
+        payload: payloadOf({
+          sentTo: "joseph.arhin@tarkwaminesupport.test",
+          sentBy: "selorm.dzigbordi@imhogen.test",
+          subject:
+            "Acknowledgement of Tarkwa Mine Pump Station Drawings request",
+          body: "Dear Joseph Arhin,\n\nThank you for reaching out to IMHOGEN LTD. We have successfully received your project inquiry.\n\nBest regards",
+          dateSent: "2026-11-06",
+          timeSent: "09:40",
+          deliveryStatus: "Delivered",
+        }),
+      },
     ],
     "Takoradi Port Conveyor Upgrade": [
       {

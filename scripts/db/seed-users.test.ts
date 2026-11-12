@@ -230,7 +230,7 @@ describe("the projects", () => {
 })
 
 describe("the Tier 3 working project", () => {
-  it("is active and staffed, with D1.1, D1.2 and T3.D1.3a locked so D1.4 is open, and never D1.3", async () => {
+  it("is active and staffed, with D1.1 to D1.4 locked so T3.D1.8a is open, and never D1.3 or D1.8", async () => {
     await seed(url)
 
     const project = await projectIdOf(featuredTier3Project.name)
@@ -247,7 +247,7 @@ describe("the Tier 3 working project", () => {
       {
         service_track: "Tier_3",
         status: "active",
-        records: "D1.1:locked,D1.2:locked,T3.D1.3a:locked",
+        records: "D1.1:locked,D1.2:locked,D1.4:locked,T3.D1.3a:locked",
       },
     ])
 
@@ -255,8 +255,9 @@ describe("the Tier 3 working project", () => {
       (tool) => tool.toolId
     )
 
-    expect(open).toContain("D1.4")
+    expect(open).toContain("T3.D1.8a")
     expect(open).not.toContain("D1.3")
+    expect(open).not.toContain("D1.8")
   })
 })
 

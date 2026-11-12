@@ -141,6 +141,13 @@
       "when": 1794410730446,
       "tag": "0019_signed_up",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1794444842594,
+      "tag": "0020_client_files",
+      "breakpoints": true
     }
   ]
 }

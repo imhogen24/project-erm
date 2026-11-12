@@ -11,7 +11,8 @@
     "db:generate": "dotenvx run -f .env.development -q -- drizzle-kit generate",
     "db:migrate": "dotenvx run -f .env.development -q -- tsx scripts/db/migrate.ts",
     "db:seed": "dotenvx run -f .env.development -q -- tsx scripts/db/seed.ts",
-    "db:prepare": "docker compose up -d --wait && bun run db:migrate && bun run db:seed",
+    "accounts:doc": "tsx scripts/db/write-accounts-doc.ts",
+    "db:prepare": "docker compose --progress quiet up -d --wait && bun run db:migrate && bun run db:seed",
     "db:reset": "docker compose up -d --wait && dotenvx run -f .env.development -q -- tsx scripts/db/reset.ts && bun run db:migrate && bun run db:seed",
     "test": "dotenvx run -f .env.development -q -- vitest run",
     "test:e2e": "dotenvx run -f .env.development -q -- playwright test",
@@ -28,6 +29,7 @@
     "@dotenvx/next-env": "^2.4.3",
     "@hookform/resolvers": "^6.0.0",
     "@phosphor-icons/react": "^2.1.10",
+    "@uploadthing/react": "7.3.3",
     "better-auth": "^1.7.12",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -46,6 +48,7 @@
     "shadcn": "^4.7.0",
     "tailwind-merge": "^3.5.0",
     "tw-animate-css": "^1.4.0",
+    "uploadthing": "7.7.4",
     "zod": "^4.6.7"
   },
   "overrides": {

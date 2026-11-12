@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto"
 import { expect, type Page } from "@playwright/test"
 import { createEmailVerificationToken } from "better-auth/api"
 import { hashPassword } from "better-auth/crypto"
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 
 import { createDatabase } from "@/db"
 
@@ -12,6 +12,7 @@ import { qualificationsOf } from "@/server/company-roles/company-roles"
 import { acceptInvite, createInvite } from "@/server/invites/invites"
 import {
   accounts,
+  files,
   intakeSubmissions,
   people,
   personCompanyRoles,
@@ -319,4 +320,55 @@ export async function confirmLink(email: string) {
   const token = await createEmailVerificationToken(secret, email)
 
   return `/api/auth/verify-email?token=${token}&callbackURL=%2F`
+}
+
+// A client who made their own account and confirmed their email.
+export async function makeClient(name = `Client ${tag()}`) {
+  const person = await makePerson(name)
+
+  await withDatabase((database) =>
+    database
+      .update(people)
+      .set({ accountType: "client" })
+      .where(eq(people.id, person.id))
+  )
+
+  return person
+}
+
+// What UploadThing's callback saves once a file is stored, for tests that
+// stand in for UploadThing.
+export async function addUpload(personId: string, key: string, name: string) {
+  return withDatabase(async (database) => {
+    const [file] = await database
+      .insert(files)
+      .values({
+        storage: "uploadthing",
+        key,
+        name,
+        size: 2048,
+        contentType: "application/pdf",
+        uploadedBy: personId,
+      })
+      .returning({ id: files.id, name: files.name })
+
+    return file!
+  })
+}
+
+// The files D1.1 lists on a project.
+export async function d11FilesOf(projectId: string) {
+  return withDatabase(async (database) => {
+    const [record] = await database
+      .select({ payload: toolRecords.payload })
+      .from(toolRecords)
+      .where(
+        and(
+          eq(toolRecords.projectId, projectId),
+          eq(toolRecords.toolId, "D1.1")
+        )
+      )
+
+    return record?.payload.attachedFiles
+  })
 }

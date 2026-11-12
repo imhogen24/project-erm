@@ -62,10 +62,14 @@ export default async function Page({
               <ClientRequestForm
                 track={chosen.track}
                 submitLabel="Send request"
-                submit={async (answers) => {
+                submit={async (answers, files) => {
                   "use server"
 
-                  return startProjectAction({ track: chosen.track, answers })
+                  return startProjectAction({
+                    track: chosen.track,
+                    answers,
+                    files,
+                  })
                 }}
               />
             ) : (

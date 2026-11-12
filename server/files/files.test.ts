@@ -2,11 +2,13 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
 import type { JsonObject, Role } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
+import { fileReference } from "@/lib/file-reference"
 import { createRecord } from "@/server/records/records"
 import { defineTool } from "@/server/tools/define-tool"
 import { tools } from "@/server/tools/registry"
 
 import { FileNotFoundError, fileLinkFor } from "./files"
+import type { Storages } from "./storage"
 
 const database = createTestDatabase()
 
@@ -203,6 +205,82 @@ describe("opening a file on a record", () => {
   it("refuses a record id that cannot be a record", async () => {
     await expect(
       fileLinkFor(database, actor, "not-a-uuid", first)
+    ).rejects.toBeInstanceOf(FileNotFoundError)
+  })
+})
+
+describe("opening a file uploaded in the ERM", () => {
+  // Stands in for UploadThing: a link that names the key it was made for.
+  const fakeStorage: Storages = {
+    uploadthing: {
+      signedLink: async (key) => `https://signed.example/${key}?expires=300`,
+    },
+  }
+
+  async function uploaded(on: string | null) {
+    const { rows } = await database.pool.query<{ id: string }>(
+      "INSERT INTO files (storage, key, name, size, content_type, uploaded_by, project_id) VALUES ('uploadthing', $1, 'nameplate.jpg', 2048, 'image/jpeg', $2, $3) RETURNING id",
+      [`key-${crypto.randomUUID()}`, actor, on]
+    )
+
+    return fileReference(rows[0]!.id)
+  }
+
+  async function keyOf(reference: string) {
+    const { rows } = await database.pool.query<{ key: string }>(
+      "SELECT key FROM files WHERE id = $1",
+      [reference.slice("file:".length)]
+    )
+
+    return rows[0]!.key
+  }
+
+  it("gives a fresh signed link for the file's key", async () => {
+    const reference = await uploaded(projectId)
+    const recordId = await addRecord(filesPayload(reference))
+    const om = await addPerson("Olu", ["OM"])
+
+    await expect(
+      fileLinkFor(database, om, recordId, reference, fakeStorage)
+    ).resolves.toBe(
+      `https://signed.example/${await keyOf(reference)}?expires=300`
+    )
+  })
+
+  it("refuses a file sent with another project, even if a record names it", async () => {
+    const reference = await uploaded(await addProject())
+    const recordId = await addRecord(filesPayload(reference))
+
+    await expect(
+      fileLinkFor(database, actor, recordId, reference, fakeStorage)
+    ).rejects.toBeInstanceOf(FileNotFoundError)
+  })
+
+  it("refuses a file never sent with a request", async () => {
+    const reference = await uploaded(null)
+    const recordId = await addRecord(filesPayload(reference))
+
+    await expect(
+      fileLinkFor(database, actor, recordId, reference, fakeStorage)
+    ).rejects.toBeInstanceOf(FileNotFoundError)
+  })
+
+  it("refuses a file the record does not hold", async () => {
+    const reference = await uploaded(projectId)
+    const recordId = await addRecord(filesPayload(first))
+
+    await expect(
+      fileLinkFor(database, actor, recordId, reference, fakeStorage)
+    ).rejects.toBeInstanceOf(FileNotFoundError)
+  })
+
+  it("refuses a person who may not read the record", async () => {
+    const reference = await uploaded(projectId)
+    const recordId = await addRecord(filesPayload(reference))
+    const stranger = await addPerson("Yaw", [])
+
+    await expect(
+      fileLinkFor(database, stranger, recordId, reference, fakeStorage)
     ).rejects.toBeInstanceOf(FileNotFoundError)
   })
 })

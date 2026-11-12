@@ -96,18 +96,25 @@ export const previews: Preview[] = [
       "D1.6 on Tema Foods is Locked: the meeting from D1.5 (Google Meet and its link), Kwabena Asante, Ama Owusu and Kojo Antwi ticked as IMHOGEN Attendees, Client Attendees Kwaku Ampofo, the sheet's five agenda topics, a chip Invite sent, and all three pre-meeting checks Done. Nothing can be edited. The browser tests walk the whole flow (e2e/d16-agenda.spec.ts): ticking attendees, Send calendar invite with its invite.ics file, and Ready for the meeting.",
   },
   {
-    screen: "D1.7 raw meeting notes, as the OM",
+    screen: "D1.7 raw meeting notes, approved",
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.7`,
     expect:
-      "D1.6 is locked, so D1.7 is open. 1.0 Meeting execution metadata: Actual Date and Actual Start Time start at the planned meeting; Actual End Time and Recording Link to type; Attendees Present (IMHOGEN) lists Kwabena Asante, Ama Owusu and Kojo Antwi and (Client) lists Kwaku Ampofo, each with Present to tick, and rows to add anyone else who joined. 2.0 Live discussion capture has D1.6's five agenda topics with their minutes, and Raw Notes / Direct Client Statements (needed on every row: remove a topic that was not discussed) and IMHOGEN Clarifications / Immediate Remarks to type; rows can be added and removed. 3.0 Parking lot: rows of Item Description and Action Required / Who to resolve?. 4.0 Meeting close-out: Primary Outcome, Client Next Step, IMHOGEN Next Step. Save draft keeps it; Submit checks the required fields and sends it to the PM for approval.",
+      "D1.7 on Tema Foods is Locked: the actual date and times, the three IMHOGEN attendees and the client's two ticked Present, three discussion topics with raw notes and remarks, one parking-lot item (a site visit date), and the close-out. Nothing can be edited. The client (kwaku.ampofo@temafoods.test) reads it too, since the PM approved it. The browser tests walk the whole flow (e2e/d17-notes.spec.ts): the OM starts from D1.6's agenda and attendees and submits, the PM sends it back with a reason or approves it, and the client sees IMHOGEN shares these notes with you once they are approved. until then.",
   },
   {
-    screen: "D1.7 raw meeting notes, as the PM",
-    loginAs: "PM",
-    path: (id) => `/projects/${id}/tools/D1.7`,
+    screen: "D1.8 needs assessment notes, as the LE",
+    loginAs: "LE",
+    path: (id) => `/projects/${id}/tools/D1.8`,
     expect:
-      "Before the OM saves anything: Nobody has started this tool yet. Once the OM submits, the PM (ama.owusu@imhogen.test) reads the notes and has Approve, which locks D1.7 and opens D1.8, and Send back, which asks What needs changing? and returns D1.7 to the OM as a draft; the OM then sees a red box Sent back for changes with the reason above the sheet, and a notification. The client (kwaku.ampofo@temafoods.test) sees IMHOGEN shares these notes with you once they are approved. until the PM approves, then reads the notes. LE and IT/Admin only read.",
+      "D1.7 is locked, so D1.8 is open for the Lead Engineer. 1.0 Synthesis metadata is the system's: Synthesized By your name, Date of Synthesis filled in when submitted, Reference Raw Notes ID D1.7 Raw Meeting Notes, approved with its date, and Client/Project Name Tema Foods Boiler Skid. 2.0 Confirmed constraints: the 13 fixed categories (INPUT: Material ... OPERATOR: Information System); under those the client answered on the web form, their answer in small text (Client: Carbon steel plate, stainless piping, insulation; Outputs: ... · By-products: ...; no contact details), with Confirmed Constraints / Specifications and Engineering Remarks to type. 3.0 Preliminary design specifications: the five requirement categories (Function ... Distribution Properties) with Specific Requirement / Tolerance, Priority Fixed or Wish, and a second Specific Requirement / Tolerance; rows can be added, and an added row needs its requirement and priority. 4.0: Synthesis Complete? No, Lead Engineer Signature with Sign, Ready for Internal Review (D1.9)? No. Sign, then Submit for approval: Synthesis Complete? turns Yes with the date.",
+  },
+  {
+    screen: "D1.8 needs assessment notes, as the PM",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.8`,
+    expect:
+      "Before the LE saves anything: Nobody has started this tool yet. Once the LE signs and submits, the PM (ama.owusu@imhogen.test) reads it with Approve, which locks D1.8, sets Ready for Internal Review (D1.9)? to Yes and opens D1.9, and Send back, which asks What needs changing? and returns it to the LE. The OM, client and IT/Admin only read it.",
   },
   {
     screen: "D1.1 client web form",

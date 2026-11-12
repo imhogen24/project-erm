@@ -51,8 +51,11 @@ async function lockThroughD19(projectId: string) {
   await addRecord(projectId, "D1.9", "locked")
 }
 
+// The first confirmed constraint, a field the Lead Engineer types on D1.8.
 function notes(page: Page) {
-  return page.getByRole("textbox", { name: "Synthesized By (Lead Engineer)" })
+  return page.getByLabel("Confirmed Constraints / Specifications, row 1", {
+    exact: true,
+  })
 }
 
 function capability(page: Page) {
@@ -160,7 +163,9 @@ test("a person with the right role signs, and the name and time show", async ({
 
   await lockEarlierTools(project.id)
   await addRecord(project.id, "D1.8", "draft", {
-    payload: { synthesizedBy: "Lea" },
+    payload: {
+      constraints: [{ category: "INPUT: Material", confirmed: "Lea" }],
+    },
   })
   await open(page, lead.email, project.id, "D1.8")
 
@@ -183,7 +188,9 @@ test("a person without the signing role has no Sign button", async ({
 
   await lockEarlierTools(project.id)
   await addRecord(project.id, "D1.8", "draft", {
-    payload: { synthesizedBy: "Lea" },
+    payload: {
+      constraints: [{ category: "INPUT: Material", confirmed: "Lea" }],
+    },
   })
 
   for (const person of [om, pm]) {
@@ -244,8 +251,7 @@ test("a save over someone else's newer save is refused and keeps the text", asyn
 
   await second.goto(`/projects/${project.id}/tools/D1.8`)
 
-  const synthesizedBy = (on: Page) =>
-    on.getByRole("textbox", { name: "Synthesized By (Lead Engineer)" })
+  const synthesizedBy = notes
 
   await synthesizedBy(page).fill("Lea")
   await page.getByRole("button", { name: "Save draft" }).click()

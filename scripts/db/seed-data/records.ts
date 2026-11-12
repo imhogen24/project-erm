@@ -23,8 +23,9 @@ import { featuredProject, requestIdOf } from "./projects"
 //
 // Tema Foods Boiler Skid (Tier 1) and Tarkwa Mine Pump Station Drawings (Tier
 // 3) are where the tool being built is open: their records are locked up to
-// the tool before it. On Tema Foods that is D1.7: D1.4 is delivered, on D1.5
-// the client chose a meeting time, and on D1.6 the invite went out. On Tarkwa,
+// the tool before it. On Tema Foods that is D1.8: D1.4 is delivered, on D1.5
+// the client chose a meeting time, on D1.6 the invite went out, and the PM
+// approved the D1.7 meeting notes. On Tarkwa,
 // D1.4 is still open.
 
 export type SeedState = "draft" | "submitted" | "locked"
@@ -417,6 +418,59 @@ export const projectRecords = new Map<string, SeedRecord[]>(
             ...each,
             status: DONE,
           })),
+        }),
+      },
+      // D1.7: the OM's notes from the discovery meeting, approved by the PM,
+      // so D1.8 is open for the Lead Engineer.
+      {
+        toolId: "D1.7",
+        state: "locked",
+        day: 7,
+        payload: payloadOf({
+          actualDate: temaSlots[1]!.date,
+          actualStartTime: "14:00",
+          actualEndTime: "14:40",
+          imhogenPresent: [
+            { name: "Kwabena Asante", present: true },
+            { name: "Ama Owusu", present: true },
+            { name: "Kojo Antwi", present: true },
+          ],
+          clientPresent: [
+            { name: "Kwaku Ampofo", present: true },
+            { name: "Plant manager", present: true },
+          ],
+          discussion: [
+            {
+              minutes: 5,
+              topic: "Introductions & Project Overview",
+              rawNotes: "They want the skid running before the mango season.",
+              remarks: "Their brief was detailed; no gaps on the overview.",
+            },
+            {
+              minutes: 15,
+              topic: "Technical Requirements (Inputs/Outputs)",
+              rawNotes:
+                "2 t/h saturated steam at 10 bar. Feed water from the existing softener. Diesel now, LPG later.",
+              remarks: "Burner must take both fuels; confirm LPG supply date.",
+            },
+            {
+              minutes: 10,
+              topic: "Operational Environment & Constraints",
+              rawNotes:
+                "Skid sits outdoors under a canopy; one operator per shift.",
+              remarks: "Controls must be simple; check ambient 40 °C rating.",
+            },
+          ],
+          parkingLot: [
+            {
+              item: "Choose a date to visit the site and measure the header",
+              action: "OM to propose a date",
+            },
+          ],
+          primaryOutcome:
+            "Requirements are clear enough to assess; a site visit is needed.",
+          clientNextStep: "Confirm the proposed site visit date.",
+          imhogenNextStep: "Lead Engineer writes the needs assessment (D1.8).",
         }),
       },
     ],

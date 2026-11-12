@@ -7,9 +7,9 @@ import { ValidationError, type FieldError } from "./validate"
 
 const refused = "Read-only, so the form cannot change it"
 
-// The tables the form shows without letting it change them. The system and the
-// screens built for them write their rows, so a save from the form must hand
-// back what is stored, or leave the table out.
+// The tables the form shows without letting it change them, and the fields the
+// system fills in. The system and the screens built for them write these, so a
+// save from the form must hand back what is stored, or leave it out.
 export function keepReadOnly(
   toolId: string,
   stored: JsonObject | undefined,
@@ -41,6 +41,15 @@ export function keepReadOnly(
 
   if (errors.length > 0) {
     throw new ValidationError(errors)
+  }
+
+  // A system-filled value, such as the client's choice on D1.5, is written
+  // only by the system, so a save from the form keeps what is stored. The
+  // form cannot send one: validation refuses it.
+  for (const field of tools.getTool(toolId)?.fields ?? []) {
+    if (field.systemFilled && stored?.[field.key] !== undefined) {
+      kept[field.key] = stored[field.key]!
+    }
   }
 
   return kept

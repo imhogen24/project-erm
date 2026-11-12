@@ -60,23 +60,48 @@ export const previews: Preview[] = [
   {
     screen: "D1.4 acknowledgement email, as the OM (RDP-150)",
     loginAs: "OM",
-    path: (id) => `/projects/${id}/tools/D1.4`,
+    email: "selorm.dzigbordi@imhogen.test",
+    path: () => "/",
     expect:
-      "D1.3 is locked, so D1.4 is open. Two boxes: 1.0 Dispatch metadata (Sent To is the client's email, grey; CC / BCC and Subject Line to type, the subject starting as Acknowledgement of Packaged boiler skid for the juice line request; Sent By already shows the OM's email, the IMHOGEN rep it comes from; Date Sent, Time Sent and Delivery Status say Filled in when the email is sent) and 2.0 Standard email template, the sheet's email with Dear Kwaku Ampofo, the submission date and the request ID filled in. There is no Save draft, Submit or Send: the OM prepares, and only the PM (ama.owusu@imhogen.test) sees Send. Edit the text and stop: the foot says Saving..., then ✓ Saved. Nothing is saved until you edit.",
+      "Open Tarkwa Mine Pump Station Drawings, then D1.4: T3.D1.3a is locked, so D1.4 is open. Two boxes: 1.0 Dispatch metadata (Sent To is the client's email, grey; CC / BCC and Subject Line to type, the subject using the project name because the Tier 3 form has no title; Sent By already shows the OM's email, the IMHOGEN rep it comes from; Date Sent, Time Sent and Delivery Status say Filled in when the email is sent) and 2.0 Standard email template, the sheet's email with Dear Joseph Arhin, the submission date and the request ID filled in. There is no Save draft, Submit or Send: the OM prepares, and only the PM (nana.adjei@imhogen.test) sees Send. Edit the text and stop: the foot says Saving..., then ✓ Saved. Nothing is saved until you edit.",
   },
   {
     screen: "D1.4 acknowledgement email, as the PM: Send (RDP-150)",
     loginAs: "PM",
-    path: (id) => `/projects/${id}/tools/D1.4`,
+    email: "nana.adjei@imhogen.test",
+    path: () => "/",
     expect:
-      "The same email, read only, with Send at the foot. Before the OM edits it, Send is off and says the Onboarding Manager has not started the email yet; with an empty subject or text it says what to add. Press Send: the email goes to the client through Resend when RESEND_API_KEY is set (the seeded clients have .test addresses, so nothing reaches anyone; without the key nothing leaves the machine), the email goes from the noreply address, the record locks, and Date Sent, Time Sent and Delivery Status Sent fill in, with Sent By kept as the OM, and D1.4 reads as Locked. Pressing twice sends once. A bad address in CC / BCC is refused and nothing is sent.",
+      "Open Tarkwa Mine Pump Station Drawings, then D1.4: the same email, read only, with Send at the foot. Before the OM edits it, Send is off and says the Onboarding Manager has not started the email yet; with an empty subject or text it says what to add. Press Send: the email goes to the client through Resend when RESEND_API_KEY is set (the seeded clients have .test addresses, so nothing reaches anyone; without the key nothing leaves the machine), the email goes from the noreply address, the record locks, and Date Sent, Time Sent and Delivery Status Sent fill in, with Sent By kept as the OM, and D1.4 reads as Locked. Pressing twice sends once. A bad address in CC / BCC is refused and nothing is sent.",
   },
   {
     screen: "D1.4 delivery, as the PM: badges and Retry (RDP-151)",
     loginAs: "PM",
-    path: (id) => `/projects/${id}`,
+    email: "nana.adjei@imhogen.test",
+    path: () => "/",
     expect:
-      "After Send, the D1.4 tile shows Locked and a grey Sent chip, and the D1.5 tile is greyed with This tool opens after D1.4 is delivered. Start the Inngest dev server (docs/DEPLOYMENT) and within 5 minutes the delivery check runs: with no RESEND_API_KEY every email counts as delivered, so the chip turns orange with a tick, Delivered, and D1.5 opens. Open D1.4: the same chip sits beside Locked in the title block and Delivery Status reads Delivered. With a real key, an address that bounces turns the chip red, Bounced; the PM gets a notification, and D1.4 shows a red box above the form, This email bounced. Correct the address and try again., with Sent To and Retry. A bad address is refused next to the button. Retry sends the same email again and the chip goes back to Sent. The OM sees This email bounced. The Project Manager has been told. and no Retry.",
+      "On Tarkwa Mine Pump Station Drawings, after Send, the D1.4 tile shows Locked and a grey Sent chip, and the T3.D1.8a tile is greyed with This tool opens after D1.4 is delivered. Start the Inngest dev server (docs/DEPLOYMENT) and within 5 minutes the delivery check runs: with no RESEND_API_KEY every email counts as delivered, so the chip turns orange with a tick, Delivered, and T3.D1.8a opens. Open D1.4: the same chip sits beside Locked in the title block and Delivery Status reads Delivered. With a real key, an address that bounces turns the chip red, Bounced; the PM gets a notification, and D1.4 shows a red box above the form, This email bounced. Correct the address and try again., with Sent To and Retry. A bad address is refused next to the button. Retry sends the same email again and the chip goes back to Sent. The OM sees This email bounced. The Project Manager has been told. and no Retry. On Tema Foods Boiler Skid, D1.4 is already Delivered.",
+  },
+  {
+    screen: "D1.5 meeting time proposal, as the OM",
+    loginAs: "OM",
+    path: (id) => `/projects/${id}/tools/D1.5`,
+    expect:
+      "D1.4 is Delivered, so D1.5 is open, and three times were already sent to the client. 1.0 Proposed meeting times lists them: Slot No., Date, Time (Zone) such as 14:00 GMT, Status Pending (orange) and Client comments. 3.0 Standard scheduling email is the email the client got, with Option 1 to 3. 4.0 Final meeting confirmation: Agreed Date and Agreed Time are - until the client chooses; Meeting Platform/Location to choose, Direct Meeting Link (gone for In person), Calendar Invite Sent? Yes or No, Client Confirmed? No, and a Note; each edit saves by itself (Saving..., then ✓ Saved). At the foot, Confirm meeting is off and says the client has not chosen a time. Press Change the times: the slots open to edit (date picker, time, time zone from GMT, WAT, SAST, EAT, UK, CET, US Eastern, GST), with Add a time and a cross per slot, and the email under them follows as you type; a slot in the past or half filled keeps Send to client off and says which. Send to client emails the times and the client sees them; the same times twice send once. Once the client chooses (log in as kwaku.ampofo@temafoods.test), reload: their slot is Accepted with a tick and their comment, the others Declined, Agreed Date and Time fill in, Client Confirmed? Yes, and the bell says The client chose a meeting time. Choose Google Meet, paste https://meet.google.com/abc-defg-hij and press Confirm meeting: D1.5 locks and D1.6 opens. If the client proposed another time, a row under the slots says The client proposed ... with their comment and Add as a time.",
+  },
+  {
+    screen: "D1.5 meeting time proposal, as the PM (read only)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.5`,
+    expect:
+      "The same sheet with no buttons and nothing to edit: the PM, LE, CA, CR and IT/Admin only read D1.5. The PM is told on the bell when the client chooses or proposes a time.",
+  },
+  {
+    screen: "D1.5: the client chooses a meeting time",
+    loginAs: "Client",
+    email: "kwaku.ampofo@temafoods.test",
+    path: (id) => `/projects/${id}/tools/D1.5`,
+    expect:
+      "Kwaku Ampofo, the client, sees Choose a time for your discovery meeting: the three times as tiles, such as Mon 16 Nov 2026, 14:00 GMT, and under each the same moment in their own time when their computer is in another zone (try a browser set to another time zone). A Comment box (optional), then None of these suit me and Choose this time at the foot. Pick one, write a comment and press Choose this time: it says Chosen. and the tile shows Your choice; choosing again changes it until the OM confirms. None of these suit me opens Propose another time (date, time and time zone, set to their own) and Propose this time; the times are then all Declined for the OM. Before any times are sent it says No times yet. You will get an email when IMHOGEN proposes some. Once the OM confirms, it shows Your discovery meeting with the time, the platform and Join the meeting.",
   },
   {
     screen: "D1.1 client web form",

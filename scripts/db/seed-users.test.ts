@@ -200,7 +200,7 @@ describe("the projects", () => {
     expect(rows).toHaveLength(18)
   })
 
-  it("has D1.1 to D1.6 locked on the featured project, so D1.7 is open", async () => {
+  it("has D1.1 to D1.7 locked on the featured project, so D1.8 is open", async () => {
     await seed(url)
 
     const { rows } = await database.pool.query<{
@@ -218,13 +218,14 @@ describe("the projects", () => {
       { tool_id: "D1.4", state: "locked" },
       { tool_id: "D1.5", state: "locked" },
       { tool_id: "D1.6", state: "locked" },
+      { tool_id: "D1.7", state: "locked" },
     ])
 
     const open = (
       await availableTools(database, await projectIdOf(featuredProject.name))
     ).map((tool) => tool.toolId)
 
-    expect(open).toContain("D1.7")
+    expect(open).toContain("D1.8")
   })
 })
 

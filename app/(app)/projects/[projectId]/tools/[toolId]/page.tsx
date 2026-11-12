@@ -2,6 +2,8 @@ import { notFound, redirect } from "next/navigation"
 import type { ReactNode } from "react"
 import { z } from "zod"
 
+import { recordStates, type RecordState } from "@/db/schema"
+
 import { AppSidebar } from "@/components/app-sidebar"
 import { CalendarAgendaScreen } from "@/components/calendar-agenda-screen"
 import { ClientRequestPanel } from "@/components/client-request-panel"
@@ -19,7 +21,7 @@ import { clientFilesPayload } from "@/lib/client-files"
 import { triagePayload } from "@/lib/triage"
 import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
-import type { FormValues } from "@/lib/tool-definition"
+import type { FormValues, ToolDefinition } from "@/lib/tool-definition"
 import { registeredTools } from "@/lib/tools"
 import {
   ACKNOWLEDGEMENT,
@@ -53,6 +55,11 @@ import {
   rolesOn,
 } from "@/server/permissions/permissions"
 import { getProjectOverview } from "@/server/projects/projects"
+import {
+  NEEDS_ASSESSMENT,
+  clientTechnicalAnswers,
+  synthesisValues,
+} from "@/server/needs/needs-assessment"
 import { hiddenFromClient, sentBackReason } from "@/server/records/records"
 import { getRecordScreen } from "@/server/records/screen"
 import { UnknownToolError } from "@/server/records/validate"
@@ -113,6 +120,11 @@ function person(who: DocumentControl["preparedBy"]) {
   }
 
   return { value: who.name, badge: who.role ?? undefined }
+}
+
+// A record's state as stored. The screen's "notStarted" has no record.
+function toState(state: string): RecordState {
+  return recordStates.find((each) => each === state) ?? "draft"
 }
 
 export default async function Page({
@@ -305,6 +317,33 @@ export default async function Page({
     formValues = notesStart(await lockedCalendar(getDatabase(), projectId))
   }
 
+  // D1.8: 1.0 and 4.0 come from who submitted and when, and each 2.0 row
+  // shows the client's own technical answer beneath its category.
+  let sheetTool: ToolDefinition = tool
+
+  if (toolId === NEEDS_ASSESSMENT) {
+    formValues = {
+      ...formValues,
+      ...(await synthesisValues(
+        getDatabase(),
+        projectId,
+        view.record ? { id: view.record.id, state: toState(view.state) } : null,
+        view.can.write ? session.user.name : undefined
+      )),
+    }
+
+    const answers = await clientTechnicalAnswers(getDatabase(), projectId)
+
+    sheetTool = {
+      ...tool,
+      fields: tool.fields.map((field) =>
+        field.type === "table" && field.key === "constraints"
+          ? { ...field, rowNotes: answers }
+          : field
+      ),
+    }
+  }
+
   // A tool the client reads only once locked tells them so until then.
   const notSharedYet =
     tool.clientReadsOnceLocked &&
@@ -477,7 +516,7 @@ export default async function Page({
     <div className="flex flex-col gap-6">
       {deliveryBox}
       <RecordForm
-        tool={tool}
+        tool={sheetTool}
         projectId={projectId}
         cycle={view.cycle}
         values={formValues}

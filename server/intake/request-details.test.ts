@@ -220,14 +220,14 @@ describe("who may read it", () => {
     expect(await getRequestDetails(database, client, projectId)).toBeNull()
   })
 
-  it("gives the LO, who reads D1.2 but not D1.1, no sender and no files", async () => {
+  it("gives the CA, who reads D1.2 but not D1.1, no sender and no files", async () => {
     await addTier1({ requestId: "T1-1", files: [link("one")] })
     await pull()
 
     const projectId = await projectOf("T1-1")
-    const lo = await addToProject(projectId, "LO")
+    const ca = await addToProject(projectId, "CA")
 
-    expect(await getRequestDetails(database, lo, projectId)).toEqual({
+    expect(await getRequestDetails(database, ca, projectId)).toEqual({
       metadata: null,
       files: [],
       filesRecordId: null,

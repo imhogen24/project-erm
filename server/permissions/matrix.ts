@@ -10,32 +10,39 @@ export const permissionMatrix = {
   // as soon as it is submitted, so it has no approver. The OM prepares D1.2 to
   // D1.7 and the PM approves them, since reviewing is not approving.
   "D1.1": { Client: "RW", OM: "RO", PM: "RO", CR: "RO", "IT/Admin": "RO" },
-  "D1.2": { OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" },
-  "D1.3": { OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" },
-  "D1.4": { Client: "RO", OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" },
+  "D1.2": { OM: "RW", PM: "RO", CA: "RO", CR: "RO", "IT/Admin": "RO" },
+  "D1.3": { OM: "RW", PM: "RA", CA: "RO", CR: "RO", "IT/Admin": "RO" },
+  "D1.4": {
+    Client: "RO",
+    OM: "RW",
+    PM: "RO",
+    CA: "RO",
+    CR: "RO",
+    "IT/Admin": "RO",
+  },
   "D1.5": {
     Client: "RO",
     OM: "RW",
-    PM: "RA",
+    PM: "RO",
     LE: "RO",
     CA: "RO",
-    LO: "RO",
     CR: "RO",
+    "IT/Admin": "RO",
   },
   "D1.6": {
-    Client: "RO",
+    Client: "RW",
     OM: "RW",
-    PM: "RA",
+    PM: "RO",
     LE: "RO",
     CA: "RO",
-    LO: "RO",
     CR: "RO",
+    "IT/Admin": "RO",
   },
-  "D1.7": { Client: "RO", OM: "RW", PM: "RA", LE: "RO", CR: "RO" },
-  "D1.8": { Client: "RO", OM: "RO", PM: "RA", LE: "RW", CR: "RO" },
-  "D1.9": { OM: "RW", PM: "RO", LE: "RO", HE: "RA", CR: "RO" },
-  "D1.10": { OM: "RO", PM: "RA", LE: "RW", HE: "RO", CR: "RO" },
-  "D1.11": { OM: "RO", PM: "RA", LE: "RW", HE: "RO", CR: "RO" },
+  "D1.7": { Client: "RO", OM: "RW", PM: "RA", LE: "RO", "IT/Admin": "RO" },
+  "D1.8": { Client: "RO", OM: "RO", PM: "RA", LE: "RW", "IT/Admin": "RO" },
+  "D1.9": { OM: "RW", PM: "RO", LE: "RO", HE: "RA", "IT/Admin": "RO" },
+  "D1.10": { OM: "RO", PM: "RA", LE: "RW", HE: "RO", "IT/Admin": "RO" },
+  "D1.11": { OM: "RO", PM: "RA", LE: "RW", HE: "RO", "IT/Admin": "RO" },
   "D1.12": {
     Client: "RO",
     OM: "RO",
@@ -72,7 +79,7 @@ export const permissionMatrix = {
     CR: "RO",
     "IT/Admin": "RO",
   },
-  "D1.16": { OM: "RO", PM: "RA", LE: "RW", HE: "RO", CR: "RO" },
+  "D1.16": { OM: "RO", PM: "RA", LE: "RW", HE: "RO", "IT/Admin": "RO" },
   "D2.1": { PM: "RO", CA: "RW", HE: "RO", CR: "RO" },
   "D2.2": { PM: "RO", CA: "RW", CR: "RO" },
   "D2.3": { PM: "RA", CA: "RO", CR: "RO" },
@@ -176,7 +183,7 @@ export const permissionMatrix = {
     LD: "RO",
     HE: "RO",
     QA: "RO",
-    CR: "RO",
+    "IT/Admin": "RO",
   },
   "T3.D2.2a": {
     Client: "RO",
@@ -227,7 +234,7 @@ export const permissionMatrix = {
   },
   // PERMISSIONS.md has no rows for these two. Each has the access of the
   // Tier 1 tool it replaces, D1.3 and D1.15.
-  "T3.D1.3a": { OM: "RW", PM: "RA", CA: "RO", LO: "RO", CR: "RO" },
+  "T3.D1.3a": { OM: "RW", PM: "RA", CA: "RO", CR: "RO", "IT/Admin": "RO" },
   "T3.D1.15a": {
     Client: "RO",
     OM: "RO",
@@ -247,6 +254,18 @@ export function accessRow(
 ): Row | undefined {
   return Object.hasOwn(table, toolId) ? table[toolId] : undefined
 }
+
+// Who approves (locks) a tool is decided with the tool, not read from RA:
+// a tool may name a role that only reads it. The PM approves D1.2, sends D1.4
+// (its approval), and approves D1.6 until it is built and says otherwise, as
+// agreed on the 24 Oct 2026 onboarding call. D1.5 has no approver: the OM's
+// submit locks it once the client has chosen a time. See
+// docs/WB01_PERMISSIONS/_.md.
+export const extraApprovers = new Map<string, readonly Role[]>([
+  ["D1.2", ["PM"]],
+  ["D1.4", ["PM"]],
+  ["D1.6", ["PM"]],
+])
 
 // Roles that may ask for a change to a locked record although they only read
 // it. The OM may ask for a change to the client's D1.1; the client makes it.

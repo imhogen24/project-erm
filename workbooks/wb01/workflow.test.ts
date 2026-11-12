@@ -144,8 +144,8 @@ async function recordIn(
   })
 
   // D1.1 is the client's web form: it has no approver and locks the moment
-  // it is sent.
-  if (toolId === "D1.1" && state !== "draft") {
+  // it is sent. D1.5 has none either: the OM's confirm locks it.
+  if ((toolId === "D1.1" || toolId === "D1.5") && state !== "draft") {
     return lockSentDraft(database, actor, record.id, {})
   }
 

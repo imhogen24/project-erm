@@ -3,7 +3,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 import { roles, type Role } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 
-import { accessRow, permissionMatrix } from "./matrix"
+import { accessRow, extraApprovers, permissionMatrix } from "./matrix"
 import {
   PermissionDeniedError,
   assertCan,
@@ -150,7 +150,13 @@ describe("every row of the matrix", () => {
     it(`${toolId} gives each of the 19 roles exactly its access`, () => {
       for (const role of roles) {
         const access = accessRow(toolId)?.[role]
-        const want = access ? expected[access] : [false, false, false]
+        const base = access ? expected[access] : [false, false, false]
+
+        // A role named to approve a tool approves it, whatever its letter.
+        const approves =
+          access !== undefined && extraApprovers.get(toolId)?.includes(role)
+
+        const want = approves ? [base[0], base[1], true] : base
 
         expect(
           actions.map((action) => roleAllows([role], toolId, action))
@@ -393,14 +399,17 @@ describe("the OM and PM on D1.1 to D1.6", () => {
     }
   )
 
-  it.each(["D1.2", "D1.4", "D1.5", "D1.6"])(
-    "lets a PM approve %s",
-    async (toolId) => {
-      const pm = await addPerson(projectId, ["PM"])
+  it.each(["D1.2", "D1.4", "D1.6"])("lets a PM approve %s", async (toolId) => {
+    const pm = await addPerson(projectId, ["PM"])
 
-      expect(await can(database, pm, projectId, toolId, "approve")).toBe(true)
-    }
-  )
+    expect(await can(database, pm, projectId, toolId, "approve")).toBe(true)
+  })
+
+  it("lets nobody approve D1.5, which the OM's confirm locks", async () => {
+    const pm = await addPerson(projectId, ["PM"])
+
+    expect(await can(database, pm, projectId, "D1.5", "approve")).toBe(false)
+  })
 
   it("still refuses an LE on D1.2", async () => {
     const le = await addPerson(projectId, ["LE"])

@@ -325,6 +325,14 @@ describe("email, time and file link", () => {
       expect(fieldsOf({ emailLink })).toEqual(["emailLink"])
     }
   })
+
+  it("accepts a file uploaded in the ERM, and nothing else after file:", () => {
+    expect(check({ emailLink: `file:${crypto.randomUUID()}` }).ok).toBe(true)
+
+    for (const emailLink of ["file:", "file:../secret", "file:///etc/passwd"]) {
+      expect(fieldsOf({ emailLink })).toEqual(["emailLink"])
+    }
+  })
 })
 
 describe("fields the user never writes", () => {

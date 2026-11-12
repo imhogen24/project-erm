@@ -8,6 +8,9 @@ import { createDatabase } from "./index"
 const TEST_PROJECT =
   "^T[13]-[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$"
 
+// A project a client starts in the ERM has a time in its request ID.
+const CLIENT_STARTED = "^T[13]-[0-9]+$"
+
 const TEST_PERSON =
   "^([0-9a-f]{8}(-[0-9a-f]{8})?@example\\.com|sign-in-page@example\\.com)$"
 
@@ -94,10 +97,16 @@ export async function removeE2eData(url: string) {
     await client.query("BEGIN")
     await client.query("SET LOCAL session_replication_role = replica")
 
+    // Test projects, and projects a test client started from the ERM's form.
     const projects = (
       await client.query<{ id: string }>(
-        "SELECT id FROM projects WHERE request_id ~ $1",
-        [TEST_PROJECT]
+        `SELECT id FROM projects WHERE request_id ~ $1
+         UNION
+         SELECT p.id FROM projects p
+           JOIN person_project_roles r ON r.project_id = p.id AND r.role = 'Client'
+           JOIN people c ON c.id = r.person_id
+          WHERE p.request_id ~ $2 AND c.email ~ $3`,
+        [TEST_PROJECT, CLIENT_STARTED, TEST_PERSON]
       )
     ).rows.map((row) => row.id)
 

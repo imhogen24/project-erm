@@ -1,14 +1,10 @@
 import type { Role } from "@/db/schema"
 
-import { loginFor } from "./seed-data/people"
-import { SEED_PASSWORD } from "./seed-users"
-
-const BASE = "http://localhost:3000"
-
 // Each screen built so far, and how to see it. The issue that builds a screen
-// adds its line here, so `bun run dev` always says who to log in as, where to
-// go, and what should be there.
-type Preview = {
+// adds its line here, then runs `bun run accounts:doc`, so
+// docs/TEST_ACCOUNTS/_.md always says who to log in as, where to go, and what
+// should be there.
+export type Preview = {
   screen: string
   loginAs: Role
   // Someone other than the first person with the role, when the screen is on
@@ -18,7 +14,7 @@ type Preview = {
   expect: string
 }
 
-const previews: Preview[] = [
+export const previews: Preview[] = [
   {
     screen: "Projects that need a team (IT/Admin)",
     loginAs: "IT/Admin",
@@ -88,7 +84,7 @@ const previews: Preview[] = [
     email: "kwaku.ampofo@temafoods.test",
     path: () => "/",
     expect:
-      "Kwaku Ampofo, a client, sees their projects, and the last square of the grid is Start new project with a plus. Press it, choose Tier 1 (Custom Engineering & Factory Solutions) or Tier 3 (Engineering Drafting & Digitization), and fill the same form as on the IMHOGEN website. Send request creates the project with D1.1 locked and opens it; it waits for the IT/Admin to assign a team. The form has no file upload yet.",
+      "Kwaku Ampofo, a client, sees their projects, and the last square of the grid is Start new project with a plus. Press it, choose Tier 1 (Custom Engineering & Factory Solutions) or Tier 3 (Engineering Drafting & Digitization), and fill the same form as on the IMHOGEN website. File attachments has Add files: choose images or PDFs and each uploads at once, listed by name with a cross to remove it (needs UPLOADTHING_TOKEN). Send request creates the project with D1.1 locked and opens it; it waits for the IT/Admin to assign a team. D1.1 lists the files by name, and Open file opens each one.",
   },
   {
     screen: "Client sign-up and confirm email",
@@ -156,20 +152,3 @@ const previews: Preview[] = [
       "A bell at the top right of the sidebar header (on a narrow screen, in the top bar before Sign out) with the number 2 on it. Press it: newest first, D1.2 is waiting for your approval on Tamale Shea Butter Processing Plant, then A change to D1.1 is waiting for your decision on Tema Foods Boiler Skid, both with a dot for unread, then older read notes: tools locked two days ago and the projects Ama was added to. Click one: you go to its page and the number drops by 1. Press Mark all read: the number and the dots go. Log in as the OM, kwabena.asante@imhogen.test, to see the empty message: You have no notifications. Notifications cannot be deleted, so once read they stay read.",
   },
 ]
-
-// Printed on every start, so nobody has to ask who to log in as.
-export function printPreviews(projectId: string | undefined) {
-  if (!projectId) {
-    return
-  }
-
-  console.log(`\nSee it in the browser: ${BASE}/sign-in`)
-  console.log(`Password for everyone: ${SEED_PASSWORD}\n`)
-
-  for (const preview of previews) {
-    console.log(preview.screen)
-    console.log(`  Log in as: ${preview.email ?? loginFor(preview.loginAs)}`)
-    console.log(`  Visit:     ${BASE}${preview.path(projectId)}`)
-    console.log(`  You see:   ${preview.expect}\n`)
-  }
-}

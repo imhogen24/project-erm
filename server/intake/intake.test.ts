@@ -200,6 +200,20 @@ describe("pullNewRequests", () => {
     ])
   })
 
+  it("splits the website's link,name into the link and the client's file name", async () => {
+    await addTier1({
+      requestId: "T1-100",
+      files: [`${link("one")},boiler nameplate.jpg`, link("two")],
+    })
+
+    await pull()
+
+    expect((await d11Of("T1-100")).payload.attachedFiles).toMatchObject([
+      { label: "boiler nameplate.jpg", fileLink: link("one") },
+      { label: "File 2", fileLink: link("two") },
+    ])
+  })
+
   it("reads a Tier 3 request's files from file_attachment", async () => {
     await addTier3({ requestId: "T3-100", files: [link("drawing")] })
 

@@ -9,6 +9,7 @@ import { ClientRequestForm } from "@/components/client-request-form"
 import { ClientRequestTables } from "@/components/client-request-tables"
 import { ToolSheet } from "@/components/tool-sheet"
 import { TriageScreen } from "@/components/triage-screen"
+import { clientFilesPayload } from "@/lib/client-files"
 import { triagePayload } from "@/lib/triage"
 import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
@@ -227,11 +228,17 @@ export default async function Page({
     <ClientRequestForm
       track={editingWebForm.track}
       saved={editingWebForm.answers}
+      savedFiles={clientFilesPayload
+        .parse(values)
+        .attachedFiles.map((file) => ({
+          reference: file.fileLink,
+          name: file.label,
+        }))}
       submitLabel="Send the changes"
-      submit={async (answers) => {
+      submit={async (answers, files) => {
         "use server"
 
-        return resubmitClientRequestAction({ projectId, answers })
+        return resubmitClientRequestAction({ projectId, answers, files })
       }}
     />
   ) : webForm ? (

@@ -12,6 +12,8 @@ import {
   requestChange,
 } from "@/server/change-requests/change-requests"
 import { createFakeTransport } from "@/server/email/email"
+import { recordUpload } from "@/server/files/uploads"
+import { fileReference } from "@/lib/file-reference"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import {
   InvalidTransitionError,
@@ -96,12 +98,52 @@ async function addClient(name: string) {
 function start(
   clientId: string,
   answers = tier1,
-  track: "Tier_1" | "Tier_3" = "Tier_1"
+  track: "Tier_1" | "Tier_3" = "Tier_1",
+  files: string[] = []
 ) {
   return startClientProject(database, clientId, track, answers, {
+    files,
     baseURL: "https://erm.example.com",
     transport: createFakeTransport(),
   })
+}
+
+// A file the person uploaded, as the form sends it.
+async function upload(personId: string, name: string) {
+  const file = await recordUpload(database, personId, {
+    key: `key-${Math.random()}`,
+    name,
+    size: 2048,
+    contentType: "application/pdf",
+  })
+
+  return fileReference(file.id)
+}
+
+async function d11Files(projectId: string) {
+  const { rows } = await database.pool.query<{ payload: JsonObject }>(
+    "SELECT payload FROM tool_records WHERE project_id = $1 AND tool_id = 'D1.1'",
+    [projectId]
+  )
+
+  return rows[0]!.payload.attachedFiles
+}
+
+async function changeApproved(projectId: string) {
+  const om = await addPerson("Kwabena")
+  const pm = await addPerson("Ama")
+
+  await addToProject(om, projectId, "OM")
+  await addToProject(pm, projectId, "PM")
+
+  const request = await requestChange(
+    database,
+    om,
+    (await d11Of(projectId)).id,
+    "The client has the nameplate photo"
+  )
+
+  await decideChange(database, pm, request.id, { outcome: "approved" })
 }
 
 async function d11Of(projectId: string) {
@@ -220,6 +262,68 @@ describe("startClientProject", () => {
 
     await expect(start(admin)).rejects.toBeInstanceOf(NotAClientError)
   })
+
+  it("puts the client's uploads on D1.1, named as their files, in order", async () => {
+    const client = await addClient("Kwaku")
+    const photo = await upload(client, "nameplate.jpg")
+    const sketch = await upload(client, "layout sketch.pdf")
+    const projectId = await start(client, tier1, "Tier_1", [sketch, photo])
+
+    expect(await d11Files(projectId)).toEqual([
+      expect.objectContaining({ label: "layout sketch.pdf", fileLink: sketch }),
+      expect.objectContaining({ label: "nameplate.jpg", fileLink: photo }),
+    ])
+
+    const { rows } = await database.pool.query<{ project_id: string }>(
+      "SELECT project_id FROM files"
+    )
+
+    expect(rows.map((row) => row.project_id)).toEqual([projectId, projectId])
+  })
+
+  it("refuses another person's upload and makes no project", async () => {
+    const other = await upload(await addClient("Esi"), "theirs.pdf")
+    const client = await addClient("Kwaku")
+
+    await expect(start(client, tier1, "Tier_1", [other])).rejects.toMatchObject(
+      { errors: [expect.objectContaining({ field: "files" })] }
+    )
+
+    const { rows } = await database.pool.query("SELECT id FROM projects")
+
+    expect(rows).toEqual([])
+  })
+
+  it("refuses an upload already sent with another request", async () => {
+    const client = await addClient("Kwaku")
+    const file = await upload(client, "nameplate.jpg")
+
+    await start(client, tier1, "Tier_1", [file])
+
+    await expect(start(client, tier1, "Tier_1", [file])).rejects.toBeInstanceOf(
+      ValidationError
+    )
+  })
+
+  it("refuses a website link sent as an upload", async () => {
+    await expect(
+      start(await addClient("Kwaku"), tier1, "Tier_1", [
+        "https://utfs.io/f/abc",
+      ])
+    ).rejects.toBeInstanceOf(ValidationError)
+  })
+
+  it("refuses more than ten files", async () => {
+    const client = await addClient("Kwaku")
+
+    const many = await Promise.all(
+      Array.from({ length: 11 }, (_, index) => upload(client, `${index}.pdf`))
+    )
+
+    await expect(start(client, tier1, "Tier_1", many)).rejects.toBeInstanceOf(
+      ValidationError
+    )
+  })
 })
 
 describe("resubmitClientRequest", () => {
@@ -228,7 +332,7 @@ describe("resubmitClientRequest", () => {
     const projectId = await start(client)
 
     await expect(
-      resubmitClientRequest(database, client, projectId, tier1)
+      resubmitClientRequest(database, client, projectId, tier1, [])
     ).rejects.toBeInstanceOf(InvalidTransitionError)
   })
 
@@ -258,10 +362,13 @@ describe("resubmitClientRequest", () => {
 
     expect(before?.answers.site_location).toBe("Tema Industrial Area, Accra")
 
-    await resubmitClientRequest(database, client, projectId, {
-      ...tier1,
-      site_location: "Plot 12, Tema Industrial Area, Accra",
-    })
+    await resubmitClientRequest(
+      database,
+      client,
+      projectId,
+      { ...tier1, site_location: "Plot 12, Tema Industrial Area, Accra" },
+      []
+    )
 
     expect((await d11Of(projectId)).state).toBe("locked")
     expect((await savedAnswers(projectId)).site_location).toBe(
@@ -276,7 +383,45 @@ describe("resubmitClientRequest", () => {
     await addToProject(om, projectId, "OM")
 
     await expect(
-      resubmitClientRequest(database, om, projectId, tier1)
+      resubmitClientRequest(database, om, projectId, tier1, [])
     ).rejects.toBeInstanceOf(PermissionDeniedError)
+  })
+
+  it("keeps the files the client kept, drops the rest, and adds new uploads", async () => {
+    const client = await addClient("Kwaku")
+    const kept = await upload(client, "layout sketch.pdf")
+    const dropped = await upload(client, "old photo.jpg")
+    const projectId = await start(client, tier1, "Tier_1", [kept, dropped])
+
+    await changeApproved(projectId)
+
+    const added = await upload(client, "nameplate.jpg")
+
+    await resubmitClientRequest(database, client, projectId, tier1, [
+      added,
+      kept,
+    ])
+
+    expect(await d11Files(projectId)).toEqual([
+      expect.objectContaining({ label: "nameplate.jpg", fileLink: added }),
+      expect.objectContaining({ label: "layout sketch.pdf", fileLink: kept }),
+    ])
+    expect((await d11Of(projectId)).state).toBe("locked")
+  })
+
+  it("does not take a file from another project when resending", async () => {
+    const client = await addClient("Kwaku")
+    const elsewhere = await upload(client, "other.pdf")
+
+    await start(client, tier1, "Tier_1", [elsewhere])
+
+    const projectId = await start(client)
+
+    await changeApproved(projectId)
+
+    await expect(
+      resubmitClientRequest(database, client, projectId, tier1, [elsewhere])
+    ).rejects.toBeInstanceOf(ValidationError)
+    expect((await d11Of(projectId)).state).toBe("draft")
   })
 })

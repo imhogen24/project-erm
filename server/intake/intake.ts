@@ -79,20 +79,28 @@ function projectName(submission: WebsiteSubmission): string {
   return name || `Unnamed request ${submission.requestId}`
 }
 
-// One row per link, in the website's order. Each link is a plain UploadThing
-// link with no name, type or size, and none is looked up.
+// The website saves each file as `<link>,<file name>`; older rows hold the
+// link alone.
+const savedFile = /^(https:\/\/[^,\s]+),(.+)$/
+
+// One row per file, in the website's order, named as the client's file was.
+// Nothing is looked up.
 function attachedFiles(submission: WebsiteSubmission): JsonObject[] {
-  const links = fileList.parse(
+  const saved = fileList.parse(
     submission.row[fileColumn[submission.serviceTrack]]
   )
 
   const dateUploaded = submission.createdAt.toISOString().slice(0, 10)
 
-  return links.map((link, index) => ({
-    label: `File ${index + 1}`,
-    dateUploaded,
-    fileLink: link,
-  }))
+  return saved.map((file, index) => {
+    const [, link, name] = savedFile.exec(file) ?? [file, file, ""]
+
+    return {
+      label: name.trim() || `File ${index + 1}`,
+      dateUploaded,
+      fileLink: link,
+    }
+  })
 }
 
 // Every company-wide IT/Admin.
@@ -111,7 +119,9 @@ export async function itAdmins(transaction: Transaction): Promise<Admin[]> {
 // has a project, such as one made by hand: the copy is only linked to it.
 export async function pullIn(
   transaction: Transaction,
-  submission: WebsiteSubmission
+  submission: WebsiteSubmission,
+  // Files uploaded in the ERM, put on the new project, as D1.1 rows.
+  uploads: (projectId: string) => Promise<JsonObject[]> = async () => []
 ): Promise<Created | undefined> {
   const copy = await copySubmission(transaction, submission)
 
@@ -146,7 +156,12 @@ export async function pullIn(
   const record = await createRecordIn(transaction, systemActor, {
     projectId: project.id,
     toolId: "D1.1",
-    payload: { attachedFiles: attachedFiles(submission) },
+    payload: {
+      attachedFiles: [
+        ...attachedFiles(submission),
+        ...(await uploads(project.id)),
+      ],
+    },
   })
 
   await lockDraftIn(transaction, systemActor, record.id)

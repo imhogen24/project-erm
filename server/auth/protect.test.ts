@@ -127,6 +127,15 @@ describe("route protection", () => {
     expect(redirectsToSignIn(await proxy(request(path)))).toBe(true)
   })
 
+  it("leaves the upload route open for UploadThing's callback, which checks its own signature", async () => {
+    expect(redirectsToSignIn(await proxy(request("/api/uploadthing")))).toBe(
+      false
+    )
+    expect(
+      redirectsToSignIn(await proxy(request("/api/uploadthing/other")))
+    ).toBe(true)
+  })
+
   it("does not open a path that only starts like /sign-in", async () => {
     expect(redirectsToSignIn(await proxy(request("/sign-in-admin")))).toBe(true)
   })

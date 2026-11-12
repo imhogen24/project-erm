@@ -16,6 +16,7 @@ import {
 } from "@/lib/client-request-form"
 import { requireEnv } from "@/server/database"
 import type { Transport } from "@/server/email/email"
+import { attachedFilesIn } from "@/server/files/uploads"
 import { assertCan } from "@/server/permissions/permissions"
 import {
   InvalidTransitionError,
@@ -65,13 +66,18 @@ export class NotAClientError extends Error {}
 // A client starts a project from the ERM: the answers are saved as the website
 // saves them, the project and a locked D1.1 are made as for a website request
 // (which opens D1.2 for the OM), the client is put on the project, and every
-// IT/Admin is told. Returns the new project's ID.
+// IT/Admin is told. The files are the client's uploads, as `file:<id>`, which
+// go on D1.1. Returns the new project's ID.
 export async function startClientProject(
   database: Database,
   clientId: string,
   track: Tier,
   answers: ClientAnswers,
-  options: { baseURL?: string; transport?: Transport } = {}
+  options: {
+    files?: string[]
+    baseURL?: string
+    transport?: Transport
+  } = {}
 ): Promise<string> {
   if (!(await isClientAccount(database, clientId))) {
     throw new NotAClientError("Only a client starts a project here")
@@ -82,18 +88,23 @@ export async function startClientProject(
   const requestId = `${prefix[track]}-${now.getTime()}`
 
   const created = await database.transaction(async (transaction) => {
-    const made = await pullIn(transaction, {
-      requestId,
-      serviceTrack: track,
-      createdAt: now,
-      row: {
-        ...row,
-        request_id: requestId,
-        created_at: now.toISOString(),
-        terms_accepted_at: now.toISOString(),
-        [track === "Tier_1" ? "file_attachments" : "file_attachment"]: [],
+    const made = await pullIn(
+      transaction,
+      {
+        requestId,
+        serviceTrack: track,
+        createdAt: now,
+        row: {
+          ...row,
+          request_id: requestId,
+          created_at: now.toISOString(),
+          terms_accepted_at: now.toISOString(),
+          [track === "Tier_1" ? "file_attachments" : "file_attachment"]: [],
+        },
       },
-    })
+      (projectId) =>
+        attachedFilesIn(transaction, clientId, projectId, options.files ?? [])
+    )
 
     if (!made) {
       throw new InvalidTransitionError("This request was already started")
@@ -118,14 +129,20 @@ export async function startClientProject(
   return created.projectId
 }
 
+const fileRows = z.object({
+  attachedFiles: z.array(z.record(z.string(), z.json())).catch([]),
+})
+
 // After a change request on D1.1 is approved, D1.1 is a draft again and the
-// client sends the form once more: the saved answers are replaced and D1.1
-// locks at once, which also closes the change request.
+// client sends the form once more: the saved answers are replaced, the files
+// become the ones they kept and added, and D1.1 locks at once, which also
+// closes the change request.
 export async function resubmitClientRequest(
   database: Database,
   actor: string,
   projectId: string,
-  answers: ClientAnswers
+  answers: ClientAnswers,
+  files: string[]
 ): Promise<void> {
   await assertCan(database, actor, projectId, "D1.1", "write")
 
@@ -141,7 +158,11 @@ export async function resubmitClientRequest(
       .limit(1)
 
     const [record] = await transaction
-      .select({ id: toolRecords.id, state: toolRecords.state })
+      .select({
+        id: toolRecords.id,
+        state: toolRecords.state,
+        payload: toolRecords.payload,
+      })
       .from(toolRecords)
       .where(
         and(
@@ -169,7 +190,15 @@ export async function resubmitClientRequest(
       })
       .where(eq(intakeSubmissions.id, copy.id))
 
-    await lockDraftIn(transaction, actor, record.id)
+    const attachedFiles = await attachedFilesIn(
+      transaction,
+      actor,
+      projectId,
+      files,
+      fileRows.parse(record.payload).attachedFiles
+    )
+
+    await lockDraftIn(transaction, actor, record.id, { attachedFiles })
   })
 }
 

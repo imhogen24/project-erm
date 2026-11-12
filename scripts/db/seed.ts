@@ -1,5 +1,4 @@
-import { printPreviews } from "./preview"
-import { featuredProjectId, seed, SEED_PASSWORD } from "./seed-users"
+import { seed } from "./seed-users"
 
 const url = process.env.DATABASE_URL
 
@@ -9,15 +8,6 @@ if (!url) {
 
 // Every step must be safe to run again, because `bun dev` runs this on each
 // start. Sample data for a workbook is added here by the issue that needs it.
-const created = await seed(url)
+await seed(url)
 
-if (created.length === 0) {
-  console.log("Seed users already exist.")
-} else {
-  console.log(`Added ${created.length} seed users:`)
-  console.table(
-    created.map(({ role, email }) => ({ role, email, password: SEED_PASSWORD }))
-  )
-}
-
-printPreviews(await featuredProjectId(url))
+console.log("Test accounts and screens to check: docs/TEST_ACCOUNTS/_.md")

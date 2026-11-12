@@ -14,6 +14,10 @@ const AUTH_ROUTES = "/api/auth/"
 // Someone with an invite link has no account yet, so invite links stay open.
 const INVITE_ROUTES = "/invite/"
 
+// UploadThing calls back here with no session; the route checks its signature,
+// and checks the session itself before any upload.
+const UPLOAD_ROUTE = "/api/uploadthing"
+
 // Pages for developers, such as the form preview. Production answers not found.
 const DEV_ROUTES = "/dev/"
 
@@ -22,6 +26,7 @@ function isPublic(pathname: string) {
   return (
     pathname === SIGN_IN_PATH ||
     SIGN_UP_PATHS.has(pathname) ||
+    pathname === UPLOAD_ROUTE ||
     pathname.startsWith(AUTH_ROUTES) ||
     pathname.startsWith(INVITE_ROUTES)
   )

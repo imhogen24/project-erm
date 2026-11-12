@@ -271,6 +271,7 @@ export async function sendAcknowledgementAction(values: {
 const resubmitInput = z.object({
   projectId: z.uuid(),
   answers: z.record(z.string(), z.union([z.string(), z.array(z.string())])),
+  files: z.array(z.string()),
 })
 
 // The client sends their web form again after a change request on D1.1 was
@@ -278,6 +279,7 @@ const resubmitInput = z.object({
 export async function resubmitClientRequestAction(values: {
   projectId: string
   answers: Record<string, string | string[]>
+  files: string[]
 }): Promise<
   | { status: "done"; path: string }
   | { status: "invalid"; errors: { field: string; message: string }[] }
@@ -296,7 +298,8 @@ export async function resubmitClientRequestAction(values: {
       getDatabase(),
       actor,
       input.projectId,
-      input.answers
+      input.answers,
+      input.files
     )
 
     return { status: "done", recordId: input.projectId, updatedAt: "" }

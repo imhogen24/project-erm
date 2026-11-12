@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import type { JsonObject } from "@/db/schema"
+import { fileIdOf } from "@/lib/file-reference"
 import type {
   Column,
   Field,
@@ -78,10 +79,13 @@ function cellSchema(cell: Field | Column): z.ZodType {
     case "email":
       return z.email({ error: "Must be an email address" })
     case "fileLink":
-      return z.url({
-        protocol: /^https?$/,
-        error: "Must be a web link (https://...)",
-      })
+      return z.union(
+        [
+          z.url({ protocol: /^https?$/ }),
+          z.string().refine((reference) => fileIdOf(reference) !== undefined),
+        ],
+        { error: "Must be a web link (https://...)" }
+      )
     case "boolean":
       return z.boolean({ error: "Must be yes or no" })
     case "select":

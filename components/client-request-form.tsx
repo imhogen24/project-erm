@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 
+import { ClientFiles, type AttachedFile } from "@/components/client-files"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { FieldError, FieldLabel } from "@/components/ui/field"
@@ -15,6 +16,7 @@ import {
   type Question,
   type Tier,
 } from "@/lib/client-request-form"
+import { MAX_FILES } from "@/lib/file-reference"
 
 type Result =
   | { status: "done"; path: string }
@@ -25,8 +27,10 @@ type Props = {
   track: Tier
   // What the client sent before, when they change it after a change request.
   saved?: ClientAnswers
+  savedFiles?: AttachedFile[]
   submitLabel: string
-  submit: (answers: ClientAnswers) => Promise<Result>
+  // The files go as `file:<id>` for a new upload, or as D1.1 holds them.
+  submit: (answers: ClientAnswers, files: string[]) => Promise<Result>
 }
 
 const fieldClass = "bg-background text-base md:text-base"
@@ -44,11 +48,14 @@ function textOf(value: string | string[] | undefined) {
 export function ClientRequestForm({
   track,
   saved,
+  savedFiles,
   submitLabel,
   submit,
 }: Props) {
   const router = useRouter()
   const [answers, setAnswers] = useState<ClientAnswers>(saved ?? {})
+  const [files, setFiles] = useState<AttachedFile[]>(savedFiles ?? [])
+  const [uploading, setUploading] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [message, setMessage] = useState<string>()
   const [pending, startTransition] = useTransition()
@@ -60,7 +67,10 @@ export function ClientRequestForm({
   function send() {
     setMessage(undefined)
     startTransition(async () => {
-      const result = await submit(answers)
+      const result = await submit(
+        answers,
+        files.map((file) => file.reference)
+      )
 
       if (result.status === "done") {
         router.push(result.path)
@@ -202,6 +212,22 @@ export function ClientRequestForm({
           </div>
         </fieldset>
       ))}
+      <fieldset className="grid gap-5 pb-10 xl:grid-cols-[minmax(12rem,1fr)_3fr] xl:gap-10">
+        <legend className="sr-only">File attachments</legend>
+        <p aria-hidden className="text-base font-semibold">
+          File attachments
+        </p>
+        <div className="min-w-0">
+          <ClientFiles
+            files={files}
+            max={MAX_FILES}
+            error={errors.files}
+            disabled={pending}
+            onChange={setFiles}
+            onUploading={setUploading}
+          />
+        </div>
+      </fieldset>
       <div className="tile flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <p role="status" className="text-sm">
           {message}
@@ -210,7 +236,7 @@ export function ClientRequestForm({
           type="submit"
           size="lg"
           className="h-12 w-full shrink-0 px-8 text-base sm:w-fit"
-          disabled={pending}
+          disabled={pending || uploading}
         >
           {pending ? "Sending…" : submitLabel}
         </Button>

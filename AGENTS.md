@@ -18,7 +18,7 @@ IMPORTANT RULES:
 - always use `bun` instead of `npm` or `pnpm`.
 - when implementing a new feature, check if the skill needed to complete the task is available.
 - In documentation, avoid phase 1, phase 2, and avoid indicating timelines on project stages.
-- When a task builds or changes a screen, add it to `scripts/db/preview.ts` (who to log in as, the route, what should be there), so `bun run dev` prints it. End the task by telling the user the same: who to log in as and which route to visit.
+- When a task builds or changes a screen, add it to `scripts/db/preview.ts` (who to log in as, the route, what should be there), then run `bun run accounts:doc` so `docs/TEST_ACCOUNTS/_.md` lists it (a test fails if the doc is out of date). End the task by telling the user the same: who to log in as and which route to visit.
 - Do NOT add `Co-Authored-By`, `Claude-Session`, "Generated with Claude Code", or any similar AI-attribution trailer or line to commit messages or PR bodies. Keep commit messages simple, eg. "feat(db): write db schema".
 
 

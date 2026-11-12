@@ -16,6 +16,7 @@ import { ValidationError } from "@/server/records/records"
 const input = z.object({
   track: z.enum(["Tier_1", "Tier_3"]),
   answers: z.record(z.string(), z.union([z.string(), z.array(z.string())])),
+  files: z.array(z.string()),
 })
 
 export type StartResult =
@@ -28,6 +29,7 @@ export type StartResult =
 export async function startProjectAction(values: {
   track: "Tier_1" | "Tier_3"
   answers: ClientAnswers
+  files: string[]
 }): Promise<StartResult> {
   const parsed = input.safeParse(values)
 
@@ -44,7 +46,8 @@ export async function startProjectAction(values: {
       getDatabase(),
       session.user.id,
       parsed.data.track,
-      parsed.data.answers
+      parsed.data.answers,
+      { files: parsed.data.files }
     )
 
     revalidatePath("/")

@@ -85,6 +85,10 @@ The seed script adds a project named "Demo Project" and one person per role, eac
 
 `.env.development` is encrypted and safe to have in git. To decrypt it locally you need the private key — ask a teammate for it (it's not in git) and either let dotenvx store it in your OS keychain on first use, or drop it into a local `.env.keys` file as `DOTENV_PRIVATE_KEY_DEVELOPMENT=...`.
 
+## The first IT/Admin in production
+
+A new production system has nobody who can invite staff. Make the first IT/Admin once with `bun run admin:create`; how and when is in `docs/DEPLOYMENT/_.md`.
+
 ## Before you open a PR
 
 - `bun run lint`

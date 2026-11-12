@@ -1,5 +1,6 @@
 import type { JsonObject } from "@/db/schema"
 
+import { DONE, defaultAgenda, preMeetingChecks } from "@/lib/calendar-agenda"
 import { schedulingEmail } from "@/lib/meeting-proposal"
 import { qualityGateQuestions } from "@/workbooks/wb01/tools/t3-d1-3a"
 
@@ -22,8 +23,8 @@ import { featuredProject, requestIdOf } from "./projects"
 //
 // Tema Foods Boiler Skid (Tier 1) and Tarkwa Mine Pump Station Drawings (Tier
 // 3) are where the tool being built is open: their records are locked up to
-// the tool before it. On Tema Foods that is D1.6: D1.4 is delivered, and on
-// D1.5 the client chose a meeting time and the OM confirmed it. On Tarkwa,
+// the tool before it. On Tema Foods that is D1.7: D1.4 is delivered, on D1.5
+// the client chose a meeting time, and on D1.6 the invite went out. On Tarkwa,
 // D1.4 is still open.
 
 export type SeedState = "draft" | "submitted" | "locked"
@@ -385,6 +386,37 @@ export const projectRecords = new Map<string, SeedRecord[]>(
           platform: "Google Meet",
           meetingLink: "https://meet.google.com/zpr-zhib-amp",
           calendarInviteSent: false,
+        }),
+      },
+      // D1.6: the invite went to Kwaku Ampofo and the OM, PM and LE, and every
+      // pre-meeting check is done, so D1.7 is open. An attendee's personId
+      // names their role here; the seed puts in who holds it on the project.
+      {
+        toolId: "D1.6",
+        state: "locked",
+        day: 5,
+        payload: payloadOf({
+          meetingDate: temaSlots[1]!.date,
+          meetingTime: temaSlots[1]!.time,
+          meetingTimeZone: temaSlots[1]!.timeZone,
+          platform: "Google Meet",
+          meetingLink: "https://meet.google.com/zpr-zhib-amp",
+          imhogenAttendees: [
+            { personId: "role:OM", name: "Kwabena Asante", role: "OM" },
+            { personId: "role:PM", name: "Ama Owusu", role: "PM" },
+            { personId: "role:LE", name: "Kojo Antwi", role: "LE" },
+          ],
+          clientAttendees: "Kwaku Ampofo",
+          agenda: defaultAgenda,
+          // When the seed starts D1.6, before it is locked.
+          inviteSentAt: new Date(
+            Date.parse(featuredProject.received) + 5 * 24 * 60 * 60 * 1000
+          ).toISOString(),
+          inviteSequence: 0,
+          preMeetingChecks: preMeetingChecks.map((each) => ({
+            ...each,
+            status: DONE,
+          })),
         }),
       },
     ],

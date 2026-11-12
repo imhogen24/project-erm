@@ -1,10 +1,11 @@
 import { isDeepStrictEqual } from "node:util"
 
-import { DrizzleQueryError, and, eq, ne } from "drizzle-orm"
+import { DrizzleQueryError, and, desc, eq, ne } from "drizzle-orm"
 import { DatabaseError } from "pg"
 
 import type { Database } from "@/db"
 import {
+  auditLog,
   changeRequests,
   recordStates,
   toolRecords,
@@ -27,6 +28,7 @@ import {
 import type { Transport } from "@/server/email/email"
 import {
   notifyApprovalNeeded,
+  notifySentBack,
   notifyToolsOpened,
   sendNotificationEmails,
 } from "@/server/notifications/raise"
@@ -269,11 +271,34 @@ export async function lockRecord(
 }
 
 // The record as this person's screen shows it.
+// A tool the client reads only once locked shows them nothing before. Someone
+// who also holds a staff role on the project reads it as staff.
+export async function hiddenFromClient(
+  database: Pick<Database, "select">,
+  actor: string,
+  record: { projectId: string; toolId: string; state: RecordState }
+): Promise<boolean> {
+  if (
+    record.state === "locked" ||
+    !tools.getTool(record.toolId)?.clientReadsOnceLocked
+  ) {
+    return false
+  }
+
+  const held = await rolesOn(database, actor, record.projectId)
+
+  return held.length > 0 && held.every((role) => role === "Client")
+}
+
 async function asShownTo(
   database: Pick<Database, "select">,
   actor: string,
   record: ToolRecord
 ): Promise<ToolRecord> {
+  if (await hiddenFromClient(database, actor, record)) {
+    return { ...record, payload: {} }
+  }
+
   const payload = await readPayload(database, record)
 
   return {
@@ -790,6 +815,89 @@ export async function approveRecord(
 
     return move(transaction, actor, approved, "locked")
   })
+}
+
+export class SendBackReasonError extends Error {}
+
+// The approver returns a submitted record to its writer as a draft, saying
+// why. The reason is kept on the audit line, and whoever submitted it is told
+// on their dashboard. The payload stays as submitted, so the writer carries on
+// from it.
+export async function sendBackRecord(
+  database: Database,
+  actor: string,
+  recordId: string,
+  reason: string
+): Promise<ToolRecord> {
+  const said = reason.trim()
+
+  if (said === "") {
+    throw new SendBackReasonError("Say what needs changing")
+  }
+
+  const record = await loadRecord(database, recordId)
+
+  await assertMay(database, actor, record.projectId, record.toolId, "approve")
+
+  return database.transaction(async (transaction) => {
+    await assertProjectActive(transaction, record.projectId)
+
+    const current = await lockRecord(transaction, recordId)
+
+    if (current.state !== "submitted") {
+      throw new InvalidTransitionError(
+        `A ${current.state} record cannot be sent back`
+      )
+    }
+
+    const [returned] = await transaction
+      .update(toolRecords)
+      .set({ state: "draft", updatedAt: nextUpdatedAt(current) })
+      .where(eq(toolRecords.id, recordId))
+      .returning(columns)
+
+    await writeAudit(
+      transaction,
+      {
+        recordId,
+        projectId: current.projectId,
+        actor,
+        action: "transitioned",
+        reason: said,
+      },
+      [stateChange(current.state, "draft")]
+    )
+
+    await notifySentBack(transaction, actor, current, said)
+
+    return returned!
+  })
+}
+
+// Why the record was last sent back, while it is still the draft that came
+// back: once it is submitted again, the reason has been dealt with.
+export async function sentBackReason(
+  database: Pick<Database, "select">,
+  record: { id: string; state: RecordState }
+): Promise<string | null> {
+  if (record.state !== "draft") {
+    return null
+  }
+
+  const [line] = await database
+    .select({ reason: auditLog.reason, newValue: auditLog.newValue })
+    .from(auditLog)
+    .where(
+      and(
+        eq(auditLog.recordId, record.id),
+        eq(auditLog.action, "transitioned"),
+        eq(auditLog.field, "state")
+      )
+    )
+    .orderBy(desc(auditLog.createdAt))
+    .limit(1)
+
+  return line?.newValue === "draft" && line.reason ? line.reason : null
 }
 
 // Locks a draft at once, with no one to approve it: D1.4 once its email has

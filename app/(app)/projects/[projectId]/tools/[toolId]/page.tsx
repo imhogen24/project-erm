@@ -32,6 +32,7 @@ import { getDatabase } from "@/server/database"
 import { clientAnswersOf } from "@/server/intake/client-requests"
 import { getClientRequestPreview } from "@/server/intake/preview"
 import { agendaOf } from "@/lib/calendar-agenda"
+import { notesStart } from "@/lib/meeting-notes"
 import {
   CALENDAR_AGENDA,
   clientAttendees,
@@ -44,6 +45,7 @@ import {
   schedulingContext,
 } from "@/server/meetings/meeting-proposal"
 import { getRequestDetails } from "@/server/intake/request-details"
+import { MEETING_NOTES, lockedCalendar } from "@/server/meetings/meeting-notes"
 import type { DocumentControl } from "@/server/document-control/document-control"
 import {
   PermissionDeniedError,
@@ -51,6 +53,7 @@ import {
   rolesOn,
 } from "@/server/permissions/permissions"
 import { getProjectOverview } from "@/server/projects/projects"
+import { hiddenFromClient, sentBackReason } from "@/server/records/records"
 import { getRecordScreen } from "@/server/records/screen"
 import { UnknownToolError } from "@/server/records/validate"
 
@@ -61,6 +64,7 @@ import {
   proposeMeetingTimeAction,
   readyForMeetingAction,
   saveDraftAction,
+  sendBackRecordAction,
   sendCalendarInviteAction,
   sendMeetingTimesAction,
   signFieldAction,
@@ -295,6 +299,31 @@ export default async function Page({
     }
   }
 
+  // D1.7 starts from D1.6's agenda and invited attendees. Nothing is saved
+  // until the OM saves.
+  if (toolId === MEETING_NOTES && !view.record && view.can.write) {
+    formValues = notesStart(await lockedCalendar(getDatabase(), projectId))
+  }
+
+  // A tool the client reads only once locked tells them so until then.
+  const notSharedYet =
+    tool.clientReadsOnceLocked &&
+    view.state !== "locked" &&
+    (await hiddenFromClient(getDatabase(), session.user.id, {
+      projectId,
+      toolId,
+      state: "draft",
+    }))
+
+  // Why the approver sent the draft back, for the person who writes it.
+  const sentBack =
+    view.record && view.can.write
+      ? await sentBackReason(getDatabase(), {
+          id: view.record.id,
+          state: "draft",
+        })
+      : null
+
   // D1.5: the client chooses a time on their own screen; the IMHOGEN team
   // works on the sheet.
   const meeting =
@@ -438,6 +467,10 @@ export default async function Page({
       submit={submitRecordAction}
       approve={approveRecordAction}
     />
+  ) : notSharedYet ? (
+    <p className="text-muted-foreground">
+      IMHOGEN shares these notes with you once they are approved.
+    </p>
   ) : !hasRecord && !view.can.write && !send ? (
     <p>Nobody has started this tool yet.</p>
   ) : (
@@ -458,6 +491,8 @@ export default async function Page({
         sign={signFieldAction}
         approve={approveRecordAction}
         send={send}
+        sendBack={sendBackRecordAction}
+        sentBack={sentBack ?? undefined}
       />
     </div>
   )

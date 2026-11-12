@@ -53,6 +53,20 @@ const answers = new Map<string, JsonObject>([
   ["D1.1", { attachedFiles: [] }],
   ["D1.2", triage("Proceed to D1.3", "Pass")],
   [
+    "D1.7",
+    {
+      actualDate: "2026-11-17",
+      actualStartTime: "14:00",
+      actualEndTime: "14:35",
+      imhogenPresent: [{ name: "Kwabena Asante", present: true }],
+      clientPresent: [{ name: "Kwaku Ampofo", present: true }],
+      discussion: [{ topic: "Introductions", rawNotes: "Agenda agreed." }],
+      primaryOutcome: "A site visit date will be set.",
+      clientNextStep: "Confirm the date.",
+      imhogenNextStep: "Propose a date.",
+    },
+  ],
+  [
     "T3.D1.3a",
     {
       sourceAssets: [{ assetType: "Paper drawing" }],

@@ -37,11 +37,13 @@ import {
   RecordNotEditableError,
   RecordNotFoundError,
   SelfApprovalError,
+  SendBackReasonError,
   StaleRecordError,
   ToolNotAvailableError,
   ValidationError,
   approveRecord,
   saveDraft,
+  sendBackRecord,
   signField,
   submitRecord,
   type ToolRecord,
@@ -109,6 +111,7 @@ function refusal(error: Error): RecordResult | undefined {
     error instanceof RecordNotFoundError ||
     error instanceof InvalidTransitionError ||
     error instanceof SelfApprovalError ||
+    error instanceof SendBackReasonError ||
     error instanceof ToolNotAvailableError ||
     error instanceof ProjectNotActiveError
   ) {
@@ -256,6 +259,31 @@ export async function approveRecordAction(values: {
       throw error
     }
   })
+}
+
+const sendBackInput = z.object({
+  recordId: z.uuid(),
+  reason: z.string().max(2000),
+})
+
+// The approver returns a submitted record to its writer, saying why.
+export async function sendBackRecordAction(values: {
+  recordId: string
+  reason: string
+}): Promise<RecordResult> {
+  const parsed = sendBackInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Check the reason and try again." }
+  }
+
+  const input = parsed.data
+
+  return attempt(async (actor) =>
+    done(
+      await sendBackRecord(getDatabase(), actor, input.recordId, input.reason)
+    )
+  )
 }
 
 // The PM's Send on D1.4. What stops it comes back in words for the button.

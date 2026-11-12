@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from "node:crypto"
 
 import { hashPassword } from "better-auth/crypto"
-import { and, eq, isNotNull, sql } from "drizzle-orm"
+import { and, eq, isNotNull, isNull, sql } from "drizzle-orm"
 import { z } from "zod"
 
 import type { Database } from "@/db"
@@ -11,6 +11,7 @@ import {
   sessions,
   invitations,
   people,
+  personCompanyRoles,
   personProjectRoles,
   roles as knownRoles,
   type Role,
@@ -297,6 +298,106 @@ export async function createInvite(
   const base = options.baseURL.replace(/\/+$/, "")
 
   return { status: "invited", link: `${base}/invite/${token}` }
+}
+
+export class AdminExistsError extends Error {}
+
+// The first IT/Admin on a new system, whom nobody can invite. The invite comes
+// from the system, gives IT/Admin company-wide, and is accepted on the usual
+// page, where the person chooses their own password. Once anyone holds
+// IT/Admin company-wide this is refused, so it is never a back door. A new
+// link replaces any earlier one that was not used, so only one is ever open.
+export async function createFirstAdminInvite(
+  database: Database,
+  input: { email: string; name: string },
+  options: { baseURL: string }
+): Promise<{ link: string }> {
+  const name = input.name.trim()
+
+  if (name === "") {
+    throw new InvalidInviteInputError("The first IT/Admin needs a name")
+  }
+
+  const address = cleanEmail(input.email)
+  const held: Role[] = ["IT/Admin"]
+  const token = randomBytes(32).toString("base64url")
+
+  await database.transaction(async (transaction) => {
+    // Two runs at once wait for each other, so both cannot pass the check.
+    await transaction.execute(
+      sql`SELECT pg_advisory_xact_lock(hashtext('first_it_admin'))`
+    )
+
+    const [admin] = await transaction
+      .select({ personId: personCompanyRoles.personId })
+      .from(personCompanyRoles)
+      .where(eq(personCompanyRoles.role, "IT/Admin"))
+      .limit(1)
+
+    if (admin) {
+      throw new AdminExistsError(
+        "An IT/Admin already exists. They invite everyone else from the app."
+      )
+    }
+
+    const existing = await findPerson(transaction, address)
+
+    if (existing?.id === systemActor) {
+      throw new InvalidInviteInputError("The system cannot be invited")
+    }
+
+    assertFitsAccount(existing, held)
+
+    const now = new Date()
+
+    const withdrawn = await transaction
+      .update(invitations)
+      .set({ expiresAt: now })
+      .where(
+        and(
+          eq(invitations.invitedBy, systemActor),
+          isNull(invitations.projectId),
+          isNull(invitations.acceptedAt),
+          sql`${invitations.roles} @> ARRAY['IT/Admin']::role[]`,
+          sql`${invitations.expiresAt} > ${now}`
+        )
+      )
+      .returning({ email: invitations.email, roles: invitations.roles })
+
+    if (withdrawn.length > 0) {
+      await transaction.insert(accessLog).values(
+        withdrawn.map((invite) => ({
+          actorId: systemActor,
+          action: "invite_withdrawn" as const,
+          email: invite.email,
+          projectId: null,
+          roles: invite.roles,
+        }))
+      )
+    }
+
+    await transaction.insert(invitations).values({
+      email: address,
+      name,
+      projectId: null,
+      roles: held,
+      tokenHash: hashToken(token),
+      expiresAt: new Date(now.getTime() + INVITE_DAYS * 24 * 60 * 60 * 1000),
+      invitedBy: systemActor,
+    })
+
+    await transaction.insert(accessLog).values({
+      actorId: systemActor,
+      action: "invited",
+      email: address,
+      projectId: null,
+      roles: held,
+    })
+  })
+
+  const base = options.baseURL.replace(/\/+$/, "")
+
+  return { link: `${base}/invite/${token}` }
 }
 
 // What the accept page shows: who the invite is for. Reading it uses nothing

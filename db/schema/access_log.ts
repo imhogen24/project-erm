@@ -10,6 +10,8 @@ export const accessActions = [
   "signed_out",
   // A client made their own account at /sign-up.
   "signed_up",
+  // An unused invite stopped working because a newer one replaced it.
+  "invite_withdrawn",
 ] as const
 
 export type AccessAction = (typeof accessActions)[number]

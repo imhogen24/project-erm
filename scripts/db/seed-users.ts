@@ -1,5 +1,6 @@
 import { hashPassword } from "better-auth/crypto"
 import { and, eq } from "drizzle-orm"
+import { z } from "zod"
 
 import { createDatabase, type Database } from "@/db"
 import {
@@ -158,6 +159,27 @@ function holderOf(team: Team, role: Role) {
   return team.get(role) ?? null
 }
 
+// A seeded attendee names a role ("role:OM"), since people's ids are only
+// known once they are added; this puts in the person holding it.
+const attendee = z.object({ personId: z.string() }).passthrough()
+
+function withTeamIds(payload: JsonObject, team: Team): JsonObject {
+  const attendees = z.array(attendee).safeParse(payload.imhogenAttendees)
+
+  if (!attendees.success) {
+    return payload
+  }
+
+  return {
+    ...payload,
+    imhogenAttendees: attendees.data.map((each) => {
+      const role = roles.find((held) => `role:${held}` === each.personId)
+
+      return { ...each, personId: (role && team.get(role)) ?? each.personId }
+    }),
+  }
+}
+
 // Each project's records, at the stage written in seed-data/records.ts. The OM
 // prepares a record and the PM approves it, a few hours apart, so the title
 // block shows real names and times. A record is only added when the project
@@ -201,7 +223,7 @@ async function addRecords(
         projectId,
         toolId: record.toolId,
         state: record.state,
-        payload: record.payload,
+        payload: withTeamIds(record.payload, team),
         createdAt: started,
         updatedAt: done ? approved : submitted,
         submittedBy: record.state === "draft" ? null : holderOf(team, "OM"),

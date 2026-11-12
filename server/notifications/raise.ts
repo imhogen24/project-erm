@@ -199,6 +199,31 @@ export async function notifyApprovalNeeded(
   }))
 }
 
+// Whoever submitted the record, told that the approver sent it back and why.
+// Dashboard only: the reason is on the record when they open it.
+export async function notifySentBack(
+  transaction: Transaction,
+  actor: string,
+  record: RecordRef & { submittedBy: string | null },
+  reason: string
+): Promise<void> {
+  if (!record.submittedBy) {
+    return
+  }
+
+  const name = await projectName(transaction, record.projectId)
+
+  await notify(transaction, {
+    personIds: others(actor, [record.submittedBy]),
+    kind: "sent_back",
+    title: `${record.toolId} was sent back to you`,
+    text: `${toolName(record.toolId)} on ${name}: ${reason}`,
+    projectId: record.projectId,
+    recordId: record.id,
+    path: toolPath(record.projectId, record.toolId),
+  })
+}
+
 // The roles with this access to the tool in the permissions matrix: "RW"
 // writes it and "RA" approves it. The Client is left out: client
 // notifications are their own.

@@ -200,7 +200,7 @@ describe("the projects", () => {
     expect(rows).toHaveLength(18)
   })
 
-  it("has D1.1 to D1.5 locked on the featured project, so D1.6 is open", async () => {
+  it("has D1.1 to D1.6 locked on the featured project, so D1.7 is open", async () => {
     await seed(url)
 
     const { rows } = await database.pool.query<{
@@ -217,13 +217,14 @@ describe("the projects", () => {
       { tool_id: "D1.3", state: "locked" },
       { tool_id: "D1.4", state: "locked" },
       { tool_id: "D1.5", state: "locked" },
+      { tool_id: "D1.6", state: "locked" },
     ])
 
     const open = (
       await availableTools(database, await projectIdOf(featuredProject.name))
     ).map((tool) => tool.toolId)
 
-    expect(open).toContain("D1.6")
+    expect(open).toContain("D1.7")
   })
 })
 
@@ -268,11 +269,13 @@ describe("the records", () => {
           JSON.stringify(record.payload).replaceAll('"Approved"', '"Reviewed"')
         )
 
-        // What the system writes, such as D1.4's delivery status or the times
-        // D1.5 sent, is never typed, so it is not checked as typed.
+        // What the system writes, such as D1.4's delivery status, the times
+        // D1.5 sent or the meeting D1.6 copied from D1.5, is never typed, so
+        // it is not checked as typed.
         for (const field of tools.getTool(record.toolId)?.fields ?? []) {
           if (
             field.systemFilled ||
+            field.inherited ||
             (field.type === "table" && field.readOnly)
           ) {
             delete submitted[field.key]

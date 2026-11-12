@@ -355,6 +355,9 @@ const toolDefinition = z
     // The record screen saves edits by itself a moment after typing stops,
     // and shows no Save draft or Submit button.
     autosave: z.boolean().optional(),
+    // The client reads the record only once it is locked: before, it holds
+    // IMHOGEN's working notes.
+    clientReadsOnceLocked: z.boolean().optional(),
     fields: z.array(field).min(1),
   })
   .refine(

@@ -89,18 +89,25 @@ export const previews: Preview[] = [
       "D1.5 on Tema Foods is Locked: 1.0 lists the three times sent, the second Accepted with a tick and the client's comment Our plant manager will join., the others Declined. 3.0 is the email the client got. 4.0 shows the agreed date and time, Google Meet and its link, and Client Confirmed? Yes. Nothing can be edited. The browser tests walk the whole flow (e2e/d15-meeting.spec.ts): the OM's Send to client and Change the times, the client's Choose this time and None of these suit me, and Confirm meeting. Log in as the client, kwaku.ampofo@temafoods.test: D1.5 shows Your discovery meeting with the time, Google Meet and Join the meeting.",
   },
   {
-    screen: "D1.6 calendar invite and agenda, as the OM",
+    screen: "D1.6 calendar invite and agenda, locked",
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.6`,
     expect:
-      "D1.5 is confirmed, so D1.6 is open. 1.0 Finalized meeting details: Meeting Date, Meeting Time (Zone) such as 14:00 GMT, Platform/Location Google Meet and Meeting ID/PIN with the link, all from D1.5 and read only; IMHOGEN Attendees as tiles to tick, one per person on the project with their roles (Ama Owusu PM, Kojo Antwi LE...); Client Attendees Kwaku Ampofo. 2.0 Calendar integration: the sheet's five agenda topics (5 min Introductions & Project Overview, Project Manager, ...) to edit, with Add a topic and a cross per topic. 4.0 Pre-meeting checklist: the three fixed tasks with an assignee to type and Done / Not done. Notes. Each edit saves by itself (Saving..., then ✓ Saved). At the foot, Send calendar invite is off until someone from IMHOGEN is ticked; press it: the client gets an email with the meeting and an invite.ics calendar file, copied to the ticked people (the seeded addresses end in .test, a reserved test domain the ERM never hands to Resend, so no email leaves the machine), a chip says Invite sent with the time, and pressing again sends nothing new unless the agenda or attendees changed, which goes as an update. Ready for the meeting stays off until the invite is sent and all three checks are Done; it then locks D1.6 and D1.7 opens.",
+      "D1.6 on Tema Foods is Locked: the meeting from D1.5 (Google Meet and its link), Kwabena Asante, Ama Owusu and Kojo Antwi ticked as IMHOGEN Attendees, Client Attendees Kwaku Ampofo, the sheet's five agenda topics, a chip Invite sent, and all three pre-meeting checks Done. Nothing can be edited. The browser tests walk the whole flow (e2e/d16-agenda.spec.ts): ticking attendees, Send calendar invite with its invite.ics file, and Ready for the meeting.",
   },
   {
-    screen: "D1.6 calendar invite and agenda, read only",
-    loginAs: "PM",
-    path: (id) => `/projects/${id}/tools/D1.6`,
+    screen: "D1.7 raw meeting notes, as the OM",
+    loginAs: "OM",
+    path: (id) => `/projects/${id}/tools/D1.7`,
     expect:
-      "The same sheet with nothing to edit and no buttons: the PM, LE, CA, CR, IT/Admin and the client (kwaku.ampofo@temafoods.test) only read D1.6. Before the OM ticks anyone, IMHOGEN Attendees is -.",
+      "D1.6 is locked, so D1.7 is open. 1.0 Meeting execution metadata: Actual Date and Actual Start Time start at the planned meeting; Actual End Time and Recording Link to type; Attendees Present (IMHOGEN) lists Kwabena Asante, Ama Owusu and Kojo Antwi and (Client) lists Kwaku Ampofo, each with Present to tick, and rows to add anyone else who joined. 2.0 Live discussion capture has D1.6's five agenda topics with their minutes, and Raw Notes / Direct Client Statements (needed on every row: remove a topic that was not discussed) and IMHOGEN Clarifications / Immediate Remarks to type; rows can be added and removed. 3.0 Parking lot: rows of Item Description and Action Required / Who to resolve?. 4.0 Meeting close-out: Primary Outcome, Client Next Step, IMHOGEN Next Step. Save draft keeps it; Submit checks the required fields and sends it to the PM for approval.",
+  },
+  {
+    screen: "D1.7 raw meeting notes, as the PM",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.7`,
+    expect:
+      "Before the OM saves anything: Nobody has started this tool yet. Once the OM submits, the PM (ama.owusu@imhogen.test) reads the notes and has Approve, which locks D1.7 and opens D1.8, and Send back, which asks What needs changing? and returns D1.7 to the OM as a draft; the OM then sees a red box Sent back for changes with the reason above the sheet, and a notification. The client (kwaku.ampofo@temafoods.test) sees IMHOGEN shares these notes with you once they are approved. until the PM approves, then reads the notes. LE and IT/Admin only read.",
   },
   {
     screen: "D1.1 client web form",

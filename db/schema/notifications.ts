@@ -25,6 +25,8 @@ export const notificationKinds = [
   "client_responded",
   "intake_failed",
   "email_unconfirmed",
+  // An approver sent a submitted record back to its writer.
+  "sent_back",
 ] as const
 
 export type NotificationKind = (typeof notificationKinds)[number]

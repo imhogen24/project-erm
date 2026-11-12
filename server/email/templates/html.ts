@@ -2,6 +2,8 @@ export type RenderedEmail = {
   subject: string
   text: string
   html: string
+  // Files sent with it, such as a calendar invite (.ics).
+  attachments?: { filename: string; content: string; contentType: string }[]
 }
 
 // Marks wording that is not final. The real wording is RDP-142.

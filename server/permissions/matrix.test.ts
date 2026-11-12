@@ -96,8 +96,8 @@ describe("permission matrix", () => {
     expect(accessRow(id)).toEqual(documentedRows()[id])
   })
 
-  // The WB01 sheet of 12 Nov 2026. Who approves D1.2 and D1.4 to D1.6 is
-  // in extraApprovers, not here.
+  // The WB01 sheet of 12 Nov 2026, except the Client's RW on D1.6, which is
+  // their choice on D1.5. Who approves D1.2 and D1.4 is in extraApprovers.
   it.each([
     ["D1.2", { OM: "RW", PM: "RO", CA: "RO", CR: "RO", "IT/Admin": "RO" }],
     [
@@ -126,7 +126,7 @@ describe("permission matrix", () => {
     [
       "D1.6",
       {
-        Client: "RW",
+        Client: "RO",
         OM: "RW",
         PM: "RO",
         LE: "RO",

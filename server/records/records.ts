@@ -32,6 +32,7 @@ import {
 } from "@/server/notifications/raise"
 import { assertProjectActive } from "@/server/projects/projects"
 import { systemActor } from "@/server/system/system"
+import { tools } from "@/server/tools/registry"
 import {
   ToolNotAvailableError,
   applyHardStop,
@@ -872,4 +873,70 @@ export async function lockSentDraft(
   return database.transaction((transaction) =>
     lockDraftIn(transaction, actor, recordId, systemValues)
   )
+}
+
+// Writes system-filled values, such as D1.4's delivery status, on a locked
+// record inside the caller's transaction, with an audit line for each change.
+// The record stays locked: these fields are never typed, so locking does not
+// freeze them. Any other field is refused, so what was locked stays as it was.
+export async function setSystemValues(
+  transaction: Transaction,
+  actor: string,
+  recordId: string,
+  systemValues: JsonObject,
+  reason: string
+): Promise<ToolRecord> {
+  const current = await lockRecord(transaction, recordId)
+
+  const systemFilled = new Set(
+    (tools.getTool(current.toolId)?.fields ?? []).flatMap((field) =>
+      field.systemFilled ? [field.key] : []
+    )
+  )
+
+  const refused = Object.keys(systemValues).filter(
+    (key) => !systemFilled.has(key)
+  )
+
+  if (refused.length > 0) {
+    throw new ValidationError(
+      refused.map((field) => ({
+        field,
+        message: "Not filled in by the system, so it cannot be set here",
+      }))
+    )
+  }
+
+  if (current.state !== "locked") {
+    throw new InvalidTransitionError(
+      `A ${current.state} record has no system values to fill in yet`
+    )
+  }
+
+  const payload = { ...current.payload, ...systemValues }
+  const changes = payloadChanges(current.payload, payload)
+
+  if (changes.length === 0) {
+    return current
+  }
+
+  const [updated] = await transaction
+    .update(toolRecords)
+    .set({ payload, updatedAt: nextUpdatedAt(current) })
+    .where(eq(toolRecords.id, current.id))
+    .returning(columns)
+
+  await writeAudit(
+    transaction,
+    {
+      recordId: current.id,
+      projectId: current.projectId,
+      actor,
+      action: "updated",
+      reason,
+    },
+    changes
+  )
+
+  return updated!
 }

@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest"
 
 import { SENT } from "@/server/acknowledgement/acknowledgement"
+import { deliveryStatuses as tracked } from "@/server/acknowledgement/delivery"
 import { validateRecord } from "@/server/records/validate"
 import { tools } from "@/server/tools/registry"
 
 import { registerAllTools } from "../../index"
-import { d14 } from "./d1-4"
+import { d14, deliveryStatuses } from "./d1-4"
 
 registerAllTools(tools)
 
@@ -41,6 +42,10 @@ describe("D1.4", () => {
       "Delivered",
       "Bounced",
     ])
+  })
+
+  it("has the same delivery statuses the delivery check writes", () => {
+    expect([...deliveryStatuses]).toEqual([...tracked])
   })
 
   it.each([

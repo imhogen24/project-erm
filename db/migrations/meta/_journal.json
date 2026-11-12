@@ -148,6 +148,13 @@
       "when": 1794444842594,
       "tag": "0020_client_files",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1794449127006,
+      "tag": "0021_email_delivery",
+      "breakpoints": true
     }
   ]
 }

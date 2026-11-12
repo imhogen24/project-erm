@@ -12,6 +12,7 @@ import { qualificationsOf } from "@/server/company-roles/company-roles"
 import { acceptInvite, createInvite } from "@/server/invites/invites"
 import {
   accounts,
+  emailLog,
   files,
   intakeSubmissions,
   people,
@@ -117,6 +118,27 @@ export async function addClientRequest(
     database
       .insert(intakeSubmissions)
       .values({ requestId, serviceTrack: "Tier_1", projectId, submission })
+  )
+}
+
+// A D1.4 email as the email log holds it after Send and the delivery check.
+// Retry is offered only for a bounced one.
+export async function addAcknowledgementEmail(
+  projectId: string,
+  recordId: string,
+  recipient: string,
+  status: "sent" | "delivered" | "bounced"
+) {
+  await withDatabase((database) =>
+    database.insert(emailLog).values({
+      recipient,
+      kind: "acknowledgement",
+      projectId,
+      recordId,
+      messageId: `e2e-${randomUUID()}`,
+      status,
+      key: `acknowledgement:${recordId}`,
+    })
   )
 }
 
@@ -276,7 +298,8 @@ export async function makeChangeRequest(
   )
 }
 
-// Locks the tools before D1.8 on the Tier 1 route, so D1.8 is open.
+// Locks the tools before D1.8 on the Tier 1 route, so D1.8 is open. D1.5
+// opens only once D1.4's email was delivered.
 export async function lockEarlierTools(projectId: string) {
   for (const toolId of [
     "D1.1",
@@ -287,7 +310,12 @@ export async function lockEarlierTools(projectId: string) {
     "D1.6",
     "D1.7",
   ]) {
-    await addRecord(projectId, toolId, "locked")
+    await addRecord(
+      projectId,
+      toolId,
+      "locked",
+      toolId === "D1.4" ? { payload: { deliveryStatus: "Delivered" } } : {}
+    )
   }
 }
 

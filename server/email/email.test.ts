@@ -15,6 +15,8 @@ import { createTestDatabase, resetTestData } from "@/db/testing"
 
 import {
   createFakeTransport,
+  deliveryOf,
+  getLookup,
   getTransport,
   sendEmail,
   type Transport,
@@ -412,6 +414,44 @@ describe("getTransport", () => {
     vi.stubEnv("RESEND_API_KEY", "test-key")
 
     expect(getTransport().name).toBe("resend")
+  })
+})
+
+// What the email service last saw of an email, as the delivery check reads it
+// (RDP-151). An opened or clicked email was delivered first. An email that
+// could not reach the address counts as a bounce, so the PM can fix it.
+describe("the delivery answer", () => {
+  it.each([
+    ["delivered", "delivered"],
+    ["opened", "delivered"],
+    ["clicked", "delivered"],
+    ["bounced", "bounced"],
+    ["suppressed", "bounced"],
+    ["failed", "bounced"],
+    ["complained", "complained"],
+    ["sent", "sent"],
+    ["queued", "sent"],
+    ["scheduled", "sent"],
+    ["delivery_delayed", "sent"],
+  ] as const)("reads %s as %s", (event, answer) => {
+    expect(deliveryOf(event)).toBe(answer)
+  })
+
+  it("asks Resend when the key is set", () => {
+    vi.stubEnv("RESEND_API_KEY", "test-key")
+
+    expect(getLookup().name).toBe("resend")
+  })
+
+  // Local development sends nothing, so its emails count as delivered and
+  // the tools after D1.4 open.
+  it("asks nobody without a key, and calls every email delivered", async () => {
+    vi.stubEnv("RESEND_API_KEY", "")
+
+    const lookup = getLookup()
+
+    expect(lookup.name).toBe("fake")
+    await expect(lookup.status("fake-1")).resolves.toBe("delivered")
   })
 })
 

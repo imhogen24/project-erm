@@ -72,6 +72,13 @@ export const previews: Preview[] = [
       "The same email, read only, with Send at the foot. Before the OM edits it, Send is off and says the Onboarding Manager has not started the email yet; with an empty subject or text it says what to add. Press Send: the email goes to the client through Resend when RESEND_API_KEY is set (the seeded clients have .test addresses, so nothing reaches anyone; without the key nothing leaves the machine), the email goes from the noreply address, the record locks, and Date Sent, Time Sent and Delivery Status Sent fill in, with Sent By kept as the OM, and D1.4 reads as Locked. Pressing twice sends once. A bad address in CC / BCC is refused and nothing is sent.",
   },
   {
+    screen: "D1.4 delivery, as the PM: badges and Retry (RDP-151)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}`,
+    expect:
+      "After Send, the D1.4 tile shows Locked and a grey Sent chip, and the D1.5 tile is greyed with This tool opens after D1.4 is delivered. Start the Inngest dev server (docs/DEPLOYMENT) and within 5 minutes the delivery check runs: with no RESEND_API_KEY every email counts as delivered, so the chip turns orange with a tick, Delivered, and D1.5 opens. Open D1.4: the same chip sits beside Locked in the title block and Delivery Status reads Delivered. With a real key, an address that bounces turns the chip red, Bounced; the PM gets a notification, and D1.4 shows a red box above the form, This email bounced. Correct the address and try again., with Sent To and Retry. A bad address is refused next to the button. Retry sends the same email again and the chip goes back to Sent. The OM sees This email bounced. The Project Manager has been told. and no Retry.",
+  },
+  {
     screen: "D1.1 client web form",
     loginAs: "PM",
     path: (id) => `/projects/${id}/tools/D1.1`,

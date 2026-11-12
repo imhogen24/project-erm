@@ -4,6 +4,16 @@ import type { WorkbookMap } from "./map"
 // T3.D1.8a and T3.D1.15a in place of D1.3, D1.8 and D1.15, and skips D1.5 to
 // D1.7, since the client sends assets instead of meeting. Which track a tool
 // is on comes from its definition.
+
+// The tools after D1.4 reach out to the client, so they wait until the
+// acknowledgement email was delivered, not only sent (RDP-151).
+const delivered = {
+  tool: "D1.4",
+  field: "deliveryStatus",
+  oneOf: ["Delivered"],
+  note: "This tool opens after D1.4 is delivered.",
+} as const
+
 export const wb01: WorkbookMap = {
   workbook: "wb01",
   tools: [
@@ -28,11 +38,11 @@ export const wb01: WorkbookMap = {
       },
     },
     { tool: "D1.4", after: { all: ["D1.3"] } },
-    { tool: "D1.5", after: { all: ["D1.4"] } },
+    { tool: "D1.5", after: { all: ["D1.4"] }, when: delivered },
     { tool: "D1.6", after: { all: ["D1.5"] } },
     { tool: "D1.7", after: { all: ["D1.6"] } },
     { tool: "D1.8", after: { all: ["D1.7"] } },
-    { tool: "T3.D1.8a", after: { all: ["D1.4"] } },
+    { tool: "T3.D1.8a", after: { all: ["D1.4"] }, when: delivered },
     { tool: "D1.9", after: { all: ["D1.8"] } },
     { tool: "D1.10", after: { all: ["D1.9"] } },
     {

@@ -57,6 +57,7 @@ export function RecordTopBar({
   tier,
   requestId,
   action,
+  badges,
   control,
 }: {
   // The tool, such as "D1.3 Received Request Record", and where it stands.
@@ -70,6 +71,8 @@ export function RecordTopBar({
   requestId?: string
   // A button about the project, such as the one that opens the client request.
   action?: ReactNode
+  // Chips beside the state, such as D1.4's delivery status.
+  badges?: ReactNode
   control: Fact[]
 }) {
   return (
@@ -94,6 +97,7 @@ export function RecordTopBar({
                 {title}
               </h1>
               <StateBadge state={state} />
+              {badges}
               {iteration !== undefined && (
                 <Badge variant="outline" className="tabular-nums">
                   Iteration {iteration}

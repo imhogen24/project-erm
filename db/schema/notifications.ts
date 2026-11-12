@@ -24,6 +24,7 @@ export const notificationKinds = [
   "client_brief_ready",
   "client_responded",
   "intake_failed",
+  "email_unconfirmed",
 ] as const
 
 export type NotificationKind = (typeof notificationKinds)[number]

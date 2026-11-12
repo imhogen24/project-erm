@@ -13,6 +13,9 @@ export type Condition = {
   tool: string
   field: string
   oneOf: readonly (string | boolean)[]
+  // What a closed tool says while the tool is locked without one of these
+  // values, such as "This tool opens after D1.4 is delivered."
+  note?: string
 }
 
 export type ToolRule = {

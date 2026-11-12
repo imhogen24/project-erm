@@ -10,6 +10,10 @@ import {
   SendNotReadyError,
   sendAcknowledgement,
 } from "@/server/acknowledgement/acknowledgement"
+import {
+  RetryNotAllowedError,
+  retryAcknowledgement,
+} from "@/server/acknowledgement/delivery"
 import { getDatabase } from "@/server/database"
 import { resubmitClientRequest } from "@/server/intake/client-requests"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
@@ -43,6 +47,8 @@ const saveInput = z.object({
 const recordInput = z.object({ recordId: z.uuid() })
 
 const signInput = z.object({ recordId: z.uuid(), fieldKey: z.string().min(1) })
+
+const retryInput = z.object({ recordId: z.uuid(), sentTo: z.string() })
 
 type SaveValues = {
   projectId: string
@@ -258,6 +264,44 @@ export async function sendAcknowledgementAction(values: {
     } catch (error) {
       if (
         error instanceof SendNotReadyError ||
+        error instanceof EmailRefusedError
+      ) {
+        return { status: "error", message: error.message }
+      }
+
+      throw error
+    }
+  })
+}
+
+// The PM's Retry on a D1.4 email that bounced or was never confirmed: the same
+// email to the corrected address. What stops it comes back in words for the
+// button.
+export async function retryAcknowledgementAction(values: {
+  recordId: string
+  sentTo: string
+}): Promise<RecordResult> {
+  const parsed = retryInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Check the address and try again." }
+  }
+
+  const input = parsed.data
+
+  return attempt(async (actor) => {
+    try {
+      return done(
+        await retryAcknowledgement(
+          getDatabase(),
+          actor,
+          input.recordId,
+          input.sentTo
+        )
+      )
+    } catch (error) {
+      if (
+        error instanceof RetryNotAllowedError ||
         error instanceof EmailRefusedError
       ) {
         return { status: "error", message: error.message }

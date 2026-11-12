@@ -57,6 +57,7 @@ describe("toolStatus", () => {
       cycle: 1,
       missing: [],
       waitingOn: [],
+      note: null,
     })
   })
 

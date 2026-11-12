@@ -31,7 +31,7 @@ import { systemActor } from "@/server/system/system"
 
 import type { ToolDefinition } from "@/server/tools/define-tool"
 import { servesTrack } from "@/server/workflow/tracks"
-import { toolGates } from "@/server/workflow/workflow"
+import { toolGates, toolNotes } from "@/server/workflow/workflow"
 
 export { projectStatuses, serviceTracks }
 
@@ -72,6 +72,9 @@ export type ProjectOverview = Project & {
     // this names the tools it waits on (empty when the reason is the project,
     // such as it being on hold).
     waitingOn: string[] | null
+    // What a closed tool says about why, such as "This tool opens after D1.4
+    // is delivered.", or null.
+    note: string | null
   }[]
 }
 
@@ -369,6 +372,11 @@ export async function getProjectOverview(
       ? new Map<string, string[] | null>()
       : await toolGates(database, projectId, unstarted)
 
+  const notes =
+    unstarted.length === 0
+      ? new Map<string, string>()
+      : await toolNotes(database, projectId, unstarted)
+
   return {
     ...project!,
     tools: readable.map((tool) => ({
@@ -377,6 +385,7 @@ export async function getProjectOverview(
       workbook: tool.workbook,
       state: newest.get(tool.id) ?? "notStarted",
       waitingOn: gates.get(tool.id) ?? null,
+      note: notes.get(tool.id) ?? null,
     })),
   }
 }

@@ -17,6 +17,7 @@ import { registerTestTools } from "@/server/tools/testing"
 import {
   availableTools,
   loadWorkflow,
+  toolStatus,
   workflowMaps,
 } from "@/server/workflow/workflow"
 
@@ -162,7 +163,21 @@ async function recordIn(
     await transitionRecord(database, actor, record.id, step)
   }
 
+  // Only the delivery check fills in D1.4's status. On the route the email
+  // was delivered.
+  if (toolId === "D1.4" && state === "locked") {
+    await setDelivery(record.id, "Delivered")
+  }
+
   return record
+}
+
+// What the delivery check (server/acknowledgement/delivery) writes.
+async function setDelivery(recordId: string, status: string) {
+  await database.pool.query(
+    `UPDATE tool_records SET payload = payload || jsonb_build_object('deliveryStatus', $2::text) WHERE id = $1`,
+    [recordId, status]
+  )
 }
 
 // Locks every tool of the route up to and including `last`.
@@ -392,6 +407,94 @@ describe("the Tier 3 route", () => {
 
     expect(await open()).toEqual([])
     expect(await status()).toBe("rejected")
+  })
+})
+
+// D1.5 proposes meeting times to the client, so it waits for the
+// acknowledgement email to arrive, not just to be sent (RDP-151).
+describe("D1.4 delivery", () => {
+  const waitNote = "This tool opens after D1.4 is delivered."
+
+  // Locks the route up to D1.4 on Tier 3, with the email at `status`.
+  async function lockedTier3D14(status: string) {
+    await lockThrough("T3.D1.3a", tier3)
+
+    const record = await recordIn("locked", "D1.4")
+
+    await setDelivery(record.id, status)
+
+    return record
+  }
+
+  it("keeps D1.5 closed while D1.4 is locked and only Sent, and says why", async () => {
+    await lockThrough("D1.3")
+
+    const record = await recordIn("locked", "D1.4")
+
+    await setDelivery(record.id, "Sent")
+
+    expect(await open()).toEqual([])
+    expect((await toolStatus(database, projectId, "D1.5")).note).toBe(waitNote)
+    await expect(
+      createRecord(database, actor, { projectId, toolId: "D1.5" })
+    ).rejects.toThrow(ToolNotAvailableError)
+  })
+
+  it("keeps D1.5 closed after a bounce", async () => {
+    await lockThrough("D1.3")
+
+    const record = await recordIn("locked", "D1.4")
+
+    await setDelivery(record.id, "Bounced")
+
+    expect(await open()).toEqual([])
+    expect((await toolStatus(database, projectId, "D1.5")).note).toBe(waitNote)
+  })
+
+  it("opens D1.5 once the email is Delivered", async () => {
+    await lockThrough("D1.3")
+
+    const record = await recordIn("locked", "D1.4")
+
+    await setDelivery(record.id, "Sent")
+    await setDelivery(record.id, "Delivered")
+
+    expect(await open()).toEqual(["D1.5"])
+    expect((await toolStatus(database, projectId, "D1.5")).note).toBeNull()
+  })
+
+  it("says nothing about delivery while D1.4 is not locked yet", async () => {
+    await lockThrough("D1.3")
+    await recordIn("draft", "D1.4")
+
+    expect((await toolStatus(database, projectId, "D1.5")).note).toBeNull()
+  })
+
+  describe("on Tier 3", () => {
+    beforeEach(async () => {
+      await useProject("Tier_3")
+    })
+
+    it("keeps T3.D1.8a closed while D1.4 is only Sent", async () => {
+      await lockedTier3D14("Sent")
+
+      expect(await open()).toEqual([])
+      expect((await toolStatus(database, projectId, "T3.D1.8a")).note).toBe(
+        waitNote
+      )
+    })
+
+    it("opens T3.D1.8a once Delivered, and never offers D1.5 to D1.7", async () => {
+      await lockedTier3D14("Delivered")
+
+      expect(await open()).toEqual(["T3.D1.8a"])
+
+      for (const skipped of ["D1.5", "D1.6", "D1.7"]) {
+        await expect(
+          createRecord(database, actor, { projectId, toolId: skipped })
+        ).rejects.toThrow(ToolNotAvailableError)
+      }
+    })
   })
 })
 

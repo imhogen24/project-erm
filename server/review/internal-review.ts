@@ -9,7 +9,6 @@ import {
   toolRecords,
   type JsonObject,
 } from "@/db/schema"
-import { reviewDirectives } from "@/lib/internal-review"
 import type { Transaction } from "@/server/audit/audit"
 import { getTool } from "@/server/tools/registry"
 
@@ -133,13 +132,5 @@ export async function reviewValues(
         status: stateShown(recordOf(toolId)?.state),
       }
     }),
-  }
-}
-
-// Where the review rows start before the OM saves anything: the sheet's four
-// categories, each with its usual reviewer and question, still to be done.
-export function reviewStart() {
-  return {
-    reviews: reviewDirectives.map((each) => ({ ...each, status: "Required" })),
   }
 }

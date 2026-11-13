@@ -1,6 +1,6 @@
-// D1.9's review rows, from the sheet (docs/dev_docs/WORKBOOK_01, D1.9): each
-// category with the reviewer and question it starts with, which the OM may
-// change.
+// D1.9's review rows, from the sheet (docs/dev_docs/WORKBOOK_01, D1.9). Only
+// the category is fixed; the reviewer and question are the sheet's example,
+// used by the seed's sample data.
 export const reviewDirectives = [
   {
     category: "Technical Feasibility",

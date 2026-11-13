@@ -58,7 +58,7 @@ async function open(page: Page, email: string, projectId: string) {
   })
 }
 
-test("the OM sees what the system filled, sets every review and submits; the HE approves", async ({
+test("the OM sees what the system filled, fills every review and submits; the HE approves", async ({
   browser,
 }) => {
   test.slow()
@@ -82,7 +82,19 @@ test("the OM sees what the system filled, sets every review and submits; the HE 
   await omPage.getByLabel("Priority Level").click()
   await omPage.getByRole("option", { name: "High" }).click()
 
+  await expect(
+    omPage.getByLabel("Assigned Reviewer, row 1", { exact: true })
+  ).toHaveValue("")
+
   for (const row of [1, 2, 3, 4]) {
+    await omPage
+      .getByLabel(`Assigned Reviewer, row ${row}`, { exact: true })
+      .fill("Kwesi Appiah")
+    await omPage
+      .getByLabel(`Specific Focus / Question for Reviewer, row ${row}`, {
+        exact: true,
+      })
+      .fill("Is it feasible?")
     await omPage.getByLabel(`Status, row ${row}`, { exact: true }).click()
     await omPage.getByRole("option", { name: "Passed" }).click()
   }

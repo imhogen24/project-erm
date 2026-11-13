@@ -8,7 +8,8 @@ import {
   approveRecord,
   submitRecord,
 } from "@/server/records/records"
-import { reviewStart, reviewValues } from "@/server/review/internal-review"
+import { reviewDirectives } from "@/lib/internal-review"
+import { reviewValues } from "@/server/review/internal-review"
 import { tools } from "@/server/tools/registry"
 import { loadUnorderedWorkflow } from "@/server/workflow/testing"
 
@@ -37,7 +38,7 @@ let he: string
 const complete = {
   primaryObjective: "Check the request is realistic.",
   priority: "High",
-  reviews: reviewStart().reviews.map((each) => ({ ...each, status: "Passed" })),
+  reviews: reviewDirectives.map((each) => ({ ...each, status: "Passed" })),
 }
 
 async function addProject(track: ServiceTrack = "Tier_1") {
@@ -143,15 +144,6 @@ describe("what the system fills in", () => {
 
     expect(JSON.stringify(values.referenceMaterial)).toContain("T3.D1.3a")
     expect(JSON.stringify(values.referenceMaterial)).toContain("T3.D1.8a")
-  })
-
-  it("starts the four reviews from the sheet, each still required", () => {
-    expect(reviewStart().reviews.map((each) => each.status)).toEqual([
-      "Required",
-      "Required",
-      "Required",
-      "Required",
-    ])
   })
 })
 

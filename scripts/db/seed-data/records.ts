@@ -2,6 +2,7 @@ import type { JsonObject } from "@/db/schema"
 
 import { DONE, defaultAgenda, preMeetingChecks } from "@/lib/calendar-agenda"
 import { schedulingEmail } from "@/lib/meeting-proposal"
+import { reviewDirectives } from "@/lib/internal-review"
 import { needsCategories, specCategories } from "@/lib/needs-assessment"
 import { qualityGateQuestions } from "@/workbooks/wb01/tools/t3-d1-3a"
 
@@ -27,10 +28,10 @@ import { featuredProject, requestIdOf, stageProjects } from "./projects"
 //
 // Tema Foods Boiler Skid (Tier 1) and Tarkwa Mine Pump Station Drawings (Tier
 // 3) are where the tool being built is open: their records are locked up to
-// the tool before it. On Tema Foods that is D1.8: D1.4 is delivered, on D1.5
+// the tool before it. On Tema Foods that is D1.9: D1.4 is delivered, on D1.5
 // the client chose a meeting time, on D1.6 the invite went out, and the PM
-// approved the D1.7 meeting notes. On Tarkwa it is T3.D1.8a: D1.4 is
-// delivered.
+// approved the D1.7 meeting notes and the D1.8 needs assessment. On Tarkwa it
+// is D1.9 too: D1.4 is delivered and T3.D1.8a approved.
 
 export type SeedState = "draft" | "submitted" | "locked"
 
@@ -477,6 +478,9 @@ export const projectRecords = new Map<string, SeedRecord[]>(
           imhogenNextStep: "Lead Engineer writes the needs assessment (D1.8).",
         }),
       },
+      // D1.8: the Lead Engineer's needs assessment, signed and approved, so
+      // D1.9 is open for the OM.
+      { toolId: "D1.8", state: "locked", day: 9, payload: stageD18() },
     ],
     "Tamale Shea Butter Processing Plant": [
       {
@@ -739,6 +743,9 @@ export const projectRecords = new Map<string, SeedRecord[]>(
           deliveryStatus: "Delivered",
         }),
       },
+      // T3.D1.8a: the AE's measurements, signed and approved by the LE, so
+      // D1.9 is open for the OM.
+      { toolId: "T3.D1.8a", state: "locked", day: 6, payload: stageT3D18a() },
     ],
     "Takoradi Port Conveyor Upgrade": [
       {
@@ -1119,6 +1126,19 @@ function stageT3D18a() {
 }
 
 // Every Tier 1 tool built, in order, as each stage project has it.
+// The OM's internal review request, every review done, approved by the HE.
+function stageD19() {
+  return payloadOf({
+    primaryObjective:
+      "Confirm the information is accurate and the client's demands are realistic.",
+    priority: "High",
+    reviews: reviewDirectives.map((each) => ({
+      ...each,
+      status: "Passed",
+    })),
+  })
+}
+
 function tier1Through(name: string, last: string): SeedRecord[] {
   const stage = stageOf(name)
   const files = stageFiles(stage)
@@ -1137,6 +1157,7 @@ function tier1Through(name: string, last: string): SeedRecord[] {
     { toolId: "D1.6", state: "locked", day: 5, payload: stageD16(stage) },
     { toolId: "D1.7", state: "locked", day: 7, payload: stageD17(stage) },
     { toolId: "D1.8", state: "locked", day: 9, payload: stageD18() },
+    { toolId: "D1.9", state: "locked", day: 11, payload: stageD19() },
   ]
 
   return all.slice(0, all.findIndex((record) => record.toolId === last) + 1)
@@ -1157,6 +1178,7 @@ function tier3Through(name: string, last: string): SeedRecord[] {
     { toolId: "T3.D1.3a", state: "locked", day: 2, payload: stageT3Intake },
     { toolId: "D1.4", state: "locked", day: 3, payload: stageD14(stage) },
     { toolId: "T3.D1.8a", state: "locked", day: 6, payload: stageT3D18a() },
+    { toolId: "D1.9", state: "locked", day: 8, payload: stageD19() },
   ]
 
   return all.slice(0, all.findIndex((record) => record.toolId === last) + 1)
@@ -1177,12 +1199,9 @@ function unlocked(name: string): SeedRecord[] {
 }
 
 const stageRecords: [string, SeedRecord[]][] = [
-  [`${DEV_LOCKED} (Tier 1)`, tier1Through(`${DEV_LOCKED} (Tier 1)`, "D1.8")],
+  [`${DEV_LOCKED} (Tier 1)`, tier1Through(`${DEV_LOCKED} (Tier 1)`, "D1.9")],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
-  [
-    `${DEV_LOCKED} (Tier 3)`,
-    tier3Through(`${DEV_LOCKED} (Tier 3)`, "T3.D1.8a"),
-  ],
+  [`${DEV_LOCKED} (Tier 3)`, tier3Through(`${DEV_LOCKED} (Tier 3)`, "D1.9")],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],
 ]
 

@@ -21,6 +21,8 @@ import {
   workflowMaps,
 } from "@/server/workflow/workflow"
 
+import { commercialCriteria, technicalCriteria } from "@/lib/capability"
+
 import { registerAllTools } from "../index"
 import { qualityGateQuestions } from "./tools/t3-d1-3a"
 
@@ -33,6 +35,22 @@ registerAllTools(tools)
 registerTestTools({ wb02: ["D2.1"] })
 
 loadWorkflow(workflowMaps)
+
+// D1.10 with every criterion answered and the given conclusion.
+function capability(overallCapabilityStatus: string) {
+  const answered = (criteria: string[]) =>
+    criteria.map((criterion) => ({
+      criterion,
+      status: "Yes",
+      justification: "Checked",
+    }))
+
+  return {
+    technicalCapability: answered(technicalCriteria),
+    commercialAlignment: answered(commercialCriteria),
+    overallCapabilityStatus,
+  }
+}
 
 // D1.2 with its three checks answered. A spam request may fail a check.
 function triage(decision: string, status: string) {
@@ -114,7 +132,7 @@ const answers = new Map<string, JsonObject>([
   ],
   // In the app the PM's Send locks D1.4; here it moves like any record.
   ["D1.4", { subject: "Acknowledgement of Boiler request", body: "Dear Ama," }],
-  ["D1.10", { overallCapabilityStatus: "Capable" }],
+  ["D1.10", capability("Capable")],
   ["D1.11", { goNoGoDecision: "Go" }],
   ["D1.14", { minimumOverheadMet: true }],
 ])
@@ -377,9 +395,7 @@ describe("hard stops", () => {
 
   it("rejects the project when D1.10 is Not Capable", async () => {
     await lockThrough("D1.9")
-    await recordIn("locked", "D1.10", {
-      overallCapabilityStatus: "Not Capable",
-    })
+    await recordIn("locked", "D1.10", capability("Not Capable"))
 
     expect(await open()).toEqual([])
     expect(await status()).toBe("rejected")

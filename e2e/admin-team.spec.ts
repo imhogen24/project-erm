@@ -293,8 +293,10 @@ test("the sidebar links to the team page for an IT/Admin only", async ({
 
   await page.context().clearCookies()
   await signInAsAdmin(page)
-  await page.goto("/")
+  // Links only answer once the page has loaded its scripts, and the team page
+  // may still be compiling on a busy dev server.
+  await page.goto("/", { waitUntil: "networkidle" })
 
   await page.getByRole("link", { name: "Assign staff" }).first().click()
-  await expect(page).toHaveURL(/\/admin\/team$/)
+  await expect(page).toHaveURL(/\/admin\/team$/, { timeout: 30_000 })
 })

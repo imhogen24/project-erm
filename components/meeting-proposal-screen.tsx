@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState, useTransition } from "react"
 
 import { DatePicker } from "@/components/date-picker"
+import { TimeInput } from "@/components/time-input"
 import { SegmentedChoice } from "@/components/segmented-choice"
 import { ActionButton, SheetActions } from "@/components/sheet-actions"
 import {
@@ -426,11 +427,9 @@ export function MeetingProposalScreen({
                     />
                   </DataCell>
                   <DataCell label="Time">
-                    <Input
-                      type="time"
+                    <TimeInput
                       aria-label={`Slot ${index + 1} time`}
                       value={slot.time.slice(0, 5)}
-                      className="h-12 bg-background"
                       onChange={(event) =>
                         setSlot(index, { time: event.target.value })
                       }

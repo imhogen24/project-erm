@@ -16,6 +16,13 @@ export type Preview = {
 
 export const previews: Preview[] = [
   {
+    screen: "Dev projects: every tool locked, and every tool open",
+    loginAs: "OM",
+    path: () => "/",
+    expect:
+      "Four projects, with the same people on each: the first person of every role (OM kwabena.asante, PM ama.owusu, LE kojo.antwi, AE fiifi.acquah, CR emmanuel.quaye, IT/Admin kofi.mensah and the rest) and one client, akosua.mensah@devclient.test. Dev: All Tools Locked (Tier 1) has D1.1 to D1.8 locked with sample answers, and Dev: All Tools Locked (Tier 3) has D1.1, D1.2, T3.D1.3a, D1.4 and T3.D1.8a locked: open any tool as any of them to see what that role reads. Dev: All Tools Unlocked (Tier 1) and (Tier 3) have every tool of their tier open at once, empty, without waiting for the one before (development only, never in production): the client's web form is a draft the client can change, and every other tool starts from nothing. A tool that reads an earlier one, such as D1.6 reading D1.5's agreed time, says what it is missing until that one is filled in. Every account's password is password.",
+  },
+  {
     screen: "Projects that need a team (IT/Admin)",
     loginAs: "IT/Admin",
     path: () => "/admin/team",
@@ -60,26 +67,23 @@ export const previews: Preview[] = [
   {
     screen: "D1.4 acknowledgement email, as the OM (RDP-150)",
     loginAs: "OM",
-    email: "selorm.dzigbordi@imhogen.test",
     path: () => "/",
     expect:
-      "Open Obuasi Workshop Crane Rail, then D1.4: T3.D1.3a is locked, so D1.4 is open. Two boxes: 1.0 Dispatch metadata (Sent To is the client's email, grey; CC / BCC and Subject Line to type, the subject using the project name because the Tier 3 form has no title; Sent By already shows the OM's email, the IMHOGEN rep it comes from; Date Sent, Time Sent and Delivery Status say Filled in when the email is sent) and 2.0 Standard email template, the sheet's email with Dear Isaac Tawiah, the submission date and the request ID filled in. There is no Save draft, Submit or Send: the OM prepares, and only the PM (efua.quartey@imhogen.test) sees Send. Edit the text and stop: the foot says Saving..., then ✓ Saved. Nothing is saved until you edit.",
+      "Open Dev: All Tools Unlocked (Tier 1), then D1.4. Two boxes: 1.0 Dispatch metadata (Sent To is the client's email, grey; CC / BCC and Subject Line to type, the subject using the request's title; Sent By already shows the OM's email, the IMHOGEN rep it comes from; Date Sent, Time Sent and Delivery Status say Filled in when the email is sent) and 2.0 Standard email template, the sheet's email with Dear Akosua Mensah, the submission date and the request ID filled in. There is no Save draft, Submit or Send: the OM prepares, and only the PM (ama.owusu@imhogen.test) sees Send. Edit the text and stop: the foot says Saving..., then ✓ Saved. Nothing is saved until you edit.",
   },
   {
     screen: "D1.4 acknowledgement email, as the PM: Send (RDP-150)",
     loginAs: "PM",
-    email: "efua.quartey@imhogen.test",
     path: () => "/",
     expect:
-      "Open Obuasi Workshop Crane Rail, then D1.4: the same email, read only, with Send at the foot. Before the OM edits it, Send is off and says the Onboarding Manager has not started the email yet; with an empty subject or text it says what to add. Press Send: the email goes to the client through Resend when RESEND_API_KEY is set (the seeded clients have .test addresses, so nothing reaches anyone; without the key nothing leaves the machine), the email goes from the noreply address, the record locks, and Date Sent, Time Sent and Delivery Status Sent fill in, with Sent By kept as the OM, and D1.4 reads as Locked. Pressing twice sends once. A bad address in CC / BCC is refused and nothing is sent.",
+      "Open Dev: All Tools Unlocked (Tier 1), then D1.4: the same email, read only, with Send at the foot. Before the OM edits it, Send is off and says the Onboarding Manager has not started the email yet; with an empty subject or text it says what to add. Press Send: the email goes to the client through Resend when RESEND_API_KEY is set (the seeded clients have .test addresses, so nothing reaches anyone; without the key nothing leaves the machine), the email goes from the noreply address, the record locks, and Date Sent, Time Sent and Delivery Status Sent fill in, with Sent By kept as the OM, and D1.4 reads as Locked. Pressing twice sends once. A bad address in CC / BCC is refused and nothing is sent.",
   },
   {
     screen: "D1.4 delivery, as the PM: badges and Retry (RDP-151)",
     loginAs: "PM",
-    email: "efua.quartey@imhogen.test",
     path: () => "/",
     expect:
-      "On Obuasi Workshop Crane Rail, after Send, the D1.4 tile shows Locked and a grey Sent chip, and the T3.D1.8a tile is greyed with This tool opens after D1.4 is delivered. Start the Inngest dev server (docs/DEPLOYMENT) and within 5 minutes the delivery check runs: with no RESEND_API_KEY every email counts as delivered, so the chip turns orange with a tick, Delivered, and T3.D1.8a opens. Open D1.4: the same chip sits beside Locked in the title block and Delivery Status reads Delivered. With a real key, an address that bounces turns the chip red, Bounced; the PM gets a notification, and D1.4 shows a red box above the form, This email bounced. Correct the address and try again., with Sent To and Retry. A bad address is refused next to the button. Retry sends the same email again and the chip goes back to Sent. The OM sees This email bounced. The Project Manager has been told. and no Retry. On Tema Foods Boiler Skid and Tarkwa Mine Pump Station Drawings, D1.4 is already Delivered.",
+      "On Dev: All Tools Unlocked (Tier 1), after Send, the D1.4 tile shows Locked and a grey Sent chip. On any other Tier 1 project, D1.5 stays closed until D1.4 is delivered. Start the Inngest dev server (docs/DEPLOYMENT) and within 5 minutes the delivery check runs: with no RESEND_API_KEY every email counts as delivered, so the chip turns orange with a tick, Delivered. Open D1.4: the same chip sits beside Locked in the title block and Delivery Status reads Delivered. With a real key, an address that bounces turns the chip red, Bounced; the PM gets a notification, and D1.4 shows a red box above the form, This email bounced. Correct the address and try again., with Sent To and Retry. A bad address is refused next to the button. Retry sends the same email again and the chip goes back to Sent. The OM sees This email bounced. The Project Manager has been told. and no Retry. On Tema Foods Boiler Skid and Tarkwa Mine Pump Station Drawings, D1.4 is already Delivered.",
   },
   {
     screen: "D1.5 meeting time proposal, confirmed",

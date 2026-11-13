@@ -279,9 +279,6 @@ test("on a phone a person who is not an IT/Admin has no invite link", async ({
   await expect(page.getByRole("link", { name: "Invite people" })).toHaveCount(0)
 })
 
-const QUALIFICATION_NOTE =
-  "These roles say what the person can be assigned. They give no access until an IT/Admin assigns the person to a project. IT/Admin is the exception: it applies to every project."
-
 const CLIENT_NOTE = "Client is only given on one project."
 
 async function openInvites(page: Page) {
@@ -303,18 +300,16 @@ test("the access choice starts on One project, with the project field", async ({
     page.getByRole("radio", { name: "All projects" })
   ).not.toBeChecked()
   await expect(page.getByLabel("Project", { exact: true })).toBeVisible()
-  await expect(page.getByText(QUALIFICATION_NOTE)).toHaveCount(0)
   await expect(page.getByRole("checkbox", { name: "Client" })).toBeEnabled()
 })
 
-test("All projects hides the project field, shows the note and disables Client", async ({
+test("All projects hides the project field and disables Client", async ({
   page,
 }) => {
   await openInvites(page)
   await page.getByRole("radio", { name: "All projects" }).click()
 
   await expect(page.getByLabel("Project", { exact: true })).toHaveCount(0)
-  await expect(page.getByText(QUALIFICATION_NOTE)).toBeVisible()
   await expect(page.getByRole("checkbox", { name: "Client" })).toBeDisabled()
   await expect(page.getByText(CLIENT_NOTE)).toBeVisible()
 })
@@ -369,7 +364,6 @@ test("going back to One project shows an empty project field and enables Client"
   await expect(page.getByLabel("Project", { exact: true })).toContainText(
     "Choose a project"
   )
-  await expect(page.getByText(QUALIFICATION_NOTE)).toHaveCount(0)
   await expect(page.getByRole("checkbox", { name: "Client" })).toBeEnabled()
 })
 
@@ -381,7 +375,6 @@ test("at 375px All projects does not scroll sideways and every control works", a
   await page.getByRole("radio", { name: "All projects" }).click()
 
   expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0)
-  await expect(page.getByText(QUALIFICATION_NOTE)).toBeVisible()
   await expect(page.getByLabel("Email")).toBeVisible()
   await expect(page.getByLabel("Name")).toBeVisible()
 

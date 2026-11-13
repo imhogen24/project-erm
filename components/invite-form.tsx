@@ -261,9 +261,6 @@ export function InviteForm({ projects, roles, create }: Props) {
                   />
                   <span className="flex flex-col gap-1">
                     <span className="text-sm font-medium">One project</span>
-                    <span className="text-sm text-muted-foreground">
-                      They work on the project you pick and see only that one.
-                    </span>
                   </span>
                 </label>
                 <label htmlFor="access-all" className="tile-choice">
@@ -275,21 +272,12 @@ export function InviteForm({ projects, roles, create }: Props) {
                   />
                   <span className="flex flex-col gap-1">
                     <span className="text-sm font-medium">All projects</span>
-                    <span className="text-sm text-muted-foreground">
-                      They can be assigned these roles on any project later.
-                    </span>
                   </span>
                 </label>
               </RadioGroup>
             )}
           />
-          {everyProject ? (
-            <p className="text-sm text-muted-foreground">
-              These roles say what the person can be assigned. They give no
-              access until an IT/Admin assigns the person to a project. IT/Admin
-              is the exception: it applies to every project.
-            </p>
-          ) : (
+          {everyProject ? null : (
             <Controller
               name="projectId"
               control={form.control}
@@ -422,7 +410,7 @@ export function InviteForm({ projects, roles, create }: Props) {
             </Button>
           </div>
           <p className="text-sm text-muted-foreground">
-            Send this link to the person. It works once and expires in 7 days.
+            Works once. Expires in 7 days.
           </p>
         </div>
       )}

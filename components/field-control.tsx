@@ -3,6 +3,7 @@
 import { z } from "zod"
 
 import { DatePicker } from "@/components/date-picker"
+import { TimeInput } from "@/components/time-input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import {
@@ -162,11 +163,22 @@ export function FieldControl({
       )
     case "boolean":
       return (
-        <Checkbox
+        <div className="flex h-12 items-center">
+          <Checkbox
+            {...shared}
+            className="size-6 border-foreground/40 [&_svg]:size-4"
+            checked={value === true}
+            onCheckedChange={(checked) => onChange(checked === true)}
+          />
+        </div>
+      )
+    case "time":
+      return (
+        <TimeInput
           {...shared}
-          className="border-foreground/40"
-          checked={value === true}
-          onCheckedChange={(checked) => onChange(checked === true)}
+          value={text}
+          onChange={(event) => onChange(event.target.value)}
+          className={inputClassName}
         />
       )
     case "select":
@@ -273,7 +285,6 @@ export function FieldControl({
 
     case "text":
     case "number":
-    case "time":
     case "email":
     case "fileLink":
       return (

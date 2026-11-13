@@ -108,7 +108,7 @@ export function TableEditor({
         className="tile-action size-12 shrink-0"
         onClick={() => onChange(rows.filter((_, index) => index !== rowIndex))}
       >
-        <TrashIcon aria-hidden className="size-4" />
+        <TrashIcon aria-hidden className="size-5" />
       </Button>
     )
   }
@@ -310,7 +310,6 @@ export function TableEditor({
               <Button
                 type="button"
                 variant="secondary"
-                size="sm"
                 className="tile-action"
                 onClick={() => onChange([...rows, {}])}
               >

@@ -2,9 +2,13 @@ import type { JsonObject } from "@/db/schema"
 
 import { DONE, defaultAgenda, preMeetingChecks } from "@/lib/calendar-agenda"
 import { schedulingEmail } from "@/lib/meeting-proposal"
+import { needsCategories, specCategories } from "@/lib/needs-assessment"
 import { qualityGateQuestions } from "@/workbooks/wb01/tools/t3-d1-3a"
 
-import { featuredProject, requestIdOf } from "./projects"
+import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
+
+import { staffByHandle } from "./people"
+import { featuredProject, requestIdOf, stageProjects } from "./projects"
 
 // Where each project has got to in Workbook 1, so every role has something to
 // open. A tool only opens once the one before it is locked, so each project's
@@ -867,6 +871,324 @@ export const projectRecords = new Map<string, SeedRecord[]>(
     ],
   } satisfies Record<string, SeedRecord[]>)
 )
+
+// The Dev projects (projects.ts): sample records for every tool built.
+
+type Stage = {
+  name: string
+  contact: string
+  email: string
+  title: string
+  om: string
+  requestId: string
+}
+
+function stageOf(name: string): Stage {
+  const project = stageProjects.find((each) => each.name === name)!
+  const team = project.team === "everyone" ? {} : project.team
+
+  return {
+    name,
+    contact: project.client.name,
+    email: project.client.email,
+    title: "title" in project.request ? project.request.title : name,
+    om: team.OM?.[0] ?? "kwabena.asante",
+    requestId: requestIdOf(project),
+  }
+}
+
+function stageFiles(stage: Stage): File[] {
+  const slug = stage.name.toLowerCase().replaceAll(" ", "-")
+
+  return [
+    { label: "Site photo", date: "2026-11-01", slug: `${slug}-site` },
+    { label: "Sketch", date: "2026-11-01", slug: `${slug}-sketch` },
+  ]
+}
+
+const stageTriage = allPass([
+  "Plain text, both files open",
+  "Within IMHOGEN's services",
+  "Phone and email check out",
+])
+
+function stageD13(stage: Stage) {
+  return d13({
+    core: [
+      `${stage.title}, built and commissioned on site.`,
+      "Drawings, the built line, a test report and an O&M manual.",
+      "Budget and timeline as on the web form.",
+    ],
+    operands: {
+      M: ["Raw produce and clean water", "Finished product, bagged"],
+      E: ["415 V supply, LPG", "Heat to the process, exhaust to the stack"],
+      I: ["Operator settings", "Temperatures and alarms on a panel"],
+      L: ["Operators on each shift", "None"],
+    },
+    operators: [
+      "Two operators per shift and a supervisor",
+      "Motors, burner, controls",
+      "Open shed, hot and dusty",
+      "Shift log",
+      "The owner approves shutdowns",
+    ],
+    missing: [],
+  })
+}
+
+function stageD14(stage: Stage) {
+  return payloadOf({
+    sentTo: stage.email,
+    sentBy: `${stage.om}@imhogen.test`,
+    subject: `Acknowledgement of ${stage.title} request`,
+    body: `Dear ${stage.contact},\n\nThank you for reaching out to IMHOGEN LTD. We have successfully received your project inquiry.\n\nBest regards`,
+    dateSent: "2026-11-06",
+    timeSent: "10:00",
+    deliveryStatus: "Delivered",
+  })
+}
+
+function stageD15(stage: Stage) {
+  return payloadOf({
+    slots: temaSlots,
+    offeredSlots: temaSlots,
+    sentToClientAt: new Date().toISOString(),
+    emailText: schedulingEmail(
+      {
+        contact: stage.contact,
+        title: stage.title,
+        requestId: stage.requestId,
+      },
+      temaSlots
+    ),
+    chosenSlot: 1,
+    agreedDate: temaSlots[0]!.date,
+    agreedTime: temaSlots[0]!.time,
+    agreedTimeZone: temaSlots[0]!.timeZone,
+    clientConfirmed: true,
+    platform: "Google Meet",
+    meetingLink: "https://meet.google.com/abc-defg-hij",
+    calendarInviteSent: false,
+  })
+}
+
+function stageD16(stage: Stage) {
+  return payloadOf({
+    meetingDate: temaSlots[0]!.date,
+    meetingTime: temaSlots[0]!.time,
+    meetingTimeZone: temaSlots[0]!.timeZone,
+    platform: "Google Meet",
+    meetingLink: "https://meet.google.com/abc-defg-hij",
+    imhogenAttendees: [
+      { personId: "role:OM", name: "Onboarding Manager", role: "OM" },
+      { personId: "role:PM", name: "Project Manager", role: "PM" },
+    ],
+    clientAttendees: stage.contact,
+    agenda: defaultAgenda,
+    inviteSentAt: "2026-11-07T09:00:00.000Z",
+    inviteSequence: 0,
+    preMeetingChecks: preMeetingChecks.map((each) => ({
+      ...each,
+      status: DONE,
+    })),
+  })
+}
+
+function stageD17(stage: Stage) {
+  return payloadOf({
+    actualDate: temaSlots[0]!.date,
+    actualStartTime: temaSlots[0]!.time,
+    actualEndTime: "11:40",
+    imhogenPresent: [{ name: staffByHandle(stage.om).name, present: true }],
+    clientPresent: [{ name: stage.contact, present: true }],
+    discussion: [
+      {
+        minutes: 15,
+        topic: "Technical Requirements (Inputs/Outputs)",
+        rawNotes: "Throughput and power supply confirmed as on the web form.",
+        remarks: "Confirm the site's three-phase capacity.",
+      },
+    ],
+    parkingLot: [],
+    primaryOutcome: "Requirements are clear enough to assess.",
+    clientNextStep: "Send the site's power bill.",
+    imhogenNextStep: "Lead Engineer writes the needs assessment.",
+  })
+}
+
+// The LE confirmed the first two inputs and the main function; the rest is
+// left empty, as the form allows.
+function stageD18() {
+  const [material, energy, ...otherCategories] = needsCategories
+  const [functional, ...otherSpecs] = specCategories
+
+  return payloadOf({
+    constraints: [
+      {
+        category: material,
+        confirmed: "Paddy at 14 percent moisture, 1 t/h",
+        remarks: "",
+      },
+      {
+        category: energy,
+        confirmed: "415 V three phase, 60 kW available",
+        remarks: "Check the transformer rating",
+      },
+      ...otherCategories.map((category) => ({
+        category,
+        confirmed: "",
+        remarks: "",
+      })),
+    ],
+    designSpecs: [
+      {
+        category: functional!,
+        requirement: "Mill 1 t/h of paddy",
+        priority: "Fixed",
+        tolerance: "± 10 percent",
+      },
+      ...otherSpecs.map((category) => ({ category })),
+    ],
+    leadEngineerSignature: {
+      signedBy: "role:LE",
+      signedAt: "2026-09-25T10:00:00.000Z",
+    },
+  })
+}
+
+const stageT3Intake = {
+  sourceAssets: [
+    {
+      assetType: "Physical part",
+      formatDescription: "The part in service on site",
+      condition: "Worn but complete",
+      actionRequired: "Measure on site",
+      notes: "",
+    },
+  ],
+  draftingSpecs: [
+    {
+      requirement: "3D Modelling",
+      standard: "ISO",
+      toleranceClass: "General",
+      fileFormat: "STEP",
+      notes: "",
+    },
+  ],
+  qualityGate: qualityGateQuestions.map((question) => ({
+    question,
+    answer: "No",
+    reason: "General tolerances are enough",
+  })),
+}
+
+function stageT3D18a() {
+  return payloadOf({
+    equipment: [
+      {
+        tool: "Tape Measure",
+        serial: "-",
+        calibration: "-",
+        accuracy: "Trusted supplier (Tolsen)",
+        notes: "No calibration performed",
+      },
+    ],
+    dimensions: [
+      {
+        feature: "Hopper outline",
+        method: "Tape Measure",
+        value: "2400 x 1800 x 1500",
+        photo: "https://drive.example.com/konongo/outline",
+        confidence: "Medium",
+        notes: "Measured out to out",
+      },
+    ],
+    photos: [
+      {
+        view: "All views captured",
+        captured: "Yes",
+        file: "https://drive.example.com/konongo/photos",
+        quality: "Clear",
+      },
+    ],
+    leadMeasurerSignature: {
+      signedBy: "role:AE",
+      signedAt: "2026-09-29T10:00:00.000Z",
+    },
+  })
+}
+
+// Every Tier 1 tool built, in order, as each stage project has it.
+function tier1Through(name: string, last: string): SeedRecord[] {
+  const stage = stageOf(name)
+  const files = stageFiles(stage)
+
+  const all: SeedRecord[] = [
+    { toolId: "D1.1", state: "locked", day: 0, payload: d11(files) },
+    {
+      toolId: "D1.2",
+      state: "locked",
+      day: 1,
+      payload: d12(files, stageTriage, "Proceed to D1.3"),
+    },
+    { toolId: "D1.3", state: "locked", day: 2, payload: stageD13(stage) },
+    { toolId: "D1.4", state: "locked", day: 3, payload: stageD14(stage) },
+    { toolId: "D1.5", state: "locked", day: 4, payload: stageD15(stage) },
+    { toolId: "D1.6", state: "locked", day: 5, payload: stageD16(stage) },
+    { toolId: "D1.7", state: "locked", day: 7, payload: stageD17(stage) },
+    { toolId: "D1.8", state: "locked", day: 9, payload: stageD18() },
+  ]
+
+  return all.slice(0, all.findIndex((record) => record.toolId === last) + 1)
+}
+
+function tier3Through(name: string, last: string): SeedRecord[] {
+  const stage = stageOf(name)
+  const files = stageFiles(stage)
+
+  const all: SeedRecord[] = [
+    { toolId: "D1.1", state: "locked", day: 0, payload: d11(files) },
+    {
+      toolId: "D1.2",
+      state: "locked",
+      day: 1,
+      payload: d12(files, stageTriage, "Proceed to D1.3"),
+    },
+    { toolId: "T3.D1.3a", state: "locked", day: 2, payload: stageT3Intake },
+    { toolId: "D1.4", state: "locked", day: 3, payload: stageD14(stage) },
+    { toolId: "T3.D1.8a", state: "locked", day: 6, payload: stageT3D18a() },
+  ]
+
+  return all.slice(0, all.findIndex((record) => record.toolId === last) + 1)
+}
+
+// Every tool built locked on the Locked projects. On the Unlocked ones only
+// the client's web form exists, as a draft the client can still change, and
+// every other tool opens empty.
+function unlocked(name: string): SeedRecord[] {
+  return [
+    {
+      toolId: "D1.1",
+      state: "draft",
+      day: 0,
+      payload: d11(stageFiles(stageOf(name))),
+    },
+  ]
+}
+
+const stageRecords: [string, SeedRecord[]][] = [
+  [`${DEV_LOCKED} (Tier 1)`, tier1Through(`${DEV_LOCKED} (Tier 1)`, "D1.8")],
+  [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
+  [
+    `${DEV_LOCKED} (Tier 3)`,
+    tier3Through(`${DEV_LOCKED} (Tier 3)`, "T3.D1.8a"),
+  ],
+  [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],
+]
+
+for (const [name, records] of stageRecords) {
+  projectRecords.set(name, records)
+}
 
 // Requests to unlock a locked record, waiting for the project's PM.
 export const projectChangeRequests = new Map<string, SeedChangeRequest[]>(

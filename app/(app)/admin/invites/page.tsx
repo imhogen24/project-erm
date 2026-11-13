@@ -27,17 +27,7 @@ export default async function Page() {
       <div className="drafting-grid min-h-svh py-[var(--inset)]">
         <AppSidebar name={session.user.name} current="invites" canInvite />
         <main className="table-project table-home">
-          <PageSheet
-            title={"Invite people"}
-            below={
-              <>
-                <p className="text-sm text-muted-foreground">
-                  Give someone a role on a project, or the roles they can be
-                  assigned. New people get a link to set their password.
-                </p>
-              </>
-            }
-          >
+          <PageSheet title={"Invite people"}>
             <div className="relative">
               <InviteForm
                 projects={projects.map(

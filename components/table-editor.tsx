@@ -10,6 +10,7 @@ import {
   type RawCell,
   type RawRow,
 } from "@/components/field-control"
+import { FileCell } from "@/components/file-cell"
 import { Button } from "@/components/ui/button"
 import type {
   Column,
@@ -239,6 +240,17 @@ export function TableEditor({
                           id={id}
                           value={row[column.key]}
                           onChange={() => undefined}
+                        />
+                      ) : column.type === "fileLink" ? (
+                        <FileCell
+                          id={id}
+                          value={textOf(row[column.key]) ?? ""}
+                          recordId={recordId}
+                          invalid={message !== undefined}
+                          describedBy={message ? `${id}-error` : undefined}
+                          onChange={(value) =>
+                            setCell(rowIndex, column.key, value)
+                          }
                         />
                       ) : (
                         <FieldControl

@@ -15,14 +15,22 @@ export type Upload = {
 
 // Saves a finished upload. The storage may report the same upload twice, so
 // a key already saved returns the same file.
+// A file staff attach to a record belongs to its project from the start; a
+// client's belongs to none until their request is sent.
 export async function recordUpload(
   database: Pick<Database, "insert" | "select">,
   personId: string,
-  upload: Upload
+  upload: Upload,
+  projectId?: string
 ): Promise<{ id: string; name: string }> {
   const [added] = await database
     .insert(files)
-    .values({ storage: "uploadthing", uploadedBy: personId, ...upload })
+    .values({
+      storage: "uploadthing",
+      uploadedBy: personId,
+      projectId: projectId ?? null,
+      ...upload,
+    })
     .onConflictDoNothing({ target: files.key })
     .returning({ id: files.id, name: files.name })
 

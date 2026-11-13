@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react"
 import { useRouter } from "next/navigation"
 
+import { RecordUploads } from "@/components/file-cell"
 import { ActionButton } from "@/components/sheet-actions"
 import { ToolForm } from "@/components/tool-form"
 import { Button } from "@/components/ui/button"
@@ -260,129 +261,133 @@ export function RecordForm({
   }
 
   return (
-    <div className="flex flex-col gap-6">
-      {sentBack && (
-        <div role="status" data-tone="error" className="note-panel text-sm">
-          <p className="font-medium">Sent back for changes</p>
-          <p className="whitespace-pre-wrap">{sentBack}</p>
-        </div>
-      )}
-      <ToolForm
-        tool={tool}
-        values={values}
-        errors={errors}
-        readOnly={!canWrite}
-        pending={pending}
-        recordId={recordId}
-        signable={signable}
-        message={message ?? (tool.autosave ? autosaveLine : undefined)}
-        autosave={tool.autosave}
-        extraActions={
-          send ? (
-            <div className="flex flex-col gap-2 @md:items-end">
+    <RecordUploads.Provider
+      value={canWrite ? { projectId, toolId: tool.id } : null}
+    >
+      <div className="flex flex-col gap-6">
+        {sentBack && (
+          <div role="status" data-tone="error" className="note-panel text-sm">
+            <p className="font-medium">Sent back for changes</p>
+            <p className="whitespace-pre-wrap">{sentBack}</p>
+          </div>
+        )}
+        <ToolForm
+          tool={tool}
+          values={values}
+          errors={errors}
+          readOnly={!canWrite}
+          pending={pending}
+          recordId={recordId}
+          signable={signable}
+          message={message ?? (tool.autosave ? autosaveLine : undefined)}
+          autosave={tool.autosave}
+          extraActions={
+            send ? (
+              <div className="flex flex-col gap-2 @md:items-end">
+                <ActionButton
+                  disabled={pending || send.missing.length > 0 || !recordId}
+                  onClick={() => {
+                    if (recordId) {
+                      run(() => send.run({ recordId }), "Sent.")
+                    }
+                  }}
+                >
+                  Send
+                </ActionButton>
+                {send.missing.length > 0 && (
+                  <p className="text-sm text-muted-foreground @md:text-right">
+                    Send needs: {send.missing.join("; ")}.
+                  </p>
+                )}
+              </div>
+            ) : canApprove && recordId ? (
+              <>
+                {sendBack && (
+                  <ActionButton
+                    variant="secondary"
+                    disabled={pending}
+                    aria-expanded={sendingBack}
+                    onClick={() => setSendingBack((open) => !open)}
+                  >
+                    Send back
+                  </ActionButton>
+                )}
+                <ActionButton
+                  disabled={pending}
+                  onClick={() => run(() => approve({ recordId }), "Approved.")}
+                >
+                  Approve
+                </ActionButton>
+              </>
+            ) : undefined
+          }
+          onSave={(held) =>
+            tool.autosave
+              ? void autosave(held)
+              : run(() => save(saving(held)), "Draft saved.")
+          }
+          onSubmit={(held) => run(() => submit(saving(held)), "Submitted.")}
+          onSign={(fieldKey) => {
+            if (recordId) {
+              run(() => sign({ recordId, fieldKey }), "Signed.")
+            }
+          }}
+        />
+        {/* Stays open, holding the reason, until the record has gone back. */}
+        {sendBack && sendingBack && canApprove && recordId && (
+          <form
+            className="flex flex-col gap-3 border border-foreground/20 p-4"
+            onSubmit={(event) => {
+              event.preventDefault()
+              run(
+                () => sendBack({ recordId, reason }),
+                "Sent back to the writer."
+              )
+            }}
+          >
+            <Label htmlFor="send-back-reason">What needs changing?</Label>
+            <Textarea
+              id="send-back-reason"
+              value={reason}
+              onChange={(event) => setReason(event.target.value)}
+              rows={3}
+              required
+            />
+            <div className="flex flex-col gap-3 @md:flex-row @md:justify-end">
               <ActionButton
-                disabled={pending || send.missing.length > 0 || !recordId}
+                variant="ghost"
                 onClick={() => {
-                  if (recordId) {
-                    run(() => send.run({ recordId }), "Sent.")
-                  }
+                  setSendingBack(false)
+                  setReason("")
                 }}
               >
-                Send
+                Cancel
               </ActionButton>
-              {send.missing.length > 0 && (
-                <p className="text-sm text-muted-foreground @md:text-right">
-                  Send needs: {send.missing.join("; ")}.
-                </p>
-              )}
-            </div>
-          ) : canApprove && recordId ? (
-            <>
-              {sendBack && (
-                <ActionButton
-                  variant="secondary"
-                  disabled={pending}
-                  aria-expanded={sendingBack}
-                  onClick={() => setSendingBack((open) => !open)}
-                >
-                  Send back
-                </ActionButton>
-              )}
               <ActionButton
-                disabled={pending}
-                onClick={() => run(() => approve({ recordId }), "Approved.")}
+                type="submit"
+                disabled={pending || reason.trim() === ""}
               >
-                Approve
+                Send back to the writer
               </ActionButton>
-            </>
-          ) : undefined
-        }
-        onSave={(held) =>
-          tool.autosave
-            ? void autosave(held)
-            : run(() => save(saving(held)), "Draft saved.")
-        }
-        onSubmit={(held) => run(() => submit(saving(held)), "Submitted.")}
-        onSign={(fieldKey) => {
-          if (recordId) {
-            run(() => sign({ recordId, fieldKey }), "Signed.")
-          }
-        }}
-      />
-      {/* Stays open, holding the reason, until the record has gone back. */}
-      {sendBack && sendingBack && canApprove && recordId && (
-        <form
-          className="flex flex-col gap-3 border border-foreground/20 p-4"
-          onSubmit={(event) => {
-            event.preventDefault()
-            run(
-              () => sendBack({ recordId, reason }),
-              "Sent back to the writer."
-            )
-          }}
-        >
-          <Label htmlFor="send-back-reason">What needs changing?</Label>
-          <Textarea
-            id="send-back-reason"
-            value={reason}
-            onChange={(event) => setReason(event.target.value)}
-            rows={3}
-            required
-          />
-          <div className="flex flex-col gap-3 @md:flex-row @md:justify-end">
-            <ActionButton
-              variant="ghost"
-              onClick={() => {
-                setSendingBack(false)
-                setReason("")
-              }}
-            >
-              Cancel
-            </ActionButton>
-            <ActionButton
-              type="submit"
-              disabled={pending || reason.trim() === ""}
-            >
-              Send back to the writer
-            </ActionButton>
-          </div>
-        </form>
-      )}
-      {stale && (
-        <div
-          role="alert"
-          className="flex flex-col gap-3 border border-destructive/40 p-4 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <p className="text-sm text-destructive">{STALE}</p>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => window.location.reload()}
+            </div>
+          </form>
+        )}
+        {stale && (
+          <div
+            role="alert"
+            className="flex flex-col gap-3 border border-destructive/40 p-4 sm:flex-row sm:items-center sm:justify-between"
           >
-            Reload
-          </Button>
-        </div>
-      )}
-    </div>
+            <p className="text-sm text-destructive">{STALE}</p>
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => window.location.reload()}
+            >
+              Reload
+            </Button>
+          </div>
+        )}
+      </div>
+    </RecordUploads.Provider>
   )
 }

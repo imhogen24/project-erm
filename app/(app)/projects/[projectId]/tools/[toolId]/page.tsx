@@ -61,6 +61,11 @@ import {
   synthesisValues,
 } from "@/server/needs/needs-assessment"
 import { hiddenFromClient, sentBackReason } from "@/server/records/records"
+import {
+  INTERNAL_REVIEW,
+  reviewStart,
+  reviewValues,
+} from "@/server/review/internal-review"
 import { getRecordScreen } from "@/server/records/screen"
 import { UnknownToolError } from "@/server/records/validate"
 
@@ -342,6 +347,19 @@ export default async function Page({
           : field
       ),
     }
+  }
+
+  // D1.9: 1.0 and 2.0 come from the project, its request and its records;
+  // the review rows start from the sheet's.
+  if (toolId === INTERNAL_REVIEW) {
+    if (!view.record && view.can.write) {
+      formValues = { ...reviewStart(), ...formValues }
+    }
+
+    // SAFETY: the system's values are built for D1.9's own fields.
+    const system = (await reviewValues(getDatabase(), projectId)) as FormValues
+
+    formValues = { ...formValues, ...system }
   }
 
   // A tool the client reads only once locked tells them so until then.

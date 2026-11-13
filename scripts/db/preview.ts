@@ -107,41 +107,25 @@ export const previews: Preview[] = [
       "D1.7 on Tema Foods is Locked: the actual date and times, the three IMHOGEN attendees and the client's two ticked Present, three discussion topics with raw notes and remarks, one parking-lot item (a site visit date), and the close-out. Nothing can be edited. The client (kwaku.ampofo@temafoods.test) reads it too, since the PM approved it. The browser tests walk the whole flow (e2e/d17-notes.spec.ts): the OM starts from D1.6's agenda and attendees and submits, the PM sends it back with a reason or approves it, and the client sees IMHOGEN shares these notes with you once they are approved. until then.",
   },
   {
-    screen: "D1.8 needs assessment notes, as the LE",
+    screen: "D1.8 and T3.D1.8a, approved",
     loginAs: "LE",
     path: (id) => `/projects/${id}/tools/D1.8`,
     expect:
-      "D1.7 is locked, so D1.8 is open for the Lead Engineer. 1.0 Synthesis metadata is the system's: Synthesized By your name, Date of Synthesis filled in when submitted, Reference Raw Notes ID D1.7 Raw Meeting Notes, approved with its date, and Client/Project Name Tema Foods Boiler Skid. 2.0 Confirmed constraints: the 13 fixed categories (INPUT: Material ... OPERATOR: Information System); under those the client answered on the web form, their answer in small text (Client: Carbon steel plate, stainless piping, insulation; Outputs: ... · By-products: ...; no contact details), with Confirmed Constraints / Specifications and Engineering Remarks to type. 3.0 Preliminary design specifications: the five requirement categories (Function ... Distribution Properties) with Specific Requirement / Tolerance, Priority Fixed or Wish, and a second Specific Requirement / Tolerance; rows can be added, and an added row needs its requirement and priority. 4.0: Synthesis Complete? No, Lead Engineer Signature with Sign, Ready for Internal Review (D1.9)? No. Sign, then Submit for approval: Synthesis Complete? turns Yes with the date.",
+      "D1.8 on Tema Foods is Locked: two confirmed constraints, the client's technical answers beside each category, Function Properties Fixed, and the signature of Kojo Antwi; Synthesis Complete? and Ready for Internal Review (D1.9)? read Yes. On Tarkwa Mine Pump Station Drawings, T3.D1.8a is Locked, signed by Adwoa Baffoe. To try either from empty, use Dev: All Tools Unlocked (Tier 1) or (Tier 3). The browser tests walk both flows (e2e/d18-needs.spec.ts, e2e/t3-d18a-metrology.spec.ts).",
   },
   {
-    screen: "D1.8 needs assessment notes, as the PM",
-    loginAs: "PM",
-    path: (id) => `/projects/${id}/tools/D1.8`,
+    screen: "D1.9 internal review request, as the OM",
+    loginAs: "OM",
+    path: (id) => `/projects/${id}/tools/D1.9`,
     expect:
-      "Before the LE saves anything: Nobody has started this tool yet. Once the LE signs and submits, the PM (ama.owusu@imhogen.test) reads it with Approve, which locks D1.8, sets Ready for Internal Review (D1.9)? to Yes and opens D1.9, and Send back, which asks What needs changing? and returns it to the LE. The OM, client and IT/Admin only read it.",
+      "D1.8 is locked, so D1.9 is open. 1.0 Review initiation metadata: Requested By (Lead/PM) Ama Owusu, Client Name Tema Foods Ltd, Date of Synthesis (when D1.8 was submitted), Required Completion Date 12 weeks (the client's timeline), and Project Packaged boiler skid for the juice line, all the system's; Primary Review Objective to type and Priority Level High, Medium or Low. 2.0 Context & reference material: D1.3 Received Request Record, D1.8 Needs Assessment Notes and Client Supplementary Uploads (D1.1), each with Open and Locked. 3.0 Specific review directives & assignments: the four categories (Technical Feasibility, Resource Availability, Commercial & Scope Alignment, Solution Suitability & Value Engineering), each starting with the sheet's reviewer and question and Status Required; the OM changes them and sets each status Passed, Failed or Undecided. Save draft, then Submit for approval sends it to the HE. On Tarkwa Mine Pump Station Drawings (OM selorm.dzigbordi), 2.0 lists T3.D1.3a and T3.D1.8a instead.",
   },
   {
-    screen: "T3.D1.8a physical metrology log, as the AE",
-    loginAs: "AE",
-    email: "adwoa.baffoe@imhogen.test",
-    path: () => "/",
+    screen: "D1.9 internal review request, as the HE",
+    loginAs: "HE",
+    path: (id) => `/projects/${id}/tools/D1.9`,
     expect:
-      "Open Tarkwa Mine Pump Station Drawings, then T3.D1.8a: D1.4 is delivered, so it is open. 1.0 Measurement equipment verification: rows of Tool Used, Serial # / ID, Calibration Status, Accuracy Range and Notes. 2.0 Critical dimension capture: Feature Name, Measurement Method, Measured Value (mm) as free text such as 1200 x 450, Ref. Photo, Confidence (H/M/L) High, Medium or Low, and Notes. 3.0 Photographic evidence checklist: View Required, Captured? (Y/N), File / Folder and Quality Note. Each file cell takes a pasted link or Upload: a photo or PDF up to 16MB or a video up to 64MB goes into the ERM, the cell shows its name with Open and a cross, and Open works once the draft is saved. 4.0 Field sign-off: the sheet's confirmation and Lead Measurer Signature with Sign, which records the AE's name and the date. Sign, then Submit for approval.",
-  },
-  {
-    screen: "T3.D1.8a physical metrology log, as the LE",
-    loginAs: "LE",
-    email: "yaa.sarpong@imhogen.test",
-    path: () => "/",
-    expect:
-      "Open Tarkwa Mine Pump Station Drawings, then T3.D1.8a. Before the AE saves: Nobody has started this tool yet. Once the AE signs and submits, the LE reads it, opens the uploaded files, and has Approve, which locks it and opens D1.9, and Send back, which returns it to the AE with a reason. The OM, PM, LD, HE, QA and IT/Admin only read it; the client does not see it.",
-  },
-  {
-    screen: "D1.1 client web form",
-    loginAs: "PM",
-    path: (id) => `/projects/${id}/tools/D1.1`,
-    expect:
-      "D1.1 is the client's web form, locked the moment it came in: the answers in tables (Contact, Project, Systems, Submission) and the attached files, read only. The OM, PM, CR and IT/Admin read it; nobody else sees it. The PM sees a change request on it from the OM: approve it and the client can edit and resend the form, which locks D1.1 again.",
+      "Before the OM saves: Nobody has started this tool yet. Once the OM submits, the HE (kwesi.appiah@imhogen.test) reads it with Approve, which locks D1.9 and opens D1.10, and Send back, which returns it to the OM with a reason. The PM, LE and IT/Admin only read it; the client does not see it.",
   },
   {
     screen: "Client: start a new project",
@@ -193,7 +177,7 @@ export const previews: Preview[] = [
     email: "selorm.dzigbordi@imhogen.test",
     path: () => "/",
     expect:
-      "Tarkwa Mine Pump Station Drawings shows Tier 3 on its tile. Open it: D1.1, D1.2, T3.D1.3a T3 Technical Intake (Drafting) and D1.4 are locked, D1.4 Delivered, and T3.D1.8a T3 Physical Metrology Log is open for its AE, adwoa.baffoe@imhogen.test. No Tier 1 tool such as D1.3 or D1.5 to D1.8 is listed. Tema Foods Boiler Skid is the Tier 1 match.",
+      "Tarkwa Mine Pump Station Drawings shows Tier 3 on its tile. Open it: D1.1, D1.2, T3.D1.3a T3 Technical Intake (Drafting), D1.4 (Delivered) and T3.D1.8a T3 Physical Metrology Log are locked, and D1.9 is open for its OM, selorm.dzigbordi@imhogen.test. No Tier 1 tool such as D1.3 or D1.5 to D1.8 is listed. Tema Foods Boiler Skid is the Tier 1 match.",
   },
   {
     screen: "PM: a D1.2 waiting for approval",

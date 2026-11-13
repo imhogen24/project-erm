@@ -358,6 +358,17 @@ function ShownCell({
 }) {
   const text = shownText(column, value)
 
+  // A page in the ERM, such as a record to read.
+  if (text.startsWith("/projects/")) {
+    return (
+      <Button asChild variant="outline" size="sm" className="self-start">
+        <a href={text}>
+          Open<span className="sr-only">, row {rowNumber}</span>
+        </a>
+      </Button>
+    )
+  }
+
   if (column.type !== "fileLink") {
     return <span className="text-sm break-words">{text}</span>
   }

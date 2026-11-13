@@ -68,6 +68,24 @@ const answers = new Map<string, JsonObject>([
     },
   ],
   [
+    "D1.9",
+    {
+      primaryObjective: "Check the request is realistic.",
+      priority: "High",
+      reviews: [
+        "Technical Feasibility",
+        "Resource Availability",
+        "Commercial & Scope Alignment",
+        "Solution Suitability & Value Engineering",
+      ].map((category) => ({
+        category,
+        reviewer: "Kwesi Appiah",
+        focus: "Is it feasible?",
+        status: "Passed",
+      })),
+    },
+  ],
+  [
     "D1.7",
     {
       actualDate: "2026-11-17",

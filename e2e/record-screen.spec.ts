@@ -43,14 +43,20 @@ async function open(
   await page.goto(`/projects/${projectId}/tools/${toolId}`)
 }
 
-// D1.8 has no required field. D1.11 has one, and opens once D1.10 is locked
-// as capable.
-async function lockThroughD110(projectId: string) {
+// D1.8 has no required field. D1.14 has one, a box to tick, and opens once
+// D1.13 is locked, after D1.10 capable and D1.11 a Go.
+async function lockThroughD113(projectId: string) {
   await lockEarlierTools(projectId)
-  await addRecord(projectId, "D1.8", "locked")
-  await addRecord(projectId, "D1.9", "locked")
+
+  for (const toolId of ["D1.8", "D1.9", "D1.12", "D1.13"]) {
+    await addRecord(projectId, toolId, "locked")
+  }
+
   await addRecord(projectId, "D1.10", "locked", {
     payload: { overallCapabilityStatus: "Capable" },
+  })
+  await addRecord(projectId, "D1.11", "locked", {
+    payload: { goNoGoDecision: "Go" },
   })
 }
 
@@ -61,8 +67,10 @@ function notes(page: Page) {
   })
 }
 
-function decision(page: Page) {
-  return page.getByRole("combobox", { name: "Project Go / No-Go Decision" })
+function overhead(page: Page) {
+  return page.getByRole("checkbox", {
+    name: "Is the minimum overhead recovery met?",
+  })
 }
 
 function control(page: Page) {
@@ -133,11 +141,20 @@ test("submitting with a required field empty shows the error and stays a draft",
 }) => {
   const { project, lead } = await setUp()
 
-  await lockThroughD110(project.id)
+  // D1.11 opens once D1.10 is locked as capable, with every field empty.
+  await lockEarlierTools(project.id)
+
+  for (const toolId of ["D1.8", "D1.9"]) {
+    await addRecord(project.id, toolId, "locked")
+  }
+
+  await addRecord(project.id, "D1.10", "locked", {
+    payload: { overallCapabilityStatus: "Capable" },
+  })
   await open(page, lead.email, project.id, "D1.11")
   await page.getByRole("button", { name: "Submit" }).click()
 
-  await expect(page.getByText("Required")).toBeVisible()
+  await expect(page.getByText("Required").first()).toBeVisible()
   await expect(page.getByText("Draft", { exact: true })).toBeVisible()
   await expect(page.getByRole("button", { name: "Submit" })).toBeVisible()
 })
@@ -147,14 +164,13 @@ test("submitting a complete form makes it submitted and read only", async ({
 }) => {
   const { project, lead } = await setUp()
 
-  await lockThroughD110(project.id)
-  await open(page, lead.email, project.id, "D1.11")
-  await decision(page).click()
-  await page.getByRole("option", { name: "Go", exact: true }).click()
+  await lockThroughD113(project.id)
+  await open(page, lead.email, project.id, "D1.14")
+  await overhead(page).click()
   await page.getByRole("button", { name: "Submit" }).click()
 
   await expect(page.getByText("Submitted", { exact: true })).toBeVisible()
-  await expect(decision(page)).toBeDisabled()
+  await expect(overhead(page)).toBeDisabled()
   await expect(page.getByRole("button", { name: "Save draft" })).toHaveCount(0)
   await expect(page.getByRole("button", { name: "Submit" })).toHaveCount(0)
 })

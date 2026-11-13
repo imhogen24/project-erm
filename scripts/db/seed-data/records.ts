@@ -4,6 +4,7 @@ import { DONE, defaultAgenda, preMeetingChecks } from "@/lib/calendar-agenda"
 import { schedulingEmail } from "@/lib/meeting-proposal"
 import { commercialCriteria, technicalCriteria } from "@/lib/capability"
 import { reviewDirectives } from "@/lib/internal-review"
+import { conclusionQuestions } from "@/lib/risk"
 import { needsCategories, specCategories } from "@/lib/needs-assessment"
 import { qualityGateQuestions } from "@/workbooks/wb01/tools/t3-d1-3a"
 
@@ -29,11 +30,11 @@ import { featuredProject, requestIdOf, stageProjects } from "./projects"
 //
 // Tema Foods Boiler Skid (Tier 1) and Tarkwa Mine Pump Station Drawings (Tier
 // 3) are where the tool being built is open: their records are locked up to
-// the tool before it. On Tema Foods that is D1.10: D1.4 is delivered, on D1.5
+// the tool before it. On Tema Foods that is D1.11: D1.4 is delivered, on D1.5
 // the client chose a meeting time, on D1.6 the invite went out, and the PM
-// approved the D1.7 meeting notes, the D1.8 needs assessment and the D1.9
-// review request. On Tarkwa it is D1.10 too: D1.4 is delivered and T3.D1.8a
-// and D1.9 approved.
+// approved the D1.7 meeting notes, the D1.8 needs assessment, the D1.9
+// review request and the D1.10 capability assessment. On Tarkwa it is D1.11
+// too: D1.4 is delivered and T3.D1.8a, D1.9 and D1.10 approved.
 
 export type SeedState = "draft" | "submitted" | "locked"
 
@@ -486,6 +487,9 @@ export const projectRecords = new Map<string, SeedRecord[]>(
       // D1.9: the review request, approved by the HE, so D1.10 is open for
       // the Lead Engineer.
       { toolId: "D1.9", state: "locked", day: 11, payload: stageD19() },
+      // D1.10: the capability assessment, approved by the PM as Partially
+      // Capable, so D1.11 is open for the Lead Engineer.
+      { toolId: "D1.10", state: "locked", day: 13, payload: stageD110() },
     ],
     "Tamale Shea Butter Processing Plant": [
       {
@@ -752,6 +756,7 @@ export const projectRecords = new Map<string, SeedRecord[]>(
       // D1.9 is open for the OM.
       { toolId: "T3.D1.8a", state: "locked", day: 6, payload: stageT3D18a() },
       { toolId: "D1.9", state: "locked", day: 8, payload: stageD19() },
+      { toolId: "D1.10", state: "locked", day: 10, payload: stageD110() },
     ],
     "Takoradi Port Conveyor Upgrade": [
       {
@@ -1174,6 +1179,36 @@ function stageD110() {
   })
 }
 
+// The Lead Engineer's risk assessment, signed and approved by the PM: one
+// risk, the four questions answered, a conditional go.
+function stageD111() {
+  return payloadOf({
+    primaryObjective:
+      "Assess the technical, schedule and commercial risks of the requested scope.",
+    risks: [
+      {
+        category: "Requested timeline",
+        description: "The full scope may not fit the client's timeline.",
+        probability: "H",
+        impact: "H",
+        mitigation: "Agree a phased schedule before committing.",
+        owner: "Project Manager",
+      },
+    ],
+    conclusionQuestions: conclusionQuestions.map((question) => ({
+      question,
+      status: "Yes, Conditional",
+      remarks: "Manageable with the phased schedule.",
+    })),
+    overallRiskProfile: "High, manageable with conditions.",
+    goNoGoDecision: "Conditional Go",
+    assessorSignature: {
+      signedBy: "role:LE",
+      signedAt: "2026-10-02T10:00:00.000Z",
+    },
+  })
+}
+
 function tier1Through(name: string, last: string): SeedRecord[] {
   const stage = stageOf(name)
   const files = stageFiles(stage)
@@ -1194,6 +1229,7 @@ function tier1Through(name: string, last: string): SeedRecord[] {
     { toolId: "D1.8", state: "locked", day: 9, payload: stageD18() },
     { toolId: "D1.9", state: "locked", day: 11, payload: stageD19() },
     { toolId: "D1.10", state: "locked", day: 13, payload: stageD110() },
+    { toolId: "D1.11", state: "locked", day: 15, payload: stageD111() },
   ]
 
   return all.slice(0, all.findIndex((record) => record.toolId === last) + 1)
@@ -1216,6 +1252,7 @@ function tier3Through(name: string, last: string): SeedRecord[] {
     { toolId: "T3.D1.8a", state: "locked", day: 6, payload: stageT3D18a() },
     { toolId: "D1.9", state: "locked", day: 8, payload: stageD19() },
     { toolId: "D1.10", state: "locked", day: 10, payload: stageD110() },
+    { toolId: "D1.11", state: "locked", day: 12, payload: stageD111() },
   ]
 
   return all.slice(0, all.findIndex((record) => record.toolId === last) + 1)
@@ -1236,9 +1273,9 @@ function unlocked(name: string): SeedRecord[] {
 }
 
 const stageRecords: [string, SeedRecord[]][] = [
-  [`${DEV_LOCKED} (Tier 1)`, tier1Through(`${DEV_LOCKED} (Tier 1)`, "D1.10")],
+  [`${DEV_LOCKED} (Tier 1)`, tier1Through(`${DEV_LOCKED} (Tier 1)`, "D1.11")],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
-  [`${DEV_LOCKED} (Tier 3)`, tier3Through(`${DEV_LOCKED} (Tier 3)`, "D1.10")],
+  [`${DEV_LOCKED} (Tier 3)`, tier3Through(`${DEV_LOCKED} (Tier 3)`, "D1.11")],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],
 ]
 

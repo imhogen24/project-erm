@@ -22,6 +22,7 @@ import {
 } from "@/server/workflow/workflow"
 
 import { commercialCriteria, technicalCriteria } from "@/lib/capability"
+import { conclusionQuestions } from "@/lib/risk"
 
 import { registerAllTools } from "../index"
 import { qualityGateQuestions } from "./tools/t3-d1-3a"
@@ -49,6 +50,29 @@ function capability(overallCapabilityStatus: string) {
     technicalCapability: answered(technicalCriteria),
     commercialAlignment: answered(commercialCriteria),
     overallCapabilityStatus,
+  }
+}
+
+// D1.11 with one risk, every question answered and the given decision.
+function risk(goNoGoDecision: string) {
+  return {
+    primaryObjective: "Assess the risks.",
+    risks: [
+      {
+        category: "Timeline",
+        description: "Tight.",
+        probability: "M",
+        impact: "M",
+        mitigation: "Phase it.",
+      },
+    ],
+    conclusionQuestions: conclusionQuestions.map((question) => ({
+      question,
+      status: "No",
+      remarks: "Checked",
+    })),
+    overallRiskProfile: "Medium.",
+    goNoGoDecision,
   }
 }
 
@@ -133,7 +157,7 @@ const answers = new Map<string, JsonObject>([
   // In the app the PM's Send locks D1.4; here it moves like any record.
   ["D1.4", { subject: "Acknowledgement of Boiler request", body: "Dear Ama," }],
   ["D1.10", capability("Capable")],
-  ["D1.11", { goNoGoDecision: "Go" }],
+  ["D1.11", risk("Go")],
   ["D1.14", { minimumOverheadMet: true }],
 ])
 
@@ -387,7 +411,7 @@ describe("hard stops", () => {
 
   it("closes the project and keeps D1.12 closed when D1.11 is No-Go", async () => {
     await lockThrough("D1.10")
-    await recordIn("locked", "D1.11", { goNoGoDecision: "No-Go" })
+    await recordIn("locked", "D1.11", risk("No-Go"))
 
     expect(await open()).toEqual([])
     expect(await status()).toBe("closed")
@@ -403,7 +427,7 @@ describe("hard stops", () => {
 
   it("voids no record", async () => {
     await lockThrough("D1.10")
-    await recordIn("locked", "D1.11", { goNoGoDecision: "No-Go" })
+    await recordIn("locked", "D1.11", risk("No-Go"))
 
     const { rows } = await database.pool.query(
       "SELECT 1 FROM tool_records WHERE state <> 'locked'"

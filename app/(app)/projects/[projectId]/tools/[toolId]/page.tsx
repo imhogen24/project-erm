@@ -63,6 +63,7 @@ import {
 import { hiddenFromClient, sentBackReason } from "@/server/records/records"
 import { INTERNAL_REVIEW, reviewValues } from "@/server/review/internal-review"
 import { CAPABILITY, capabilityValues } from "@/server/capability/capability"
+import { RISK, riskValues } from "@/server/risk/risk"
 import { getRecordScreen } from "@/server/records/screen"
 import { UnknownToolError } from "@/server/records/validate"
 
@@ -358,6 +359,18 @@ export default async function Page({
   if (toolId === CAPABILITY) {
     // SAFETY: the system's values are built for D1.10's own fields.
     const system = (await capabilityValues(
+      getDatabase(),
+      projectId,
+      view.record?.payload ?? {}
+    )) as FormValues
+
+    formValues = { ...formValues, ...system }
+  }
+
+  // D1.11: 1.0 comes from the project, D1.10 and the signature.
+  if (toolId === RISK) {
+    // SAFETY: the system's values are built for D1.11's own fields.
+    const system = (await riskValues(
       getDatabase(),
       projectId,
       view.record?.payload ?? {}

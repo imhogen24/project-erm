@@ -114,18 +114,25 @@ export const previews: Preview[] = [
       "D1.8 on Tema Foods is Locked: two confirmed constraints, the client's technical answers beside each category, Function Properties Fixed, and the signature of Kojo Antwi; Synthesis Complete? and Ready for Internal Review (D1.9)? read Yes. On Tarkwa Mine Pump Station Drawings, T3.D1.8a is Locked, signed by Adwoa Baffoe. To try either from empty, use Dev: All Tools Unlocked (Tier 1) or (Tier 3). The browser tests walk both flows (e2e/d18-needs.spec.ts, e2e/t3-d18a-metrology.spec.ts).",
   },
   {
-    screen: "D1.9 internal review request, as the OM",
+    screen: "D1.9 internal review request, approved",
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.9`,
     expect:
-      "D1.8 is locked, so D1.9 is open. 1.0 Review initiation metadata: Requested By (Lead/PM) Ama Owusu, Client Name Tema Foods Ltd, Date of Synthesis (when D1.8 was submitted), Required Completion Date 12 weeks (the client's timeline), and Project Packaged boiler skid for the juice line, all the system's; Primary Review Objective to type and Priority Level High, Medium or Low. 2.0 Context & reference material: D1.3 Received Request Record, D1.8 Needs Assessment Notes and Client Supplementary Uploads (D1.1), each with Open and Locked. 3.0 Specific review directives & assignments: the four categories (Technical Feasibility, Resource Availability, Commercial & Scope Alignment, Solution Suitability & Value Engineering), with Assigned Reviewer, Specific Focus / Question and Status (Required, Passed, Failed or Undecided) empty for the OM to fill. Save draft, then Submit for approval sends it to the HE. On Tarkwa Mine Pump Station Drawings (OM selorm.dzigbordi), 2.0 lists T3.D1.3a and T3.D1.8a instead.",
+      "D1.9 on Tema Foods is Locked: the system's 1.0 (PM, client, synthesis date, timeline, project), the required reading with Open on each record, and the four reviews Passed. To fill one from empty, open D1.9 on Dev: All Tools Unlocked (Tier 1): the green cells start blank. The browser test walks the flow (e2e/d19-review.spec.ts).",
   },
   {
-    screen: "D1.9 internal review request, as the HE",
-    loginAs: "HE",
-    path: (id) => `/projects/${id}/tools/D1.9`,
+    screen: "D1.10 capability assessment, as the LE",
+    loginAs: "LE",
+    path: (id) => `/projects/${id}/tools/D1.10`,
     expect:
-      "Before the OM saves: Nobody has started this tool yet. Once the OM submits, the HE (kwesi.appiah@imhogen.test) reads it with Approve, which locks D1.9 and opens D1.10, and Send back, which returns it to the OM with a reason. The PM, LE and IT/Admin only read it; the client does not see it.",
+      "D1.9 is locked, so D1.10 is open for the Lead Engineer. 1.0: Assessor Kojo Antwi, Project/Client Name Tema Foods Ltd, Project and Reference Request ID are the system's; Date of Assessment fills in when the LE signs; Primary Review Objective is the sheet's fixed text. 2.0 Technical capability: the four fixed criteria, each with Status (Yes/No/Partial/Undetermined) and Justification / Identified Gaps to fill. 3.0 Additional technical capacity: rows the LE adds, criterion, status and justification. 4.0 Commercial alignment: the five fixed criteria, same columns. 5.0: Overall Capability Status (Capable, Partially Capable or Not Capable), Primary Bottleneck, and Assessor Signature with Sign. Everything the LE fills starts empty. Sign, then Submit for approval. On Tarkwa Mine Pump Station Drawings the LE is yaa.sarpong@imhogen.test.",
+  },
+  {
+    screen: "D1.10 capability assessment, as the PM",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.10`,
+    expect:
+      "Before the LE saves: Nobody has started this tool yet. Once the LE signs and submits, the PM (ama.owusu@imhogen.test) reads it with Approve, which locks D1.10, and Send back. Approved as Not Capable, the project is rejected and nothing more opens; Capable or Partially Capable opens D1.11. The OM, HE and IT/Admin only read it; the client does not see it.",
   },
   {
     screen: "Client: start a new project",
@@ -177,7 +184,7 @@ export const previews: Preview[] = [
     email: "selorm.dzigbordi@imhogen.test",
     path: () => "/",
     expect:
-      "Tarkwa Mine Pump Station Drawings shows Tier 3 on its tile. Open it: D1.1, D1.2, T3.D1.3a T3 Technical Intake (Drafting), D1.4 (Delivered) and T3.D1.8a T3 Physical Metrology Log are locked, and D1.9 is open for its OM, selorm.dzigbordi@imhogen.test. No Tier 1 tool such as D1.3 or D1.5 to D1.8 is listed. Tema Foods Boiler Skid is the Tier 1 match.",
+      "Tarkwa Mine Pump Station Drawings shows Tier 3 on its tile. Open it: D1.1, D1.2, T3.D1.3a T3 Technical Intake (Drafting), D1.4 (Delivered) T3.D1.8a T3 Physical Metrology Log and D1.9 are locked, and D1.10 is open for its LE, yaa.sarpong@imhogen.test. No Tier 1 tool such as D1.3 or D1.5 to D1.8 is listed. Tema Foods Boiler Skid is the Tier 1 match.",
   },
   {
     screen: "PM: a D1.2 waiting for approval",

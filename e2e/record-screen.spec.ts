@@ -43,12 +43,15 @@ async function open(
   await page.goto(`/projects/${projectId}/tools/${toolId}`)
 }
 
-// D1.8 has no required field. D1.10 has one, and
-// opens once D1.9 is locked.
-async function lockThroughD19(projectId: string) {
+// D1.8 has no required field. D1.11 has one, and opens once D1.10 is locked
+// as capable.
+async function lockThroughD110(projectId: string) {
   await lockEarlierTools(projectId)
   await addRecord(projectId, "D1.8", "locked")
   await addRecord(projectId, "D1.9", "locked")
+  await addRecord(projectId, "D1.10", "locked", {
+    payload: { overallCapabilityStatus: "Capable" },
+  })
 }
 
 // The first confirmed constraint, a field the Lead Engineer types on D1.8.
@@ -58,8 +61,8 @@ function notes(page: Page) {
   })
 }
 
-function capability(page: Page) {
-  return page.getByRole("combobox", { name: "Overall Capability Status" })
+function decision(page: Page) {
+  return page.getByRole("combobox", { name: "Project Go / No-Go Decision" })
 }
 
 function control(page: Page) {
@@ -130,8 +133,8 @@ test("submitting with a required field empty shows the error and stays a draft",
 }) => {
   const { project, lead } = await setUp()
 
-  await lockThroughD19(project.id)
-  await open(page, lead.email, project.id, "D1.10")
+  await lockThroughD110(project.id)
+  await open(page, lead.email, project.id, "D1.11")
   await page.getByRole("button", { name: "Submit" }).click()
 
   await expect(page.getByText("Required")).toBeVisible()
@@ -144,14 +147,14 @@ test("submitting a complete form makes it submitted and read only", async ({
 }) => {
   const { project, lead } = await setUp()
 
-  await lockThroughD19(project.id)
-  await open(page, lead.email, project.id, "D1.10")
-  await capability(page).click()
-  await page.getByRole("option", { name: "Capable", exact: true }).click()
+  await lockThroughD110(project.id)
+  await open(page, lead.email, project.id, "D1.11")
+  await decision(page).click()
+  await page.getByRole("option", { name: "Go", exact: true }).click()
   await page.getByRole("button", { name: "Submit" }).click()
 
   await expect(page.getByText("Submitted", { exact: true })).toBeVisible()
-  await expect(capability(page)).toBeDisabled()
+  await expect(decision(page)).toBeDisabled()
   await expect(page.getByRole("button", { name: "Save draft" })).toHaveCount(0)
   await expect(page.getByRole("button", { name: "Submit" })).toHaveCount(0)
 })

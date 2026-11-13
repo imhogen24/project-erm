@@ -205,7 +205,7 @@ describe("the projects", () => {
     expect(rows).toHaveLength(18)
   })
 
-  it("has D1.1 to D1.8 locked on the featured project, so D1.9 is open", async () => {
+  it("has D1.1 to D1.9 locked on the featured project, so D1.10 is open", async () => {
     await seed(url)
 
     const { rows } = await database.pool.query<{
@@ -225,18 +225,19 @@ describe("the projects", () => {
       { tool_id: "D1.6", state: "locked" },
       { tool_id: "D1.7", state: "locked" },
       { tool_id: "D1.8", state: "locked" },
+      { tool_id: "D1.9", state: "locked" },
     ])
 
     const open = (
       await availableTools(database, await projectIdOf(featuredProject.name))
     ).map((tool) => tool.toolId)
 
-    expect(open).toContain("D1.9")
+    expect(open).toContain("D1.10")
   })
 })
 
 describe("the Tier 3 working project", () => {
-  it("is active and staffed, with D1.1 to T3.D1.8a locked so D1.9 is open, and never D1.3 or D1.8", async () => {
+  it("is active and staffed, with D1.1 to D1.9 locked so D1.10 is open, and never D1.3 or D1.8", async () => {
     await seed(url)
 
     const project = await projectIdOf(featuredTier3Project.name)
@@ -254,7 +255,7 @@ describe("the Tier 3 working project", () => {
         service_track: "Tier_3",
         status: "active",
         records:
-          "D1.1:locked,D1.2:locked,D1.4:locked,T3.D1.3a:locked,T3.D1.8a:locked",
+          "D1.1:locked,D1.2:locked,D1.4:locked,D1.9:locked,T3.D1.3a:locked,T3.D1.8a:locked",
       },
     ])
 
@@ -262,7 +263,7 @@ describe("the Tier 3 working project", () => {
       (tool) => tool.toolId
     )
 
-    expect(open).toContain("D1.9")
+    expect(open).toContain("D1.10")
     expect(open).not.toContain("D1.3")
     expect(open).not.toContain("D1.8")
   })

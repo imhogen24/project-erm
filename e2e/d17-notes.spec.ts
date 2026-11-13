@@ -185,9 +185,7 @@ test("the client reads D1.7 only once it is approved", async ({ browser }) => {
 
   await open(before, waiting.client.email, waiting.project.id)
   await expect(
-    before.getByText(
-      "IMHOGEN shares these notes with you once they are approved."
-    )
+    before.getByText("IMHOGEN shares this with you once it is approved.")
   ).toBeVisible()
   await expect(
     before.getByText("We will set a date to visit the site.")

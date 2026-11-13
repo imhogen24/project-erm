@@ -64,6 +64,11 @@ import { hiddenFromClient, sentBackReason } from "@/server/records/records"
 import { INTERNAL_REVIEW, reviewValues } from "@/server/review/internal-review"
 import { CAPABILITY, capabilityValues } from "@/server/capability/capability"
 import { RISK, riskValues } from "@/server/risk/risk"
+import {
+  FEASIBILITY,
+  feasibilityStart,
+  feasibilityValues,
+} from "@/server/feasibility/feasibility"
 import { getRecordScreen } from "@/server/records/screen"
 import { UnknownToolError } from "@/server/records/validate"
 
@@ -379,6 +384,29 @@ export default async function Page({
     formValues = { ...formValues, ...system }
   }
 
+  // D1.12: 1.0 and 4.0 come from the project, D1.10, the request and the
+  // signature; the critical risks start from D1.11's register.
+  if (toolId === FEASIBILITY) {
+    if (!view.record && view.can.write) {
+      // SAFETY: the starting rows are built for D1.12's own table.
+      const start = (await feasibilityStart(
+        getDatabase(),
+        projectId
+      )) as FormValues
+
+      formValues = { ...start, ...formValues }
+    }
+
+    // SAFETY: the system's values are built for D1.12's own fields.
+    const system = (await feasibilityValues(
+      getDatabase(),
+      projectId,
+      view.record?.payload ?? {}
+    )) as FormValues
+
+    formValues = { ...formValues, ...system }
+  }
+
   // A tool the client reads only once locked tells them so until then.
   const notSharedYet =
     tool.clientReadsOnceLocked &&
@@ -543,7 +571,7 @@ export default async function Page({
     />
   ) : notSharedYet ? (
     <p className="text-muted-foreground">
-      IMHOGEN shares these notes with you once they are approved.
+      IMHOGEN shares this with you once it is approved.
     </p>
   ) : !hasRecord && !view.can.write && !send ? (
     <p>Nobody has started this tool yet.</p>

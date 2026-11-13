@@ -104,7 +104,7 @@ export const previews: Preview[] = [
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.7`,
     expect:
-      "D1.7 on Tema Foods is Locked: the actual date and times, the three IMHOGEN attendees and the client's two ticked Present, three discussion topics with raw notes and remarks, one parking-lot item (a site visit date), and the close-out. Nothing can be edited. The client (kwaku.ampofo@temafoods.test) reads it too, since the PM approved it. The browser tests walk the whole flow (e2e/d17-notes.spec.ts): the OM starts from D1.6's agenda and attendees and submits, the PM sends it back with a reason or approves it, and the client sees IMHOGEN shares these notes with you once they are approved. until then.",
+      "D1.7 on Tema Foods is Locked: the actual date and times, the three IMHOGEN attendees and the client's two ticked Present, three discussion topics with raw notes and remarks, one parking-lot item (a site visit date), and the close-out. Nothing can be edited. The client (kwaku.ampofo@temafoods.test) reads it too, since the PM approved it. The browser tests walk the whole flow (e2e/d17-notes.spec.ts): the OM starts from D1.6's agenda and attendees and submits, the PM sends it back with a reason or approves it, and the client sees IMHOGEN shares this with you once it is approved. until then.",
   },
   {
     screen: "D1.8 and T3.D1.8a, approved",
@@ -128,18 +128,25 @@ export const previews: Preview[] = [
       "D1.10 on Tema Foods is Locked as Partially Capable, every criterion answered and signed by Kojo Antwi. To fill one from empty, use Dev: All Tools Unlocked (Tier 1). The browser test walks the flow (e2e/d110-capability.spec.ts).",
   },
   {
-    screen: "D1.11 risk assessment, as the LE",
+    screen: "D1.11 risk assessment, approved",
     loginAs: "LE",
     path: (id) => `/projects/${id}/tools/D1.11`,
     expect:
-      "D1.10 is locked, so D1.11 is open for the Lead Engineer. 1.0: Assessor Kojo Antwi, Project/Client Name Tema Foods Ltd, Overall Capability Status Partially Capable (from D1.10) and Reference Request ID are the system's; Date of Assessment fills in when the LE signs; Primary Review Objective to write. 2.0 Risk register: rows the LE adds, each with Risk Category, Specific Risk Description, Probability and Impact (H/M/L), Proposed Mitigation Strategy and Risk Owner. 3.0: the four fixed questions, each with Status (Yes, Yes Conditional, No, Partial / Undetermined) and Remarks / Conditions. 4.0: Overall Risk Profile, Project Go / No-Go Decision (Go, Conditional Go, No-Go), Decision remarks, and Assessor Signature with Sign. Everything the LE fills starts empty. On Tarkwa Mine Pump Station Drawings the LE is yaa.sarpong@imhogen.test.",
+      "D1.11 on Tema Foods is Locked as a Conditional Go: one risk in the register, the four questions answered, signed by Kojo Antwi. To fill one from empty, use Dev: All Tools Unlocked (Tier 1). The browser test walks the flow (e2e/d111-risk.spec.ts).",
   },
   {
-    screen: "D1.11 risk assessment, as the PM",
-    loginAs: "PM",
-    path: (id) => `/projects/${id}/tools/D1.11`,
+    screen: "D1.12 feasibility report, as the LE",
+    loginAs: "LE",
+    path: (id) => `/projects/${id}/tools/D1.12`,
     expect:
-      "Before the LE saves: Nobody has started this tool yet. Once the LE signs and submits, the PM (ama.owusu@imhogen.test) reads it with Approve, which locks D1.11, and Send back. Approved as No-Go, the project is closed and nothing more opens; Go or Conditional Go opens D1.12. The OM, HE and IT/Admin only read it; the client does not see it.",
+      "D1.11 is locked, so D1.12 is open for the Lead Engineer. 1.0 is the system's: Assessor, Project/Client Name, Overall Capability Status (from D1.10), Reference Request ID and the fixed objective; Date of Assessment fills in when the LE signs. 2.0: the four capability domains (Engineering & Design, Manufacturing & Tools, Supply Chain & Materials, Resource Bandwidth) with Status (Capable, Partial, Not Capable) and Key Findings to fill; more domains can be added. 3.0 starts with D1.11's risk, its impact and mitigation, to edit; rows can be added or removed. 4.0: Client's Target Timeline 12 weeks and Client's Estimated Budget GHS 420,000 from the request; IMHOGEN Realistic Timeline, Estimated Cost Floor (GHS) and Commercial Alignment Notes to fill. 5.0: Recommendation, and Head of R&D Signature with Sign. On Tarkwa Mine Pump Station Drawings the LE is yaa.sarpong@imhogen.test.",
+  },
+  {
+    screen: "D1.12 feasibility report, as the PM and the client",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.12`,
+    expect:
+      "Before the LE saves: Nobody has started this tool yet. Once the LE signs and submits, the PM (ama.owusu@imhogen.test) reads it with Approve, which locks D1.12 and opens D1.13, and Send back. The client (kwaku.ampofo@temafoods.test) sees IMHOGEN shares this with you once it is approved. until then, and the report after. The OM, HE, QA, CR and IT/Admin only read it.",
   },
   {
     screen: "Client: start a new project",
@@ -191,7 +198,7 @@ export const previews: Preview[] = [
     email: "selorm.dzigbordi@imhogen.test",
     path: () => "/",
     expect:
-      "Tarkwa Mine Pump Station Drawings shows Tier 3 on its tile. Open it: D1.1, D1.2, T3.D1.3a T3 Technical Intake (Drafting), D1.4 (Delivered) T3.D1.8a T3 Physical Metrology Log, D1.9 and D1.10 are locked, and D1.11 is open for its LE, yaa.sarpong@imhogen.test. No Tier 1 tool such as D1.3 or D1.5 to D1.8 is listed. Tema Foods Boiler Skid is the Tier 1 match.",
+      "Tarkwa Mine Pump Station Drawings shows Tier 3 on its tile. Open it: D1.1, D1.2, T3.D1.3a T3 Technical Intake (Drafting), D1.4 (Delivered) T3.D1.8a T3 Physical Metrology Log, D1.9, D1.10 and D1.11 are locked, and D1.12 is open for its LE, yaa.sarpong@imhogen.test. No Tier 1 tool such as D1.3 or D1.5 to D1.8 is listed. Tema Foods Boiler Skid is the Tier 1 match.",
   },
   {
     screen: "PM: a D1.2 waiting for approval",

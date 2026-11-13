@@ -22,6 +22,7 @@ import {
 } from "@/server/workflow/workflow"
 
 import { commercialCriteria, technicalCriteria } from "@/lib/capability"
+import { capabilityDomains } from "@/lib/feasibility"
 import { conclusionQuestions } from "@/lib/risk"
 
 import { registerAllTools } from "../index"
@@ -158,6 +159,23 @@ const answers = new Map<string, JsonObject>([
   ["D1.4", { subject: "Acknowledgement of Boiler request", body: "Dear Ama," }],
   ["D1.10", capability("Capable")],
   ["D1.11", risk("Go")],
+  [
+    "D1.12",
+    {
+      capability: capabilityDomains.map((domain) => ({
+        domain,
+        status: "Capable",
+        findings: "Checked",
+      })),
+      criticalRisks: [
+        { risk: "Timeline", impact: "High", mitigation: "Phase it." },
+      ],
+      realisticTimeline: "8 weeks",
+      costFloor: 80000,
+      commercialNotes: "Checked",
+      recommendation: "Go ahead.",
+    },
+  ],
   ["D1.14", { minimumOverheadMet: true }],
 ])
 

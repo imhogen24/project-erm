@@ -128,9 +128,6 @@ export default async function Page({
                   </Badge>
                   <span className="tabular-nums">{team.project.requestId}</span>
                 </p>
-                <p className="text-sm text-muted-foreground">
-                  Choose who works on this project.
-                </p>
               </>
             }
           >

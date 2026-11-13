@@ -69,21 +69,10 @@ export default async function Page() {
       <div className="drafting-grid min-h-svh py-[var(--inset)]">
         <AppSidebar name={session.user.name} current="team" canInvite />
         <main className="table-project table-home">
-          <PageSheet
-            title={"Projects that need a team"}
-            below={
-              <>
-                <p className="text-sm text-muted-foreground">
-                  These projects have no project manager or no onboarding
-                  manager yet. Newest first.
-                </p>
-              </>
-            }
-          >
+          <PageSheet title={"Projects that need a team"}>
             {needing.length === 0 ? (
               <p className="relative text-muted-foreground">
-                Every running project has a project manager and an onboarding
-                manager.
+                Every running project has a PM and an OM.
               </p>
             ) : (
               <ul className="relative grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">

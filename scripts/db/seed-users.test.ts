@@ -10,6 +10,7 @@ import { registerAllTools } from "@/workbooks"
 import { listProjectsFor } from "@/server/projects/projects"
 import { projectsNeedingTeam, teamOf } from "@/server/staff/team"
 import { workloadOf } from "@/server/staff/staff"
+import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 
 import { emailOf, loginFor, staff } from "./seed-data/people"
 import {
@@ -32,7 +33,11 @@ const auth = createAuth(database, {
 
 const url = process.env.TEST_DATABASE_URL!
 
-const PEOPLE = staff.length + seedProjects.length
+// The Dev projects share one client, so clients are counted by address.
+const CLIENTS = new Set(seedProjects.map((project) => project.client.email))
+  .size
+
+const PEOPLE = staff.length + CLIENTS
 
 const ADMIN = emailOf("kofi.mensah")
 
@@ -83,7 +88,7 @@ describe("the people", () => {
       email: emailOf("mavis.hammond"),
     })
     expect(created.filter((person) => person.role === "Client")).toHaveLength(
-      seedProjects.length
+      CLIENTS
     )
   })
 
@@ -278,6 +283,8 @@ describe("the records", () => {
           if (
             field.systemFilled ||
             field.inherited ||
+            // Written by signing, never typed.
+            field.type === "signature" ||
             (field.type === "table" && field.readOnly)
           ) {
             delete submitted[field.key]
@@ -474,6 +481,10 @@ describe("what the other roles see", () => {
 
     expect(listed.map((project) => project.name).sort()).toEqual([
       "Cape Coast Hotel Laundry Boiler",
+      `${DEV_LOCKED} (Tier 1)`,
+      `${DEV_LOCKED} (Tier 3)`,
+      `${DEV_UNLOCKED} (Tier 1)`,
+      `${DEV_UNLOCKED} (Tier 3)`,
       "Tamale Shea Butter Processing Plant",
       "Tema Foods Boiler Skid",
     ])

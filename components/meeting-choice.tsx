@@ -5,11 +5,11 @@ import { useRouter } from "next/navigation"
 import { useState, useSyncExternalStore, useTransition } from "react"
 
 import { DatePicker } from "@/components/date-picker"
+import { TimeInput } from "@/components/time-input"
 import { ActionButton, SheetActions } from "@/components/sheet-actions"
 import { TableBox } from "@/components/sheet-table"
 import { Button } from "@/components/ui/button"
 import { FieldLabel } from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import {
   Select,
@@ -193,9 +193,7 @@ export function MeetingChoice({
   if (!recordId || saved.offeredSlots.length === 0) {
     return (
       <TableBox title="Meeting times">
-        <p className="px-4 py-4 text-sm text-muted-foreground">
-          No times yet. You will get an email when IMHOGEN proposes some.
-        </p>
+        <p className="px-4 py-4 text-sm text-muted-foreground">No times yet.</p>
       </TableBox>
     )
   }
@@ -278,11 +276,9 @@ export function MeetingChoice({
               <FieldLabel htmlFor="own-time" className="text-sm">
                 Time
               </FieldLabel>
-              <Input
+              <TimeInput
                 id="own-time"
-                type="time"
                 value={own.time}
-                className="h-12 bg-background"
                 onChange={(event) =>
                   setOwn({ ...own, time: event.target.value })
                 }

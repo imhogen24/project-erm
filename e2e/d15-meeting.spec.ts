@@ -257,18 +257,14 @@ test("the client sees the confirmed meeting with a link to join", async ({
   ).toHaveAttribute("href", "https://meet.google.com/zpr-zhib-amp")
 })
 
-test("before any times are sent the client is told an email will come", async ({
+test("before any times are sent the client sees there are none yet", async ({
   page,
 }) => {
   const { project, client } = await setUp({ slots })
 
   await open(page, client.email, project.id)
 
-  await expect(
-    page.getByText(
-      "No times yet. You will get an email when IMHOGEN proposes some."
-    )
-  ).toBeVisible()
+  await expect(page.getByText("No times yet.")).toBeVisible()
 })
 
 test("the PM reads D1.5 with nothing to press", async ({ page }) => {

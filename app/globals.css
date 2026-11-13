@@ -214,8 +214,8 @@
   }
 
   .select-caret {
-    width: 1rem;
-    height: 1rem;
+    width: 1.25rem;
+    height: 1.25rem;
     flex-shrink: 0;
     color: var(--muted-foreground);
   }
@@ -1146,19 +1146,28 @@
   }
 }
 
-/* Page content beside the floating sidebar. The sidebar takes squares 1 to 3
-   after a one-square gap; the page starts a square after it and stops one
-   square before the right edge, the same gap as at the left. Both kinds of
-   page, a list and a sheet, sit the same way. */
+/* Page content beside the floating sidebar. The screen is for working, so
+   the page takes every square it can: the sidebar sits one small square
+   (a quarter square) from the left edge, the page starts one small square
+   after the sidebar and runs to the last small-square line before the right
+   edge, leaving at least one small square there too. Every edge stays on the
+   paper's lines. --grid-start is where the first small-square line falls.
+   Both kinds of page, a list and a sheet, sit the same way. */
 @media (min-width: 1280px) {
+  .drafting-grid {
+    --small: calc(var(--cell) / 4);
+    --grid-start: mod(
+      round(down, mod(100%, var(--cell)) / 2, 1px),
+      var(--small)
+    );
+  }
   .table-project,
   .table-wide {
     width: calc(
-      100% - round(down, mod(100%, var(--cell)) / 2, 1px) * 2 - var(--cell) * 6
+      round(down, 100% - var(--grid-start) - var(--small), var(--small)) -
+        var(--small) * 14
     );
-    margin-left: calc(
-      round(down, mod(100%, var(--cell)) / 2, 1px) + var(--cell) * 5
-    );
+    margin-left: calc(var(--grid-start) + var(--small) * 14);
   }
 }
 
@@ -1207,6 +1216,13 @@
   bottom: var(--inset);
   left: calc(round(down, mod(100%, var(--cell)) / 2, 1px) + var(--cell));
   width: calc(var(--cell) * 3);
+}
+
+/* Beside a wide page, one small square from the left edge (see .table-wide). */
+@media (min-width: 1280px) {
+  .sidebar-frame {
+    left: calc(var(--grid-start) + var(--small));
+  }
 }
 
 /* One sheet per page, as tall as the sidebar beside it. A longer page grows

@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray, ne } from "drizzle-orm"
+import { and, asc, eq, inArray, ne, notLike } from "drizzle-orm"
 
 import type { Database } from "@/db"
 import {
@@ -16,6 +16,7 @@ import {
   sendNotificationEmails,
 } from "@/server/notifications/raise"
 import { assertCompanyRole } from "@/server/permissions/permissions"
+import { DEV_PROJECT, skipsDevProjects } from "@/server/workflow/dev-unlocked"
 
 import {
   countedStatuses,
@@ -53,6 +54,19 @@ export type AvailableStaff = { people: Candidate[]; someoneFree: boolean }
 
 type Reader = Pick<Database, "select">
 
+async function isDevProject(database: Reader, projectId: string) {
+  if (!skipsDevProjects()) {
+    return false
+  }
+
+  const [project] = await database
+    .select({ name: projects.name })
+    .from(projects)
+    .where(eq(projects.id, projectId))
+
+  return project?.name.startsWith(DEV_PROJECT) === true
+}
+
 // The roles each of these people holds on projects that still take up a slot.
 async function countedRoles(database: Reader, personIds: string[]) {
   if (personIds.length === 0) {
@@ -70,7 +84,10 @@ async function countedRoles(database: Reader, personIds: string[]) {
     .where(
       and(
         inArray(personProjectRoles.personId, personIds),
-        inArray(projects.status, [...countedStatuses])
+        inArray(projects.status, [...countedStatuses]),
+        skipsDevProjects()
+          ? notLike(projects.name, `${DEV_PROJECT}%`)
+          : undefined
       )
     )
 }
@@ -224,7 +241,10 @@ export async function assignStaff(
       throw new RoleTakenError(`This project already has a ${input.role}`)
     }
 
-    const group = limitFor(input.role)
+    // A Dev project counts toward no one's workload in development.
+    const group = (await isDevProject(transaction, input.projectId))
+      ? undefined
+      : limitFor(input.role)
 
     if (group) {
       const rows = await countedRoles(transaction, [input.personId])

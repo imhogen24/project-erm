@@ -14,6 +14,7 @@ import { writeAudit, type Transaction } from "@/server/audit/audit"
 import { tools, type ToolRegistry } from "@/server/tools/registry"
 
 import { assertWorkflowMaps } from "./check"
+import { opensEveryTool } from "./dev-unlocked"
 import {
   requiredTools,
   type Condition,
@@ -71,7 +72,11 @@ type LiveRecord = {
   payload: JsonObject
 }
 
-type Project = { serviceTrack: ServiceTrack; status: ProjectStatus }
+type Project = {
+  name: string
+  serviceTrack: ServiceTrack
+  status: ProjectStatus
+}
 
 // Open with the cycle a new record gets, or closed with what is missing.
 type Verdict = { cycle: number; missing: string[] }
@@ -305,11 +310,15 @@ class Route {
       missing.push(`${toolId} does not repeat, so it only has cycle 1`)
     }
 
-    if (rule?.after) {
+    // In development, a Dev: All Tools Unlocked project opens every tool of
+    // the workbook at once (dev-unlocked.ts).
+    const waits = !(opensEveryTool(this.project.name) && !map.opens)
+
+    if (waits && rule?.after) {
       missing.push(...this.unmet(rule.after, rule, at))
     }
 
-    if (rule?.when) {
+    if (waits && rule?.when) {
       missing.push(...this.unmetCondition(rule.when, rule, at))
     }
 
@@ -404,7 +413,11 @@ async function routeOf(
   projectId: string
 ): Promise<Route> {
   const [project] = await transaction
-    .select({ serviceTrack: projects.serviceTrack, status: projects.status })
+    .select({
+      name: projects.name,
+      serviceTrack: projects.serviceTrack,
+      status: projects.status,
+    })
     .from(projects)
     .where(eq(projects.id, projectId))
 

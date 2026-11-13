@@ -81,12 +81,16 @@ export function DatePicker({
           aria-describedby={describedBy}
           className={`h-12 w-full justify-start bg-background text-base font-normal ${date ? "" : "text-muted-foreground"} ${className}`}
         >
-          <CalendarBlankIcon aria-hidden />
+          <CalendarBlankIcon
+            aria-hidden
+            className="size-5 text-muted-foreground"
+          />
           {date ? shown.format(date) : "Pick a date"}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
         <Calendar
+          className="[--cell-size:--spacing(10)]"
           mode="single"
           captionLayout="dropdown"
           startMonth={new Date(1900, 0)}

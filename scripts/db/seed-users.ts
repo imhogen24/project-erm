@@ -1,5 +1,5 @@
 import { hashPassword } from "better-auth/crypto"
-import { and, eq } from "drizzle-orm"
+import { and, eq, inArray } from "drizzle-orm"
 import { z } from "zod"
 
 import { createDatabase, type Database } from "@/db"
@@ -17,6 +17,8 @@ import {
   type AccountType,
   type Role,
 } from "@/db/schema"
+
+import { accessRow } from "@/server/permissions/matrix"
 
 import { projectChangeRequests, projectRecords } from "./seed-data/records"
 import {
@@ -159,25 +161,70 @@ function holderOf(team: Team, role: Role) {
   return team.get(role) ?? null
 }
 
-// A seeded attendee names a role ("role:OM"), since people's ids are only
-// known once they are added; this puts in the person holding it.
+// A seeded record names people by role ("role:OM"), since their ids are only
+// known once they are added: an attendee, or who signed. This puts in the
+// person holding that role on the project, with their name.
 const attendee = z.object({ personId: z.string() }).passthrough()
 
-function withTeamIds(payload: JsonObject, team: Team): JsonObject {
-  const attendees = z.array(attendee).safeParse(payload.imhogenAttendees)
+const signed = z.object({ signedBy: z.string(), signedAt: z.string() })
 
-  if (!attendees.success) {
-    return payload
-  }
+type Holders = Map<Role, { id: string; name: string }>
 
-  return {
-    ...payload,
-    imhogenAttendees: attendees.data.map((each) => {
-      const role = roles.find((held) => `role:${held}` === each.personId)
+function holderNamed(reference: string, holders: Holders) {
+  const role = roles.find((held) => `role:${held}` === reference)
 
-      return { ...each, personId: (role && team.get(role)) ?? each.personId }
-    }),
-  }
+  return role ? holders.get(role) : undefined
+}
+
+function withTeamIds(payload: JsonObject, holders: Holders): JsonObject {
+  return Object.fromEntries(
+    Object.entries(payload).map(([key, value]) => {
+      const signature = signed.safeParse(value)
+
+      if (signature.success) {
+        const signer = holderNamed(signature.data.signedBy, holders)
+
+        return [
+          key,
+          {
+            ...signature.data,
+            signedBy: signer?.id ?? signature.data.signedBy,
+          },
+        ]
+      }
+
+      const attendees = z.array(attendee).safeParse(value)
+
+      if (key !== "imhogenAttendees" || !attendees.success) {
+        return [key, value]
+      }
+
+      return [
+        key,
+        attendees.data.map((each) => {
+          const person = holderNamed(each.personId, holders)
+
+          return person
+            ? { ...each, personId: person.id, name: person.name }
+            : each
+        }),
+      ]
+    })
+  )
+}
+
+// Who writes a tool and who approves it, from the matrix: the OM and the PM
+// where the matrix names no one else.
+function writerOf(toolId: string): Role {
+  const row = accessRow(toolId) ?? {}
+
+  return roles.find((role) => role !== "Client" && row[role] === "RW") ?? "OM"
+}
+
+function approverOf(toolId: string): Role {
+  const row = accessRow(toolId) ?? {}
+
+  return roles.find((role) => row[role] === "RA") ?? "PM"
 }
 
 // Each project's records, at the stage written in seed-data/records.ts. The OM
@@ -193,6 +240,19 @@ async function addRecords(
 ) {
   const received = Date.parse(project.received)
   const recordIds = new Map<string, string>()
+
+  const named = await database
+    .select({ id: people.id, name: people.name })
+    .from(people)
+    .where(inArray(people.id, [...team.values()]))
+
+  const holders: Holders = new Map(
+    [...team].flatMap(([role, id]) => {
+      const person = named.find((each) => each.id === id)
+
+      return person ? [[role, person] as const] : []
+    })
+  )
 
   for (const record of projectRecords.get(project.name) ?? []) {
     const [existing] = await database
@@ -223,12 +283,17 @@ async function addRecords(
         projectId,
         toolId: record.toolId,
         state: record.state,
-        payload: withTeamIds(record.payload, team),
+        payload: withTeamIds(record.payload, holders),
         createdAt: started,
         updatedAt: done ? approved : submitted,
-        submittedBy: record.state === "draft" ? null : holderOf(team, "OM"),
+        submittedBy:
+          record.state === "draft"
+            ? null
+            : (holderOf(team, writerOf(record.toolId)) ?? holderOf(team, "OM")),
         submittedAt: record.state === "draft" ? null : submitted,
-        approvedBy: done ? holderOf(team, "PM") : null,
+        approvedBy: done
+          ? (holderOf(team, approverOf(record.toolId)) ?? holderOf(team, "PM"))
+          : null,
         approvedAt: done ? approved : null,
         lockedAt: done ? approved : null,
       })

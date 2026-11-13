@@ -1,4 +1,5 @@
 import type { ProjectStatus, Role, ServiceTrack } from "@/db/schema"
+import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 
 export type Client = {
   name: string
@@ -62,7 +63,7 @@ export function requestIdOf(project: SeedProject) {
 // it and its records are locked up to the tool being built (records.ts). The others
 // are at the other stages a project can be in. Workloads stay within the
 // limits, with Kojo Antwi at his limit of three engineering projects.
-export const projects: readonly SeedProject[] = [
+const baseProjects: readonly SeedProject[] = [
   {
     name: "Tema Foods Boiler Skid",
     serviceTrack: "Tier_1",
@@ -410,6 +411,128 @@ export const projects: readonly SeedProject[] = [
       timeline: "10 weeks",
     },
   },
+]
+
+// The Dev projects' requests (stageProjects below).
+function tier1Stage(
+  name: string,
+  status: ProjectStatus,
+  received: string,
+  site: string,
+  client: Client,
+  team: Team,
+  title: string,
+  objective: string
+): SeedProject {
+  return {
+    name,
+    serviceTrack: "Tier_1",
+    status,
+    received,
+    site,
+    client,
+    team,
+    request: {
+      scope: ["Product Design", "Process / Factory Design"],
+      title,
+      objective,
+      materialInputs: "Raw produce in sacks, clean water",
+      energyInputs: "415 V supply, LPG for heating",
+      transformation: "Wash, process and dry in one line",
+      outputs: "A commissioned line with drawings and an O&M manual",
+      byProducts: "Waste water and husks",
+      budget: "GHS 250,000",
+      timeline: "10 weeks",
+    },
+  }
+}
+
+function tier3Stage(
+  name: string,
+  status: ProjectStatus,
+  received: string,
+  site: string,
+  client: Client,
+  team: Team,
+  endGoal: string
+): SeedProject {
+  return {
+    name,
+    serviceTrack: "Tier_3",
+    status,
+    received,
+    site,
+    client,
+    team,
+    request: {
+      inputMaterialType: "Physical Part / Machine",
+      assetCondition: "In service, no drawings exist",
+      services: [
+        "3D Solid Modeling (STEP/IGES)",
+        "2D Manufacturing Drawings (GD&T)",
+      ],
+      endGoal,
+      standard: "ISO",
+      outputFormats: ["PDF", "STEP"],
+    },
+  }
+}
+
+// One client for every Dev project, so one account tests the client's side.
+const devClient: Client = {
+  name: "Akosua Mensah",
+  email: "akosua.mensah@devclient.test",
+  organisation: "Dev Client Ltd",
+  phone: "0244 000 001",
+}
+
+// For testing every tool in development: the same people on all four, one
+// project per tier with every tool built locked, and one with every tool
+// open at once (server/workflow/dev-unlocked.ts). Remove them with that file.
+export const stageProjects: readonly SeedProject[] = [
+  tier1Stage(
+    `${DEV_LOCKED} (Tier 1)`,
+    "active",
+    "2026-09-10T09:00:00Z",
+    "Accra",
+    devClient,
+    "everyone",
+    "Small rice mill with destoner",
+    "Mill 1 tonne of paddy an hour with a destoner and polisher."
+  ),
+  tier1Stage(
+    `${DEV_UNLOCKED} (Tier 1)`,
+    "active",
+    "2026-09-11T09:00:00Z",
+    "Accra",
+    devClient,
+    "everyone",
+    "Palm fruit press and clarifier",
+    "Press 1 tonne of palm fruit an hour and clarify the oil."
+  ),
+  tier3Stage(
+    `${DEV_LOCKED} (Tier 3)`,
+    "active",
+    "2026-09-12T09:00:00Z",
+    "Accra",
+    devClient,
+    "everyone",
+    "Drawings of the aggregate hopper and its chute, measured on site"
+  ),
+  tier3Stage(
+    `${DEV_UNLOCKED} (Tier 3)`,
+    "active",
+    "2026-09-13T09:00:00Z",
+    "Accra",
+    devClient,
+    "everyone",
+    "Manufacturing drawings of a worn crusher gearbox so it can be made locally"
+  ),
+]
+
+export const projects: readonly SeedProject[] = [
+  ...baseProjects,
+  ...stageProjects,
 ]
 
 export const featuredProject = projects[0]!

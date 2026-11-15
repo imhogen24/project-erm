@@ -76,9 +76,15 @@ function sendable(tool: ToolDefinition, values: FormValues): FormValues {
       .map((field) => field.key)
   )
 
+  // An empty table is the same as no table, so saving one never reads as an
+  // edit that clears a signature.
   return Object.fromEntries(
     Object.entries(values).filter(
-      ([key, value]) => !systems.has(key) && value !== "" && value !== null
+      ([key, value]) =>
+        !systems.has(key) &&
+        value !== "" &&
+        value !== null &&
+        !(Array.isArray(value) && value.length === 0)
     )
   )
 }

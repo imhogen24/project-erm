@@ -335,16 +335,21 @@ export function ToolForm({
     if (field.systemFilled) {
       const shown = textOf(rawCell(field, values[field.key])) ?? ""
 
+      // A step that must come first, such as sending an invite, is reported
+      // against the field it fills.
       return (
-        <output
-          id={field.key}
-          data-empty={shown === ""}
-          className="system-value"
-        >
-          {shown === ""
-            ? (field.systemNote ?? "Filled in by the system")
-            : shown}
-        </output>
+        <>
+          <output
+            id={field.key}
+            data-empty={shown === ""}
+            className="system-value"
+          >
+            {shown === ""
+              ? (field.systemNote ?? "Filled in by the system")
+              : shown}
+          </output>
+          {message && <FieldError id={errorId}>{message}</FieldError>}
+        </>
       )
     }
 

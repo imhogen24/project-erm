@@ -176,6 +176,14 @@ const answers = new Map<string, JsonObject>([
       recommendation: "Go ahead.",
     },
   ],
+  [
+    "D1.13",
+    {
+      vision: "Document the unit.",
+      includedScope: [{ category: "CAD", description: "A 3D model." }],
+      phases: [{ name: "Review", activities: "Review.", duration: "1 week" }],
+    },
+  ],
   ["D1.14", { minimumOverheadMet: true }],
 ])
 
@@ -254,6 +262,15 @@ async function recordIn(
   // it is sent. D1.5 and D1.6 have none either: the OM's own step locks each.
   if (["D1.1", "D1.5", "D1.6"].includes(toolId) && state !== "draft") {
     return lockSentDraft(database, actor, record.id, {})
+  }
+
+  // Only the alignment meeting's invite records it was sent; on the route it
+  // went before D1.13 was submitted.
+  if (toolId === "D1.13" && state !== "draft") {
+    await database.pool.query(
+      `UPDATE tool_records SET payload = payload || '{"inviteSentAt": "2026-11-01T09:00:00.000Z"}'::jsonb WHERE id = $1`,
+      [record.id]
+    )
   }
 
   const order: RecordState[] = ["draft", "submitted", "approved", "locked"]

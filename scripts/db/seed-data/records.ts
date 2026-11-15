@@ -31,11 +31,12 @@ import { featuredProject, requestIdOf, stageProjects } from "./projects"
 //
 // Tema Foods Boiler Skid (Tier 1) and Tarkwa Mine Pump Station Drawings (Tier
 // 3) are where the tool being built is open: their records are locked up to
-// the tool before it. On Tema Foods that is D1.12: D1.4 is delivered, on D1.5
+// the tool before it. On Tema Foods that is D1.13: D1.4 is delivered, on D1.5
 // the client chose a meeting time, on D1.6 the invite went out, and the PM
 // approved the D1.7 meeting notes, the D1.8 needs assessment, the D1.9
-// review request, the D1.10 capability assessment and the D1.11 risks. On
-// Tarkwa it is D1.12 too: D1.4 is delivered and T3.D1.8a to D1.11 approved.
+// review request, the D1.10 capability assessment, the D1.11 risks and the
+// D1.12 report. On Tarkwa it is D1.13 too: D1.4 is delivered and T3.D1.8a to
+// D1.12 approved.
 
 export type SeedState = "draft" | "submitted" | "locked"
 
@@ -494,6 +495,9 @@ export const projectRecords = new Map<string, SeedRecord[]>(
       // D1.11: the risk assessment, approved by the PM as a Conditional Go,
       // so D1.12 is open for the Lead Engineer.
       { toolId: "D1.11", state: "locked", day: 15, payload: stageD111() },
+      // D1.12: the feasibility report, approved by the PM, so D1.13 is open
+      // for the Lead Engineer.
+      { toolId: "D1.12", state: "locked", day: 17, payload: stageD112() },
     ],
     "Tamale Shea Butter Processing Plant": [
       {
@@ -762,6 +766,7 @@ export const projectRecords = new Map<string, SeedRecord[]>(
       { toolId: "D1.9", state: "locked", day: 8, payload: stageD19() },
       { toolId: "D1.10", state: "locked", day: 10, payload: stageD110() },
       { toolId: "D1.11", state: "locked", day: 12, payload: stageD111() },
+      { toolId: "D1.12", state: "locked", day: 14, payload: stageD112() },
     ],
     "Takoradi Port Conveyor Upgrade": [
       {
@@ -1240,6 +1245,63 @@ function stageD112() {
   })
 }
 
+// The Lead Engineer's scope of work, with its alignment meeting booked and
+// the invite sent, signed and approved by the PM.
+function stageD113() {
+  const slot = { date: "2026-10-08", time: "10:00", timeZone: "Africa/Accra" }
+
+  return payloadOf({
+    vision: "A complete, controlled engineering documentation package.",
+    includedScope: [
+      {
+        category: "Engineering Design / Reverse Engineering",
+        description: "An accurate 3D model of the existing unit.",
+        format: "Native CAD + STEP",
+        phase: "Phase 1-2",
+      },
+    ],
+    excludedScope: [
+      {
+        category: "Physical Fabrication",
+        description: "Building further units is excluded.",
+        reasoning: "This is a documentation engagement.",
+      },
+    ],
+    phases: [
+      {
+        name: "Engineering Review & Scope Confirmation",
+        activities: "Review measurements, confirm the documentation basis.",
+        duration: "1 week",
+        target: "Week 1",
+      },
+    ],
+    clientResponsibilities: [
+      {
+        requirement: "Client Engineering Decision",
+        description: "Choose as-is, modify or redesign.",
+        due: "Before scope lock",
+        status: "Done",
+      },
+    ],
+    slots: [slot],
+    offeredSlots: [slot],
+    sentToClientAt: "2026-10-06T09:00:00.000Z",
+    chosenSlot: 1,
+    agreedDate: slot.date,
+    agreedTime: slot.time,
+    agreedTimeZone: slot.timeZone,
+    clientConfirmed: true,
+    platform: "Google Meet",
+    meetingLink: "https://meet.google.com/abc-defg-hij",
+    inviteSentAt: "2026-10-06T12:00:00.000Z",
+    inviteSequence: 0,
+    signature: {
+      signedBy: "role:LE",
+      signedAt: "2026-10-09T10:00:00.000Z",
+    },
+  })
+}
+
 function tier1Through(name: string, last: string): SeedRecord[] {
   const stage = stageOf(name)
   const files = stageFiles(stage)
@@ -1262,6 +1324,7 @@ function tier1Through(name: string, last: string): SeedRecord[] {
     { toolId: "D1.10", state: "locked", day: 13, payload: stageD110() },
     { toolId: "D1.11", state: "locked", day: 15, payload: stageD111() },
     { toolId: "D1.12", state: "locked", day: 17, payload: stageD112() },
+    { toolId: "D1.13", state: "locked", day: 20, payload: stageD113() },
   ]
 
   return all.slice(0, all.findIndex((record) => record.toolId === last) + 1)
@@ -1286,6 +1349,7 @@ function tier3Through(name: string, last: string): SeedRecord[] {
     { toolId: "D1.10", state: "locked", day: 10, payload: stageD110() },
     { toolId: "D1.11", state: "locked", day: 12, payload: stageD111() },
     { toolId: "D1.12", state: "locked", day: 14, payload: stageD112() },
+    { toolId: "D1.13", state: "locked", day: 17, payload: stageD113() },
   ]
 
   return all.slice(0, all.findIndex((record) => record.toolId === last) + 1)
@@ -1306,9 +1370,9 @@ function unlocked(name: string): SeedRecord[] {
 }
 
 const stageRecords: [string, SeedRecord[]][] = [
-  [`${DEV_LOCKED} (Tier 1)`, tier1Through(`${DEV_LOCKED} (Tier 1)`, "D1.12")],
+  [`${DEV_LOCKED} (Tier 1)`, tier1Through(`${DEV_LOCKED} (Tier 1)`, "D1.13")],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
-  [`${DEV_LOCKED} (Tier 3)`, tier3Through(`${DEV_LOCKED} (Tier 3)`, "D1.12")],
+  [`${DEV_LOCKED} (Tier 3)`, tier3Through(`${DEV_LOCKED} (Tier 3)`, "D1.13")],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],
 ]
 

@@ -32,6 +32,10 @@ import {
 } from "@/server/meetings/meeting-proposal"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import {
+  InviteNotSentError,
+  sendAlignmentInvite,
+} from "@/server/scope/scope-of-work"
+import {
   InvalidTransitionError,
   ProjectNotActiveError,
   RecordNotEditableError,
@@ -417,6 +421,36 @@ function meetingStep(
       if (
         error instanceof MeetingNotReadyError ||
         error instanceof MeetingEmailRefusedError
+      ) {
+        return { status: "error", message: error.message }
+      }
+
+      throw error
+    }
+  })
+}
+
+const alignmentInput = z.object({ recordId: z.uuid() })
+
+// The Lead Engineer's Send calendar invite on D1.13.
+export async function sendAlignmentInviteAction(values: {
+  recordId: string
+}): Promise<RecordResult> {
+  const parsed = alignmentInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Reload and try again." }
+  }
+
+  return attempt(async (actor) => {
+    try {
+      return done(
+        await sendAlignmentInvite(getDatabase(), actor, parsed.data.recordId)
+      )
+    } catch (error) {
+      if (
+        error instanceof MeetingNotReadyError ||
+        error instanceof InviteNotSentError
       ) {
         return { status: "error", message: error.message }
       }

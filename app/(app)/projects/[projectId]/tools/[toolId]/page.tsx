@@ -65,6 +65,17 @@ import { INTERNAL_REVIEW, reviewValues } from "@/server/review/internal-review"
 import { CAPABILITY, capabilityValues } from "@/server/capability/capability"
 import { RISK, riskValues } from "@/server/risk/risk"
 import {
+  SCOPE_OF_WORK,
+  clientMeeting,
+  scopeValues,
+} from "@/server/scope/scope-of-work"
+import { AlignmentMeetingActions } from "@/components/alignment-meeting-actions"
+import {
+  missingToConfirm,
+  missingToSendTimes,
+  proposalOf as meetingOf,
+} from "@/lib/meeting-proposal"
+import {
   FEASIBILITY,
   feasibilityStart,
   feasibilityValues,
@@ -79,6 +90,7 @@ import {
   proposeMeetingTimeAction,
   readyForMeetingAction,
   saveDraftAction,
+  sendAlignmentInviteAction,
   sendBackRecordAction,
   sendCalendarInviteAction,
   sendMeetingTimesAction,
@@ -407,6 +419,46 @@ export default async function Page({
     formValues = { ...formValues, ...system }
   }
 
+  // D1.13: the scope's metadata and routing are the system's. The client
+  // chooses the alignment meeting's time on their own screen; the LE gets the
+  // meeting's buttons beside the sheet.
+  const alignment =
+    toolId === SCOPE_OF_WORK
+      ? await clientMeeting(getDatabase(), session.user.id, projectId)
+      : null
+
+  let meetingActions: ReactNode
+
+  if (toolId === SCOPE_OF_WORK) {
+    // SAFETY: the system's values are built for D1.13's own fields.
+    const system = (await scopeValues(getDatabase(), projectId, {
+      state: view.state,
+      payload: view.record?.payload ?? {},
+    })) as FormValues
+
+    formValues = { ...formValues, ...system }
+
+    if (
+      view.can.write &&
+      view.state !== "locked" &&
+      view.project.status === "active"
+    ) {
+      const saved = meetingOf(view.record?.payload ?? {})
+
+      meetingActions = (
+        <AlignmentMeetingActions
+          recordId={view.record?.id}
+          toSend={missingToSendTimes(saved)}
+          toInvite={missingToConfirm(saved)}
+          sentToClientAt={saved.sentToClientAt}
+          inviteSentAt={saved.inviteSentAt}
+          sendTimes={sendMeetingTimesAction}
+          sendInvite={sendAlignmentInviteAction}
+        />
+      )
+    }
+  }
+
   // A tool the client reads only once locked tells them so until then.
   const notSharedYet =
     tool.clientReadsOnceLocked &&
@@ -569,6 +621,16 @@ export default async function Page({
       submit={submitRecordAction}
       approve={approveRecordAction}
     />
+  ) : alignment ? (
+    <MeetingChoice
+      recordId={alignment.recordId}
+      saved={alignment.saved}
+      locked={false}
+      open={alignment.open && view.project.status === "active"}
+      choose={chooseMeetingTimeAction}
+      propose={proposeMeetingTimeAction}
+      meetingName="feasibility & engineering alignment meeting"
+    />
   ) : notSharedYet ? (
     <p className="text-muted-foreground">
       IMHOGEN shares this with you once it is approved.
@@ -596,6 +658,7 @@ export default async function Page({
         sendBack={sendBackRecordAction}
         sentBack={sentBack ?? undefined}
       />
+      {meetingActions}
     </div>
   )
 

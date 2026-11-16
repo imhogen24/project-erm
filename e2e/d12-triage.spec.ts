@@ -60,7 +60,10 @@ async function setUp(track: "Tier_1" | "Tier_3" = "Tier_1") {
 
 async function open(page: Page, email: string, projectId: string) {
   await signIn(page, email)
-  await page.goto(`/projects/${projectId}/tools/D1.2`)
+  // Typing only reaches the screen once its scripts have loaded.
+  await page.goto(`/projects/${projectId}/tools/D1.2`, {
+    waitUntil: "networkidle",
+  })
 }
 
 function checkRow(page: Page, index: number) {
@@ -93,6 +96,7 @@ function reject(page: Page) {
   return page.getByRole("radio", { name: "Reject as Spam", exact: true })
 }
 
+// Gone since RDP-153: the screen saves by itself. Kept to check it stays gone.
 function save(page: Page) {
   return page.getByRole("button", { name: "Save draft" })
 }
@@ -167,9 +171,7 @@ test("the OM describes one file, and it is kept after a reload", async ({
 
   await open(page, om.email, project.id)
   await description(page, "Photo 2").fill("Front of the trailer")
-  await save(page).click()
-
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
 
   await page.reload()
 
@@ -235,9 +237,7 @@ test("the OM answers each check and the answers are kept after a reload", async 
 
   await open(page, om.email, project.id)
   await answerAll(page)
-  await save(page).click()
-
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
 
   await page.reload()
 
@@ -454,8 +454,6 @@ test("at 375px nothing scrolls sideways and the buttons work", async ({
   await result(page, 0, "Pass").click()
   await notes(page, 0).fill("Fine")
   await proceed(page).click()
-  await save(page).click()
-
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
   expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0)
 })

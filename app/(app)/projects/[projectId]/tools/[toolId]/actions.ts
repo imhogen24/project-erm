@@ -50,6 +50,7 @@ import {
   sendBackRecord,
   signField,
   submitRecord,
+  withdrawRecord,
   type ToolRecord,
 } from "@/server/records/records"
 import type { FieldError } from "@/server/records/validate"
@@ -287,6 +288,22 @@ export async function sendBackRecordAction(values: {
     done(
       await sendBackRecord(getDatabase(), actor, input.recordId, input.reason)
     )
+  )
+}
+
+// The person who submitted a record takes it back to a draft before it is
+// approved.
+export async function withdrawRecordAction(values: {
+  recordId: string
+}): Promise<RecordResult> {
+  const parsed = recordInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Reload and try again." }
+  }
+
+  return attempt(async (actor) =>
+    done(await withdrawRecord(getDatabase(), actor, parsed.data.recordId))
   )
 }
 

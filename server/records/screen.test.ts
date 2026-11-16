@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
 import type { ProjectStatus, Role } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
+import { requestChange } from "@/server/change-requests/change-requests"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import {
   UnknownToolError,
@@ -158,7 +159,13 @@ describe("a tool with no record yet", () => {
       record: null,
       waiting: null,
       control: null,
-      can: { write: true, approve: false, sign: [] },
+      can: {
+        write: true,
+        approve: false,
+        sign: [],
+        withdraw: false,
+        requestChange: false,
+      },
     })
     expect(view.project).toMatchObject({ id: projectId, status: "active" })
   })
@@ -168,6 +175,8 @@ describe("a tool with no record yet", () => {
       write: false,
       approve: false,
       sign: [],
+      withdraw: false,
+      requestChange: false,
     })
   })
 
@@ -197,6 +206,8 @@ describe("a draft", () => {
       write: true,
       approve: false,
       sign: ["leadSignature"],
+      withdraw: false,
+      requestChange: false,
     })
   })
 
@@ -248,6 +259,8 @@ describe("a submitted record", () => {
       write: false,
       approve: true,
       sign: [],
+      withdraw: false,
+      requestChange: false,
     })
   })
 
@@ -259,6 +272,14 @@ describe("a submitted record", () => {
     await submitRecord(database, both, record.id)
 
     expect((await screen(both)).can.approve).toBe(false)
+  })
+
+  it("offers withdrawing only to the person who submitted it", async () => {
+    await submitted()
+
+    expect((await screen(lead)).can.withdraw).toBe(true)
+    expect((await screen(pm)).can.withdraw).toBe(false)
+    expect((await screen(reader)).can.withdraw).toBe(false)
   })
 
   it("does not offer approving to a role that cannot approve", async () => {
@@ -283,8 +304,28 @@ describe("a locked record", () => {
       write: false,
       approve: false,
       sign: [],
+      withdraw: false,
+      requestChange: false,
     })
     expect(view.control?.completedAt).toBeInstanceOf(Date)
+  })
+
+  it("offers the writer a change request, until one is open, and never a withdraw", async () => {
+    const record = await draft()
+
+    await signField(database, lead, record.id, "leadSignature")
+    await submitRecord(database, lead, record.id)
+    await approveRecord(database, pm, record.id)
+
+    expect((await screen(lead)).can).toMatchObject({
+      withdraw: false,
+      requestChange: true,
+    })
+    expect((await screen(reader)).can.requestChange).toBe(false)
+
+    await requestChange(database, lead, record.id, "The date is wrong")
+
+    expect((await screen(lead)).can.requestChange).toBe(false)
   })
 
   it("opens the next tool", async () => {
@@ -314,6 +355,8 @@ describe("a project that is not active", () => {
       write: false,
       approve: false,
       sign: [],
+      withdraw: false,
+      requestChange: false,
     })
   })
 

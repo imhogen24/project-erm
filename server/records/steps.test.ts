@@ -2,6 +2,8 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
 import type { Role } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
+import { getDocumentControl } from "@/server/document-control/document-control"
+import { listNotifications } from "@/server/notifications/notifications"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import { defineTool } from "@/server/tools/define-tool"
 import {
@@ -23,6 +25,7 @@ import {
   signField,
   submitRecord,
   updateRecord,
+  withdrawRecord,
   type JsonObject,
   type ToolRecord,
 } from "./records"
@@ -444,6 +447,109 @@ describe("approveRecord", () => {
     )
 
     expect(moves).toHaveLength(1)
+  })
+})
+
+describe("withdrawRecord", () => {
+  it("takes a submitted record back to a draft the writer can edit and submit again", async () => {
+    const submitted = await readyToApprove()
+
+    const withdrawn = await withdrawRecord(database, om, submitted.id)
+
+    expect(withdrawn.state).toBe("draft")
+
+    const edited = await save(
+      om,
+      { ...ACME, notes: "Fixed" },
+      withdrawn.updatedAt
+    )
+
+    expect((await submitRecord(database, om, edited.id)).state).toBe(
+      "submitted"
+    )
+  })
+
+  it("records who withdrew it and when, with no reason", async () => {
+    const submitted = await readyToApprove()
+
+    await withdrawRecord(database, om, submitted.id)
+
+    const { rows } = await database.pool.query<{
+      actor_id: string
+      reason: string | null
+      created_at: Date
+    }>(
+      "SELECT actor_id, reason, created_at FROM audit_log WHERE record_id = $1 AND field = 'state' AND old_value = '\"submitted\"' AND new_value = '\"draft\"'",
+      [submitted.id]
+    )
+
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toMatchObject({ actor_id: om, reason: null })
+    expect(rows[0]!.created_at).toBeInstanceOf(Date)
+  })
+
+  it("marks the approver's waiting for approval notification read", async () => {
+    const submitted = await readyToApprove()
+
+    const [waiting] = await listNotifications(database, pm, {
+      unreadOnly: true,
+    })
+
+    expect(waiting).toMatchObject({
+      kind: "approval_needed",
+      recordId: submitted.id,
+    })
+
+    await withdrawRecord(database, om, submitted.id)
+
+    expect(await listNotifications(database, pm, { unreadOnly: true })).toEqual(
+      []
+    )
+    expect((await listNotifications(database, pm))[0]?.readAt).toBeInstanceOf(
+      Date
+    )
+  })
+
+  it("does not raise the iteration", async () => {
+    const submitted = await readyToApprove()
+
+    await withdrawRecord(database, om, submitted.id)
+
+    expect(
+      (await getDocumentControl(database, om, submitted.id)).iteration
+    ).toBe(1)
+  })
+
+  it("refuses anyone but the person who submitted it", async () => {
+    const submitted = await readyToApprove()
+    const otherOm = await addPerson(["OM"])
+
+    await expect(
+      withdrawRecord(database, otherOm, submitted.id)
+    ).rejects.toThrow(PermissionDeniedError)
+    await expect(withdrawRecord(database, pm, submitted.id)).rejects.toThrow(
+      PermissionDeniedError
+    )
+    expect((await getRecord(database, om, submitted.id)).state).toBe(
+      "submitted"
+    )
+  })
+
+  it("refuses a draft and a locked record", async () => {
+    const submitted = await readyToApprove()
+
+    await withdrawRecord(database, om, submitted.id)
+
+    await expect(withdrawRecord(database, om, submitted.id)).rejects.toThrow(
+      InvalidTransitionError
+    )
+
+    await submitRecord(database, om, submitted.id)
+    await approveRecord(database, pm, submitted.id)
+
+    await expect(withdrawRecord(database, om, submitted.id)).rejects.toThrow(
+      InvalidTransitionError
+    )
   })
 })
 

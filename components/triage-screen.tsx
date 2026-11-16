@@ -1,6 +1,5 @@
 "use client"
 
-import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
 import { Button } from "@/components/ui/button"
@@ -12,30 +11,17 @@ import {
   DataTable,
   TableBox,
 } from "@/components/sheet-table"
+import { LeaveGuard, StaleNotice } from "@/components/unsaved-guard"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import type { ClientFile } from "@/lib/client-files"
 import type { FieldError, FormValues, TableRow } from "@/lib/tool-definition"
 import { PROCEED, REJECT, type TriageValues } from "@/lib/triage"
-
-type Result =
-  | { status: "done"; recordId: string; updatedAt: string }
-  | {
-      status: "invalid"
-      errors: FieldError[]
-      recordId?: string
-      updatedAt?: string
-    }
-  | { status: "stale" }
-  | { status: "error"; message: string }
-
-type Save = {
-  projectId: string
-  toolId: string
-  cycle: number
-  values: FormValues
-  expectedUpdatedAt?: string
-}
+import {
+  useAutosave,
+  type SaveInput as Save,
+  type SaveResult as Result,
+} from "@/lib/use-autosave"
 
 type Props = {
   projectId: string
@@ -67,12 +53,15 @@ const filesWidths =
 const checksWidths =
   "minmax(0,calc(100%/var(--page-columns,3))) minmax(0,1fr) minmax(0,1fr)"
 
-const STALE = "Someone else saved this record. Reload to see their changes."
+type Answer = { status: string; notes: string }
+
+type Held = { descriptions: string[]; answers: Answer[]; decision: string }
 
 // The OM's triage of a request: describe each file, answer the three fixed
-// checks, and choose to proceed or reject. The server decides every rule; this
-// sends what was typed and shows what came back. The decision buttons only
-// choose. Submit for approval is what sends.
+// checks, and choose to proceed or reject. It saves by itself as it is
+// filled in. The server decides every rule; this sends what was typed and
+// shows what came back. The decision buttons only choose. Submit for approval
+// is what sends.
 export function TriageScreen({
   projectId,
   cycle,
@@ -89,14 +78,13 @@ export function TriageScreen({
   submit,
   approve,
 }: Props) {
-  const router = useRouter()
   const [pending, startTransition] = useTransition()
 
   const [descriptions, setDescriptions] = useState(
     files.map((_, index) => saved.digitalRecords[index]?.fileName ?? "")
   )
 
-  const [answers, setAnswers] = useState(
+  const [answers, setAnswers] = useState<Answer[]>(
     checks.map((_, index) => ({
       status: saved.triageChecklist[index]?.status ?? "",
       notes: saved.triageChecklist[index]?.reviewerNotes ?? "",
@@ -105,36 +93,62 @@ export function TriageScreen({
 
   const [decision, setDecision] = useState(saved.triageDecision)
 
-  // The record and the time to save over move on with each save, so they are
-  // held here and taken again when the page gives new ones.
-  const [recordId, setRecordId] = useState(savedRecordId)
-  const [updatedAt, setUpdatedAt] = useState(savedUpdatedAt)
-  const [seen, setSeen] = useState({ id: savedRecordId, at: savedUpdatedAt })
+  const sheet = useAutosave({
+    projectId,
+    toolId: "D1.2",
+    cycle,
+    recordId: savedRecordId,
+    updatedAt: savedUpdatedAt,
+    save,
+  })
 
-  if (seen.id !== savedRecordId || seen.at !== savedUpdatedAt) {
-    setSeen({ id: savedRecordId, at: savedUpdatedAt })
-    setRecordId(savedRecordId)
-    setUpdatedAt(savedUpdatedAt)
-  }
+  const recordId = sheet.recordId
 
-  const [errors, setErrors] = useState<FieldError[]>([])
-  const [message, setMessage] = useState<string>()
-  const [stale, setStale] = useState(false)
+  // What Submit found wrong. A refused save's own errors show otherwise.
+  const [stepErrors, setStepErrors] = useState<FieldError[]>([])
+  const errors = stepErrors.length > 0 ? stepErrors : sheet.errors
 
   const failed = answers.some((answer) => answer.status === "Fail")
   const proceedLabel = tier3 ? "Proceed to D1.3a" : PROCEED
 
-  function setAnswer(index: number, change: Partial<(typeof answers)[number]>) {
-    setAnswers(
-      answers.map((answer, at) =>
-        at === index ? { ...answer, ...change } : answer
-      )
-    )
+  const held: Held = { descriptions, answers, decision }
 
-    // A failed check takes Proceed away, so a chosen Proceed is let go.
-    if (change.status === "Fail" && decision === PROCEED) {
-      setDecision("")
+  function valuesOf(next: Held): FormValues {
+    return {
+      digitalRecords: next.descriptions.map((fileName): TableRow =>
+        fileName === "" ? {} : { fileName }
+      ),
+      triageChecklist: checks.map((check, index) => ({
+        check,
+        ...(next.answers[index]?.status && {
+          status: next.answers[index].status,
+        }),
+        ...(next.answers[index]?.notes && {
+          reviewerNotes: next.answers[index].notes,
+        }),
+      })),
+      ...(next.decision !== "" && { triageDecision: next.decision }),
     }
+  }
+
+  // Every edit is shown at once and saved a moment later.
+  function edit(change: Partial<Held>) {
+    const next = { ...held, ...change }
+
+    setDescriptions(next.descriptions)
+    setAnswers(next.answers)
+    setDecision(next.decision)
+    sheet.changed(valuesOf(next))
+  }
+
+  function setAnswer(index: number, change: Partial<Answer>) {
+    edit({
+      answers: answers.map((answer, at) =>
+        at === index ? { ...answer, ...change } : answer
+      ),
+      // A failed check takes Proceed away, so a chosen Proceed is let go.
+      ...(change.status === "Fail" && decision === PROCEED && { decision: "" }),
+    })
   }
 
   function typed(): Save {
@@ -142,57 +156,52 @@ export function TriageScreen({
       projectId,
       toolId: "D1.2",
       cycle,
-      values: {
-        digitalRecords: descriptions.map((fileName): TableRow =>
-          fileName === "" ? {} : { fileName }
-        ),
-        triageChecklist: checks.map((check, index) => ({
-          check,
-          ...(answers[index]?.status && { status: answers[index].status }),
-          ...(answers[index]?.notes && {
-            reviewerNotes: answers[index].notes,
-          }),
-        })),
-        ...(decision !== "" && { triageDecision: decision }),
-      },
-      expectedUpdatedAt: updatedAt,
+      values: valuesOf(held),
+      // Read once the save before it is done, so it is the newest.
+      expectedUpdatedAt: sheet.updatedAt(),
     }
   }
 
   function run(send: () => Promise<Result>, saidDone: string) {
-    setMessage(undefined)
-    setErrors([])
-    setStale(false)
+    sheet.setMessage(undefined)
+    setStepErrors([])
     startTransition(async () => {
+      // What was typed is saved first. When that save fails the step does not
+      // run: the foot already says why.
+      if (canWrite && !(await sheet.flush())) {
+        return
+      }
+
+      // Every step revalidates the page, so its response draws the page again.
       const result = await send()
 
       if (result.status === "done") {
-        setRecordId(result.recordId)
-        setUpdatedAt(result.updatedAt)
-        setMessage(saidDone)
-        router.refresh()
+        sheet.setRecord(result)
+        sheet.setMessage(saidDone)
 
         return
       }
 
       if (result.status === "stale") {
-        setStale(true)
+        sheet.setStale(true)
 
         return
       }
 
       if (result.status === "invalid") {
-        setErrors(result.errors)
+        setStepErrors(result.errors)
 
-        if (result.recordId) {
-          setRecordId(result.recordId)
-          setUpdatedAt(result.updatedAt)
+        if (result.recordId && result.updatedAt) {
+          sheet.setRecord({
+            recordId: result.recordId,
+            updatedAt: result.updatedAt,
+          })
         }
 
         return
       }
 
-      setMessage(result.message)
+      sheet.setMessage(result.message)
     })
   }
 
@@ -285,11 +294,11 @@ export function TriageScreen({
                     disabled={locked}
                     className="min-h-16 border-foreground/40 bg-background"
                     onChange={(event) =>
-                      setDescriptions(
-                        descriptions.map((each, at) =>
+                      edit({
+                        descriptions: descriptions.map((each, at) =>
                           at === index ? event.target.value : each
-                        )
-                      )
+                        ),
+                      })
                     }
                   />
                 </DataCell>
@@ -355,7 +364,7 @@ export function TriageScreen({
           value={decision}
           disabled={locked}
           className="grid gap-3 md:grid-cols-2"
-          onValueChange={setDecision}
+          onValueChange={(value) => edit({ decision: value })}
         >
           {decisions.map(({ option, label, effect, off }) => (
             <label
@@ -394,24 +403,15 @@ export function TriageScreen({
           ))}
         </ul>
       )}
-      {(canWrite || (canApprove && recordId) || message) && (
-        <SheetActions message={message}>
+      {(canWrite || (canApprove && recordId) || sheet.footLine) && (
+        <SheetActions message={sheet.footLine}>
           {canWrite && (
-            <>
-              <ActionButton
-                variant="outline"
-                disabled={pending}
-                onClick={() => run(() => save(typed()), "Draft saved.")}
-              >
-                Save draft
-              </ActionButton>
-              <ActionButton
-                disabled={pending}
-                onClick={() => run(() => submit(typed()), "Submitted.")}
-              >
-                Submit for approval
-              </ActionButton>
-            </>
+            <ActionButton
+              disabled={pending}
+              onClick={() => run(() => submit(typed()), "Submitted.")}
+            >
+              Submit for approval
+            </ActionButton>
           )}
           {canApprove && recordId && (
             <ActionButton
@@ -423,21 +423,8 @@ export function TriageScreen({
           )}
         </SheetActions>
       )}
-      {stale && (
-        <div
-          role="alert"
-          className="flex flex-col gap-3 border border-destructive/40 p-4 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <p className="text-sm text-destructive">{STALE}</p>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => window.location.reload()}
-          >
-            Reload
-          </Button>
-        </div>
-      )}
+      {sheet.stale && <StaleNotice sheet={sheet} />}
+      {canWrite && <LeaveGuard sheet={sheet} />}
     </div>
   )
 }

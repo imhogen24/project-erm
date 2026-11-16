@@ -103,9 +103,9 @@ test("the LE books the alignment meeting, the client chooses, the invite goes, a
   ).toBeVisible()
   await clientPage.getByRole("radio", { name: "Option 1" }).click()
   await clientPage.getByRole("button", { name: "Choose this time" }).click()
-  await expect(
-    clientPage.getByText("Your feasibility & engineering alignment meeting")
-  ).toBeVisible()
+  // Only once the choice is saved: the heading above it says "your
+  // feasibility & engineering alignment meeting" before choosing too.
+  await expect(clientPage.getByText("Chosen.", { exact: true })).toBeVisible()
   await clientPage.close()
 
   lePage = await open(browser, le.email, project.id)

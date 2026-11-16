@@ -1,7 +1,6 @@
 "use client"
 
 import { PlusIcon, XIcon } from "@phosphor-icons/react"
-import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
 import { SegmentedChoice } from "@/components/segmented-choice"
@@ -12,6 +11,7 @@ import {
   DataTable,
   TableBox,
 } from "@/components/sheet-table"
+import { LeaveGuard, StaleNotice } from "@/components/unsaved-guard"
 import { Button } from "@/components/ui/button"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -64,8 +64,6 @@ const agendaWidths =
 const checkWidths =
   "minmax(0,calc(100%/var(--page-columns,5)*2)) minmax(0,1fr) minmax(0,1fr)"
 
-const STALE = "Someone else saved this record. Reload to see their changes."
-
 const when = new Intl.DateTimeFormat("en-GB", {
   day: "numeric",
   month: "short",
@@ -95,7 +93,6 @@ export function CalendarAgendaScreen({
   sendInvite,
   ready,
 }: Props) {
-  const router = useRouter()
   const [pending, startTransition] = useTransition()
 
   const sheet = useAutosave({
@@ -194,12 +191,12 @@ export function CalendarAgendaScreen({
         return
       }
 
+      // Every step revalidates the page, so its response draws the page again.
       const result = await step()
 
       if (result.status === "done") {
         sheet.setRecord(result)
         sheet.setMessage(saidDone)
-        router.refresh()
 
         return
       }
@@ -569,21 +566,8 @@ export function CalendarAgendaScreen({
           )}
         </SheetActions>
       )}
-      {sheet.stale && (
-        <div
-          role="alert"
-          className="flex flex-col gap-3 border border-destructive/40 p-4 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <p className="text-sm text-destructive">{STALE}</p>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => window.location.reload()}
-          >
-            Reload
-          </Button>
-        </div>
-      )}
+      {sheet.stale && <StaleNotice sheet={sheet} />}
+      {canWrite && <LeaveGuard sheet={sheet} />}
     </div>
   )
 }

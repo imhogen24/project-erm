@@ -61,6 +61,12 @@ export const previews: Preview[] = [
     expect: `On ${approve}: the LE's minutes, read only, with Sign on Contracting Acceptance, then Approve and Send back. Approving locks it, which closes Workbook 1. On ${approved} it reads locked. The OM, HE and IT/Admin read it; the client does not see it.`,
   },
   {
+    screen: "Every tool saves by itself (RDP-153)",
+    loginAs: "OM",
+    path: () => "/",
+    expect: `Open ${DEV_UNLOCKED} (Tier 1), then D1.2. There is no Save draft: type a description or a reviewer note and, about a second later, the foot of the sheet says Saving… then ✓ Saved. Click another tool in the sidebar and come back: what you typed is there. Type and click away at once: it still saves, then goes. Turn the network off in the browser's dev tools and type: the foot says Not saved. Retrying…, and clicking a link asks Your latest changes are not saved yet. Leave anyway? with Leave and Stay; closing or reloading the tab asks too. Turn the network back on: it saves by itself and leaving no longer asks. Submit for approval stays. The same holds on every tool you may write, such as D1.8 as the LE (${loginFor("LE")}).`,
+  },
+  {
     screen: "Every tool built, locked or open",
     loginAs: "OM",
     path: () => "/",
@@ -99,7 +105,7 @@ export const previews: Preview[] = [
     loginAs: "PM",
     path: () => "/dev/form-preview",
     expect:
-      "Plain fields sit together in a Details table (Field | Answer). Tables, checklists and read-only blocks each get their own titled box with the same ruled lines. Save draft and Submit for approval sit in the action row at the foot. The same boxes are used by every tool that is a form, such as D1.3 once D1.2 is approved.",
+      "Plain fields sit together in a Details table (Field | Answer). Tables, checklists and read-only blocks each get their own titled box with the same ruled lines. Typing saves by itself a moment later (the Last sent box below shows it); Submit for approval sits in the action row at the foot. The same boxes are used by every tool that is a form, such as D1.3 once D1.2 is approved.",
   },
   {
     screen: "Tables with locked and added rows (RDP-144, dev preview)",

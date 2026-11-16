@@ -8,6 +8,7 @@ import { commercialCriteria, technicalCriteria } from "@/lib/capability"
 import { capabilityDomains } from "@/lib/feasibility"
 import { reviewDirectives } from "@/lib/internal-review"
 import { conclusionQuestions } from "@/lib/risk"
+import { handoffChecklist, handoffDirectives } from "@/lib/handoff"
 import { needsCategories, specCategories } from "@/lib/needs-assessment"
 import {
   t3Deliverables,
@@ -707,6 +708,31 @@ function stageT3D115a() {
   })
 }
 
+// The Lead Engineer's handoff to contracting, signed by the LE and the PM.
+function stageD116(briefTool: string) {
+  return payloadOf({
+    meetingDate: "2026-10-20",
+    meetingTime: "10:00",
+    scopeSummary:
+      "IMHOGEN will model the existing unit in 3D and deliver a drawing set. Fabrication is excluded.",
+    paymentTerms: "40% at Contract Signing, 60% at Handover",
+    directives: handoffDirectives.map((each) => ({
+      category: each.category,
+      directive: "State it in the contract.",
+      source: each.source === "D1.15" ? briefTool : each.source,
+    })),
+    checklist: handoffChecklist.map((each) => ({ ...each, status: "Done" })),
+    engineeringRelease: {
+      signedBy: "role:LE",
+      signedAt: "2026-10-20T12:00:00.000Z",
+    },
+    contractingAcceptance: {
+      signedBy: "role:PM",
+      signedAt: "2026-10-21T10:00:00.000Z",
+    },
+  })
+}
+
 function tier1Records(name: string): SeedRecord[] {
   const stage = stageOf(name)
   const files = stageFiles(stage)
@@ -732,6 +758,12 @@ function tier1Records(name: string): SeedRecord[] {
     { toolId: "D1.13", state: "locked", day: 20, payload: stageD113() },
     { toolId: "D1.14", state: "locked", day: 23, payload: stageD114() },
     { toolId: "D1.15", state: "locked", day: 25, payload: stageD115() },
+    {
+      toolId: "D1.16",
+      state: "locked",
+      day: 27,
+      payload: stageD116("D1.15"),
+    },
   ]
 }
 
@@ -761,6 +793,12 @@ function tier3Records(name: string): SeedRecord[] {
       state: "locked",
       day: 22,
       payload: stageT3D115a(),
+    },
+    {
+      toolId: "D1.16",
+      state: "locked",
+      day: 24,
+      payload: stageD116("T3.D1.15a"),
     },
   ]
 }

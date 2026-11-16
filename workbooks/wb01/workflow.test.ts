@@ -2,6 +2,7 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 
 import { roles, type JsonObject, type ServiceTrack } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
+import { handoffChecklist, handoffDirectives } from "@/lib/handoff"
 import {
   ToolNotAvailableError,
   createRecord,
@@ -205,6 +206,21 @@ const answers = new Map<string, JsonObject>([
       ],
       outOfScope: "Fabrication.",
       clientDependencies: "Site access.",
+    },
+  ],
+  [
+    "D1.16",
+    {
+      meetingDate: "2026-11-20",
+      meetingTime: "10:00",
+      scopeSummary: "A 3D model.",
+      paymentTerms: "On signing",
+      directives: handoffDirectives.map((each) => ({
+        category: each.category,
+        directive: "In the contract.",
+        source: each.source,
+      })),
+      checklist: handoffChecklist.map((each) => ({ ...each, status: "Done" })),
     },
   ],
   [

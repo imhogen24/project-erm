@@ -1,0 +1,170 @@
+import { and, desc, eq } from "drizzle-orm"
+import { z } from "zod"
+
+import {
+  intakeSubmissions,
+  people,
+  personProjectRoles,
+  projects,
+  toolRecords,
+  type JsonObject,
+  type Role,
+} from "@/db/schema"
+import { ghs } from "@/lib/cost-estimation"
+import { handoffChecklist, handoffDirectives } from "@/lib/handoff"
+import type { Transaction } from "@/server/audit/audit"
+
+type Reader = Pick<Transaction, "select">
+
+async function lockedPayload(
+  database: Reader,
+  projectId: string,
+  toolId: string
+): Promise<JsonObject> {
+  const [record] = await database
+    .select({ payload: toolRecords.payload })
+    .from(toolRecords)
+    .where(
+      and(
+        eq(toolRecords.projectId, projectId),
+        eq(toolRecords.toolId, toolId),
+        eq(toolRecords.state, "locked")
+      )
+    )
+    .orderBy(desc(toolRecords.cycle))
+    .limit(1)
+
+  return record?.payload ?? {}
+}
+
+async function holderOf(database: Reader, projectId: string, role: Role) {
+  const [person] = await database
+    .select({ name: people.name })
+    .from(personProjectRoles)
+    .innerJoin(people, eq(people.id, personProjectRoles.personId))
+    .where(
+      and(
+        eq(personProjectRoles.projectId, projectId),
+        eq(personProjectRoles.role, role)
+      )
+    )
+    .limit(1)
+
+  return person?.name ?? ""
+}
+
+// The brief the handoff transfers: D1.15 on Tier 1, T3.D1.15a on Tier 3.
+function briefOf(track: string) {
+  return track === "Tier_3"
+    ? { toolId: "T3.D1.15a", name: "T3 Drafting SOW & Quote" }
+    : { toolId: "D1.15", name: "Project Brief & Draft Budget" }
+}
+
+const amount = z.coerce.number().finite().catch(0)
+
+const tier1Brief = z.object({
+  budget: z
+    .array(
+      z.object({
+        value: amount,
+        paymentSchedule: z.string().catch(""),
+      })
+    )
+    .catch([]),
+})
+
+const tier3Quote = z.object({
+  totalT3ProjectValue: z.coerce.number().finite().optional().catch(undefined),
+})
+
+const organisation = z.object({
+  organization_name: z.string().optional().catch(undefined),
+})
+
+// What 1.0 and 2.0 of D1.16 show: the request ID, who hands off and who
+// receives, the client, the approved brief's value and a link to it.
+export async function handoffValues(
+  database: Reader,
+  projectId: string
+): Promise<JsonObject> {
+  const [project] = await database
+    .select({
+      name: projects.name,
+      requestId: projects.requestId,
+      track: projects.serviceTrack,
+    })
+    .from(projects)
+    .where(eq(projects.id, projectId))
+
+  if (!project) {
+    return {}
+  }
+
+  const [saved] = await database
+    .select({ submission: intakeSubmissions.submission })
+    .from(intakeSubmissions)
+    .where(eq(intakeSubmissions.projectId, projectId))
+    .limit(1)
+
+  const brief = briefOf(project.track)
+  const payload = await lockedPayload(database, projectId, brief.toolId)
+
+  const value =
+    project.track === "Tier_3"
+      ? tier3Quote.parse(payload).totalT3ProjectValue
+      : tier1Brief
+          .parse(payload)
+          .budget.reduce((sum, line) => sum + line.value, 0)
+
+  return {
+    requestId: project.requestId,
+    leadEngineer: await holderOf(database, projectId, "LE"),
+    contractAdmin: await holderOf(database, projectId, "CA"),
+    clientName:
+      organisation.parse(saved?.submission ?? {}).organization_name ??
+      project.name,
+    projectValue: value ? ghs(value) : "",
+    referenceDocument: [
+      {
+        document: `${brief.toolId} ${brief.name}`,
+        link: `/projects/${projectId}/tools/${brief.toolId}`,
+      },
+    ],
+  }
+}
+
+// Where D1.16 starts before the LE saves anything: the brief's payment
+// schedules as the terms, where each directive usually comes from, and who
+// does each checklist task.
+export async function handoffStart(
+  database: Reader,
+  projectId: string
+): Promise<JsonObject> {
+  const [project] = await database
+    .select({ track: projects.serviceTrack })
+    .from(projects)
+    .where(eq(projects.id, projectId))
+
+  const track = project?.track ?? "Tier_1"
+  const brief = briefOf(track)
+
+  const schedules =
+    track === "Tier_1"
+      ? tier1Brief
+          .parse(await lockedPayload(database, projectId, brief.toolId))
+          .budget.map((line) => line.paymentSchedule)
+          .filter(Boolean)
+      : []
+
+  return {
+    paymentTerms: [...new Set(schedules)].join("; "),
+    directives: handoffDirectives.map((each) => ({
+      category: each.category,
+      source: each.source === "D1.15" ? brief.toolId : each.source,
+    })),
+    checklist: handoffChecklist.map((each) => ({
+      task: each.task,
+      assignee: each.assignee,
+    })),
+  }
+}

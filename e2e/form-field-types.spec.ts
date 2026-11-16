@@ -31,8 +31,17 @@ const rows = z.array(z.record(z.string(), z.union([z.string(), z.number()])))
 
 const checks = z.record(z.string(), z.boolean())
 
-async function saveDraft(page: Page) {
-  await page.getByRole("button", { name: "Save draft" }).click()
+type Values = z.output<typeof sent>["values"]
+
+// The form saves by itself a moment after the last change, so this waits
+// until the newest save holds what the test checks.
+async function whenSaved(page: Page, check: (values: Values) => void) {
+  await expect(async () => {
+    const last = await lastSent(page)
+
+    expect(last.action).toBe("save")
+    check(last.values)
+  }).toPass()
 }
 
 test("a table adds a row, and the saved values hold it", async ({ page }) => {
@@ -43,11 +52,9 @@ test("a table adds a row, and the saved values hold it", async ({ page }) => {
   await extra.getByRole("button", { name: "Add row" }).click()
   await page.getByLabel("Item, row 1", { exact: true }).fill("Pump")
   await page.getByLabel("Cost, row 1", { exact: true }).fill("250")
-  await saveDraft(page)
-
-  expect(rows.parse((await lastSent(page)).values.extraItems)).toEqual([
-    { item: "Pump", cost: 250 },
-  ])
+  await whenSaved(page, (values) =>
+    expect(rows.parse(values.extraItems)).toEqual([{ item: "Pump", cost: 250 }])
+  )
 })
 
 test("a row that was added can be removed again", async ({ page }) => {
@@ -60,11 +67,9 @@ test("a row that was added can be removed again", async ({ page }) => {
   await page.getByLabel("Item, row 1", { exact: true }).fill("Pump")
   await page.getByLabel("Item, row 2", { exact: true }).fill("Valve")
   await extra.getByRole("button", { name: "Remove row 1" }).click()
-  await saveDraft(page)
-
-  expect(rows.parse((await lastSent(page)).values.extraItems)).toEqual([
-    { item: "Valve" },
-  ])
+  await whenSaved(page, (values) =>
+    expect(rows.parse(values.extraItems)).toEqual([{ item: "Valve" }])
+  )
 })
 
 test("fixed rows keep their label locked and cannot be removed or added to", async ({
@@ -85,17 +90,17 @@ test("fixed rows keep their label locked and cannot be removed or added to", asy
   await expect(operands.getByRole("button", { name: "Add row" })).toHaveCount(0)
 
   await page.getByLabel("Description, row 2", { exact: true }).fill("Heat")
-  await saveDraft(page)
+  await whenSaved(page, (values) => {
+    const saved = rows.parse(values.operands)
 
-  const saved = rows.parse((await lastSent(page)).values.operands)
-
-  expect(saved.map((row) => row.category)).toEqual([
-    "Material",
-    "Energy",
-    "Information",
-    "Living thing",
-  ])
-  expect(saved[1]!.description).toBe("Heat")
+    expect(saved.map((row) => row.category)).toEqual([
+      "Material",
+      "Energy",
+      "Information",
+      "Living thing",
+    ])
+    expect(saved[1]!.description).toBe("Heat")
+  })
 })
 
 test("a cell error shows on the exact cell the server named", async ({
@@ -128,14 +133,14 @@ test("a checklist sends every item, ticked as yes and unticked as no", async ({
 
   await page.getByRole("checkbox", { name: "Client brief received" }).click()
   await page.getByRole("checkbox", { name: "Site constraints noted" }).click()
-  await saveDraft(page)
-
-  expect(checks.parse((await lastSent(page)).values.readiness)).toEqual({
-    "Client brief received": true,
-    "Site constraints noted": true,
-    "Budget range confirmed": false,
-    "Safety plan reviewed": false,
-  })
+  await whenSaved(page, (values) =>
+    expect(checks.parse(values.readiness)).toEqual({
+      "Client brief received": true,
+      "Site constraints noted": true,
+      "Budget range confirmed": false,
+      "Safety plan reviewed": false,
+    })
+  )
 })
 
 test("instructions, lists and signatures are text, never inputs", async ({
@@ -156,13 +161,14 @@ test("instructions, lists and signatures are text, never inputs", async ({
   )
   await expect(page.getByRole("textbox", { name: "Guidance" })).toHaveCount(0)
 
-  await saveDraft(page)
+  // Nothing saves until something changes.
+  await page.getByLabel("Description, row 1", { exact: true }).fill("Steel")
 
-  const values = (await lastSent(page)).values
-
-  expect(values).not.toHaveProperty("guidance")
-  expect(values).not.toHaveProperty("standards")
-  expect(values).not.toHaveProperty("pmSignature")
+  await whenSaved(page, (values) => {
+    expect(values).not.toHaveProperty("guidance")
+    expect(values).not.toHaveProperty("standards")
+    expect(values).not.toHaveProperty("pmSignature")
+  })
 })
 
 test("a subtotal adds up the currency column", async ({ page }) => {
@@ -211,15 +217,15 @@ test("currency, percentage, email, time and link inputs send their values", asyn
   await page
     .getByLabel("Brief link", { exact: true })
     .fill("https://example.com/brief")
-  await saveDraft(page)
-
-  expect((await lastSent(page)).values).toMatchObject({
-    budget: 1500.5,
-    contingency: 7.5,
-    contactEmail: "ama@example.com",
-    meetingTime: "09:30",
-    briefLink: "https://example.com/brief",
-  })
+  await whenSaved(page, (values) =>
+    expect(values).toMatchObject({
+      budget: 1500.5,
+      contingency: 7.5,
+      contactEmail: "ama@example.com",
+      meetingTime: "09:30",
+      briefLink: "https://example.com/brief",
+    })
+  )
 })
 
 test("at 375px a table stacks into cards and nothing scrolls sideways", async ({
@@ -261,24 +267,21 @@ test("a date is picked from a calendar, shown, and sent as YYYY-MM-DD", async ({
   )
 
   await pickDate(page, "Target date, row 1", "2027-03-15")
-  await saveDraft(page)
-
-  const values = (await lastSent(page)).values
-
-  expect(values.dueDate).toBe("2026-12-01")
-  expect(rows.parse(values.operands)[0]!.targetDate).toBe("2027-03-15")
+  await whenSaved(page, (values) => {
+    expect(values.dueDate).toBe("2026-12-01")
+    expect(rows.parse(values.operands)[0]!.targetDate).toBe("2027-03-15")
+  })
 })
 
 test("a picked date can be cleared by picking it again", async ({ page }) => {
   await openPreview(page)
   await pickDate(page, "Due date", "2026-12-01")
   await pickDate(page, "Due date", "2026-12-01")
-  await saveDraft(page)
 
   await expect(page.getByRole("button", { name: "Due date" })).toContainText(
     "Pick a date"
   )
-  expect((await lastSent(page)).values.dueDate).toBe("")
+  await whenSaved(page, (values) => expect(values.dueDate).toBe(""))
 })
 
 test("a signed signature shows who signed and when, still as text", async ({

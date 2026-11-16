@@ -16,8 +16,9 @@ type Choice = {
 // Pass | Fail, Pending | Reviewed. The chosen option fills with what it means;
 // the others stay plain. Once the record is locked the track stays, the chosen
 // option stays bright and the others fade, so it reads as an answer. Every
-// tool picks between short options this way. An empty value means nothing is
-// chosen yet. Drawn by .segmented in globals.css.
+// tool picks between short options this way. Pressing the chosen option again
+// lets it go, like a checkbox. An empty value means nothing is chosen. Drawn
+// by .segmented in globals.css.
 export function SegmentedChoice({
   label,
   value,
@@ -39,13 +40,7 @@ export function SegmentedChoice({
       value={value}
       disabled={disabled}
       className="segmented"
-      // Pressing the chosen button again would send nothing. A chosen option
-      // stays chosen until another is pressed.
-      onValueChange={(next) => {
-        if (next !== "") {
-          onChange(next)
-        }
-      }}
+      onValueChange={onChange}
     >
       {choices.map((choice) => (
         <ToggleGroupItem

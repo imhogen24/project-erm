@@ -1,5 +1,6 @@
 "use client"
 
+import type { KeyboardEvent, MouseEvent, PointerEvent } from "react"
 import { z } from "zod"
 
 import { DatePicker } from "@/components/date-picker"
@@ -68,6 +69,40 @@ export function signatureText(value: FieldValue | RawValue | undefined) {
   })
 
   return `Signed by ${signature.signedBy} on ${day}`
+}
+
+// Pressing the chosen option of a list again lets it go, like a checkbox. The
+// list never reports choosing the same option twice, so the option itself
+// listens. A mouse chooses on release, touch and pen on click, the keyboard on
+// Enter or Space. A release the list holds back, such as the one that opened
+// it, is left alone.
+function unpickWhen(chosen: boolean, unpick: () => void) {
+  if (!chosen) {
+    return {}
+  }
+
+  return {
+    onPointerUp: (event: PointerEvent) => {
+      if (!event.defaultPrevented && event.pointerType === "mouse") {
+        unpick()
+      }
+    },
+    // A mouse release that just chose this option is followed by a click, so
+    // the click counts only for touch and pen.
+    onClick: (event: MouseEvent) => {
+      const native = event.nativeEvent
+      const pointerType = "pointerType" in native ? native.pointerType : ""
+
+      if (pointerType === "touch" || pointerType === "pen") {
+        unpick()
+      }
+    },
+    onKeyDown: (event: KeyboardEvent) => {
+      if (event.key === "Enter" || event.key === " ") {
+        unpick()
+      }
+    },
+  }
 }
 
 const readOnlyBlock = "bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
@@ -193,6 +228,7 @@ export function FieldControl({
                 key={option}
                 value={option}
                 disabled={cell.systemOptions?.includes(option)}
+                {...unpickWhen(option === text, () => onChange(""))}
               >
                 {option}
               </SelectItem>

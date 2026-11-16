@@ -247,9 +247,13 @@ export function InviteForm({ projects, roles, create }: Props) {
             render={({ field }) => (
               <RadioGroup
                 value={field.value}
-                onValueChange={(value) =>
-                  chooseAccess(value === "all" ? "all" : "one")
-                }
+                // Access always has an answer, so pressing the chosen one
+                // again keeps it.
+                onValueChange={(value) => {
+                  if (value !== "") {
+                    chooseAccess(value === "all" ? "all" : "one")
+                  }
+                }}
                 className="grid gap-3 md:grid-cols-2"
               >
                 <label htmlFor="access-one" className="tile-choice">

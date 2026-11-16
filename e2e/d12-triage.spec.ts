@@ -303,6 +303,89 @@ test("Reject as Spam stays on while a check is Fail", async ({ page }) => {
   await expect(reject(page)).toHaveAttribute("aria-checked", "true")
 })
 
+test("pressing the chosen decision again leaves neither chosen, and submit asks for one", async ({
+  page,
+}) => {
+  const { project, om } = await setUp()
+
+  await open(page, om.email, project.id)
+  await answerAll(page)
+  await reject(page).click()
+
+  await expect(reject(page)).toHaveAttribute("aria-checked", "true")
+
+  await reject(page).click()
+
+  await expect(reject(page)).toHaveAttribute("aria-checked", "false")
+  await expect(proceed(page)).toHaveAttribute("aria-checked", "false")
+
+  await submit(page).click()
+
+  await expect(
+    page.getByText("Choose a triage decision to submit.")
+  ).toBeVisible()
+  await expect(page.getByText("Submitted", { exact: true })).toHaveCount(0)
+  await expect(submit(page)).toBeVisible()
+})
+
+test("a decision let go is let go in the saved draft too", async ({ page }) => {
+  const { project, om } = await setUp()
+
+  await open(page, om.email, project.id)
+  await reject(page).click()
+  await save(page).click()
+
+  await expect(page.getByText("Draft saved.")).toBeVisible()
+
+  await page.reload()
+
+  await expect(reject(page)).toHaveAttribute("aria-checked", "true")
+
+  await reject(page).click()
+  await save(page).click()
+
+  await expect(page.getByText("Draft saved.")).toBeVisible()
+
+  await page.reload()
+
+  await expect(reject(page)).toHaveAttribute("aria-checked", "false")
+  await expect(proceed(page)).toHaveAttribute("aria-checked", "false")
+})
+
+test("Space on the chosen decision lets it go, and a click switches in one go", async ({
+  page,
+}) => {
+  const { project, om } = await setUp()
+
+  await open(page, om.email, project.id)
+  await reject(page).click()
+  await proceed(page).click()
+
+  await expect(proceed(page)).toHaveAttribute("aria-checked", "true")
+  await expect(reject(page)).toHaveAttribute("aria-checked", "false")
+
+  await proceed(page).focus()
+  await page.keyboard.press("Space")
+
+  await expect(proceed(page)).toHaveAttribute("aria-checked", "false")
+})
+
+test("pressing a chosen Pass again leaves the check unanswered", async ({
+  page,
+}) => {
+  const { project, om } = await setUp()
+
+  await open(page, om.email, project.id)
+  await result(page, 0, "Pass").click()
+
+  await expect(result(page, 0, "Pass")).toHaveAttribute("aria-checked", "true")
+
+  await result(page, 0, "Pass").click()
+
+  await expect(result(page, 0, "Pass")).toHaveAttribute("aria-checked", "false")
+  await expect(result(page, 0, "Fail")).toHaveAttribute("aria-checked", "false")
+})
+
 test("pressing Proceed only chooses it and sends nothing", async ({ page }) => {
   const { project, om } = await setUp()
 

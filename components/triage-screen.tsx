@@ -72,7 +72,8 @@ const STALE = "Someone else saved this record. Reload to see their changes."
 // The OM's triage of a request: describe each file, answer the three fixed
 // checks, and choose to proceed or reject. The server decides every rule; this
 // sends what was typed and shows what came back. The decision buttons only
-// choose. Submit for approval is what sends.
+// choose, and pressing the chosen one again leaves neither chosen. Submit for
+// approval is what sends.
 export function TriageScreen({
   projectId,
   cycle,
@@ -205,9 +206,12 @@ export function TriageScreen({
     )?.message
   }
 
-  const decisionError = errors.find(
+  const refused = errors.find(
     (error) => error.field === "triageDecision"
   )?.message
+
+  const decisionError =
+    refused === "Required" ? "Choose a triage decision to submit." : refused
 
   // Anything the fields above do not show.
   const other = errors.filter(

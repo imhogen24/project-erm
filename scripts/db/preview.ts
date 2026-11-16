@@ -67,6 +67,12 @@ export const previews: Preview[] = [
     expect: `${DEV_LOCKED} (Tier 1) and (Tier 3) have every tool built locked with sample answers: open any tool as any role to see what that role reads. ${DEV_UNLOCKED} (Tier 1) and (Tier 3) have every tool of their tier open at once, empty, without waiting for the one before (development only, never in production): the client's web form is a draft the client can change, and every other tool starts from nothing. A tool that reads an earlier one, such as D1.6 reading D1.5's agreed time, says what it is missing until that one is filled in. D1.4 is sent by the PM: the OM prepares the email, the PM presses Send, and the D1.4 tile shows a Sent chip that turns Delivered once the Inngest dev server runs the delivery check.`,
   },
   {
+    screen: "Unpicking a chosen option (RDP-154)",
+    loginAs: "OM",
+    path: (id) => `/projects/${id}/tools/D1.2`,
+    expect: `On ${DEV_UNLOCKED} (Tier 1), D1.2: press Reject as Spam, then press it again: neither decision is chosen. Press Proceed, then Reject: it switches in one press. With neither chosen, Submit for approval says Choose a triage decision to submit, and nothing is sent. Save draft with neither chosen and reload: still neither. Tab to a chosen decision and press Space: it lets go. Pass and Fail in the checks, Yes and No answers and every other one-of-a-few choice let go the same way.`,
+  },
+  {
     screen: "Projects that need a team (IT/Admin)",
     loginAs: "IT/Admin",
     path: () => "/admin/team",

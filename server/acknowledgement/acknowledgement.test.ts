@@ -39,7 +39,7 @@ tools.registerTool(
     id: "D1.4",
     name: "Acknowledgement Email",
     workbook: "wb01",
-    autosave: true,
+    approvedBySending: true,
     fields: [
       { key: "ccBcc", label: "CC / BCC", type: "text" },
       { key: "subject", label: "Subject Line", type: "text", required: true },

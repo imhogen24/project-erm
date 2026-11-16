@@ -160,6 +160,12 @@ export const previews: Preview[] = [
     expect: `On ${DEV_LOCKED} (Tier 1), D1.3's top bar shows Iteration 1. Press Request a change and send it. The PM, ${loginFor("PM")}, approves it on the project page. Back on D1.3 the OM edits and submits, and the PM approves: the top bar now shows Iteration 2. A send back and resubmit still raises it by 1 as before; a withdraw does not.`,
   },
   {
+    screen: "Comments on a tool (RDP-158)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.2`,
+    expect: `On ${DEV_LOCKED} (Tier 1), D1.2 ends with a Comments box: the PM's question with the OM's reply indented under it, each with the name, role in full and time, and Reply and Resolve; under it a folded "Resolved by" thread that opens when pressed; then Add a comment. Write a comment and press Comment: the OM, ${loginFor("OM")}, gets a New comment on D1.2 notification that opens D1.2 at the comment. Their reply gives the PM a New reply notification. Every tool, locked or not, has the box; the client never sees it.`,
+  },
+  {
     screen: "Notification bell (RDP-115)",
     loginAs: "PM",
     path: () => "/",

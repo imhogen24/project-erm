@@ -57,6 +57,17 @@ export type SeedChangeRequest = {
   reason: string
 }
 
+// A comment the team left on a tool, with its replies, each said by whoever
+// holds the role. Hours are after the tool was started.
+export type SeedComment = {
+  toolId: string
+  role: "OM" | "PM"
+  hour: number
+  body: string
+  resolved?: boolean
+  replies?: { role: "OM" | "PM"; hour: number; body: string }[]
+}
+
 type File = { label: string; date: string; slug: string }
 
 // D1.1 is the client's web form; the record holds the files they attached.
@@ -881,6 +892,41 @@ export const projectChangeRequests = new Map<string, SeedChangeRequest[]>([
         day: 4,
         reason:
           "The client emailed a photo of the equipment nameplate. It belongs with the attached files.",
+      },
+    ],
+  ],
+])
+
+export const projectComments = new Map<string, SeedComment[]>([
+  [
+    `${DEV_LOCKED} (Tier 1)`,
+    [
+      {
+        toolId: "D1.2",
+        role: "PM",
+        hour: 3,
+        body: "The second photo looks like a different site from the address on the form. Did the client confirm it?",
+        replies: [
+          {
+            role: "OM",
+            hour: 5,
+            body: "Yes. I called them: it is the old boiler house behind the main plant, same address.",
+          },
+        ],
+      },
+      {
+        toolId: "D1.2",
+        role: "OM",
+        hour: 1,
+        body: "The client's email has a typo. I used the one from their website.",
+        resolved: true,
+        replies: [
+          {
+            role: "PM",
+            hour: 2,
+            body: "Good. Put the right one in D1.3 as well.",
+          },
+        ],
       },
     ],
   ],

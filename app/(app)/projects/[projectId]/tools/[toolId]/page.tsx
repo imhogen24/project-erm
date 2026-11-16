@@ -695,6 +695,8 @@ export default async function Page({
       save={saveDraftAction}
       submit={submitRecordAction}
       approve={approveRecordAction}
+      sendBack={sendBackRecordAction}
+      sentBack={sentBack ?? undefined}
     />
   ) : alignment ? (
     <MeetingChoice

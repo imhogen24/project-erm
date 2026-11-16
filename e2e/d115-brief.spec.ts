@@ -189,8 +189,7 @@ test("the LE prices the Tier 3 quote, the total follows, and it is submitted", a
     "GHS 45,000.00"
   )
 
-  await page.getByRole("button", { name: "Save draft" }).click()
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
   await page
     .getByRole("button", { name: "Sign Lead Engineer Signature" })
     .click()

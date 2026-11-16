@@ -14,8 +14,8 @@ const save = (payload: Parameters<typeof validateRecord>[1]) =>
   validateRecord("D1.4", payload, { forSubmit: false })
 
 describe("D1.4", () => {
-  it("has the sheet's fields, with the system ones filled by the system, and saves by itself", () => {
-    expect(d14.autosave).toBe(true)
+  it("has the sheet's fields, with the system ones filled by the system, and is approved by sending", () => {
+    expect(d14.approvedBySending).toBe(true)
     expect(
       d14.fields.map((field) => [
         field.key,

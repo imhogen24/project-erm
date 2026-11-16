@@ -64,8 +64,7 @@ test("the LE sees the client's answers and the system's metadata, signs and subm
       exact: true,
     })
     .fill("S275 plate, 12 mm shell")
-  await page.getByRole("button", { name: "Save draft" }).click()
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
 
   await page
     .getByRole("button", { name: "Sign Lead Engineer Signature" })
@@ -87,8 +86,12 @@ test("the PM approves D1.8, which locks it and makes it ready for D1.9", async (
   const lePage = await browser.newPage()
 
   await open(lePage, le.email, project.id)
-  await lePage.getByRole("button", { name: "Save draft" }).click()
-  await expect(lePage.getByText("Draft saved.")).toBeVisible()
+  await lePage
+    .getByLabel("Confirmed Constraints / Specifications, row 1", {
+      exact: true,
+    })
+    .fill("S275 plate, 12 mm shell")
+  await expect(lePage.getByText("✓ Saved")).toBeVisible()
   await lePage
     .getByRole("button", { name: "Sign Lead Engineer Signature" })
     .click()

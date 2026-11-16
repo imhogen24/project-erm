@@ -1,4 +1,4 @@
-import { and, asc, eq, inArray } from "drizzle-orm"
+import { and, asc, count, eq, inArray } from "drizzle-orm"
 
 import type { Database } from "@/db"
 import {
@@ -38,7 +38,8 @@ export type DocumentControl = {
   // Empty until the first review.
   checkedAt: Date | null
   approvedAt: Date | null
-  // 1, plus one for every rejection.
+  // 1, plus one for every rejection and one for every change request that
+  // reopened the locked record and saw it locked again.
   iteration: number
 }
 
@@ -215,6 +216,18 @@ export async function getDocumentControl(
     }
   }
 
+  // A locked record reopened by an approved change request, and locked again,
+  // is a new version too. Locking it again is what marks the request applied.
+  const [changes] = await database
+    .select({ applied: count() })
+    .from(auditLog)
+    .where(
+      and(
+        eq(auditLog.recordId, recordId),
+        eq(auditLog.action, "change_applied")
+      )
+    )
+
   const approvedAt = approved ? record.approvedAt : null
 
   // An approval is a check, even one with no line in the audit log, unless
@@ -238,6 +251,6 @@ export async function getDocumentControl(
         : Math.round((completedAt.getTime() - startedAt.getTime()) / 1000),
     checkedAt,
     approvedAt,
-    iteration: 1 + rejections,
+    iteration: 1 + rejections + (changes?.applied ?? 0),
   }
 }

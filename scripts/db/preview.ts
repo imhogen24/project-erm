@@ -154,6 +154,12 @@ export const previews: Preview[] = [
     expect: `On ${DEV_LOCKED} (Tier 1), D1.3 is locked and shows Request a change at the foot of the sheet, and no Withdraw. Press it, give a reason and Send request: the button goes and Change requested shows next to the Locked badge. The PM decides it on the project page.`,
   },
   {
+    screen: "Iteration after a change request (RDP-156)",
+    loginAs: "OM",
+    path: (id) => `/projects/${id}/tools/D1.3`,
+    expect: `On ${DEV_LOCKED} (Tier 1), D1.3's top bar shows Iteration 1. Press Request a change and send it. The PM, ${loginFor("PM")}, approves it on the project page. Back on D1.3 the OM edits and submits, and the PM approves: the top bar now shows Iteration 2. A send back and resubmit still raises it by 1 as before; a withdraw does not.`,
+  },
+  {
     screen: "Notification bell (RDP-115)",
     loginAs: "PM",
     path: () => "/",

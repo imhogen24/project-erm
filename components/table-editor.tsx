@@ -21,6 +21,8 @@ import type {
 type Props = {
   field: TableField
   rows: RawRow[]
+  // The rows with their system cells worked out, such as a row's total.
+  computed?: RawRow[]
   onChange: (rows: RawRow[]) => void
   // Only the errors that name a row of this table.
   errors: ToolFieldError[]
@@ -63,12 +65,26 @@ const rowGrid =
 // each row becomes a card, so nothing scrolls sideways.
 export function TableEditor({
   field,
-  rows,
+  rows: typed,
+  computed = [],
   onChange,
   errors,
   recordId,
 }: Props) {
   const columns = field.columns
+
+  // What a system cell shows comes from the sums; what is typed is kept.
+  const rows = typed.map((row, index) => ({
+    ...row,
+    ...Object.fromEntries(
+      columns.flatMap((column) =>
+        column.systemFilled && computed[index]?.[column.key] !== undefined
+          ? [[column.key, computed[index][column.key]]]
+          : []
+      )
+    ),
+  }))
+
   const fixed = field.prefilledRows !== undefined
   const lockedCount = field.lockedRows?.length ?? 0
 
@@ -85,7 +101,7 @@ export function TableEditor({
 
   function setCell(rowIndex: number, key: string, value: RawCell) {
     onChange(
-      rows.map((row, index) =>
+      typed.map((row, index) =>
         index === rowIndex ? { ...row, [key]: value } : row
       )
     )
@@ -106,7 +122,7 @@ export function TableEditor({
         aria-label={`Remove row ${rowIndex + 1}`}
         title="Remove this row"
         className="tile-action size-12 shrink-0"
-        onClick={() => onChange(rows.filter((_, index) => index !== rowIndex))}
+        onClick={() => onChange(typed.filter((_, index) => index !== rowIndex))}
       >
         <TrashIcon aria-hidden className="size-5" />
       </Button>
@@ -302,6 +318,7 @@ export function TableEditor({
             columns={columns}
             column={total.column}
             amount={total.amount}
+            label={field.subtotalLabel ?? "Subtotal"}
           />
         )}
         {!fixed && !shownOnly && (
@@ -311,7 +328,7 @@ export function TableEditor({
                 type="button"
                 variant="secondary"
                 className="tile-action"
-                onClick={() => onChange([...rows, {}])}
+                onClick={() => onChange([...typed, {}])}
               >
                 <PlusIcon aria-hidden />
                 Add row
@@ -395,10 +412,12 @@ function Subtotal({
   columns,
   column,
   amount,
+  label,
 }: {
   columns: Column[]
   column: string
   amount: number
+  label: string
 }) {
   const position = columns.findIndex((entry) => entry.key === column) + 1
 
@@ -409,7 +428,7 @@ function Subtotal({
       className={`grid border-t border-foreground/20 bg-muted/60 text-sm font-medium ${rowGrid}`}
     >
       <div role="cell" className="px-4 py-3 @xl:col-start-1">
-        Subtotal
+        {label}
       </div>
       <div
         role="cell"

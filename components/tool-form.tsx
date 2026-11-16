@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect, useRef, type ReactNode } from "react"
-import { Controller, useForm } from "react-hook-form"
+import { Controller, useForm, useWatch } from "react-hook-form"
 import { z } from "zod"
 
 import {
@@ -28,6 +28,7 @@ import {
   FieldLegend,
   FieldSet,
 } from "@/components/ui/field"
+import { hasLiveValues, liveValues } from "@/lib/live-values"
 import type {
   CellValue,
   Column,
@@ -103,6 +104,10 @@ function sectionsOf(fields: ToolField[]): Section[] {
 
   return sections
 }
+
+const liveText = z.string().optional().catch(undefined)
+
+const liveRow = z.array(z.record(z.string(), z.unknown())).catch([])
 
 // Shown in the form but never written, so they never leave it.
 const readOnlyTypes = ["instruction", "staticList", "signature"]
@@ -277,6 +282,12 @@ export function ToolForm({
     ),
   })
 
+  // Sums the sheet works out as it is typed, such as D1.14's totals.
+  // Only a tool with sums re-renders on each keystroke.
+  useWatch({ control: form.control, disabled: !hasLiveValues(tool.id) })
+
+  const live = liveValues(tool.id, toValues(tool, form.getValues()))
+
   // A message about the whole field. A message about one cell goes to the cell.
   const messages = new Map(
     errors
@@ -333,7 +344,10 @@ export function ToolForm({
     // What the system fills reads as text, not as a box to type in: the
     // value, or a grey note until the system fills it.
     if (field.systemFilled) {
-      const shown = textOf(rawCell(field, values[field.key])) ?? ""
+      const shown =
+        liveText.parse(live?.[field.key]) ??
+        textOf(rawCell(field, values[field.key])) ??
+        ""
 
       // A step that must come first, such as sending an invite, is reported
       // against the field it fills.
@@ -405,6 +419,9 @@ export function ToolForm({
                 <TableEditor
                   field={field}
                   rows={Array.isArray(control.value) ? control.value : []}
+                  // SAFETY: the live sums are numbers and text, which a raw
+                  // cell holds.
+                  computed={liveRow.parse(live?.[field.key] ?? []) as RawRow[]}
                   onChange={control.onChange}
                   recordId={recordId}
                   errors={errors.filter(

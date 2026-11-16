@@ -18,8 +18,6 @@ import {
   type Role,
 } from "@/db/schema"
 
-import { accessRow } from "@/server/permissions/matrix"
-
 import { projectChangeRequests, projectRecords } from "./seed-data/records"
 import {
   emailOf,
@@ -28,8 +26,10 @@ import {
   staffByHandle,
 } from "./seed-data/people"
 import {
+  approverOf,
   isTier3,
   projects as seedProjects,
+  writerOf,
   requestIdOf,
   type SeedProject,
 } from "./seed-data/projects"
@@ -48,14 +48,23 @@ function assertLocal(url: string) {
   }
 }
 
+// A project is known by its request ID, which stays the same when the tool
+// being built moves on and the project is renamed after it.
 async function findOrCreateProject(database: Database, project: SeedProject) {
   const [existing] = await database
-    .select({ id: projects.id })
+    .select({ id: projects.id, name: projects.name })
     .from(projects)
-    .where(eq(projects.name, project.name))
+    .where(eq(projects.requestId, requestIdOf(project)))
     .limit(1)
 
   if (existing) {
+    if (existing.name !== project.name) {
+      await database
+        .update(projects)
+        .set({ name: project.name })
+        .where(eq(projects.id, existing.id))
+    }
+
     return existing.id
   }
 
@@ -213,20 +222,6 @@ function withTeamIds(payload: JsonObject, holders: Holders): JsonObject {
   )
 }
 
-// Who writes a tool and who approves it, from the matrix: the OM and the PM
-// where the matrix names no one else.
-function writerOf(toolId: string): Role {
-  const row = accessRow(toolId) ?? {}
-
-  return roles.find((role) => role !== "Client" && row[role] === "RW") ?? "OM"
-}
-
-function approverOf(toolId: string): Role {
-  const row = accessRow(toolId) ?? {}
-
-  return roles.find((role) => row[role] === "RA") ?? "PM"
-}
-
 // Each project's records, at the stage written in seed-data/records.ts. The OM
 // prepares a record and the PM approves it, a few hours apart, so the title
 // block shows real names and times. A record is only added when the project
@@ -332,9 +327,9 @@ type Note = {
   read: boolean
 }
 
-// What each PM's bell shows: a note for every record waiting for their
-// approval and every change request waiting for their decision, unread, and
-// older notes already read. Each is only added when the person has no
+// What the bells show, unread: the approver's note for every record waiting
+// for their approval, and the PM's for every change request waiting for their
+// decision; and the PM's older notes, already read. Each is only added when the person has no
 // notification with that title yet, so running this again changes nothing,
 // and one they have opened is not made unread again. Notifications cannot be
 // deleted, so this only ever adds.
@@ -357,9 +352,11 @@ async function addNotifications(
     const records = projectRecords.get(project.name) ?? []
 
     records.forEach((record, index) => {
-      if (record.state === "submitted") {
+      const approver = holderOf(entry.team, approverOf(record.toolId))
+
+      if (record.state === "submitted" && approver) {
         notes.push({
-          personId: pm,
+          personId: approver,
           kind: "approval_needed",
           title: `${record.toolId} is waiting for your approval on ${project.name}`,
           path: `${base}/tools/${record.toolId}`,
@@ -484,25 +481,13 @@ async function addPerson(
 // The roles each person holds on the project. "everyone" is one person for
 // every role, and every project has its client.
 export function rolesOnProject(project: SeedProject) {
-  const held: { handle: string; role: Role }[] = []
-
-  if (project.team === "everyone") {
-    for (const role of roles) {
-      const first = staff.find((person) => person.role === role)
-
-      if (first && role !== "IT/Admin") {
-        held.push({ handle: first.handle, role })
-      }
-    }
-  } else {
-    for (const role of roles) {
-      for (const handle of project.team[role] ?? []) {
-        held.push({ handle, role })
-      }
-    }
+  if (project.team === "nobody") {
+    return []
   }
 
-  return held
+  return staff
+    .filter((person) => person.role !== "IT/Admin")
+    .map((person) => ({ handle: person.handle, role: person.role }))
 }
 
 async function giveProjectRole(
@@ -517,8 +502,8 @@ async function giveProjectRole(
     .onConflictDoNothing()
 }
 
-// Local development only: IMHOGEN's staff, twelve projects at different stages
-// with their clients, and the teams on them. Everyone signs in with the
+// Local development only: IMHOGEN's staff, one per role, the test projects
+// with their client, and the teams on them. Everyone signs in with the
 // password `password`. IT/Admin holds the role company-wide, and the roles in
 // qualifiedRoles are also held as a qualification. Returns the people this run
 // added.

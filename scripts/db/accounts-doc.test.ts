@@ -13,8 +13,8 @@ describe("the test accounts doc", () => {
     const doc = await accountsDoc()
 
     expect(doc).toMatch(
-      /\| Kofi Mensah +\| kofi\.mensah@imhogen\.test +\| IT\/Admin \(Systems support\) +\| Yes +\| Every project +\|/
+      /\| Kofi Mensah +\| itadmin@imhogen\.test +\| IT\/Admin \(Systems support\) +\| Yes +\|/
     )
-    expect(doc).toContain("kwaku.ampofo@temafoods.test")
+    expect(doc).toContain("client@client.test")
   })
 })

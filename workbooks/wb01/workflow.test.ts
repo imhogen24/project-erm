@@ -184,8 +184,22 @@ const answers = new Map<string, JsonObject>([
       phases: [{ name: "Review", activities: "Review.", duration: "1 week" }],
     },
   ],
-  ["D1.14", { minimumOverheadMet: true }],
+  ["D1.14", costSheet(100)],
 ])
+
+// A balanced D1.14 with this many days of labor at GHS 1,000 a day and no
+// markup, against D1.12's GHS 80,000 floor: 80 days or more meets it.
+function costSheet(days: number) {
+  return {
+    labor: [{ module: "Mechanical", days, dailyRate: 1000 }],
+    markups: [
+      { category: "Project Management & QC", rate: 0 },
+      { category: "Administrative Overhead", rate: 0 },
+      { category: "Sustainability / Risk Margin", rate: 0 },
+    ],
+    allocations: [{ deliverable: "CAD", cost: days * 1000 }],
+  }
+}
 
 const tier1 = [
   "D1.1",
@@ -400,7 +414,7 @@ describe("the Tier 1 route", () => {
 
   it("keeps D1.15 closed while the minimum overhead is not met, without stopping", async () => {
     await lockThrough("D1.13")
-    await recordIn("locked", "D1.14", { minimumOverheadMet: false })
+    await recordIn("locked", "D1.14", costSheet(10))
 
     expect(await open()).toEqual([])
     expect(await status()).toBe("active")

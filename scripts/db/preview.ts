@@ -1,4 +1,25 @@
 import type { Role } from "@/db/schema"
+import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
+
+import { loginFor } from "./seed-data/people"
+import {
+  CURRENT_TOOL,
+  NEEDS_TEAM,
+  approverOf,
+  client,
+  toolProjectName,
+  writerOf,
+} from "./seed-data/projects"
+
+const fillIn = toolProjectName("Tier_1", "open")
+
+const approve = toolProjectName("Tier_1", "submitted")
+
+const approved = toolProjectName("Tier_1", "locked")
+
+const writer = writerOf(CURRENT_TOOL)
+
+const approver = approverOf(CURRENT_TOOL)
 
 // Each screen built so far, and how to see it. The issue that builds a screen
 // adds its line here, then runs `bun run accounts:doc`, so
@@ -16,25 +37,41 @@ export type Preview = {
 
 export const previews: Preview[] = [
   {
-    screen: "Dev projects: every tool locked, and every tool open",
+    screen: `${CURRENT_TOOL}, the tool being built, from every role's side`,
+    loginAs: writer,
+    path: () => "/",
+    expect: `Your projects starts with six for ${CURRENT_TOOL}, Tier 1 and Tier 3 of each: 1 Fill in (${writer}) has every tool before it locked and ${CURRENT_TOOL} open and empty for the ${writer}, ${loginFor(writer)}. 2 Approve (${approver}) has it submitted and waiting for the ${approver}, ${loginFor(approver)}, with Approve and Send back. 3 Approved has it locked. Everyone is on every one of them, so log in as any role (om@, pm@, le@, he@, qa@ ... @imhogen.test) to see what that role reads, and as the client, ${client.email}, to see what they get. Every password is password.`,
+  },
+  {
+    screen: "D1.14 cost estimation sheet, as the LE",
+    loginAs: "LE",
+    path: (id) => `/projects/${id}/tools/D1.14`,
+    expect: `On ${fillIn}: 1.0 Base technical labor cost, one row to start: type the module, Estimated Days and Daily Rate, and Total Labor Cost fills in as you type, with the Base Labor Subtotal under the table. 2.0 Direct project costs: Add row for each item, Quantity times Unit Cost, Direct Cost Subtotal. 3.0: the three layers locked in place, each with an Applied Rate (%): Project Management & QC is worked out on the base labor, Administrative Overhead and Sustainability / Risk Margin on the labor and direct costs; Total Project Value under them. 4.0 starts with one row per deliverable of D1.13's included scope: type each Fully Loaded Alloc. Cost; Allocation Check says how much is left to allocate until it reads Balanced. 5.0: IMHOGEN Cost Floor (D1.12), Is the minimum overhead recovery met? (Yes once the total reaches the floor), Ready for Project Briefing (D1.15)? No until approved, Lead Engineer Signature with Sign. Submit for approval is refused until the allocations balance.`,
+  },
+  {
+    screen: "D1.14 approval, as the PM",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.14`,
+    expect: `On ${approve}: the LE's sheet, read only, totalling GHS 94,400.00 against a GHS 80,000.00 floor, with Sign on Head of R&D / Finance Sig, then Approve and Send back. Approve before signing says to sign. Approving locks it, turns Ready for Project Briefing (D1.15)? to Yes and opens D1.15; had the total been under the floor, D1.15 would stay closed. On ${approved} it reads locked. The OM, FO, CR and IT/Admin read it; the client does not see it.`,
+  },
+  {
+    screen: "Every tool built, locked or open",
     loginAs: "OM",
     path: () => "/",
-    expect:
-      "Four projects, with the same people on each: the first person of every role (OM kwabena.asante, PM ama.owusu, LE kojo.antwi, AE fiifi.acquah, CR emmanuel.quaye, IT/Admin kofi.mensah and the rest) and one client, akosua.mensah@devclient.test. Dev: All Tools Locked (Tier 1) has D1.1 to D1.8 locked with sample answers, and Dev: All Tools Locked (Tier 3) has D1.1, D1.2, T3.D1.3a, D1.4 and T3.D1.8a locked: open any tool as any of them to see what that role reads. Dev: All Tools Unlocked (Tier 1) and (Tier 3) have every tool of their tier open at once, empty, without waiting for the one before (development only, never in production): the client's web form is a draft the client can change, and every other tool starts from nothing. A tool that reads an earlier one, such as D1.6 reading D1.5's agreed time, says what it is missing until that one is filled in. Every account's password is password.",
+    expect: `${DEV_LOCKED} (Tier 1) and (Tier 3) have every tool built locked with sample answers: open any tool as any role to see what that role reads. ${DEV_UNLOCKED} (Tier 1) and (Tier 3) have every tool of their tier open at once, empty, without waiting for the one before (development only, never in production): the client's web form is a draft the client can change, and every other tool starts from nothing. A tool that reads an earlier one, such as D1.6 reading D1.5's agreed time, says what it is missing until that one is filled in. D1.4 is sent by the PM: the OM prepares the email, the PM presses Send, and the D1.4 tile shows a Sent chip that turns Delivered once the Inngest dev server runs the delivery check.`,
   },
   {
     screen: "Projects that need a team (IT/Admin)",
     loginAs: "IT/Admin",
     path: () => "/admin/team",
-    expect:
-      "Kofi Mensah sees three running projects short of a PM or an OM: Takoradi Port Conveyor Upgrade (nobody), Kumasi Cocoa Roasting Line (a PM only) and Accra Brewery Bottling Retrofit (an OM only), newest first. The rejected, closed, completed and fully staffed projects are not listed. Open one to assign people: Ama Owusu and Kojo Antwi are already at their limit of three projects. Assign staff in the sidebar has an orange count of 3, and on a narrow screen Team in the top bar has the same count (from RDP-127).",
+    expect: `${NEEDS_TEAM} is the one running project with nobody on it. Open it to assign people: one of each role is free to take it, since the test projects take up nobody's workload slot. Assign staff in the sidebar has an orange count of 1.`,
   },
   {
     screen: "Every project as IT/Admin",
     loginAs: "IT/Admin",
     path: () => "/",
     expect:
-      "All twelve projects, Tier 1 and Tier 3, active, on hold, rejected, closed and completed, each with the client's organisation. The IT/Admin holds no project role, so no project shows Your roles.",
+      "Every project, Tier 1 and Tier 3. The IT/Admin holds no project role, so no project shows Your roles.",
   },
   {
     screen: "Project tree in the sidebar",
@@ -42,126 +79,6 @@ export const previews: Preview[] = [
     path: (id) => `/projects/${id}`,
     expect:
       "On a wide screen, the left sidebar lists the 13 workbooks as folders (Onboarding (WB01), Contracting (WB02) and so on). Onboarding is open with its tools as links, each marked with its state. Click a tool to open it. The tree stays on the tool page, with the open tool highlighted. Each tool has a mark: grey dots when not started, orange dots moving clockwise while someone works on it, a solid orange square once locked, and a lock at the right that is open until the tool is locked. A tool that cannot open yet, because the one before it is not locked, is greyed out and is not a link; on the overview its tile says Opens after and the tool it waits on, and typing its address leads back to the overview.",
-  },
-  {
-    screen: "D1.2 triage sheet (RDP-147)",
-    loginAs: "OM",
-    path: (id) => `/projects/${id}/tools/D1.2`,
-    expect:
-      "D1.2 is already approved, so the sheet is read only. The sheet shows the title block, the files, the three triage checks and the decision Proceed to D1.3. Press View client request for the web form, in tables, over half the screen.",
-  },
-  {
-    screen: "D1.3 received request record (RDP-144)",
-    loginAs: "OM",
-    path: (id) => `/projects/${id}/tools/D1.3`,
-    expect:
-      "D1.3 on Tema Foods Boiler Skid is locked, so it reads as a finished sheet: Core Objectives and Scope, Input / Output Operands (M, E, I, L with Material, Energy, Information, Living thing under them), Operators and one missing item. Ho Water Treatment Dosing Skid has a D1.3 waiting for the PM. To fill in a D1.3 from empty, approve a D1.2 on another Tier 1 project.",
-  },
-  {
-    screen: "Top bar over every tool: the project and the document control",
-    loginAs: "PM",
-    path: (id) => `/projects/${id}/tools/D1.3`,
-    expect:
-      "Over the sheet, in its own box: a back arrow, the tool's title (the project name, tier and request ID are in the sidebar; on a phone they sit above the title) with its state badge, View client request at the right, with an Iteration badge beside the state, then the document control in one slim row under it (Prepared by, Checked by, Date checked, Date approved, Started, Completed): small grey labels over bold values, with the role (OM, PM) and the time taken as badges. The sheet below holds only the tool's tables. No sentence about the state is shown; the badge says it. Scroll on a wide screen: the bar stays put, level with the sidebar, and the sheet slides under it. On a phone the document control folds into a Document control row to tap. Every table title (Core Objectives and Scope, ...) is plain text on no fill, and the row of column names under it is hatched with bold text. On Tema Foods Boiler Skid, D1.3 is locked: Date checked and Date approved are both the approval time, and Iteration is 1. On Ho Water Treatment Dosing Skid, D1.3 waits for the PM: both dates are -, Iteration is 1. Iteration goes up each time someone other than the submitter moves a submitted record back to draft.",
-  },
-  {
-    screen: "D1.4 acknowledgement email, as the OM (RDP-150)",
-    loginAs: "OM",
-    path: () => "/",
-    expect:
-      "Open Dev: All Tools Unlocked (Tier 1), then D1.4. Two boxes: 1.0 Dispatch metadata (Sent To is the client's email, grey; CC / BCC and Subject Line to type, the subject using the request's title; Sent By already shows the OM's email, the IMHOGEN rep it comes from; Date Sent, Time Sent and Delivery Status say Filled in when the email is sent) and 2.0 Standard email template, the sheet's email with Dear Akosua Mensah, the submission date and the request ID filled in. There is no Save draft, Submit or Send: the OM prepares, and only the PM (ama.owusu@imhogen.test) sees Send. Edit the text and stop: the foot says Saving..., then ✓ Saved. Nothing is saved until you edit.",
-  },
-  {
-    screen: "D1.4 acknowledgement email, as the PM: Send (RDP-150)",
-    loginAs: "PM",
-    path: () => "/",
-    expect:
-      "Open Dev: All Tools Unlocked (Tier 1), then D1.4: the same email, read only, with Send at the foot. Before the OM edits it, Send is off and says the Onboarding Manager has not started the email yet; with an empty subject or text it says what to add. Press Send: the email goes to the client through Resend when RESEND_API_KEY is set (the seeded clients have .test addresses, so nothing reaches anyone; without the key nothing leaves the machine), the email goes from the noreply address, the record locks, and Date Sent, Time Sent and Delivery Status Sent fill in, with Sent By kept as the OM, and D1.4 reads as Locked. Pressing twice sends once. A bad address in CC / BCC is refused and nothing is sent.",
-  },
-  {
-    screen: "D1.4 delivery, as the PM: badges and Retry (RDP-151)",
-    loginAs: "PM",
-    path: () => "/",
-    expect:
-      "On Dev: All Tools Unlocked (Tier 1), after Send, the D1.4 tile shows Locked and a grey Sent chip. On any other Tier 1 project, D1.5 stays closed until D1.4 is delivered. Start the Inngest dev server (docs/DEPLOYMENT) and within 5 minutes the delivery check runs: with no RESEND_API_KEY every email counts as delivered, so the chip turns orange with a tick, Delivered. Open D1.4: the same chip sits beside Locked in the title block and Delivery Status reads Delivered. With a real key, an address that bounces turns the chip red, Bounced; the PM gets a notification, and D1.4 shows a red box above the form, This email bounced. Correct the address and try again., with Sent To and Retry. A bad address is refused next to the button. Retry sends the same email again and the chip goes back to Sent. The OM sees This email bounced. The Project Manager has been told. and no Retry. On Tema Foods Boiler Skid and Tarkwa Mine Pump Station Drawings, D1.4 is already Delivered.",
-  },
-  {
-    screen: "D1.5 meeting time proposal, confirmed",
-    loginAs: "OM",
-    path: (id) => `/projects/${id}/tools/D1.5`,
-    expect:
-      "D1.5 on Tema Foods is Locked: 1.0 lists the three times sent, the second Accepted with a tick and the client's comment Our plant manager will join., the others Declined. 3.0 is the email the client got. 4.0 shows the agreed date and time, Google Meet and its link, and Client Confirmed? Yes. Nothing can be edited. The browser tests walk the whole flow (e2e/d15-meeting.spec.ts): the OM's Send to client and Change the times, the client's Choose this time and None of these suit me, and Confirm meeting. Log in as the client, kwaku.ampofo@temafoods.test: D1.5 shows Your discovery meeting with the time, Google Meet and Join the meeting.",
-  },
-  {
-    screen: "D1.6 calendar invite and agenda, locked",
-    loginAs: "OM",
-    path: (id) => `/projects/${id}/tools/D1.6`,
-    expect:
-      "D1.6 on Tema Foods is Locked: the meeting from D1.5 (Google Meet and its link), Kwabena Asante, Ama Owusu and Kojo Antwi ticked as IMHOGEN Attendees, Client Attendees Kwaku Ampofo, the sheet's five agenda topics, a chip Invite sent, and all three pre-meeting checks Done. Nothing can be edited. The browser tests walk the whole flow (e2e/d16-agenda.spec.ts): ticking attendees, Send calendar invite with its invite.ics file, and Ready for the meeting.",
-  },
-  {
-    screen: "D1.7 raw meeting notes, approved",
-    loginAs: "OM",
-    path: (id) => `/projects/${id}/tools/D1.7`,
-    expect:
-      "D1.7 on Tema Foods is Locked: the actual date and times, the three IMHOGEN attendees and the client's two ticked Present, three discussion topics with raw notes and remarks, one parking-lot item (a site visit date), and the close-out. Nothing can be edited. The client (kwaku.ampofo@temafoods.test) reads it too, since the PM approved it. The browser tests walk the whole flow (e2e/d17-notes.spec.ts): the OM starts from D1.6's agenda and attendees and submits, the PM sends it back with a reason or approves it, and the client sees IMHOGEN shares this with you once it is approved. until then.",
-  },
-  {
-    screen: "D1.8 and T3.D1.8a, approved",
-    loginAs: "LE",
-    path: (id) => `/projects/${id}/tools/D1.8`,
-    expect:
-      "D1.8 on Tema Foods is Locked: two confirmed constraints, the client's technical answers beside each category, Function Properties Fixed, and the signature of Kojo Antwi; Synthesis Complete? and Ready for Internal Review (D1.9)? read Yes. On Tarkwa Mine Pump Station Drawings, T3.D1.8a is Locked, signed by Adwoa Baffoe. To try either from empty, use Dev: All Tools Unlocked (Tier 1) or (Tier 3). The browser tests walk both flows (e2e/d18-needs.spec.ts, e2e/t3-d18a-metrology.spec.ts).",
-  },
-  {
-    screen: "D1.9 internal review request, approved",
-    loginAs: "OM",
-    path: (id) => `/projects/${id}/tools/D1.9`,
-    expect:
-      "D1.9 on Tema Foods is Locked: the system's 1.0 (PM, client, synthesis date, timeline, project), the required reading with Open on each record, and the four reviews Passed. To fill one from empty, open D1.9 on Dev: All Tools Unlocked (Tier 1): the green cells start blank. The browser test walks the flow (e2e/d19-review.spec.ts).",
-  },
-  {
-    screen: "D1.10 capability assessment, approved",
-    loginAs: "LE",
-    path: (id) => `/projects/${id}/tools/D1.10`,
-    expect:
-      "D1.10 on Tema Foods is Locked as Partially Capable, every criterion answered and signed by Kojo Antwi. To fill one from empty, use Dev: All Tools Unlocked (Tier 1). The browser test walks the flow (e2e/d110-capability.spec.ts).",
-  },
-  {
-    screen: "D1.11 risk assessment, approved",
-    loginAs: "LE",
-    path: (id) => `/projects/${id}/tools/D1.11`,
-    expect:
-      "D1.11 on Tema Foods is Locked as a Conditional Go: one risk in the register, the four questions answered, signed by Kojo Antwi. To fill one from empty, use Dev: All Tools Unlocked (Tier 1). The browser test walks the flow (e2e/d111-risk.spec.ts).",
-  },
-  {
-    screen: "D1.12 feasibility report, approved",
-    loginAs: "LE",
-    path: (id) => `/projects/${id}/tools/D1.12`,
-    expect:
-      "D1.12 on Tema Foods is Locked: the four domains Partial, one critical risk, 8 weeks, GHS 80,000, the recommendation, signed by Kojo Antwi. The client (kwaku.ampofo@temafoods.test) reads it now it is approved. To fill one from empty, use Dev: All Tools Unlocked (Tier 1).",
-  },
-  {
-    screen: "D1.13 draft scope of work and alignment meeting, as the LE",
-    loginAs: "LE",
-    path: (id) => `/projects/${id}/tools/D1.13`,
-    expect:
-      "D1.12 is locked, so D1.13 is open for the Lead Engineer. 1.0 is the system's: Drafted By, Client Name, Date of Assessment (D1.12's), Project, SOW Status, Reference Request ID, Preliminary Project Duration (D1.12's realistic timeline); Date of Draft fills in when the LE signs; Project Vision / Primary Goal to write. 2.0 Included scope, 3.0 Excluded scope, 4.0 Phased timeline and 5.0 Client responsibilities: rows to add. 6.0 the alignment meeting: Proposed meeting times, then Save draft and Send times to client in the Alignment meeting box under the sheet; once the client chooses (Agreed Date and Time fill in), add the platform and link, Save draft, and Send calendar invite: the client gets an invite.ics copied to the LE and PM. 7.0: Scope Locked? and Ready for Cost Estimation (D1.14)? read No until the PM approves; PM / Lead Engineer Signature with Sign. Submit for approval says Send the meeting's calendar invite first until the invite has gone. On Tarkwa Mine Pump Station Drawings the LE is yaa.sarpong@imhogen.test.",
-  },
-  {
-    screen: "D1.13 alignment meeting, as the client; approval, as the PM",
-    loginAs: "PM",
-    path: (id) => `/projects/${id}/tools/D1.13`,
-    expect:
-      "Once the LE sends times, the client (kwaku.ampofo@temafoods.test) opens D1.13 and sees Choose a time for your feasibility & engineering alignment meeting, with Choose this time and None of these suit me; the scope itself stays hidden until approved. Once the LE signs and submits, the PM (ama.owusu@imhogen.test) has Approve, which locks the scope, turns Scope Locked? and Ready for Cost Estimation (D1.14)? to Yes and opens D1.14, and Send back.",
-  },
-  {
-    screen: "Client: start a new project",
-    loginAs: "Client",
-    email: "kwaku.ampofo@temafoods.test",
-    path: () => "/",
-    expect:
-      "Kwaku Ampofo, a client, sees their projects, and the last square of the grid is Start new project with a plus. Press it, choose Tier 1 (Custom Engineering & Factory Solutions) or Tier 3 (Engineering Drafting & Digitization), and fill the same form as on the IMHOGEN website. File attachments has Add files: choose images or PDFs and each uploads at once, listed by name with a cross to remove it (needs UPLOADTHING_TOKEN). Send request creates the project with D1.1 locked and opens it; it waits for the IT/Admin to assign a team. D1.1 lists the files by name, and Open file opens each one.",
   },
   {
     screen: "Client sign-up and confirm email",
@@ -179,13 +96,6 @@ export const previews: Preview[] = [
       "Plain fields sit together in a Details table (Field | Answer). Tables, checklists and read-only blocks each get their own titled box with the same ruled lines. Save draft and Submit for approval sit in the action row at the foot. The same boxes are used by every tool that is a form, such as D1.3 once D1.2 is approved.",
   },
   {
-    screen: "Change requests on the project overview",
-    loginAs: "PM",
-    path: (id) => `/projects/${id}`,
-    expect:
-      "Ama Owusu, the PM, sees Change requests waiting above the workbooks: Kwabena Asante (OM) asks to change D1.1 Client Email / Web Form because the client sent the boiler nameplate photo on 4 Nov. Approve or Reject sits beside it. The D1.1 tile below says Change requested.",
-  },
-  {
     screen: "Tables with locked and added rows (RDP-144, dev preview)",
     loginAs: "PM",
     path: () => "/dev/form-preview",
@@ -200,32 +110,23 @@ export const previews: Preview[] = [
       "At the foot of the sidebar: a rounded avatar with the person's initials, and a rounded sign-out icon at the right. Hover or tab to the avatar: a tooltip says Signed in as and the name. Buttons and badges across the app are rounded; the grid boxes and tables stay square.",
   },
   {
-    screen: "Tier 3: Tarkwa Mine Pump Station Drawings",
-    loginAs: "OM",
-    email: "selorm.dzigbordi@imhogen.test",
+    screen: "Client: start a new project",
+    loginAs: "Client",
+    email: client.email,
     path: () => "/",
     expect:
-      "Tarkwa Mine Pump Station Drawings shows Tier 3 on its tile. Open it: D1.1, D1.2, T3.D1.3a T3 Technical Intake (Drafting), D1.4 (Delivered) T3.D1.8a T3 Physical Metrology Log and D1.9 to D1.12 are locked, and D1.13 is open for its LE, yaa.sarpong@imhogen.test. No Tier 1 tool such as D1.3 or D1.5 to D1.8 is listed. Tema Foods Boiler Skid is the Tier 1 match.",
+      "The client sees their projects, and the last square of the grid is Start new project with a plus. Press it, choose Tier 1 (Custom Engineering & Factory Solutions) or Tier 3 (Engineering Drafting & Digitization), and fill the same form as on the IMHOGEN website. File attachments has Add files: choose images or PDFs and each uploads at once, listed by name with a cross to remove it (needs UPLOADTHING_TOKEN). Send request creates the project with D1.1 locked and opens it; it waits for the IT/Admin to assign a team. D1.1 lists the files by name, and Open file opens each one.",
   },
   {
-    screen: "PM: a D1.2 waiting for approval",
+    screen: "Change requests on the project overview",
     loginAs: "PM",
-    path: () => "/",
-    expect:
-      "Open Tamale Shea Butter Processing Plant, then D1.2. It is Submitted by Kwabena Asante (OM), with three files and all three checks Pass, deciding Proceed to D1.3. Approve sits in the action row at the foot. D1.1 on the same project is locked.",
-  },
-  {
-    screen: "PM: a finished D1.3 to read",
-    loginAs: "PM",
-    path: () => "/",
-    expect:
-      "Open Cape Coast Hotel Laundry Boiler (on hold), then D1.3. It is Locked, prepared by Abena Frimpong (OM) and checked by Ama Owusu (PM), with every table filled: the laundry boiler's objectives, the four operands, the five operators and two missing items. Other PMs: efua.quartey@imhogen.test has D1.3 waiting on Ho Water Treatment Dosing Skid, nana.adjei@imhogen.test has D1.1 waiting on Sunyani Timber Kiln Controls.",
+    path: (id) => `/projects/${id}`,
+    expect: `On ${approved}, the PM sees Change requests waiting above the workbooks: the OM asks to change D1.1 Client Email / Web Form because the client sent a photo of the equipment nameplate. Approve or Reject sits beside it. The D1.1 tile below says Change requested.`,
   },
   {
     screen: "Notification bell (RDP-115)",
     loginAs: "PM",
     path: () => "/",
-    expect:
-      "A bell at the top right of the sidebar header (on a narrow screen, in the top bar before Sign out) with the number 2 on it. Press it: newest first, D1.2 is waiting for your approval on Tamale Shea Butter Processing Plant, then A change to D1.1 is waiting for your decision on Tema Foods Boiler Skid, both with a dot for unread, then older read notes: tools locked two days ago and the projects Ama was added to. Click one: you go to its page and the number drops by 1. Press Mark all read: the number and the dots go. Log in as the OM, kwabena.asante@imhogen.test, to see the empty message: You have no notifications. Notifications cannot be deleted, so once read they stay read.",
+    expect: `A bell at the top right of the sidebar header (on a narrow screen, in the top bar) with a number on it: one unread note for each project where ${CURRENT_TOOL} waits for the ${approver}'s approval, and one for the change waiting on ${approved}, then older read notes. Click one: you go to its page and the number drops by 1. Mark all read clears them. The OM, ${loginFor("OM")}, has no notifications.`,
   },
 ]

@@ -2,6 +2,7 @@ import { isDeepStrictEqual } from "node:util"
 
 import { DrizzleQueryError, and, desc, eq, ne } from "drizzle-orm"
 import { DatabaseError } from "pg"
+import { z } from "zod"
 
 import type { Database } from "@/db"
 import {
@@ -49,6 +50,7 @@ import {
   withoutInherited,
 } from "./inherited"
 import { keepReadOnly } from "./read-only"
+import { submittedValues } from "./submitted-values"
 import {
   signatureField,
   signaturesOf,
@@ -349,19 +351,51 @@ const actionForMove: Record<Exclude<RecordState, "void">, Action> = {
   locked: "approve",
 }
 
-// What the system wrote, such as an invite's time or a table the system
-// keeps, is not the writer's to answer, so submitting does not check it.
+const rowObject = z.record(z.string(), z.json())
+
+// What the system wrote, such as an invite's time, a table the system keeps
+// or a row's worked-out total, is not the writer's to answer, so submitting
+// does not check it.
 function withoutSystemValues(toolId: string, payload: JsonObject): JsonObject {
-  const system = new Set(
-    (tools.getTool(toolId)?.fields ?? []).flatMap((field) =>
-      field.systemFilled || (field.type === "table" && field.readOnly)
-        ? [field.key]
-        : []
-    )
-  )
+  const fields = tools.getTool(toolId)?.fields ?? []
 
   return Object.fromEntries(
-    Object.entries(payload).filter(([key]) => !system.has(key))
+    Object.entries(payload).flatMap(([key, value]) => {
+      const field = fields.find((each) => each.key === key)
+
+      if (field?.systemFilled || (field?.type === "table" && field.readOnly)) {
+        return []
+      }
+
+      if (field?.type !== "table" || !Array.isArray(value)) {
+        return [[key, value]]
+      }
+
+      const system = field.columns
+        .filter((column) => column.systemFilled)
+        .map((column) => column.key)
+
+      if (system.length === 0) {
+        return [[key, value]]
+      }
+
+      return [
+        [
+          key,
+          value.map((row) => {
+            const cells = rowObject.safeParse(row)
+
+            return cells.success
+              ? Object.fromEntries(
+                  Object.entries(cells.data).filter(
+                    ([column]) => !system.includes(column)
+                  )
+                )
+              : row
+          }),
+        ],
+      ]
+    })
   )
 }
 
@@ -409,9 +443,16 @@ async function move(
       throw new ValidationError(unmet)
     }
 
+    const worked = await submittedValues(transaction, current)
+
+    if (worked.errors.length > 0) {
+      throw new ValidationError(worked.errors)
+    }
+
     payload = {
       ...written,
       ...(await inheritedValues(transaction, current)),
+      ...worked.values,
     }
   }
 

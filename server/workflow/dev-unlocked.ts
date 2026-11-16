@@ -3,15 +3,15 @@
 // before it. Production never does this. Remove this file, its use in
 // workflow.ts and the Dev projects in scripts/db when testing no longer needs
 // them.
-export const DEV_UNLOCKED = "Dev: All Tools Unlocked"
+export const DEV_UNLOCKED = "Dev: Every Tool Unlocked"
 
-export const DEV_LOCKED = "Dev: All Tools Locked"
+export const DEV_LOCKED = "Dev: Every Tool Locked"
 
-// What every Dev project's name starts with.
-export const DEV_PROJECT = "Dev: All Tools"
+// What every seeded test project's name starts with.
+export const DEV_PROJECT = "Dev: "
 
-// In development the Dev projects take up nobody's workload slot, since the
-// same people are on all of them.
+// In development the seeded test projects take up nobody's workload slot,
+// since the same people are on all of them.
 export function skipsDevProjects(): boolean {
   return process.env.NODE_ENV !== "production"
 }

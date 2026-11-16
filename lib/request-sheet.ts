@@ -1,6 +1,8 @@
 // The web form request as the sheet shows it: groups of labelled values, so a
-// person reads it as a table. A value that was not filled in is empty.
-export type RequestRow = { label: string; value: string }
+// person reads it as a table. A value that was not filled in is empty. An
+// answer the client changed the last time they sent it again keeps what it
+// was.
+export type RequestRow = { label: string; value: string; was?: string }
 
 export type RequestGroup = { title: string; rows: RequestRow[] }
 

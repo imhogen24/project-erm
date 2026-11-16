@@ -1,22 +1,27 @@
-import { and, eq, ne } from "drizzle-orm"
+import { and, asc, eq, ne } from "drizzle-orm"
 import { z } from "zod"
 
 import type { Database } from "@/db"
 import {
+  auditLog,
+  changeRequests,
   intakeSubmissions,
   people,
   personProjectRoles,
   toolRecords,
   type JsonObject,
+  type JsonValue,
 } from "@/db/schema"
 import {
   schemaFor,
   type ClientAnswers,
   type Tier,
 } from "@/lib/client-request-form"
+import { payloadChanges, writeAudit } from "@/server/audit/audit"
 import { requireEnv } from "@/server/database"
 import type { Transport } from "@/server/email/email"
 import { attachedFilesIn } from "@/server/files/uploads"
+import { notifyClientChanged } from "@/server/notifications/raise"
 import { assertCan } from "@/server/permissions/permissions"
 import {
   InvalidTransitionError,
@@ -133,6 +138,11 @@ const fileRows = z.object({
   attachedFiles: z.array(z.record(z.string(), z.json())).catch([]),
 })
 
+const fileLinkOf = z.string()
+
+// Audit lines for the client's answers are named "answers.<key>".
+const answerField = "answers."
+
 // After a change request on D1.1 is approved, D1.1 is a draft again and the
 // client sends the form once more: the saved answers are replaced, the files
 // become the ones they kept and added, and D1.1 locks at once, which also
@@ -183,12 +193,23 @@ export async function resubmitClientRequest(
       )
     }
 
+    const submission = { ...copy.submission, ...checked(copy.track, answers) }
+
     await transaction
       .update(intakeSubmissions)
-      .set({
-        submission: { ...copy.submission, ...checked(copy.track, answers) },
-      })
+      .set({ submission })
       .where(eq(intakeSubmissions.id, copy.id))
+
+    // The answers live outside D1.1's payload, so their changes get their own
+    // lines, which is how D1.1 shows what each answer was.
+    await writeAudit(
+      transaction,
+      { recordId: record.id, projectId, actor, action: "updated" },
+      payloadChanges(copy.submission, submission).map((change) => ({
+        ...change,
+        field: change.field.replace(/^payload\./, answerField),
+      }))
+    )
 
     const attachedFiles = await attachedFilesIn(
       transaction,
@@ -198,8 +219,139 @@ export async function resubmitClientRequest(
       fileRows.parse(record.payload).attachedFiles
     )
 
+    // Read before locking: locking marks the approved request applied.
+    const [approvedChange] = await transaction
+      .select({ id: changeRequests.id })
+      .from(changeRequests)
+      .where(
+        and(
+          eq(changeRequests.recordId, record.id),
+          eq(changeRequests.status, "approved")
+        )
+      )
+      .limit(1)
+
     await lockDraftIn(transaction, actor, record.id, { attachedFiles })
+
+    if (approvedChange) {
+      await notifyClientChanged(transaction, actor, {
+        id: record.id,
+        projectId,
+        toolId: "D1.1",
+      })
+    }
   })
+}
+
+export type ClientChanges = {
+  // What each answer the client changed was before, by its key.
+  answers: Record<string, JsonValue | null>
+  // The links of the files the client added.
+  addedFiles: string[]
+  // The file rows the client took off.
+  removedFiles: JsonObject[]
+}
+
+// What the client changed the last time they sent D1.1 again after a change
+// request, read from the audit lines that send wrote. It stays until the next
+// change request is approved, and is empty while the client is still editing.
+export async function clientChangesOf(
+  database: Database,
+  actor: string,
+  projectId: string
+): Promise<ClientChanges> {
+  await assertCan(database, actor, projectId, "D1.1", "read")
+
+  const changes: ClientChanges = {
+    answers: {},
+    addedFiles: [],
+    removedFiles: [],
+  }
+
+  const [record] = await database
+    .select({ id: toolRecords.id })
+    .from(toolRecords)
+    .where(
+      and(
+        eq(toolRecords.projectId, projectId),
+        eq(toolRecords.toolId, "D1.1"),
+        ne(toolRecords.state, "void")
+      )
+    )
+    .limit(1)
+
+  if (!record) {
+    return changes
+  }
+
+  const lines = await database
+    .select({
+      action: auditLog.action,
+      field: auditLog.field,
+      oldValue: auditLog.oldValue,
+      newValue: auditLog.newValue,
+      createdAt: auditLog.createdAt,
+    })
+    .from(auditLog)
+    .where(eq(auditLog.recordId, record.id))
+    .orderBy(asc(auditLog.createdAt))
+
+  // Lines saved together share a time, so times, not order, tell the steps apart.
+  const approved = lines.findLast((line) => line.action === "change_approved")
+
+  const applied = lines.find(
+    (line) =>
+      line.action === "change_applied" &&
+      approved !== undefined &&
+      line.createdAt > approved.createdAt
+  )
+
+  if (!approved || !applied) {
+    return changes
+  }
+
+  const sent = lines.filter(
+    (line) =>
+      line.action === "updated" &&
+      line.createdAt > approved.createdAt &&
+      line.createdAt <= applied.createdAt
+  )
+
+  for (const line of sent) {
+    if (line.field.startsWith(answerField)) {
+      const key = line.field.slice(answerField.length)
+
+      if (!(key in changes.answers)) {
+        changes.answers[key] = line.oldValue
+      }
+    }
+
+    if (line.field === "payload.attachedFiles") {
+      const before = fileRows.parse({
+        attachedFiles: line.oldValue,
+      }).attachedFiles
+
+      const after = fileRows.parse({
+        attachedFiles: line.newValue,
+      }).attachedFiles
+
+      const linksBefore = new Set(before.map((row) => row.fileLink))
+      const linksAfter = new Set(after.map((row) => row.fileLink))
+
+      changes.addedFiles = after
+        .filter((row) => !linksBefore.has(row.fileLink))
+        .flatMap((row) => {
+          const link = fileLinkOf.safeParse(row.fileLink)
+
+          return link.success ? [link.data] : []
+        })
+      changes.removedFiles = before.filter(
+        (row) => !linksAfter.has(row.fileLink)
+      )
+    }
+  }
+
+  return changes
 }
 
 // What the client sent, as they typed it, to fill the form again when they

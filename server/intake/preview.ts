@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm"
 
 import type { Database } from "@/db"
-import { intakeSubmissions, type Role } from "@/db/schema"
+import { intakeSubmissions, type JsonObject, type Role } from "@/db/schema"
 import type { ClientRequest } from "@/lib/client-request"
 import { roleAllows, rolesOn } from "@/server/permissions/permissions"
 
@@ -19,11 +19,13 @@ export function mayReadRequest(held: Role[]) {
 // What the client filled in on the web form, from the ERM's saved copy of it.
 // A person who may not read D1.1, a person on another project and a project
 // that does not exist all get nothing. It only reads, and the answers hold client details, so
-// nothing here puts them in a log or an error message.
+// nothing here puts them in a log or an error message. `was` holds what each
+// answer the client changed was, by column, to show beside it.
 export async function getClientRequestPreview(
   database: Database,
   actor: string,
-  projectId: string
+  projectId: string,
+  was: JsonObject = {}
 ): Promise<ClientRequestPreview | null> {
   if (!mayReadRequest(await rolesOn(database, actor, projectId))) {
     return null
@@ -38,5 +40,5 @@ export async function getClientRequestPreview(
     return null
   }
 
-  return requestSheetOf(copy)
+  return requestSheetOf(copy, was)
 }

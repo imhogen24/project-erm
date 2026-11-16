@@ -2,6 +2,14 @@
 
 import { useEffect, useRef, useState } from "react"
 
+import {
+  AUTOSAVE_DELAY,
+  RETRY_DELAY,
+  createAutosave,
+  type Autosave,
+  type AutosaveState,
+  type SaveOutcome,
+} from "@/lib/autosave"
 import type { FieldError, FormValues } from "@/lib/tool-definition"
 
 export type SaveResult =
@@ -30,14 +38,32 @@ type Options = {
   recordId?: string
   updatedAt?: string
   save: (input: SaveInput) => Promise<SaveResult>
+  // After each save, such as to refresh what the server works out from the
+  // saved record. `created` is true for the save that made the record. A
+  // refresh a link click overtakes is simply dropped.
+  onSaved?: (saved: { created: boolean }) => void
 }
 
-// Saves a tool's sheet as it is typed. Each edit saves a moment later; an edit
-// made while a save is on its way is saved right after it. A failure drops
-// what was queued, so an older copy is never saved over a newer one: the next
-// edit saves the whole sheet again. `saveNow` waits for any save on its way,
-// then saves what is on screen, and says whether it worked, so a step such as
-// sending reads what was typed.
+type Saved = { recordId?: string; updatedAt?: string }
+
+function isNewer(next: string | undefined, than: string | undefined) {
+  return (
+    next !== undefined &&
+    (than === undefined || Date.parse(next) > Date.parse(than))
+  )
+}
+
+const footLines = {
+  saving: "Saving…",
+  saved: "✓ Saved",
+  retrying: "Not saved. Retrying…",
+  refused: "Not saved.",
+} satisfies { [status in AutosaveState["status"]]: string }
+
+// Saves a tool's sheet as it is typed: a moment after each edit, again after
+// a failure, and at once when a step such as Submit needs it saved first. A
+// refused save (someone else's newer save, a value the server will not take)
+// is not tried again. The sheet says how saving went at its foot.
 export function useAutosave({
   projectId,
   toolId,
@@ -45,155 +71,161 @@ export function useAutosave({
   recordId: savedRecordId,
   updatedAt: savedUpdatedAt,
   save,
+  onSaved,
 }: Options) {
   const [recordId, setRecordId] = useState(savedRecordId)
-  const [updatedAt, setUpdatedAt] = useState(savedUpdatedAt)
   const [seen, setSeen] = useState({ id: savedRecordId, at: savedUpdatedAt })
+
+  // The newest record and time to save over. Saves follow each other faster
+  // than the screen renders, so they are held in a ref.
+  const latest = useRef<Saved>({
+    recordId: savedRecordId,
+    updatedAt: savedUpdatedAt,
+  })
 
   // The page hands a newer record after a refresh.
   if (seen.id !== savedRecordId || seen.at !== savedUpdatedAt) {
     setSeen({ id: savedRecordId, at: savedUpdatedAt })
     setRecordId(savedRecordId)
-    setUpdatedAt(savedUpdatedAt)
   }
-
-  const [saving, setSaving] = useState<"idle" | "saving" | "saved">("idle")
-  const [message, setMessage] = useState<string>()
-  const [stale, setStale] = useState(false)
-
-  const latest = useRef({ recordId, updatedAt })
-  // The record the screen holds, kept even while a save is on its way, so a
-  // failed save goes back to it instead of an older one.
-  const shown = useRef({ recordId, updatedAt })
-  const busy = useRef(false)
-  const queued = useRef<FormValues | null>(null)
-  // The newest values typed, so a step never saves an older copy.
-  const newest = useRef<FormValues | null>(null)
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
 
   useEffect(() => {
-    shown.current = { recordId, updatedAt }
-
-    if (!busy.current) {
-      latest.current = { recordId, updatedAt }
+    if (isNewer(savedUpdatedAt, latest.current.updatedAt)) {
+      latest.current = { recordId: savedRecordId, updatedAt: savedUpdatedAt }
     }
-  }, [recordId, updatedAt])
+  }, [savedRecordId, savedUpdatedAt])
 
-  useEffect(() => () => clearTimeout(timer.current), [])
+  const [state, setState] = useState<AutosaveState>()
+  const [message, setMessage] = useState<string>()
+  const [stale, setStale] = useState(false)
+  const [errors, setErrors] = useState<FieldError[]>([])
 
-  function failed(line: string) {
-    queued.current = null
-    latest.current = shown.current
-    setSaving("idle")
-    setMessage(line)
-  }
+  const where = useRef({ projectId, toolId, cycle, save, onSaved })
 
-  async function saveValues(values: FormValues): Promise<boolean> {
-    if (busy.current) {
-      queued.current = values
+  useEffect(() => {
+    where.current = { projectId, toolId, cycle, save, onSaved }
+  })
 
-      return false
-    }
+  const saver = useRef<Autosave<FormValues>>(null)
 
-    busy.current = true
-    setSaving("saving")
+  useEffect(() => {
+    async function send(values: FormValues): Promise<SaveOutcome> {
+      const { save: run, onSaved: saved, ...at } = where.current
 
-    try {
-      let next: FormValues | null = values
+      const result = await run({
+        ...at,
+        values,
+        expectedUpdatedAt: latest.current.updatedAt,
+      })
 
-      while (next) {
-        const result = await save({
-          projectId,
-          toolId,
-          cycle,
-          values: next,
-          expectedUpdatedAt: latest.current.updatedAt,
-        })
+      if (result.status === "done") {
+        const created = latest.current.recordId === undefined
 
-        next = null
+        latest.current = {
+          recordId: result.recordId,
+          updatedAt: result.updatedAt,
+        }
+        setRecordId(result.recordId)
+        setErrors([])
+        saved?.({ created })
 
-        if (result.status === "done") {
-          latest.current = {
-            recordId: result.recordId,
-            updatedAt: result.updatedAt,
-          }
-          setRecordId(result.recordId)
-          setUpdatedAt(result.updatedAt)
-          setSaving("saved")
-          setMessage(undefined)
-          next = queued.current
-          queued.current = null
-        } else if (result.status === "stale") {
-          setStale(true)
-          failed("Not saved. Someone else saved this record.")
+        return { status: "saved" }
+      }
 
-          return false
-        } else if (result.status === "invalid") {
-          failed(
-            `Not saved: ${result.errors.map((error) => error.message).join("; ")}`
-          )
+      if (result.status === "stale") {
+        setStale(true)
 
-          return false
-        } else {
-          failed(`Not saved. ${result.message}`)
+        return { status: "refused", message: "Someone else saved this record." }
+      }
 
-          return false
+      if (result.status === "invalid") {
+        setErrors(result.errors)
+
+        return {
+          status: "refused",
+          message: result.errors.map((error) => error.message).join("; "),
         }
       }
 
-      return true
-    } catch {
-      failed("Not saved. The connection failed.")
-
-      return false
-    } finally {
-      busy.current = false
-    }
-  }
-
-  // Saves a moment after the last edit.
-  function changed(values: FormValues) {
-    newest.current = values
-    clearTimeout(timer.current)
-    timer.current = setTimeout(() => void saveValues(values), 600)
-  }
-
-  // An edit made while this waits is the one saved, never the older copy it
-  // was called with.
-  async function saveNow(values: FormValues): Promise<boolean> {
-    newest.current = values
-
-    while (busy.current) {
-      await new Promise((resolve) => setTimeout(resolve, 50))
+      // The server said why in words, such as a record no longer a draft:
+      // trying again would not change it.
+      return { status: "refused", message: result.message }
     }
 
-    clearTimeout(timer.current)
-    queued.current = null
+    const created = createAutosave<FormValues>({
+      send,
+      delay: AUTOSAVE_DELAY,
+      retryDelay: RETRY_DELAY,
+      onState: setState,
+    })
 
-    return saveValues(newest.current)
-  }
+    // Back online, a failed save goes at once rather than at the next retry.
+    const online = () => void created.flush()
 
-  // What the foot of the sheet says: the last message, else how saving went.
+    saver.current = created
+    window.addEventListener("online", online)
+
+    return () => {
+      window.removeEventListener("online", online)
+      created.dispose()
+      saver.current = null
+    }
+  }, [])
+
+  // What the foot of the sheet says: what the last step said, else how
+  // saving went.
   let footLine = message
 
-  if (!footLine && saving === "saving") {
-    footLine = "Saving…"
-  } else if (!footLine && saving === "saved") {
-    footLine = "✓ Saved"
+  if (!footLine && state) {
+    footLine =
+      state.status === "refused"
+        ? `${footLines.refused} ${state.message}`
+        : footLines[state.status]
+  }
+
+  function flush() {
+    return saver.current?.flush() ?? Promise.resolve(true)
   }
 
   return {
     recordId,
     latest,
-    changed,
-    saveNow,
     footLine,
     stale,
+    errors,
     setStale,
     setMessage,
+    // An edit: saved a moment after editing stops.
+    changed(values: FormValues) {
+      setMessage(undefined)
+      saver.current?.edit(values)
+    },
+    // Saves anything waiting now, and says whether everything is saved.
+    flush,
+    // Saves these values now, or what is waiting when none are given.
+    saveNow(values?: FormValues) {
+      if (values) {
+        saver.current?.edit(values)
+      }
+
+      return flush()
+    },
+    unsaved() {
+      return saver.current?.unsaved() ?? false
+    },
+    // Gives up on anything unsaved, such as before a reload.
+    discard() {
+      saver.current?.dispose()
+    },
+    updatedAt() {
+      return latest.current.updatedAt
+    },
+    // A step such as Submit moved the record on.
     setRecord(next: { recordId: string; updatedAt: string }) {
+      latest.current = { recordId: next.recordId, updatedAt: next.updatedAt }
       setRecordId(next.recordId)
-      setUpdatedAt(next.updatedAt)
     },
   }
 }
+
+export type Sheet = ReturnType<typeof useAutosave>

@@ -169,6 +169,13 @@
       "when": 1794493998290,
       "tag": "0023_sent_back",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1794866684707,
+      "tag": "0024_client_changed",
+      "breakpoints": true
     }
   ]
 }

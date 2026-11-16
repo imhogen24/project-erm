@@ -13,8 +13,8 @@ const template = "2.0 Standard email template"
 const whenSent = "Filled in when the email is sent"
 
 // The acknowledgement email the client gets once their request is recorded.
-// The OM prepares it, and it saves by itself; the PM sends it, which is the
-// PM's approval of D1.4 (server/acknowledgement). It goes from the noreply
+// The OM prepares it; the PM sends it, which is the PM's approval of D1.4
+// (server/acknowledgement). It goes from the noreply
 // address; Sent By is the project's OM, the IMHOGEN rep it comes from. One
 // definition serves both tiers. The sheet is the source:
 // docs/dev_docs/WORKBOOK_01, D1.4.
@@ -22,7 +22,7 @@ export const d14 = defineTool({
   id: "D1.4",
   name: "Acknowledgement Email",
   workbook: "wb01",
-  autosave: true,
+  approvedBySending: true,
   fields: [
     {
       key: "sentTo",

@@ -449,6 +449,77 @@ test("the PM sees a submitted D1.2 read only, approves it, and D1.3 opens", asyn
   await expect(page.getByText(/This tool opens after/)).toHaveCount(0)
 })
 
+test("the PM sends D1.2 back with a reason, the OM changes it and submits again", async ({
+  browser,
+}) => {
+  test.slow()
+
+  const { project, om, pm } = await setUp()
+
+  await addRecord(project.id, "D1.2", "submitted", {
+    payload: saved("Proceed to D1.3", ["Pass", "Pass", "Pass"], ["Side", ""]),
+    submittedBy: om.id,
+  })
+
+  const pmPage = await browser.newPage()
+
+  await open(pmPage, pm.email, project.id)
+  await expect(pmPage.getByRole("button", { name: "Approve" })).toBeVisible()
+  await pmPage.getByRole("button", { name: "Send back", exact: true }).click()
+
+  const confirm = pmPage.getByRole("button", {
+    name: "Send back to the writer",
+  })
+
+  await expect(confirm).toBeDisabled()
+  await pmPage
+    .getByLabel("What needs changing?")
+    .fill("Describe the second photo.")
+  await confirm.click()
+  await expect(pmPage.getByText("Sent back to the writer.")).toBeVisible()
+  await expect(pmPage.getByRole("button", { name: "Approve" })).toHaveCount(0)
+  await pmPage.close()
+
+  const omPage = await browser.newPage()
+
+  await open(omPage, om.email, project.id)
+  await expect(omPage.getByText("Sent back for changes")).toBeVisible()
+  await expect(omPage.getByText("Describe the second photo.")).toBeVisible()
+  await expect(description(omPage, "Photo 2")).toBeEditable()
+  await description(omPage, "Photo 2").fill("Front of the house")
+  await submit(omPage).click()
+  await expect(omPage.getByText("Submitted.")).toBeVisible()
+  await omPage.close()
+
+  const again = await browser.newPage()
+
+  await open(again, pm.email, project.id)
+  await expect(description(again, "Photo 2")).toHaveValue("Front of the house")
+  await expect(again.getByRole("button", { name: "Approve" })).toBeVisible()
+  await expect(
+    again.getByRole("button", { name: "Send back", exact: true })
+  ).toBeVisible()
+  await again.close()
+})
+
+test("Cancel closes the send back form and keeps D1.2 with the PM", async ({
+  page,
+}) => {
+  const { project, om, pm } = await setUp()
+
+  await addRecord(project.id, "D1.2", "submitted", {
+    payload: saved("Proceed to D1.3", ["Pass", "Pass", "Pass"], ["Side", ""]),
+    submittedBy: om.id,
+  })
+  await open(page, pm.email, project.id)
+  await page.getByRole("button", { name: "Send back", exact: true }).click()
+  await page.getByLabel("What needs changing?").fill("Not yet")
+  await page.getByRole("button", { name: "Cancel" }).click()
+
+  await expect(page.getByLabel("What needs changing?")).toHaveCount(0)
+  await expect(page.getByRole("button", { name: "Approve" })).toBeVisible()
+})
+
 test("a Tier 3 project says Proceed to D1.3a", async ({ page }) => {
   const { project, om } = await setUp("Tier_3")
 

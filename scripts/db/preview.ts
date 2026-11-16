@@ -73,6 +73,12 @@ export const previews: Preview[] = [
     expect: `On ${DEV_UNLOCKED} (Tier 1), D1.2: press Reject as Spam, then press it again: neither decision is chosen. Press Proceed, then Reject: it switches in one press. With neither chosen, Submit for approval says Choose a triage decision to submit, and nothing is sent. Save draft with neither chosen and reload: still neither. Tab to a chosen decision and press Space: it lets go. Pass and Fail in the checks, Yes and No answers and every other one-of-a-few choice let go the same way.`,
   },
   {
+    screen: "Sending D1.2 back (RDP-157)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.2`,
+    expect: `On ${DEV_UNLOCKED} (Tier 1), log in as the OM, ${loginFor("OM")}, fill in D1.2 and press Submit for approval. Then, as the PM, ${loginFor("PM")}, the submitted D1.2 has Send back beside Approve. Send back opens What needs changing?; Send back to the writer stays off until a reason is typed, then says Sent back to the writer. As the OM again, D1.2 is editable with Sent back for changes and the PM's reason at the top. Change it and submit again: the PM sees Approve and Send back once more.`,
+  },
+  {
     screen: "Projects that need a team (IT/Admin)",
     loginAs: "IT/Admin",
     path: () => "/admin/team",

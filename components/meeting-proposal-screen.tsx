@@ -1,8 +1,7 @@
 "use client"
 
 import { CheckIcon, PlusIcon, XIcon } from "@phosphor-icons/react"
-import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState, useTransition } from "react"
+import { useState, useTransition } from "react"
 
 import { DatePicker } from "@/components/date-picker"
 import { TimeInput } from "@/components/time-input"
@@ -14,6 +13,7 @@ import {
   DataTable,
   TableBox,
 } from "@/components/sheet-table"
+import { LeaveGuard, StaleNotice } from "@/components/unsaved-guard"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -43,26 +43,12 @@ import {
   sheetDate,
   zoneLabel,
 } from "@/lib/meeting-time"
-import type { FieldError, FormValues } from "@/lib/tool-definition"
-
-type Result =
-  | { status: "done"; recordId: string; updatedAt: string }
-  | {
-      status: "invalid"
-      errors: FieldError[]
-      recordId?: string
-      updatedAt?: string
-    }
-  | { status: "stale" }
-  | { status: "error"; message: string }
-
-type Save = {
-  projectId: string
-  toolId: string
-  cycle: number
-  values: FormValues
-  expectedUpdatedAt?: string
-}
+import type { FormValues } from "@/lib/tool-definition"
+import {
+  useAutosave,
+  type SaveInput as Save,
+  type SaveResult as Result,
+} from "@/lib/use-autosave"
 
 type Props = {
   projectId: string
@@ -92,8 +78,6 @@ const sentWidths =
   "minmax(0,calc(100%/var(--page-columns,5))) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr)"
 
 const detailWidths = "minmax(0,calc(100%/var(--page-columns,5))) minmax(0,1fr)"
-
-const STALE = "Someone else saved this record. Reload to see their changes."
 
 const emptySlot: Slot = { date: "", time: "", timeZone: DEFAULT_ZONE }
 
@@ -142,7 +126,6 @@ export function MeetingProposalScreen({
   sendTimes,
   confirm,
 }: Props) {
-  const router = useRouter()
   const [pending, startTransition] = useTransition()
 
   const sent = saved.sentToClientAt !== undefined
@@ -168,35 +151,14 @@ export function MeetingProposalScreen({
     setEditing(!saved.sentToClientAt)
   }
 
-  const [recordId, setRecordId] = useState(savedRecordId)
-  const [updatedAt, setUpdatedAt] = useState(savedUpdatedAt)
-  const [seen, setSeen] = useState({ id: savedRecordId, at: savedUpdatedAt })
-
-  if (seen.id !== savedRecordId || seen.at !== savedUpdatedAt) {
-    setSeen({ id: savedRecordId, at: savedUpdatedAt })
-    setRecordId(savedRecordId)
-    setUpdatedAt(savedUpdatedAt)
-  }
-
-  const [message, setMessage] = useState<string>()
-  const [saving, setSaving] = useState<"idle" | "saving" | "saved">("idle")
-  const [stale, setStale] = useState(false)
-
-  // Saves follow each other faster than the screen renders, so the newest
-  // record and time are held in a ref, and an edit made during a save is
-  // saved right after it.
-  const latest = useRef({ recordId, updatedAt })
-  const busy = useRef(false)
-  const queued = useRef<FormValues | null>(null)
-  const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
-
-  useEffect(() => {
-    if (!busy.current) {
-      latest.current = { recordId, updatedAt }
-    }
-  }, [recordId, updatedAt])
-
-  useEffect(() => () => clearTimeout(timer.current), [])
+  const sheet = useAutosave({
+    projectId,
+    toolId: "D1.5",
+    cycle,
+    recordId: savedRecordId,
+    updatedAt: savedUpdatedAt,
+    save,
+  })
 
   function valuesOf(rows: Slot[], held: Details): FormValues {
     return {
@@ -216,93 +178,8 @@ export function MeetingProposalScreen({
     }
   }
 
-  // Saves the values, then anything typed while that save was on its way.
-  // True only when everything typed is saved. A failure drops what was
-  // queued: the next edit saves the whole sheet again, so nothing is lost,
-  // and an older copy is never saved over a newer one.
-  async function autosave(values: FormValues): Promise<boolean> {
-    if (busy.current) {
-      queued.current = values
-
-      return false
-    }
-
-    busy.current = true
-    setSaving("saving")
-
-    function failed(line: string) {
-      queued.current = null
-      setSaving("idle")
-      setMessage(line)
-    }
-
-    try {
-      let next: FormValues | null = values
-
-      while (next) {
-        const result = await save({
-          projectId,
-          toolId: "D1.5",
-          cycle,
-          values: next,
-          expectedUpdatedAt: latest.current.updatedAt,
-        })
-
-        next = null
-
-        if (result.status === "done") {
-          latest.current = {
-            recordId: result.recordId,
-            updatedAt: result.updatedAt,
-          }
-          setRecordId(result.recordId)
-          setUpdatedAt(result.updatedAt)
-          setSaving("saved")
-          setMessage(undefined)
-          next = queued.current
-          queued.current = null
-        } else if (result.status === "stale") {
-          setStale(true)
-          failed("Not saved. Someone else saved this record.")
-
-          return false
-        } else if (result.status === "invalid") {
-          failed(
-            `Not saved: ${result.errors.map((error) => error.message).join("; ")}`
-          )
-
-          return false
-        } else {
-          failed(`Not saved. ${result.message}`)
-
-          return false
-        }
-      }
-
-      return true
-    } catch {
-      failed("Not saved. The connection failed.")
-
-      return false
-    } finally {
-      busy.current = false
-    }
-  }
-
-  // Waits for a save on its way, then saves what is on screen now.
-  async function saveNow(values: FormValues): Promise<boolean> {
-    while (busy.current) {
-      await new Promise((resolve) => setTimeout(resolve, 50))
-    }
-
-    queued.current = null
-
-    return autosave(values)
-  }
-
   function changed(rows: Slot[], held: Details) {
-    clearTimeout(timer.current)
-    timer.current = setTimeout(() => void autosave(valuesOf(rows, held)), 600)
+    sheet.changed(valuesOf(rows, held))
   }
 
   function setSlot(index: number, change: Partial<Slot>) {
@@ -327,33 +204,31 @@ export function MeetingProposalScreen({
   }
 
   function run(step: () => Promise<Result>, saidDone: string) {
-    clearTimeout(timer.current)
-    setMessage(undefined)
+    sheet.setMessage(undefined)
     startTransition(async () => {
       // What was typed is saved first, so the step reads it. When that save
       // fails, the step does not run: it would read an older copy.
-      if (canWrite && !(await saveNow(valuesOf(slots, details)))) {
+      if (canWrite && !(await sheet.saveNow(valuesOf(slots, details)))) {
         return
       }
 
+      // Every step revalidates the page, so its response draws the page again.
       const result = await step()
 
       if (result.status === "done") {
-        setRecordId(result.recordId)
-        setUpdatedAt(result.updatedAt)
-        setMessage(saidDone)
-        router.refresh()
+        sheet.setRecord(result)
+        sheet.setMessage(saidDone)
 
         return
       }
 
       if (result.status === "stale") {
-        setStale(true)
+        sheet.setStale(true)
 
         return
       }
 
-      setMessage(
+      sheet.setMessage(
         result.status === "invalid"
           ? result.errors.map((error) => error.message).join("; ")
           : result.message
@@ -391,12 +266,11 @@ export function MeetingProposalScreen({
     ? meetingInstant(proposed.date, proposed.time, proposed.timeZone)
     : undefined
 
-  let footLine = message
+  const footLine = sheet.footLine
 
-  if (!footLine && saving === "saving") {
-    footLine = "Saving…"
-  } else if (!footLine && saving === "saved") {
-    footLine = "✓ Saved"
+  // The record a step acts on, once the save before it is done.
+  function stepId() {
+    return sheet.latest.current.recordId!
   }
 
   return (
@@ -747,10 +621,7 @@ export function MeetingProposalScreen({
               <ActionButton
                 disabled={pending || toSend.length > 0}
                 onClick={() =>
-                  run(
-                    () => sendTimes({ recordId: latest.current.recordId! }),
-                    "Sent."
-                  )
+                  run(() => sendTimes({ recordId: stepId() }), "Sent.")
                 }
               >
                 Send to client
@@ -780,10 +651,7 @@ export function MeetingProposalScreen({
                 <ActionButton
                   disabled={pending || toConfirm.length > 0 || !chosen}
                   onClick={() =>
-                    run(
-                      () => confirm({ recordId: latest.current.recordId! }),
-                      "Confirmed."
-                    )
+                    run(() => confirm({ recordId: stepId() }), "Confirmed.")
                   }
                 >
                   Confirm meeting
@@ -798,21 +666,8 @@ export function MeetingProposalScreen({
           )}
         </SheetActions>
       )}
-      {stale && (
-        <div
-          role="alert"
-          className="flex flex-col gap-3 border border-destructive/40 p-4 sm:flex-row sm:items-center sm:justify-between"
-        >
-          <p className="text-sm text-destructive">{STALE}</p>
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => window.location.reload()}
-          >
-            Reload
-          </Button>
-        </div>
-      )}
+      {sheet.stale && <StaleNotice sheet={sheet} />}
+      {canWrite && <LeaveGuard sheet={sheet} />}
     </div>
   )
 }

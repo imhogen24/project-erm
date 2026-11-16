@@ -100,7 +100,7 @@ import {
   confirmMeetingAction,
   proposeMeetingTimeAction,
   readyForMeetingAction,
-  saveDraftAction,
+  autosaveDraftAction,
   sendAlignmentInviteAction,
   sendBackRecordAction,
   sendCalendarInviteAction,
@@ -607,7 +607,7 @@ export default async function Page({
         view.state !== "locked" &&
         view.project.status === "active"
       }
-      save={saveDraftAction}
+      save={autosaveDraftAction}
       sendInvite={sendCalendarInviteAction}
       ready={readyForMeetingAction}
     />
@@ -633,7 +633,7 @@ export default async function Page({
         view.state !== "locked" &&
         view.project.status === "active"
       }
-      save={saveDraftAction}
+      save={autosaveDraftAction}
       sendTimes={sendMeetingTimesAction}
       confirm={confirmMeetingAction}
     />
@@ -672,7 +672,7 @@ export default async function Page({
           canWrite={false}
           canApprove={false}
           signable={[]}
-          save={saveDraftAction}
+          save={autosaveDraftAction}
           submit={submitRecordAction}
           sign={signFieldAction}
           approve={approveRecordAction}
@@ -692,7 +692,7 @@ export default async function Page({
       tier3={overview?.serviceTrack === "Tier_3"}
       canWrite={view.can.write}
       canApprove={view.can.approve}
-      save={saveDraftAction}
+      save={autosaveDraftAction}
       submit={submitRecordAction}
       approve={approveRecordAction}
     />
@@ -725,13 +725,14 @@ export default async function Page({
         canWrite={view.can.write}
         canApprove={view.can.approve}
         signable={view.can.sign}
-        save={saveDraftAction}
+        save={autosaveDraftAction}
         submit={submitRecordAction}
         sign={signFieldAction}
         approve={approveRecordAction}
         send={send}
         sendBack={sendBackRecordAction}
         sentBack={sentBack ?? undefined}
+        refreshOnSave={meetingActions !== undefined}
       />
       {meetingActions}
     </div>

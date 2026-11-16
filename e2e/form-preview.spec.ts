@@ -112,22 +112,68 @@ test("a field with no error shows no message", async ({ page }) => {
   )
 })
 
-test("Save draft sends the values even with a required field empty", async ({
+// The form saves by itself a moment after the last change, so this waits
+// until the newest save holds what the test checks.
+async function whenSaved(
+  page: Page,
+  check: (values: z.output<typeof sentSchema>["values"]) => void
+) {
+  await expect(async () => {
+    const sent = await lastSent(page)
+
+    expect(sent.action).toBe("save")
+    check(sent.values)
+  }).toPass()
+}
+
+test("there is no Save draft: Submit for approval is the only button", async ({
   page,
 }) => {
   await openPreview(page)
-  await page.getByRole("button", { name: "Save draft" }).click()
 
-  const sent = await lastSent(page)
+  await expect(page.getByRole("button", { name: "Save draft" })).toHaveCount(0)
+  await expect(
+    page.getByRole("button", { name: "Submit for approval" })
+  ).toBeVisible()
+})
 
-  expect(sent.action).toBe("save")
-  expect(sent.values.projectName).toBe("")
+test("typing saves the values by itself, even with a required field empty", async ({
+  page,
+}) => {
+  await openPreview(page)
+  await page.getByLabel("Notes").fill("Half done")
+
+  await whenSaved(page, (values) => {
+    expect(values.notes).toBe("Half done")
+    expect(values.projectName).toBe("")
+  })
+})
+
+test("nothing saves before the person changes something", async ({ page }) => {
+  await openPreview(page)
+
+  await expect(page.getByLabel("Last sent")).toHaveText("Nothing sent yet.")
+})
+
+test("Submit cancels a save still waiting to go", async ({ page }) => {
+  await openPreview(page)
+  await page.getByLabel("Project name").fill("Boiler retrofit")
+  await page.getByRole("button", { name: "Submit" }).click()
+
+  await expect(page.getByLabel("Last sent")).toContainText('"submit"')
+
+  // Longer than the wait before a save: nothing saves over the submit.
+  await page.waitForTimeout(1500)
+
+  expect((await lastSent(page)).action).toBe("submit")
 })
 
 test("Submit sends the values with the submit action", async ({ page }) => {
   await openPreview(page)
   await page.getByLabel("Project name").fill("Boiler retrofit")
   await page.getByRole("button", { name: "Submit" }).click()
+
+  await expect(page.getByLabel("Last sent")).toContainText('"submit"')
 
   const sent = await lastSent(page)
 
@@ -144,17 +190,18 @@ test("every type sends the value it was given", async ({ page }) => {
   await page.getByRole("checkbox", { name: "Client approved" }).click()
   await page.getByRole("combobox", { name: "Priority" }).click()
   await page.getByRole("option", { name: "High" }).click()
-  await page.getByRole("button", { name: "Save draft" }).click()
 
-  expect((await lastSent(page)).values).toMatchObject({
-    projectName: "Boiler retrofit",
-    notes: "Two lines\nof notes",
-    quantity: 12,
-    dueDate: "2026-12-01",
-    approved: true,
-    priority: "High",
-    clientName: "Ama Owusu",
-  })
+  await whenSaved(page, (values) =>
+    expect(values).toMatchObject({
+      projectName: "Boiler retrofit",
+      notes: "Two lines\nof notes",
+      quantity: 12,
+      dueDate: "2026-12-01",
+      approved: true,
+      priority: "High",
+      clientName: "Ama Owusu",
+    })
+  )
 })
 
 test("clicking a label focuses its input", async ({ page }) => {

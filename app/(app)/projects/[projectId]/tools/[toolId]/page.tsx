@@ -13,7 +13,10 @@ import { MeetingProposalScreen } from "@/components/meeting-proposal-screen"
 import { MobileBar } from "@/components/mobile-bar"
 import { RecordForm } from "@/components/record-form"
 import { ClientRequestForm } from "@/components/client-request-form"
-import { ClientRequestTables } from "@/components/client-request-tables"
+import {
+  ClientRequestTables,
+  type ChangedFile,
+} from "@/components/client-request-tables"
 import { RetryEmail } from "@/components/retry-email"
 import { ToolSheet } from "@/components/tool-sheet"
 import { TriageScreen } from "@/components/triage-screen"
@@ -31,7 +34,11 @@ import {
 } from "@/server/acknowledgement/acknowledgement"
 import { acknowledgementDelivery } from "@/server/acknowledgement/delivery"
 import { getDatabase } from "@/server/database"
-import { clientAnswersOf } from "@/server/intake/client-requests"
+import {
+  clientAnswersOf,
+  clientChangesOf,
+  type ClientChanges,
+} from "@/server/intake/client-requests"
 import { getClientRequestPreview } from "@/server/intake/preview"
 import { agendaOf } from "@/lib/calendar-agenda"
 import { notesStart } from "@/lib/meeting-notes"
@@ -158,6 +165,33 @@ function toState(state: string): RecordState {
   return recordStates.find((each) => each === state) ?? "draft"
 }
 
+// D1.1's files the client added or took off the last time they sent it again,
+// by name. An added file is named from D1.1's current list.
+function changedFilesOf(
+  changes: ClientChanges | null,
+  values: FormValues
+): ChangedFile[] {
+  if (!changes) {
+    return []
+  }
+
+  const current = clientFilesPayload.parse(values).attachedFiles
+
+  const removed = clientFilesPayload.parse({
+    attachedFiles: changes.removedFiles,
+  }).attachedFiles
+
+  return [
+    ...current
+      .filter((file) => changes.addedFiles.includes(file.fileLink))
+      .map((file) => ({ name: file.label, change: "Added" as const })),
+    ...removed.map((file) => ({
+      name: file.label,
+      change: "Removed" as const,
+    })),
+  ]
+}
+
 export default async function Page({
   params,
 }: {
@@ -221,10 +255,19 @@ export default async function Page({
     }
   }
 
+  // D1.1 marks what the client changed the last time they sent it again,
+  // until the next change request is approved. Whoever reached this screen
+  // may read D1.1.
+  const clientChanges =
+    toolId === "D1.1" && view.state === "locked"
+      ? await clientChangesOf(getDatabase(), session.user.id, projectId)
+      : null
+
   const clientRequest = await getClientRequestPreview(
     getDatabase(),
     session.user.id,
-    projectId
+    projectId,
+    clientChanges?.answers
   )
 
   // D1.2 shows where the request came from, read live, whether or not it has
@@ -657,7 +700,10 @@ export default async function Page({
   ) : webForm ? (
     <div className="flex flex-col gap-8">
       {clientRequest ? (
-        <ClientRequestTables request={clientRequest} />
+        <ClientRequestTables
+          request={clientRequest}
+          changedFiles={changedFilesOf(clientChanges, values)}
+        />
       ) : (
         <p className="text-muted-foreground">This project has no web form.</p>
       )}

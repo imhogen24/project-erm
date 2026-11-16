@@ -1,5 +1,7 @@
 import { expect, test, type Page } from "@playwright/test"
 
+import { handoffChecklist, handoffDirectives } from "@/lib/handoff"
+
 import {
   addRecord,
   giveRoles,
@@ -43,9 +45,22 @@ async function open(
   await page.goto(`/projects/${projectId}/tools/${toolId}`)
 }
 
-// D1.8 has no required field. D1.16, still one date the LE may leave empty,
-// opens once D1.15 is locked, after D1.14 with the minimum overhead met,
-// D1.10 capable and D1.11 a Go.
+// D1.8 has no required field. D1.16 opens once D1.15 is locked, after D1.14
+// with the minimum overhead met, D1.10 capable and D1.11 a Go.
+// A D1.16 with every required answer in.
+const handoff = {
+  meetingDate: "2026-11-20",
+  meetingTime: "10:00",
+  scopeSummary: "A 3D model and drawings.",
+  paymentTerms: "40% advance, 60% handover",
+  directives: handoffDirectives.map((each) => ({
+    category: each.category,
+    directive: "Write it into the contract.",
+    source: each.source,
+  })),
+  checklist: handoffChecklist.map((each) => ({ ...each, status: "Done" })),
+}
+
 async function lockThroughD115(projectId: string) {
   await lockEarlierTools(projectId)
 
@@ -165,6 +180,7 @@ test("submitting a complete form makes it submitted and read only", async ({
   const { project, lead } = await setUp()
 
   await lockThroughD115(project.id)
+  await addRecord(project.id, "D1.16", "draft", { payload: handoff })
   await open(page, lead.email, project.id, "D1.16")
   await page.getByRole("button", { name: "Submit" }).click()
 

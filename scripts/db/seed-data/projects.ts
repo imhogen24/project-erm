@@ -145,9 +145,9 @@ export const client: Client = {
 // The tool being built, on each tier. Each time a tool is built these move on
 // to it, and the projects below move with them. A tier the tool does not
 // serve names the tool that takes its place there.
-export const CURRENT_TOOL = "D1.15"
+export const CURRENT_TOOL = "D1.16"
 
-const CURRENT_TIER_3_TOOL = "T3.D1.15a"
+const CURRENT_TIER_3_TOOL = "D1.16"
 
 export function currentToolFor(track: ServiceTrack) {
   return track === "Tier_1" ? CURRENT_TOOL : CURRENT_TIER_3_TOOL

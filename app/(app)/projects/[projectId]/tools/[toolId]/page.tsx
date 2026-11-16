@@ -83,6 +83,8 @@ import {
 import { COST_ESTIMATION } from "@/lib/cost-estimation"
 import { costStart, costValues } from "@/server/cost/cost-estimation"
 import { PROJECT_BRIEF, T3_QUOTE } from "@/lib/project-brief"
+import { HANDOFF } from "@/lib/handoff"
+import { handoffStart, handoffValues } from "@/server/handoff/handoff"
 import {
   briefStart,
   briefValues,
@@ -511,6 +513,23 @@ export default async function Page({
 
     // SAFETY: the system's values are built for T3.D1.15a's own fields.
     const system = (await quoteValues(getDatabase(), projectId)) as FormValues
+
+    formValues = { ...formValues, ...system }
+  }
+
+  // D1.16: who hands off and receives, the client, the value and the link to
+  // the brief are the system's; the terms, directives and checklist start
+  // from the brief and the sheet.
+  if (toolId === HANDOFF) {
+    if (!view.record && view.can.write) {
+      // SAFETY: the starting values are built for D1.16's own fields.
+      const start = (await handoffStart(getDatabase(), projectId)) as FormValues
+
+      formValues = { ...start, ...formValues }
+    }
+
+    // SAFETY: the system's values are built for D1.16's own fields.
+    const system = (await handoffValues(getDatabase(), projectId)) as FormValues
 
     formValues = { ...formValues, ...system }
   }

@@ -20,6 +20,9 @@ const approved = toolProjectName("Tier_1", "locked")
 
 const tier3Tool = currentToolFor("Tier_3")
 
+const tools =
+  tier3Tool === CURRENT_TOOL ? CURRENT_TOOL : `${CURRENT_TOOL} and ${tier3Tool}`
+
 const writer = writerOf(CURRENT_TOOL)
 
 const approver = approverOf(CURRENT_TOOL)
@@ -40,28 +43,22 @@ export type Preview = {
 
 export const previews: Preview[] = [
   {
-    screen: `${CURRENT_TOOL} and ${tier3Tool}, the tools being built, from every role's side`,
+    screen: `${tools}, being built, from every role's side`,
     loginAs: writer,
     path: () => "/",
     expect: `Your projects starts with three for ${CURRENT_TOOL} on Tier 1 and three for ${tier3Tool} on Tier 3: 1 Fill in (${writer}) has every tool before it locked and the tool open and empty for the ${writer}, ${loginFor(writer)}. 2 Approve (${approver}) has it submitted and waiting for the ${approver}, ${loginFor(approver)}, with Approve and Send back. 3 Approved has it locked. Everyone is on every one of them, so log in as any role (om@, pm@, le@, he@, qa@ ... @imhogen.test) to see what that role reads, and as the client, ${client.email}, to see what they get. Every password is password.`,
   },
   {
-    screen: "D1.15 project brief & draft budget, as the LE",
+    screen: "D1.16 handoff meeting minutes, as the LE",
     loginAs: "LE",
-    path: (id) => `/projects/${id}/tools/D1.15`,
-    expect: `On ${fillIn}: 1.0 is the system's: Reference Request ID, Client / Organization Name, Primary Contact Person, Contact Email / Phone (from the web request), Project Title, Estimated Project Duration (D1.12's realistic timeline); Target Start Date to choose. Project Vision, the phases, Out of Scope and Client Dependencies start from D1.13, and 4.0's budget lines and their values from D1.14's allocations, with Total Estimated Investment under them; each line needs a Payment Schedule. Add Primary Objectives. The Notice reads as on the sheet. Sign Head of R&D Signature, then Submit for approval: refused while the budget does not add up to D1.14's total project value.`,
+    path: (id) => `/projects/${id}/tools/D1.16`,
+    expect: `On ${fillIn}: 1.0 has Meeting Date and Meeting Time to choose; Reference Request ID, Lead Engineer (Handing Off), Contract Admin (Receiving), Project/Client Name and Project Value (GHS), D1.15's budget total, are the system's. 2.0: the reference document D1.15 Project Brief & Draft Budget with Open; Scope Summary to write; Payment Terms Agreed starts from D1.15's payment schedules. 3.0: Scope Exclusion, Timeline Risk and Financial Risk locked in place, each with its source (D1.13, D1.11, D1.15) and a directive to write; Add row for more. 4.0: the three checklist tasks with their assignees and a Pending / Done status. Sign Engineering Release and submit. On the Tier 3 projects the brief is T3.D1.15a.`,
   },
   {
-    screen: "D1.15 approval as the PM, and the client's copy",
+    screen: "D1.16 approval, as the PM",
     loginAs: "PM",
-    path: (id) => `/projects/${id}/tools/D1.15`,
-    expect: `On ${approve}: the LE's brief, read only, with Sign on Signature/Date, then Approve and Send back; approving locks it and opens D1.16. The client, ${client.email}, sees IMHOGEN shares this with you once it is approved until then, and the whole brief on ${approved}.`,
-  },
-  {
-    screen: "T3.D1.15a drafting SOW & quote, as the LE and the PM",
-    loginAs: "LE",
-    path: (id) => `/projects/${id}/tools/T3.D1.15a`,
-    expect: `On ${toolProjectName("Tier_3", "open")}: Project Request ID, then 1.0 with 3D Modeling, Drafting Package and BOM Extraction locked in place, their description and format filled in, for Qty and Delivery Timeline (a row left empty is fine; Add row for more). 2.0: the three pricing lines with Rate and Qty; each Subtotal and the Total T3 Project Value fill in as you type. 3.0: the three mandatory exclusions locked in place; Add row for more. Sign Lead Engineer Signature and submit. The PM (${loginFor("PM")}) approves on ${toolProjectName("Tier_3", "submitted")}; the client reads it once approved.`,
+    path: (id) => `/projects/${id}/tools/D1.16`,
+    expect: `On ${approve}: the LE's minutes, read only, with Sign on Contracting Acceptance, then Approve and Send back. Approving locks it, which closes Workbook 1. On ${approved} it reads locked. The OM, HE and IT/Admin read it; the client does not see it.`,
   },
   {
     screen: "Every tool built, locked or open",

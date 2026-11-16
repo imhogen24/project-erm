@@ -58,6 +58,8 @@ type Props = {
     timeZone: string
     comment?: string
   }) => Promise<Result>
+  // What the meeting is called, such as "discovery meeting".
+  meetingName?: string
 }
 
 function noChange() {
@@ -113,6 +115,7 @@ export function MeetingChoice({
   open,
   choose,
   propose,
+  meetingName = "discovery meeting",
 }: Props) {
   const router = useRouter()
   const localZone = useLocalZone()
@@ -163,7 +166,7 @@ export function MeetingChoice({
 
   if (locked && saved.agreedDate && saved.agreedTime && saved.agreedTimeZone) {
     return (
-      <TableBox title="Your discovery meeting">
+      <TableBox title={`Your ${meetingName}`}>
         <div className="flex flex-col gap-4 px-4 py-4">
           <When
             slot={{
@@ -204,7 +207,7 @@ export function MeetingChoice({
 
   return (
     <div className="flex flex-col gap-8">
-      <TableBox title="Choose a time for your discovery meeting">
+      <TableBox title={`Choose a time for your ${meetingName}`}>
         <div className="flex flex-col gap-5 px-4 py-4">
           <RadioGroup
             aria-label="Meeting times"

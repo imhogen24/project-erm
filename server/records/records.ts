@@ -349,6 +349,22 @@ const actionForMove: Record<Exclude<RecordState, "void">, Action> = {
   locked: "approve",
 }
 
+// What the system wrote, such as an invite's time or a table the system
+// keeps, is not the writer's to answer, so submitting does not check it.
+function withoutSystemValues(toolId: string, payload: JsonObject): JsonObject {
+  const system = new Set(
+    (tools.getTool(toolId)?.fields ?? []).flatMap((field) =>
+      field.systemFilled || (field.type === "table" && field.readOnly)
+        ? [field.key]
+        : []
+    )
+  )
+
+  return Object.fromEntries(
+    Object.entries(payload).filter(([key]) => !system.has(key))
+  )
+}
+
 // Moves a record the caller has locked one step, and records who moved it and
 // when. Approving needs every signature field signed. Locking notifies the
 // people who write each tool the lock opens.
@@ -376,9 +392,22 @@ async function move(
   if (submitting) {
     const written = withoutInherited(current.toolId, current.payload)
 
-    assertValid(current.toolId, withoutSignatures(current.toolId, written), {
-      forSubmit: true,
-    })
+    assertValid(
+      current.toolId,
+      withoutSystemValues(
+        current.toolId,
+        withoutSignatures(current.toolId, written)
+      ),
+      { forSubmit: true }
+    )
+
+    const unmet = (tools.getTool(current.toolId)?.submitNeeds ?? []).filter(
+      (need) => !current.payload[need.field]
+    )
+
+    if (unmet.length > 0) {
+      throw new ValidationError(unmet)
+    }
 
     payload = {
       ...written,

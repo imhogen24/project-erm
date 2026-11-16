@@ -44,6 +44,9 @@ const proposal = z.object({
   calendarInviteSent: z.boolean().optional().catch(undefined),
   clientConfirmed: z.boolean().optional().catch(undefined),
   note: z.string().optional().catch(undefined),
+  // D1.13 books its meeting with its own calendar invite.
+  inviteSentAt: z.string().optional().catch(undefined),
+  inviteSequence: z.number().int().optional().catch(undefined),
 })
 
 export type MeetingProposal = z.infer<typeof proposal>
@@ -147,14 +150,27 @@ export type SchedulingContext = {
 // The sheet's standard scheduling email (docs/dev_docs/WORKBOOK_01, D1.5), with
 // the times listed. The client answers on their dashboard, so it asks them to
 // choose there, not to reply.
+export type MeetingPurpose = "discovery" | "alignment"
+
 export function schedulingEmail(
   context: Omit<SchedulingContext, "clientEmail">,
-  slots: Slot[]
+  slots: Slot[],
+  purpose: MeetingPurpose = "discovery"
 ): string {
+  const opening =
+    purpose === "alignment"
+      ? [
+          `Following our physical assessment and engineering review of your request for ${context.title} [${context.requestId}], we have completed our internal feasibility assessment and prepared a draft scope of work.`,
+          "We would like to meet with you to present our findings and agree the direction for the project before we proceed to detailed costing.",
+        ]
+      : [
+          `Following our initial review of your request for ${context.title} [${context.requestId}], we would like to meet with you.`,
+          "This 30-45 minute session will allow our engineering team to understand your operational constraints and exact technical needs.",
+        ]
+
   return [
     `Dear ${context.contact},`,
-    `Following our initial review of your request for ${context.title} [${context.requestId}], we would like to meet with you.`,
-    "This 30-45 minute session will allow our engineering team to understand your operational constraints and exact technical needs.",
+    ...opening,
     [
       "Please choose which of the following times works best for you on your IMHOGEN dashboard:",
       ...slots.map(

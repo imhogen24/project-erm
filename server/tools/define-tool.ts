@@ -358,6 +358,11 @@ const toolDefinition = z
     // The client reads the record only once it is locked: before, it holds
     // IMHOGEN's working notes.
     clientReadsOnceLocked: z.boolean().optional(),
+    // System-filled fields that must hold a value before the record can be
+    // submitted, each with what to say until then, such as an invite sent.
+    submitNeeds: z
+      .array(z.strictObject({ field: fieldKey, message: z.string().min(1) }))
+      .optional(),
     fields: z.array(field).min(1),
   })
   .refine(

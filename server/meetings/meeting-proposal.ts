@@ -19,6 +19,7 @@ import {
   proposalOf,
   schedulingEmail,
   type MeetingProposal,
+  type MeetingPurpose,
   type SchedulingContext,
 } from "@/lib/meeting-proposal"
 import type { Transaction } from "@/server/audit/audit"
@@ -42,6 +43,34 @@ import {
 } from "@/server/records/records"
 
 export const MEETING_PROPOSAL = "D1.5"
+
+// The alignment meeting held while drafting the scope of work (D1.13).
+export const ALIGNMENT_MEETING = "D1.13"
+
+type Meeting = { purpose: MeetingPurpose; team: Role[] }
+
+// The tools that book a meeting with the client the same way: the times sent,
+// the client's choice on their dashboard. Each names the meeting, and who on
+// the team is told when the client answers.
+function meetingOf(toolId: string): Meeting | undefined {
+  switch (toolId) {
+    case MEETING_PROPOSAL:
+      return { purpose: "discovery", team: ["OM", "PM"] }
+    case ALIGNMENT_MEETING:
+      return { purpose: "alignment", team: ["LE", "PM"] }
+    default:
+      return undefined
+  }
+}
+
+const meetingNames: Record<MeetingPurpose, string> = {
+  discovery: "discovery meeting",
+  alignment: "feasibility & engineering alignment meeting",
+}
+
+export function meetingNameOf(toolId: string): string {
+  return meetingNames[meetingOf(toolId)?.purpose ?? "discovery"]
+}
 
 // D1.5 cannot move on yet. Each entry says what is missing, in the words the
 // button shows.
@@ -96,6 +125,7 @@ export async function schedulingContext(
 type Loaded = {
   id: string
   projectId: string
+  toolId: string
   state: string
   payload: JsonObject
   projectStatus: string
@@ -120,8 +150,8 @@ async function loadProposal(
         .where(eq(toolRecords.id, recordId))
     : []
 
-  if (!record || record.toolId !== MEETING_PROPOSAL) {
-    throw new RecordNotFoundError(`No ${MEETING_PROPOSAL} record ${recordId}`)
+  if (!record || !meetingOf(record.toolId)) {
+    throw new RecordNotFoundError(`No meeting record ${recordId}`)
   }
 
   return record
@@ -159,8 +189,8 @@ async function holders(
   return rows.map((row) => row.personId)
 }
 
-function proposalPath(projectId: string) {
-  return `/projects/${projectId}/tools/${MEETING_PROPOSAL}`
+function proposalPath(projectId: string, toolId: string) {
+  return `/projects/${projectId}/tools/${toolId}`
 }
 
 // Clears what the client answered, for a fresh set of times.
@@ -206,9 +236,11 @@ export async function sendMeetingTimes(
 ): Promise<ToolRecord> {
   const record = await loadProposal(database, recordId)
 
-  await assertCan(database, actor, record.projectId, MEETING_PROPOSAL, "write")
+  await assertCan(database, actor, record.projectId, record.toolId, "write")
   assertOpen(record)
 
+  const purpose = meetingOf(record.toolId)!.purpose
+  const name = meetingNameOf(record.toolId)
   const context = await schedulingContext(database, record.projectId)
   const clientEmail = context.clientEmail
 
@@ -231,7 +263,7 @@ export async function sendMeetingTimes(
         timeZone: each.timeZone,
       }))
 
-      const text = schedulingEmail(context, times)
+      const text = schedulingEmail(context, times, purpose)
 
       const again =
         saved.sentToClientAt !== undefined &&
@@ -264,18 +296,18 @@ export async function sendMeetingTimes(
       await notify(transaction, {
         personIds: await holders(transaction, record.projectId, ["Client"]),
         kind: "client_slots_ready",
-        title: "Choose a time for your discovery meeting",
+        title: `Choose a time for your ${name}`,
         text: `${times.length === 1 ? "One time is" : `${times.length} times are`} waiting for you`,
         projectId: record.projectId,
         recordId,
-        path: proposalPath(record.projectId),
+        path: proposalPath(record.projectId, record.toolId),
       })
 
       return { updated: written, body: text, offer: sentAt }
     }
   )
 
-  const link = `${options.baseURL ?? requireEnv("BETTER_AUTH_URL")}${proposalPath(record.projectId)}`
+  const link = `${options.baseURL ?? requireEnv("BETTER_AUTH_URL")}${proposalPath(record.projectId, record.toolId)}`
 
   // SAFETY: the transaction refused a project with no client email.
   const sent = await sendEmail(
@@ -284,7 +316,7 @@ export async function sendMeetingTimes(
       to: clientEmail!,
       kind: "meeting_times",
       data: {
-        subject: `Choose a time for your discovery meeting [${context.requestId}]`,
+        subject: `Choose a time for your ${name} [${context.requestId}]`,
         body,
         link,
       },
@@ -348,18 +380,21 @@ function checkedComment(value: string | undefined): string | null {
 
 async function tellTeam(
   transaction: Transaction,
-  projectId: string,
-  recordId: string,
+  record: Loaded,
   title: string
 ) {
   await notify(transaction, {
-    personIds: await holders(transaction, projectId, ["OM", "PM"]),
+    personIds: await holders(
+      transaction,
+      record.projectId,
+      meetingOf(record.toolId)!.team
+    ),
     kind: "client_responded",
     title,
-    text: "D1.5 Meeting Time Proposal",
-    projectId,
-    recordId,
-    path: proposalPath(projectId),
+    text: `${record.toolId}: ${meetingNameOf(record.toolId)}`,
+    projectId: record.projectId,
+    recordId: record.id,
+    path: proposalPath(record.projectId, record.toolId),
   })
 }
 
@@ -419,12 +454,7 @@ export async function chooseMeetingTime(
       "draft"
     )
 
-    await tellTeam(
-      transaction,
-      record.projectId,
-      recordId,
-      "The client chose a meeting time"
-    )
+    await tellTeam(transaction, record, "The client chose a meeting time")
 
     return updated
   })
@@ -482,8 +512,7 @@ export async function proposeMeetingTime(
 
     await tellTeam(
       transaction,
-      record.projectId,
-      recordId,
+      record,
       "The client proposed another meeting time"
     )
 
@@ -501,6 +530,12 @@ export async function confirmMeeting(
   recordId: string
 ): Promise<ToolRecord> {
   const record = await loadProposal(database, recordId)
+
+  // D1.13 books its meeting with a calendar invite (server/scope) and locks
+  // only when its scope is approved.
+  if (record.toolId !== MEETING_PROPOSAL) {
+    throw new RecordNotFoundError(`No ${MEETING_PROPOSAL} record ${recordId}`)
+  }
 
   await assertCan(database, actor, record.projectId, MEETING_PROPOSAL, "write")
   assertOpen(record)

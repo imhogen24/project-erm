@@ -46,10 +46,12 @@ type Props = {
   // What the server found wrong. The form only shows it: one message under a
   // field, or under the exact cell of a table.
   errors?: ToolFieldError[]
-  onSave: (values: FormValues) => void
+  // Called with the whole form on each change the person makes, so it can be
+  // saved. Never for the form filling in.
+  onChange?: (values: FormValues) => void
   onSubmit: (values: FormValues) => void
   // A record that cannot be edited shows its values, with the fields disabled
-  // and no Save or Submit.
+  // and no Submit.
   readOnly?: boolean
   // The signature fields this person may sign now, and what Sign does. A
   // signature is never typed, so Sign stays usable on a read-only record.
@@ -59,17 +61,11 @@ type Props = {
   pending?: boolean
   // The saved record, so a stored file link can be opened through it.
   recordId?: string
-  // What the last action said, and any buttons that belong after Save and
-  // Submit, such as Approve. Both sit in the sheet's action row.
+  // What the last action said, and any buttons that belong after Submit, such
+  // as Approve. Both sit in the sheet's action row.
   message?: string
   extraActions?: ReactNode
-  // The tool saves by itself: no Save draft or Submit, and onSave is called a
-  // moment after the person stops typing.
-  autosave?: boolean
 }
-
-// How long after the last keystroke an autosave goes.
-const AUTOSAVE_DELAY = 800
 
 // A run of plain fields shares one box of rows. A table, a checklist and the
 // blocks that are only shown each get a box of their own.
@@ -263,7 +259,7 @@ export function ToolForm({
   tool,
   values,
   errors = [],
-  onSave,
+  onChange,
   onSubmit,
   readOnly = false,
   signable = [],
@@ -272,7 +268,6 @@ export function ToolForm({
   recordId,
   message: said,
   extraActions,
-  autosave = false,
 }: Props) {
   const form = useForm<Record<string, RawValue>>({
     defaultValues: Object.fromEntries(
@@ -299,42 +294,33 @@ export function ToolForm({
     return toValues(tool, form.getValues())
   }
 
-  // Each change restarts the wait, so a save goes only once typing stops.
   // Saving never needs the form complete, so a half-written draft is kept.
-  const save = useRef(onSave)
+  const changed = useRef(onChange)
 
   useEffect(() => {
-    save.current = onSave
+    changed.current = onChange
   })
 
+  const listening = !readOnly && onChange !== undefined
+
   useEffect(() => {
-    if (!autosave || readOnly) {
+    if (!listening) {
       return
     }
 
-    let timer: ReturnType<typeof setTimeout> | undefined
-
     // Only a change the person makes counts, not the form filling in.
-    const unsubscribe = form.subscribe({
+    return form.subscribe({
       formState: { values: true },
       callback: ({ type }) => {
-        if (type !== "change") {
-          return
+        if (type === "change") {
+          changed.current?.(toValues(tool, form.getValues()))
         }
-
-        clearTimeout(timer)
-        timer = setTimeout(
-          () => save.current(toValues(tool, form.getValues())),
-          AUTOSAVE_DELAY
-        )
       },
     })
+  }, [listening, form, tool])
 
-    return () => {
-      clearTimeout(timer)
-      unsubscribe()
-    }
-  }, [autosave, readOnly, form, tool])
+  // A tool approved by sending it, such as D1.4, has no Submit for approval.
+  const submits = !readOnly && !tool.approvedBySending
 
   // One field's input, wired to the form, with its error under it.
   function input(field: ToolField, inputClassName?: string) {
@@ -548,22 +534,12 @@ export function ToolForm({
           </div>
         )
       )}
-      {((!readOnly && !autosave) || extraActions || said) && (
+      {(submits || extraActions || said) && (
         <SheetActions message={said}>
-          {!readOnly && !autosave && (
-            <>
-              <ActionButton
-                variant="secondary"
-                className="bg-foreground/10 hover:bg-foreground/20"
-                disabled={pending}
-                onClick={() => onSave(held())}
-              >
-                Save draft
-              </ActionButton>
-              <ActionButton type="submit" disabled={pending}>
-                Submit for approval
-              </ActionButton>
-            </>
+          {submits && (
+            <ActionButton type="submit" disabled={pending}>
+              Submit for approval
+            </ActionButton>
           )}
           {extraActions}
         </SheetActions>

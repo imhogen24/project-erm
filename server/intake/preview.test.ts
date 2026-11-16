@@ -344,4 +344,30 @@ describe("getClientRequestPreview", () => {
 
     expect(await copyOf("T1-10")).toEqual(before)
   })
+
+  it("puts what a changed answer was beside it, and leaves the rest alone", async () => {
+    await addTier1({ requestId: "T1-w", title: "Conveyor line" })
+    await pull()
+
+    const projectId = await projectOf("T1-w")
+    const om = await addToProject(projectId, "OM")
+
+    const preview = await getClientRequestPreview(database, om, projectId, {
+      project_title: "Conveyor",
+      target_timeline: "12 weeks",
+    })
+
+    const project = preview?.groups.find((group) => group.title === "Project")
+
+    expect(project?.rows).toEqual(
+      expect.arrayContaining([
+        { label: "Title", value: "Conveyor line", was: "Conveyor" },
+        { label: "Timeline", value: "", was: "12 weeks" },
+        { label: "Primary objective", value: "Move boxes" },
+      ])
+    )
+    expect(
+      project?.rows.find((row) => row.label === "Primary objective")
+    ).not.toHaveProperty("was")
+  })
 })

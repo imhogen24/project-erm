@@ -23,6 +23,7 @@ import {
 import {
   NotAClientError,
   clientAnswersOf,
+  clientChangesOf,
   isClientAccount,
   resubmitClientRequest,
   startClientProject,
@@ -423,5 +424,223 @@ describe("resubmitClientRequest", () => {
       resubmitClientRequest(database, client, projectId, tier1, [elsewhere])
     ).rejects.toBeInstanceOf(ValidationError)
     expect((await d11Of(projectId)).state).toBe("draft")
+  })
+})
+
+describe("telling the team the client changed their request", () => {
+  // Who got a "client changed" notification on this project, and where it points.
+  async function clientChanged(projectId: string) {
+    const { rows } = await database.pool.query<{
+      personId: string
+      path: string
+    }>(
+      `SELECT person_id AS "personId", path FROM notifications
+       WHERE kind::text = 'client_changed' AND project_id = $1`,
+      [projectId]
+    )
+
+    return rows
+  }
+
+  it("tells the PM and OM when the client sends D1.1 again after a change request", async () => {
+    const client = await addClient("Kwaku")
+    const projectId = await start(client)
+    const om = await addPerson("Kwabena")
+    const pm = await addPerson("Ama")
+
+    await addToProject(om, projectId, "OM")
+    await addToProject(pm, projectId, "PM")
+
+    const request = await requestChange(
+      database,
+      om,
+      (await d11Of(projectId)).id,
+      "The title is out of date"
+    )
+
+    await decideChange(database, pm, request.id, { outcome: "approved" })
+
+    await resubmitClientRequest(
+      database,
+      client,
+      projectId,
+      { ...tier1, project_title: "Juice line upgrade" },
+      []
+    )
+
+    const path = `/projects/${projectId}/tools/D1.1`
+
+    expect(await clientChanged(projectId)).toEqual(
+      expect.arrayContaining([
+        { personId: pm, path },
+        { personId: om, path },
+      ])
+    )
+    expect(await clientChanged(projectId)).toHaveLength(2)
+  })
+
+  it("tells nobody when the client first sends D1.1", async () => {
+    const projectId = await start(await addClient("Kwaku"))
+
+    expect(await clientChanged(projectId)).toEqual([])
+  })
+})
+
+describe("clientChangesOf", () => {
+  // A project with its OM and PM, and a way to raise and approve a change.
+  async function project(files: string[] = []) {
+    const client = await addClient("Kwaku")
+    const projectId = await start(client, tier1, "Tier_1", files)
+    const om = await addPerson("Kwabena")
+    const pm = await addPerson("Ama")
+
+    await addToProject(om, projectId, "OM")
+    await addToProject(pm, projectId, "PM")
+
+    async function ask() {
+      return requestChange(
+        database,
+        om,
+        (await d11Of(projectId)).id,
+        "The title is out of date"
+      )
+    }
+
+    async function approveChange() {
+      const request = await ask()
+
+      await decideChange(database, pm, request.id, { outcome: "approved" })
+    }
+
+    return { client, projectId, om, pm, ask, approveChange }
+  }
+
+  const nothing = { answers: {}, addedFiles: [], removedFiles: [] }
+
+  it("gives what each changed answer was before the client sent D1.1 again", async () => {
+    const { client, projectId, om, approveChange } = await project()
+
+    await approveChange()
+    await resubmitClientRequest(
+      database,
+      client,
+      projectId,
+      {
+        ...tier1,
+        project_title: "Juice line upgrade",
+        primary_objective: "Raise output to 4,000 litres an hour.",
+      },
+      []
+    )
+
+    expect(await clientChangesOf(database, om, projectId)).toEqual({
+      answers: {
+        project_title: "Juice pasteuriser upgrade",
+        primary_objective: "Raise output from 2,000 to 3,500 litres an hour.",
+      },
+      addedFiles: [],
+      removedFiles: [],
+    })
+  })
+
+  it("writes an audit line for each answer the client changed", async () => {
+    const { client, projectId, approveChange } = await project()
+
+    await approveChange()
+    await resubmitClientRequest(
+      database,
+      client,
+      projectId,
+      { ...tier1, project_title: "Juice line upgrade" },
+      []
+    )
+
+    const { rows } = await database.pool.query(
+      `SELECT actor_id AS "actorId", action, field, old_value AS "oldValue",
+       new_value AS "newValue" FROM audit_log
+       WHERE project_id = $1 AND field LIKE 'answers.%'`,
+      [projectId]
+    )
+
+    expect(rows).toEqual([
+      {
+        actorId: client,
+        action: "updated",
+        field: "answers.project_title",
+        oldValue: "Juice pasteuriser upgrade",
+        newValue: "Juice line upgrade",
+      },
+    ])
+  })
+
+  it("marks the files the client added and removed", async () => {
+    const client = await addClient("Kwaku")
+    const kept = await upload(client, "layout sketch.pdf")
+    const dropped = await upload(client, "old photo.jpg")
+    const projectId = await start(client, tier1, "Tier_1", [kept, dropped])
+    const om = await addPerson("Kwabena")
+
+    await addToProject(om, projectId, "OM")
+    await changeApproved(projectId)
+
+    const added = await upload(client, "nameplate.jpg")
+
+    await resubmitClientRequest(database, client, projectId, tier1, [
+      added,
+      kept,
+    ])
+
+    expect(await clientChangesOf(database, om, projectId)).toEqual({
+      answers: {},
+      addedFiles: [added],
+      removedFiles: [
+        expect.objectContaining({ label: "old photo.jpg", fileLink: dropped }),
+      ],
+    })
+  })
+
+  it("is empty before any change request", async () => {
+    const { projectId, om } = await project()
+
+    expect(await clientChangesOf(database, om, projectId)).toEqual(nothing)
+  })
+
+  it("is empty while the client is still making the change", async () => {
+    const { projectId, om, approveChange } = await project()
+
+    await approveChange()
+
+    expect(await clientChangesOf(database, om, projectId)).toEqual(nothing)
+  })
+
+  it("keeps the last changes until the next change request is approved", async () => {
+    const { client, projectId, om, pm, ask, approveChange } = await project()
+
+    await approveChange()
+    await resubmitClientRequest(
+      database,
+      client,
+      projectId,
+      { ...tier1, project_title: "Juice line upgrade" },
+      []
+    )
+
+    const waiting = await ask()
+
+    expect((await clientChangesOf(database, om, projectId)).answers).toEqual({
+      project_title: "Juice pasteuriser upgrade",
+    })
+
+    await decideChange(database, pm, waiting.id, { outcome: "approved" })
+
+    expect(await clientChangesOf(database, om, projectId)).toEqual(nothing)
+  })
+
+  it("refuses a person who may not read D1.1", async () => {
+    const { projectId } = await project()
+
+    await expect(
+      clientChangesOf(database, await addPerson("Yaw"), projectId)
+    ).rejects.toBeInstanceOf(PermissionDeniedError)
   })
 })

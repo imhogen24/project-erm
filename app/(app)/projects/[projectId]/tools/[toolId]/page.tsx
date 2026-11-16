@@ -80,6 +80,8 @@ import {
   feasibilityStart,
   feasibilityValues,
 } from "@/server/feasibility/feasibility"
+import { COST_ESTIMATION } from "@/lib/cost-estimation"
+import { costStart, costValues } from "@/server/cost/cost-estimation"
 import { getRecordScreen } from "@/server/records/screen"
 import { UnknownToolError } from "@/server/records/validate"
 
@@ -457,6 +459,25 @@ export default async function Page({
         />
       )
     }
+  }
+
+  // D1.14: the totals are worked out on the sheet as the LE types; 4.0 starts
+  // from D1.13's deliverables, and 5.0 holds D1.12's cost floor.
+  if (toolId === COST_ESTIMATION) {
+    if (!view.record && view.can.write) {
+      // SAFETY: the starting rows are built for D1.14's own table.
+      const start = (await costStart(getDatabase(), projectId)) as FormValues
+
+      formValues = { ...start, ...formValues }
+    }
+
+    // SAFETY: the system's values are built for D1.14's own fields.
+    const system = (await costValues(getDatabase(), projectId, {
+      state: view.state,
+      payload: view.record?.payload ?? {},
+    })) as FormValues
+
+    formValues = { ...formValues, ...system }
   }
 
   // A tool the client reads only once locked tells them so until then.

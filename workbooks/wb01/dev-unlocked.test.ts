@@ -43,7 +43,7 @@ afterAll(async () => {
   await database.pool.end()
 })
 
-describe("a Dev: All Tools Unlocked project, in development", () => {
+describe("a Dev: Every Tool Unlocked project, in development", () => {
   it("opens every Tier 1 tool of WB01 at once, and no Tier 3 tool or WB02", async () => {
     const tools = await open(
       await addProject(`${DEV_UNLOCKED} (Tier 1)`, "Tier_1")

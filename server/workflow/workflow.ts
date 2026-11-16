@@ -310,7 +310,7 @@ class Route {
       missing.push(`${toolId} does not repeat, so it only has cycle 1`)
     }
 
-    // In development, a Dev: All Tools Unlocked project opens every tool of
+    // In development, a Dev: Every Tool Unlocked project opens every tool of
     // the workbook at once (dev-unlocked.ts).
     const waits = !(opensEveryTool(this.project.name) && !map.opens)
 

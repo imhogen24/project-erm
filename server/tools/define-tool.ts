@@ -178,6 +178,8 @@ const table = z
     rowNotes: z.record(z.string().min(1), z.string().min(1)).optional(),
     startsWithRow: z.boolean().optional(),
     subtotal: fieldKey.optional(),
+    // What the subtotal row is called, as the sheet names it.
+    subtotalLabel: z.string().min(1).optional(),
     readOnly: z.boolean().optional(),
   })
   .superRefine((value, context) => {

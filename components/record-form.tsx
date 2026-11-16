@@ -1,6 +1,12 @@
 "use client"
 
-import { useEffect, useRef, useState, useTransition } from "react"
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react"
 import { useRouter } from "next/navigation"
 
 import { RecordUploads } from "@/components/file-cell"
@@ -65,6 +71,9 @@ type Props = {
   sendBack?: (values: { recordId: string; reason: string }) => Promise<Result>
   // Why the approver sent this draft back, shown above the sheet.
   sentBack?: string
+  // The writer's button once the record is out of their hands: Withdraw while
+  // it waits for approval, Request a change once it is locked.
+  writerAction?: ReactNode
 }
 
 type Autosaved = "idle" | "saving" | "saved" | "failed"
@@ -114,6 +123,7 @@ export function RecordForm({
   send,
   sendBack,
   sentBack,
+  writerAction,
 }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -319,7 +329,9 @@ export function RecordForm({
                   Approve
                 </ActionButton>
               </>
-            ) : undefined
+            ) : (
+              writerAction
+            )
           }
           onSave={(held) =>
             tool.autosave

@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useState, useTransition } from "react"
+import { useState, useTransition, type ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
 import { SegmentedChoice } from "@/components/segmented-choice"
@@ -67,6 +67,9 @@ type Props = {
   sendBack?: (values: { recordId: string; reason: string }) => Promise<Result>
   // Why the approver sent this draft back, shown above the sheet.
   sentBack?: string
+  // The writer's button once the triage is out of their hands: Withdraw while
+  // it waits for approval, Request a change once it is locked.
+  writerAction?: ReactNode
 }
 
 // How wide each column is when there is room. Narrow, the rows stack instead.
@@ -100,6 +103,7 @@ export function TriageScreen({
   approve,
   sendBack,
   sentBack,
+  writerAction,
 }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -411,7 +415,7 @@ export function TriageScreen({
           ))}
         </ul>
       )}
-      {(canWrite || (canApprove && recordId) || message) && (
+      {(canWrite || (canApprove && recordId) || writerAction || message) && (
         <SheetActions message={message}>
           {canWrite && (
             <>
@@ -430,6 +434,7 @@ export function TriageScreen({
               </ActionButton>
             </>
           )}
+          {writerAction}
           {canApprove && recordId && (
             <>
               {sendBack && (

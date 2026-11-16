@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react"
 
+import { ActionButton } from "@/components/sheet-actions"
 import { Button } from "@/components/ui/button"
 import { FieldError, FieldLabel } from "@/components/ui/field"
 import {
@@ -16,12 +17,15 @@ type Result = { status: "done" } | { status: "error"; message: string }
 type Props = {
   recordId: string
   request: (values: { recordId: string; reason: string }) => Promise<Result>
+  // On a tool's own page the button sits with the sheet's other buttons; on
+  // the project page it is a small button on the tool's tile.
+  inSheet?: boolean
 }
 
 // The button on a locked record that opens a box asking why it needs to change.
 // An empty reason is refused here without sending anything, and the server
 // checks it again.
-export function RequestChange({ recordId, request }: Props) {
+export function RequestChange({ recordId, request, inSheet = false }: Props) {
   const [open, setOpen] = useState(false)
   const [reason, setReason] = useState("")
   const [message, setMessage] = useState<string>()
@@ -52,14 +56,18 @@ export function RequestChange({ recordId, request }: Props) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          className="tile-action"
-        >
-          Request a change
-        </Button>
+        {inSheet ? (
+          <ActionButton variant="secondary">Request a change</ActionButton>
+        ) : (
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="tile-action"
+          >
+            Request a change
+          </Button>
+        )}
       </PopoverTrigger>
       <PopoverContent
         align="end"

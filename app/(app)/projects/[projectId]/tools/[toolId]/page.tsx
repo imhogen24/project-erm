@@ -12,6 +12,9 @@ import { MeetingChoice } from "@/components/meeting-choice"
 import { MeetingProposalScreen } from "@/components/meeting-proposal-screen"
 import { MobileBar } from "@/components/mobile-bar"
 import { RecordForm } from "@/components/record-form"
+import { RequestChange } from "@/components/request-change"
+import { SheetActions } from "@/components/sheet-actions"
+import { WithdrawRecord } from "@/components/withdraw-record"
 import { ClientRequestForm } from "@/components/client-request-form"
 import { ClientRequestTables } from "@/components/client-request-tables"
 import { RetryEmail } from "@/components/retry-email"
@@ -107,10 +110,12 @@ import {
   sendMeetingTimesAction,
   signFieldAction,
   submitRecordAction,
+  withdrawRecordAction,
   resubmitClientRequestAction,
   sendAcknowledgementAction,
   retryAcknowledgementAction,
 } from "./actions"
+import { requestChangeAction } from "../../actions"
 import { projectNav } from "../../sidebar"
 
 const when = new Intl.DateTimeFormat("en-GB", {
@@ -582,6 +587,19 @@ export default async function Page({
         }
       : null
 
+  // The writer's button once the record is out of their hands. The server
+  // decides who sees it: Withdraw only for whoever submitted it, while it
+  // waits for approval; Request a change for a writer once it is locked.
+  const writerAction = !view.record ? undefined : view.can.withdraw ? (
+    <WithdrawRecord recordId={view.record.id} withdraw={withdrawRecordAction} />
+  ) : view.can.requestChange ? (
+    <RequestChange
+      recordId={view.record.id}
+      request={requestChangeAction}
+      inSheet
+    />
+  ) : undefined
+
   const checks = tool.fields.flatMap((field) =>
     field.type === "table" && field.key === "triageChecklist"
       ? (field.prefilledRows ?? [])
@@ -676,6 +694,7 @@ export default async function Page({
           submit={submitRecordAction}
           sign={signFieldAction}
           approve={approveRecordAction}
+          writerAction={writerAction}
         />
       )}
     </div>
@@ -697,6 +716,7 @@ export default async function Page({
       approve={approveRecordAction}
       sendBack={sendBackRecordAction}
       sentBack={sentBack ?? undefined}
+      writerAction={writerAction}
     />
   ) : alignment ? (
     <MeetingChoice
@@ -734,10 +754,24 @@ export default async function Page({
         send={send}
         sendBack={sendBackRecordAction}
         sentBack={sentBack ?? undefined}
+        writerAction={writerAction}
       />
       {meetingActions}
     </div>
   )
+
+  // D1.5 and D1.6 have their own buttons and lock without approval, so
+  // Request a change sits under the screen. The wrapper is always there, so
+  // the screen keeps what it said when the button appears on lock.
+  const sheet =
+    agenda || (meeting && !meeting.asClient) ? (
+      <div className="flex flex-col gap-6">
+        {body}
+        {writerAction && <SheetActions>{writerAction}</SheetActions>}
+      </div>
+    ) : (
+      body
+    )
 
   return (
     <>
@@ -760,7 +794,16 @@ export default async function Page({
               title: `${view.toolId} ${view.toolName}`,
               iteration: view.control?.iteration,
               state: view.state,
-              badges: deliveryChip,
+              badges: (
+                <>
+                  {deliveryChip}
+                  {view.changeRequested && (
+                    <span data-open="true" className="status-chip">
+                      Change requested
+                    </span>
+                  )}
+                </>
+              ),
               action:
                 clientRequest && !webForm ? (
                   <ClientRequestPanel request={clientRequest} />
@@ -810,7 +853,7 @@ export default async function Page({
                   ].map((label) => ({ label, value: "-" })),
             }}
           >
-            {body}
+            {sheet}
           </ToolSheet>
         </main>
       </div>

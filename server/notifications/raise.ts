@@ -1,7 +1,8 @@
-import { and, eq, inArray } from "drizzle-orm"
+import { and, eq, inArray, isNull } from "drizzle-orm"
 
 import type { Database } from "@/db"
 import {
+  notifications,
   people,
   personProjectRoles,
   projects,
@@ -197,6 +198,25 @@ export async function notifyApprovalNeeded(
     path,
     recordTitle: `${record.toolId} ${toolName(record.toolId)}`,
   }))
+}
+
+// Marks read every "waiting for your approval" notification of the record that
+// is still unread, once there is nothing left to approve, such as when its
+// writer withdraws it. A notification is never deleted, only marked read.
+export async function clearApprovalNeeded(
+  transaction: Transaction,
+  recordId: string
+): Promise<void> {
+  await transaction
+    .update(notifications)
+    .set({ readAt: new Date() })
+    .where(
+      and(
+        eq(notifications.recordId, recordId),
+        eq(notifications.kind, "approval_needed"),
+        isNull(notifications.readAt)
+      )
+    )
 }
 
 // Whoever submitted the record, told that the approver sent it back and why.

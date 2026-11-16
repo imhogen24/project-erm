@@ -28,6 +28,7 @@ import {
 } from "@/server/permissions/permissions"
 import type { Transport } from "@/server/email/email"
 import {
+  clearApprovalNeeded,
   notifyApprovalNeeded,
   notifySentBack,
   notifyToolsOpened,
@@ -939,6 +940,60 @@ export async function sendBackRecord(
     )
 
     await notifySentBack(transaction, actor, current, said)
+
+    return returned!
+  })
+}
+
+// The person who submitted a record takes it back as a draft before anyone
+// approves it, to fix it and submit it again. Nobody else may, and it is not a
+// review, so the iteration stays the same. The audit line says who and when,
+// with no reason, so the draft is not shown as sent back. The approvers'
+// "waiting for your approval" notifications for it are marked read.
+export async function withdrawRecord(
+  database: Database,
+  actor: string,
+  recordId: string
+): Promise<ToolRecord> {
+  const record = await loadRecord(database, recordId)
+
+  await assertMay(database, actor, record.projectId, record.toolId, "write")
+
+  return database.transaction(async (transaction) => {
+    await assertProjectActive(transaction, record.projectId)
+
+    const current = await lockRecord(transaction, recordId)
+
+    if (current.state !== "submitted") {
+      throw new InvalidTransitionError(
+        `A ${current.state} record cannot be withdrawn`
+      )
+    }
+
+    if (current.submittedBy !== actor) {
+      throw new PermissionDeniedError(
+        "Only the person who submitted this record can withdraw it"
+      )
+    }
+
+    const [returned] = await transaction
+      .update(toolRecords)
+      .set({ state: "draft", updatedAt: nextUpdatedAt(current) })
+      .where(eq(toolRecords.id, recordId))
+      .returning(columns)
+
+    await writeAudit(
+      transaction,
+      {
+        recordId,
+        projectId: current.projectId,
+        actor,
+        action: "transitioned",
+      },
+      [stateChange(current.state, "draft")]
+    )
+
+    await clearApprovalNeeded(transaction, recordId)
 
     return returned!
   })

@@ -3,6 +3,7 @@ import { z } from "zod"
 
 import type { Database } from "@/db"
 import {
+  changeRequests,
   people,
   projects,
   toolRecords,
@@ -16,6 +17,7 @@ import {
 } from "@/server/document-control/document-control"
 import {
   PermissionDeniedError,
+  mayRequestChange,
   roleAllows,
   rolesOn,
 } from "@/server/permissions/permissions"
@@ -45,8 +47,14 @@ export type RecordScreen = {
     write: boolean
     approve: boolean
     sign: string[]
+    // Only the person who submitted the record, while it waits for approval.
+    withdraw: boolean
+    // A writer of a locked record that has no change request open.
+    requestChange: boolean
   }
   control: DocumentControl | null
+  // A change request on the locked record still waiting for the PM.
+  changeRequested: boolean
 }
 
 const signed = z.object({ signedBy: z.string(), signedAt: z.string() })
@@ -166,8 +174,11 @@ export async function getRecordScreen(
         write: active && open && roleAllows(held, toolId, "write"),
         approve: false,
         sign: [],
+        withdraw: false,
+        requestChange: false,
       },
       control: null,
+      changeRequested: false,
     }
   }
 
@@ -176,6 +187,22 @@ export async function getRecordScreen(
   const payload = await withSignerNames(database, toolId, record.payload)
 
   const editable = record.state === "draft" || record.state === "submitted"
+
+  // A request still open on a locked record is shown on the project page; a
+  // second one is refused.
+  const [openRequest] =
+    record.state === "locked"
+      ? await database
+          .select({ status: changeRequests.status })
+          .from(changeRequests)
+          .where(
+            and(
+              eq(changeRequests.recordId, record.id),
+              inArray(changeRequests.status, ["requested", "approved"])
+            )
+          )
+          .limit(1)
+      : []
 
   return {
     project: project!,
@@ -193,6 +220,16 @@ export async function getRecordScreen(
         record.state === "submitted" &&
         roleAllows(held, toolId, "approve") &&
         record.submittedBy !== actor,
+      withdraw:
+        active &&
+        record.state === "submitted" &&
+        record.submittedBy === actor &&
+        roleAllows(held, toolId, "write"),
+      requestChange:
+        active &&
+        record.state === "locked" &&
+        !openRequest &&
+        mayRequestChange(held, toolId),
       sign:
         active && editable
           ? signatureFields(toolId)
@@ -205,5 +242,6 @@ export async function getRecordScreen(
           : [],
     },
     control: await getDocumentControl(database, actor, record.id),
+    changeRequested: openRequest?.status === "requested",
   }
 }

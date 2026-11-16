@@ -142,6 +142,18 @@ export const previews: Preview[] = [
     expect: `On ${approved}, the PM sees Change requests waiting above the workbooks: the OM asks to change D1.1 Client Email / Web Form because the client sent a photo of the equipment nameplate. Approve or Reject sits beside it. The D1.1 tile below says Change requested.`,
   },
   {
+    screen: "Withdraw a submitted tool, as the OM (RDP-152)",
+    loginAs: "OM",
+    path: (id) => `/projects/${id}/tools/D1.3`,
+    expect: `On ${DEV_UNLOCKED} (Tier 1), fill in D1.3 and press Submit for approval. Withdraw appears at the foot of the sheet. Press it: it asks Take this back to fix it? Press Yes, withdraw: D1.3 is a draft again with Save draft and Submit for approval, and the Iteration stays the same. The PM, ${loginFor("PM")}, sees no Withdraw on a D1.3 the OM submitted, and after a withdraw their waiting for approval note is read. D1.2 offers the same Withdraw once submitted.`,
+  },
+  {
+    screen: "Request a change from a locked tool, as the OM (RDP-152)",
+    loginAs: "OM",
+    path: (id) => `/projects/${id}/tools/D1.3`,
+    expect: `On ${DEV_LOCKED} (Tier 1), D1.3 is locked and shows Request a change at the foot of the sheet, and no Withdraw. Press it, give a reason and Send request: the button goes and Change requested shows next to the Locked badge. The PM decides it on the project page.`,
+  },
+  {
     screen: "Notification bell (RDP-115)",
     loginAs: "PM",
     path: () => "/",

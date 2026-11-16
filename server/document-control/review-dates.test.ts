@@ -3,6 +3,10 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 import type { Role } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import {
+  decideChange,
+  requestChange,
+} from "@/server/change-requests/change-requests"
+import {
   approveRecord,
   saveDraft,
   submitRecord,
@@ -128,5 +132,68 @@ describe("date checked, date approved and iteration", () => {
       checkedAt: null,
       iteration: 1,
     })
+  })
+
+  it("count a change request that reopens a locked record once it is locked again", async () => {
+    const om = await addPerson("Efua", ["OM"])
+    const pm = await addPerson("Ama", ["PM"])
+    const record = await draft(om)
+
+    await submitRecord(database, om, record.id)
+    await approveRecord(database, pm, record.id)
+
+    expect((await block(om, record.id)).iteration).toBe(1)
+
+    const request = await requestChange(database, om, record.id, "Wrong date")
+
+    await decideChange(database, pm, request.id, { outcome: "approved" })
+
+    // Reopened but not yet locked again: still the same version.
+    expect((await block(om, record.id)).iteration).toBe(1)
+
+    await submitRecord(database, om, record.id)
+    await approveRecord(database, pm, record.id)
+
+    expect((await block(om, record.id)).iteration).toBe(2)
+  })
+
+  it("add change requests to rejections", async () => {
+    const om = await addPerson("Efua", ["OM"])
+    const reviewer = await addPerson("Esi", ["OM"])
+    const pm = await addPerson("Ama", ["PM"])
+    const record = await draft(om)
+
+    await submitRecord(database, om, record.id)
+    await transitionRecord(database, reviewer, record.id, "draft")
+    await submitRecord(database, om, record.id)
+    await approveRecord(database, pm, record.id)
+
+    for (const reason of ["Wrong date", "Wrong site"]) {
+      const request = await requestChange(database, om, record.id, reason)
+
+      await decideChange(database, pm, request.id, { outcome: "approved" })
+      await submitRecord(database, om, record.id)
+      await approveRecord(database, pm, record.id)
+    }
+
+    expect((await block(om, record.id)).iteration).toBe(4)
+  })
+
+  it("do not count a change request the PM rejects", async () => {
+    const om = await addPerson("Efua", ["OM"])
+    const pm = await addPerson("Ama", ["PM"])
+    const record = await draft(om)
+
+    await submitRecord(database, om, record.id)
+    await approveRecord(database, pm, record.id)
+
+    const request = await requestChange(database, om, record.id, "Wrong date")
+
+    await decideChange(database, pm, request.id, {
+      outcome: "rejected",
+      reason: "The date is right",
+    })
+
+    expect((await block(om, record.id)).iteration).toBe(1)
   })
 })

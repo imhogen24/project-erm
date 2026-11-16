@@ -125,8 +125,12 @@ function refusal(error: Error): RecordResult | undefined {
   return undefined
 }
 
+// `revalidate: false` is for a save made as the person types: the page they
+// are on is not drawn again, and the overview is drawn fresh when they open
+// it, since it reads the session.
 async function attempt(
-  run: (actor: string) => Promise<RecordResult>
+  run: (actor: string) => Promise<RecordResult>,
+  { revalidate = true } = {}
 ): Promise<RecordResult> {
   const session = await requireSession()
 
@@ -136,8 +140,10 @@ async function attempt(
     const result = await run(session.user.id)
 
     // The overview shows each tool's state, and this page shows the record.
-    revalidatePath("/projects/[projectId]", "page")
-    revalidatePath("/projects/[projectId]/tools/[toolId]", "page")
+    if (revalidate) {
+      revalidatePath("/projects/[projectId]", "page")
+      revalidatePath("/projects/[projectId]/tools/[toolId]", "page")
+    }
 
     return result
   } catch (error) {
@@ -158,7 +164,11 @@ function checked(values: SaveValues) {
 }
 
 // Typed for callers, but checked again here: an action can be called by anyone.
-export async function saveDraftAction(
+// Made a moment after the person stops typing, so it does not draw the page
+// again: each pause in typing would otherwise cost a full render, and a link
+// clicked while that render is on its way can lose the navigation. The steps
+// after it (submit, sign, approve) draw the page again.
+export async function autosaveDraftAction(
   values: SaveValues
 ): Promise<RecordResult> {
   const input = checked(values)
@@ -167,18 +177,20 @@ export async function saveDraftAction(
     return { status: "error", message: "Check the form and try again." }
   }
 
-  return attempt(async (actor) =>
-    done(
-      await saveDraft(getDatabase(), actor, {
-        projectId: input.projectId,
-        toolId: input.toolId,
-        cycle: input.cycle,
-        values: input.values,
-        expectedUpdatedAt: input.expectedUpdatedAt
-          ? new Date(input.expectedUpdatedAt)
-          : undefined,
-      })
-    )
+  return attempt(
+    async (actor) =>
+      done(
+        await saveDraft(getDatabase(), actor, {
+          projectId: input.projectId,
+          toolId: input.toolId,
+          cycle: input.cycle,
+          values: input.values,
+          expectedUpdatedAt: input.expectedUpdatedAt
+            ? new Date(input.expectedUpdatedAt)
+            : undefined,
+        })
+      ),
+    { revalidate: false }
   )
 }
 

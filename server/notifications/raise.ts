@@ -13,6 +13,7 @@ import type { Transaction } from "@/server/audit/audit"
 import { requireEnv } from "@/server/database"
 import { sendEmail, type Transport } from "@/server/email/email"
 import { accessRow, type Access } from "@/server/permissions/matrix"
+import { roleAllows } from "@/server/permissions/permissions"
 import { getTool } from "@/server/tools/registry"
 import type { OpenTool } from "@/server/workflow/workflow"
 
@@ -241,6 +242,75 @@ export async function notifySentBack(
     projectId: record.projectId,
     recordId: record.id,
     path: toolPath(record.projectId, record.toolId),
+  })
+}
+
+// Where a comment sits on its tool's page.
+function commentPath(record: RecordRef, commentId: string): string {
+  return `${toolPath(record.projectId, record.toolId)}#comment-${commentId}`
+}
+
+// A comment's first line, short enough for a notification.
+function excerpt(body: string): string {
+  const line = body.split("\n")[0]!.trim()
+
+  return line.length > 120 ? `${line.slice(0, 117)}...` : line
+}
+
+// The people who write and approve the tool, told of a new comment on it,
+// by the same rules that let them write and approve. Dashboard only.
+export async function notifyCommented(
+  transaction: Transaction,
+  actor: string,
+  record: RecordRef,
+  commentId: string,
+  body: string
+): Promise<void> {
+  // The Client role is left out, but someone who also holds a team role
+  // still hears through it.
+  const team = await holdersOf(
+    transaction,
+    record.projectId,
+    roles.filter(
+      (role) =>
+        role !== "Client" &&
+        (roleAllows([role], record.toolId, "write") ||
+          roleAllows([role], record.toolId, "approve"))
+    )
+  )
+
+  const name = await projectName(transaction, record.projectId)
+
+  await notify(transaction, {
+    personIds: others(actor, team),
+    kind: "commented",
+    title: `New comment on ${record.toolId}`,
+    text: `${toolName(record.toolId)} on ${name}: ${excerpt(body)}`,
+    projectId: record.projectId,
+    recordId: record.id,
+    path: commentPath(record, commentId),
+  })
+}
+
+// Whoever wrote the comment being answered, told of the reply. Dashboard only.
+export async function notifyReplied(
+  transaction: Transaction,
+  actor: string,
+  record: RecordRef,
+  replyId: string,
+  answered: string,
+  body: string
+): Promise<void> {
+  const name = await projectName(transaction, record.projectId)
+
+  await notify(transaction, {
+    personIds: others(actor, [answered]),
+    kind: "comment_replied",
+    title: `New reply on ${record.toolId}`,
+    text: `${toolName(record.toolId)} on ${name}: ${excerpt(body)}`,
+    projectId: record.projectId,
+    recordId: record.id,
+    path: commentPath(record, replyId),
   })
 }
 

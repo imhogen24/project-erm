@@ -20,6 +20,8 @@ export const auditActions = [
   "change_rejected",
   "change_applied",
   "built_on_change",
+  "commented",
+  "comment_resolved",
 ] as const
 
 export type AuditAction = (typeof auditActions)[number]

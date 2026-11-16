@@ -1,6 +1,8 @@
 import type { JsonObject } from "@/db/schema"
 import { COST_ESTIMATION } from "@/lib/cost-estimation"
 import type { Transaction } from "@/server/audit/audit"
+import { PROJECT_BRIEF, T3_QUOTE } from "@/lib/project-brief"
+import { briefOnSubmit, quoteOnSubmit } from "@/server/brief/project-brief"
 import { costOnSubmit } from "@/server/cost/cost-estimation"
 
 import type { FieldError } from "./validate"
@@ -15,6 +17,14 @@ export async function submittedValues(
   switch (record.toolId) {
     case COST_ESTIMATION: {
       return costOnSubmit(transaction, record.projectId, record.payload)
+    }
+
+    case PROJECT_BRIEF: {
+      return briefOnSubmit(transaction, record.projectId, record.payload)
+    }
+
+    case T3_QUOTE: {
+      return quoteOnSubmit(record.payload)
     }
 
     default: {

@@ -185,6 +185,48 @@ const answers = new Map<string, JsonObject>([
     },
   ],
   ["D1.14", costSheet(100)],
+  [
+    "D1.15",
+    {
+      targetStartDate: "2026-12-01",
+      vision: "Document the unit.",
+      objectives: [{ objective: "A 3D model." }],
+      phases: [
+        {
+          phaseNo: "1",
+          name: "Review",
+          deliverables: "Review.",
+          duration: "1 week",
+        },
+      ],
+      // D1.14's total project value.
+      budget: [
+        { deliverable: "CAD", value: 100000, paymentSchedule: "On signing" },
+      ],
+      outOfScope: "Fabrication.",
+      clientDependencies: "Site access.",
+    },
+  ],
+  [
+    "T3.D1.15a",
+    {
+      deliverables: [
+        { item: "3D Modeling" },
+        { item: "Drafting Package" },
+        { item: "BOM Extraction" },
+      ],
+      pricing: [
+        { description: "Engineering Man-Hours (Drafting)", rate: 500, qty: 80 },
+        { description: "Reverse Engineering / Scanning Fee", rate: 0, qty: 1 },
+        { description: "Markup / Admin Fee", rate: 0, qty: 1 },
+      ],
+      exclusions: [
+        { exclusion: "No Structural Analysis or FEA included." },
+        { exclusion: "No Material Selection Advice." },
+        { exclusion: "No Fabrication Liability." },
+      ],
+    },
+  ],
 ])
 
 // A balanced D1.14 with this many days of labor at GHS 1,000 a day and no

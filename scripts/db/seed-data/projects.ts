@@ -142,11 +142,17 @@ export const client: Client = {
   phone: "0244 000 001",
 }
 
-// The tool being built. Each time a tool is built this moves on to it, and
-// the projects below move with it.
-export const CURRENT_TOOL = "D1.14"
+// The tool being built, on each tier. Each time a tool is built these move on
+// to it, and the projects below move with them. A tier the tool does not
+// serve names the tool that takes its place there.
+export const CURRENT_TOOL = "D1.15"
 
-// The tiers the tool being built serves.
+const CURRENT_TIER_3_TOOL = "T3.D1.15a"
+
+export function currentToolFor(track: ServiceTrack) {
+  return track === "Tier_1" ? CURRENT_TOOL : CURRENT_TIER_3_TOOL
+}
+
 const CURRENT_TIERS: readonly ServiceTrack[] = ["Tier_1", "Tier_3"]
 
 // Who writes a tool and who approves it, from the matrix: the OM and the PM
@@ -169,14 +175,14 @@ export type ToolStage = "open" | "submitted" | "locked"
 
 export const toolStages: readonly ToolStage[] = ["open", "submitted", "locked"]
 
-function stageLabel(stage: ToolStage) {
+function stageLabel(stage: ToolStage, tool: string) {
   switch (stage) {
     case "open": {
-      return `1 Fill in (${writerOf(CURRENT_TOOL)})`
+      return `1 Fill in (${writerOf(tool)})`
     }
 
     case "submitted": {
-      return `2 Approve (${approverOf(CURRENT_TOOL)})`
+      return `2 Approve (${approverOf(tool)})`
     }
 
     case "locked": {
@@ -190,7 +196,9 @@ function tierLabel(track: ServiceTrack) {
 }
 
 export function toolProjectName(track: ServiceTrack, stage: ToolStage) {
-  return `${DEV_PROJECT}${CURRENT_TOOL} ${tierLabel(track)} · ${stageLabel(stage)}`
+  const tool = currentToolFor(track)
+
+  return `${DEV_PROJECT}${tool} ${tierLabel(track)} · ${stageLabel(stage, tool)}`
 }
 
 // Every project has everyone on it, one person per role, so logging in as any

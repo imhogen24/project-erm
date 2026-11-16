@@ -82,6 +82,13 @@ import {
 } from "@/server/feasibility/feasibility"
 import { COST_ESTIMATION } from "@/lib/cost-estimation"
 import { costStart, costValues } from "@/server/cost/cost-estimation"
+import { PROJECT_BRIEF, T3_QUOTE } from "@/lib/project-brief"
+import {
+  briefStart,
+  briefValues,
+  quoteStart,
+  quoteValues,
+} from "@/server/brief/project-brief"
 import { getRecordScreen } from "@/server/records/screen"
 import { UnknownToolError } from "@/server/records/validate"
 
@@ -476,6 +483,34 @@ export default async function Page({
       state: view.state,
       payload: view.record?.payload ?? {},
     })) as FormValues
+
+    formValues = { ...formValues, ...system }
+  }
+
+  // D1.15: 1.0 is the system's; the rest starts from D1.13 and D1.14.
+  if (toolId === PROJECT_BRIEF) {
+    if (!view.record && view.can.write) {
+      // SAFETY: the starting values are built for D1.15's own fields.
+      const start = (await briefStart(getDatabase(), projectId)) as FormValues
+
+      formValues = { ...start, ...formValues }
+    }
+
+    // SAFETY: the system's values are built for D1.15's own fields.
+    const system = (await briefValues(getDatabase(), projectId)) as FormValues
+
+    formValues = { ...formValues, ...system }
+  }
+
+  // T3.D1.15a: the standard deliverables to start from, and the request ID.
+  if (toolId === T3_QUOTE) {
+    if (!view.record && view.can.write) {
+      // SAFETY: the starting rows are built for T3.D1.15a's own table.
+      formValues = { ...(quoteStart() as FormValues), ...formValues }
+    }
+
+    // SAFETY: the system's values are built for T3.D1.15a's own fields.
+    const system = (await quoteValues(getDatabase(), projectId)) as FormValues
 
     formValues = { ...formValues, ...system }
   }

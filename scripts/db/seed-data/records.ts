@@ -9,14 +9,19 @@ import { capabilityDomains } from "@/lib/feasibility"
 import { reviewDirectives } from "@/lib/internal-review"
 import { conclusionQuestions } from "@/lib/risk"
 import { needsCategories, specCategories } from "@/lib/needs-assessment"
+import {
+  t3Deliverables,
+  t3Exclusions,
+  t3PricingLines,
+} from "@/lib/project-brief"
 import { qualityGateQuestions } from "@/workbooks/wb01/tools/t3-d1-3a"
 
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 
 import { loginFor, staffWith } from "./people"
 import {
-  CURRENT_TOOL,
   approverOf,
+  currentToolFor,
   NEEDS_TEAM,
   requestIdOf,
   seedProjectNamed,
@@ -624,6 +629,84 @@ function stageD114() {
   })
 }
 
+// The Lead Engineer's brief, from D1.13 and D1.14, signed by the LE and the
+// PM.
+function stageD115() {
+  return payloadOf({
+    targetStartDate: "2026-11-02",
+    vision: "A complete, controlled engineering documentation package.",
+    objectives: [
+      { objective: "An accurate 3D model of the existing unit." },
+      { objective: "Drawings the workshop can build from." },
+    ],
+    phases: [
+      {
+        phaseNo: "1",
+        name: "Engineering Review & Scope Confirmation",
+        deliverables: "Review measurements, confirm the documentation basis.",
+        duration: "1 week",
+        target: "Week 1",
+      },
+    ],
+    budget: [
+      {
+        deliverable: "Engineering Design / Reverse Engineering",
+        value: 94400,
+        paymentSchedule: "40% at Contract Signing, 60% at Handover",
+      },
+    ],
+    outOfScope: "Physical Fabrication: building further units is excluded.",
+    clientDependencies:
+      "Client Engineering Decision: choose as-is, modify or redesign.",
+    headOfRdSignature: {
+      signedBy: "role:LE",
+      signedAt: "2026-10-15T10:00:00.000Z",
+    },
+    approverSignature: {
+      signedBy: "role:PM",
+      signedAt: "2026-10-16T10:00:00.000Z",
+    },
+  })
+}
+
+// The Lead Engineer's Tier 3 quote, signed by the LE.
+function stageT3D115a() {
+  return payloadOf({
+    deliverables: t3Deliverables.map((each) => ({
+      ...each,
+      qty: 1,
+      timeline: "2 weeks",
+    })),
+    pricing: [
+      {
+        description: t3PricingLines[0]!,
+        rate: 500,
+        qty: 80,
+        subtotal: 40000,
+      },
+      {
+        description: t3PricingLines[1]!,
+        rate: 15000,
+        qty: 1,
+        subtotal: 15000,
+      },
+      {
+        description: t3PricingLines[2]!,
+        rate: 5000,
+        qty: 1,
+        subtotal: 5000,
+        financeNotes: "Admin fee",
+      },
+    ],
+    totalT3ProjectValue: 60000,
+    exclusions: t3Exclusions.map((exclusion) => ({ exclusion })),
+    leadEngineerSignature: {
+      signedBy: "role:LE",
+      signedAt: "2026-10-15T10:00:00.000Z",
+    },
+  })
+}
+
 function tier1Records(name: string): SeedRecord[] {
   const stage = stageOf(name)
   const files = stageFiles(stage)
@@ -648,6 +731,7 @@ function tier1Records(name: string): SeedRecord[] {
     { toolId: "D1.12", state: "locked", day: 17, payload: stageD112() },
     { toolId: "D1.13", state: "locked", day: 20, payload: stageD113() },
     { toolId: "D1.14", state: "locked", day: 23, payload: stageD114() },
+    { toolId: "D1.15", state: "locked", day: 25, payload: stageD115() },
   ]
 }
 
@@ -672,6 +756,12 @@ function tier3Records(name: string): SeedRecord[] {
     { toolId: "D1.12", state: "locked", day: 14, payload: stageD112() },
     { toolId: "D1.13", state: "locked", day: 17, payload: stageD113() },
     { toolId: "D1.14", state: "locked", day: 20, payload: stageD114() },
+    {
+      toolId: "T3.D1.15a",
+      state: "locked",
+      day: 22,
+      payload: stageT3D115a(),
+    },
   ]
 }
 
@@ -699,7 +789,8 @@ function toolRecords(project: SeedProject, stage: ToolStage): SeedRecord[] {
       ? tier1Records(project.name)
       : tier3Records(project.name)
 
-  const at = all.findIndex((record) => record.toolId === CURRENT_TOOL)
+  const tool = currentToolFor(project.serviceTrack)
+  const at = all.findIndex((record) => record.toolId === tool)
   const before = all.slice(0, at)
 
   if (stage === "open") {
@@ -713,7 +804,7 @@ function toolRecords(project: SeedProject, stage: ToolStage): SeedRecord[] {
   }
 
   // Waiting for approval, so the approver has not signed yet.
-  const approverSigns = `role:${approverOf(CURRENT_TOOL)}`
+  const approverSigns = `role:${approverOf(tool)}`
 
   return [
     ...before,

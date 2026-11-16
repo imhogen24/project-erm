@@ -1,8 +1,9 @@
 import type { JsonObject } from "@/db/schema"
 import { COST_ESTIMATION, costCells } from "@/lib/cost-estimation"
+import { T3_QUOTE, quoteCells } from "@/lib/project-brief"
 
 export function hasLiveValues(toolId: string) {
-  return toolId === COST_ESTIMATION
+  return toolId === COST_ESTIMATION || toolId === T3_QUOTE
 }
 
 // What a tool's system cells show while the sheet is being typed, worked out
@@ -15,6 +16,10 @@ export function liveValues(
   switch (toolId) {
     case COST_ESTIMATION: {
       return costCells(values)
+    }
+
+    case T3_QUOTE: {
+      return quoteCells(values)
     }
 
     default: {

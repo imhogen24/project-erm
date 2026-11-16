@@ -15,6 +15,7 @@ import { emailOf, loginFor, staff } from "./seed-data/people"
 import {
   CURRENT_TOOL,
   NEEDS_TEAM,
+  currentToolFor,
   client,
   projects as seedProjects,
   toolProjectName,
@@ -233,7 +234,7 @@ describe("the projects", () => {
     ])
   })
 
-  it(`opens ${CURRENT_TOOL} on the Tier 3 Fill in, and never D1.3 or D1.8`, async () => {
+  it(`opens ${currentToolFor("Tier_3")} on the Tier 3 Fill in, and never D1.3 or D1.8`, async () => {
     await seed(url)
 
     const open = (
@@ -243,7 +244,7 @@ describe("the projects", () => {
       )
     ).map((tool) => tool.toolId)
 
-    expect(open).toContain(CURRENT_TOOL)
+    expect(open).toContain(currentToolFor("Tier_3"))
     expect(open).not.toContain("D1.3")
     expect(open).not.toContain("D1.8")
   })

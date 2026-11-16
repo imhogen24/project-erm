@@ -43,10 +43,10 @@ async function open(
   await page.goto(`/projects/${projectId}/tools/${toolId}`)
 }
 
-// D1.8 has no required field. D1.15, still one plain field the LE types,
-// opens once D1.14 is locked with the minimum overhead met, after D1.10
-// capable and D1.11 a Go.
-async function lockThroughD114(projectId: string) {
+// D1.8 has no required field. D1.16, still one date the LE may leave empty,
+// opens once D1.15 is locked, after D1.14 with the minimum overhead met,
+// D1.10 capable and D1.11 a Go.
+async function lockThroughD115(projectId: string) {
   await lockEarlierTools(projectId)
 
   for (const toolId of ["D1.8", "D1.9", "D1.12", "D1.13"]) {
@@ -56,6 +56,7 @@ async function lockThroughD114(projectId: string) {
   await addRecord(projectId, "D1.14", "locked", {
     payload: { minimumOverheadMet: true },
   })
+  await addRecord(projectId, "D1.15", "locked")
 
   await addRecord(projectId, "D1.10", "locked", {
     payload: { overallCapabilityStatus: "Capable" },
@@ -70,10 +71,6 @@ function notes(page: Page) {
   return page.getByLabel("Confirmed Constraints / Specifications, row 1", {
     exact: true,
   })
-}
-
-function requestId(page: Page) {
-  return page.getByLabel("Reference Request ID")
 }
 
 function control(page: Page) {
@@ -167,13 +164,11 @@ test("submitting a complete form makes it submitted and read only", async ({
 }) => {
   const { project, lead } = await setUp()
 
-  await lockThroughD114(project.id)
-  await open(page, lead.email, project.id, "D1.15")
-  await requestId(page).fill("T1-42")
+  await lockThroughD115(project.id)
+  await open(page, lead.email, project.id, "D1.16")
   await page.getByRole("button", { name: "Submit" }).click()
 
   await expect(page.getByText("Submitted", { exact: true })).toBeVisible()
-  await expect(requestId(page)).toBeDisabled()
   await expect(page.getByRole("button", { name: "Save draft" })).toHaveCount(0)
   await expect(page.getByRole("button", { name: "Submit" })).toHaveCount(0)
 })

@@ -5,6 +5,7 @@ import { loginFor } from "./seed-data/people"
 import {
   CURRENT_TOOL,
   NEEDS_TEAM,
+  currentToolFor,
   approverOf,
   client,
   toolProjectName,
@@ -16,6 +17,8 @@ const fillIn = toolProjectName("Tier_1", "open")
 const approve = toolProjectName("Tier_1", "submitted")
 
 const approved = toolProjectName("Tier_1", "locked")
+
+const tier3Tool = currentToolFor("Tier_3")
 
 const writer = writerOf(CURRENT_TOOL)
 
@@ -37,22 +40,28 @@ export type Preview = {
 
 export const previews: Preview[] = [
   {
-    screen: `${CURRENT_TOOL}, the tool being built, from every role's side`,
+    screen: `${CURRENT_TOOL} and ${tier3Tool}, the tools being built, from every role's side`,
     loginAs: writer,
     path: () => "/",
-    expect: `Your projects starts with six for ${CURRENT_TOOL}, Tier 1 and Tier 3 of each: 1 Fill in (${writer}) has every tool before it locked and ${CURRENT_TOOL} open and empty for the ${writer}, ${loginFor(writer)}. 2 Approve (${approver}) has it submitted and waiting for the ${approver}, ${loginFor(approver)}, with Approve and Send back. 3 Approved has it locked. Everyone is on every one of them, so log in as any role (om@, pm@, le@, he@, qa@ ... @imhogen.test) to see what that role reads, and as the client, ${client.email}, to see what they get. Every password is password.`,
+    expect: `Your projects starts with three for ${CURRENT_TOOL} on Tier 1 and three for ${tier3Tool} on Tier 3: 1 Fill in (${writer}) has every tool before it locked and the tool open and empty for the ${writer}, ${loginFor(writer)}. 2 Approve (${approver}) has it submitted and waiting for the ${approver}, ${loginFor(approver)}, with Approve and Send back. 3 Approved has it locked. Everyone is on every one of them, so log in as any role (om@, pm@, le@, he@, qa@ ... @imhogen.test) to see what that role reads, and as the client, ${client.email}, to see what they get. Every password is password.`,
   },
   {
-    screen: "D1.14 cost estimation sheet, as the LE",
+    screen: "D1.15 project brief & draft budget, as the LE",
     loginAs: "LE",
-    path: (id) => `/projects/${id}/tools/D1.14`,
-    expect: `On ${fillIn}: 1.0 Base technical labor cost, one row to start: type the module, Estimated Days and Daily Rate, and Total Labor Cost fills in as you type, with the Base Labor Subtotal under the table. 2.0 Direct project costs: Add row for each item, Quantity times Unit Cost, Direct Cost Subtotal. 3.0: the three layers locked in place, each with an Applied Rate (%): Project Management & QC is worked out on the base labor, Administrative Overhead and Sustainability / Risk Margin on the labor and direct costs; Total Project Value under them. 4.0 starts with one row per deliverable of D1.13's included scope: type each Fully Loaded Alloc. Cost; Allocation Check says how much is left to allocate until it reads Balanced. 5.0: IMHOGEN Cost Floor (D1.12), Is the minimum overhead recovery met? (Yes once the total reaches the floor), Ready for Project Briefing (D1.15)? No until approved, Lead Engineer Signature with Sign. Submit for approval is refused until the allocations balance.`,
+    path: (id) => `/projects/${id}/tools/D1.15`,
+    expect: `On ${fillIn}: 1.0 is the system's: Reference Request ID, Client / Organization Name, Primary Contact Person, Contact Email / Phone (from the web request), Project Title, Estimated Project Duration (D1.12's realistic timeline); Target Start Date to choose. Project Vision, the phases, Out of Scope and Client Dependencies start from D1.13, and 4.0's budget lines and their values from D1.14's allocations, with Total Estimated Investment under them; each line needs a Payment Schedule. Add Primary Objectives. The Notice reads as on the sheet. Sign Head of R&D Signature, then Submit for approval: refused while the budget does not add up to D1.14's total project value.`,
   },
   {
-    screen: "D1.14 approval, as the PM",
+    screen: "D1.15 approval as the PM, and the client's copy",
     loginAs: "PM",
-    path: (id) => `/projects/${id}/tools/D1.14`,
-    expect: `On ${approve}: the LE's sheet, read only, totalling GHS 94,400.00 against a GHS 80,000.00 floor, with Sign on Head of R&D / Finance Sig, then Approve and Send back. Approve before signing says to sign. Approving locks it, turns Ready for Project Briefing (D1.15)? to Yes and opens D1.15; had the total been under the floor, D1.15 would stay closed. On ${approved} it reads locked. The OM, FO, CR and IT/Admin read it; the client does not see it.`,
+    path: (id) => `/projects/${id}/tools/D1.15`,
+    expect: `On ${approve}: the LE's brief, read only, with Sign on Signature/Date, then Approve and Send back; approving locks it and opens D1.16. The client, ${client.email}, sees IMHOGEN shares this with you once it is approved until then, and the whole brief on ${approved}.`,
+  },
+  {
+    screen: "T3.D1.15a drafting SOW & quote, as the LE and the PM",
+    loginAs: "LE",
+    path: (id) => `/projects/${id}/tools/T3.D1.15a`,
+    expect: `On ${toolProjectName("Tier_3", "open")}: Project Request ID, then 1.0 with 3D Modeling, Drafting Package and BOM Extraction locked in place, their description and format filled in, for Qty and Delivery Timeline (a row left empty is fine; Add row for more). 2.0: the three pricing lines with Rate and Qty; each Subtotal and the Total T3 Project Value fill in as you type. 3.0: the three mandatory exclusions locked in place; Add row for more. Sign Lead Engineer Signature and submit. The PM (${loginFor("PM")}) approves on ${toolProjectName("Tier_3", "submitted")}; the client reads it once approved.`,
   },
   {
     screen: "Every tool built, locked or open",

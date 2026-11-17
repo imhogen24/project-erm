@@ -166,6 +166,12 @@ export const previews: Preview[] = [
     expect: `On ${DEV_LOCKED} (Tier 1), D1.2 ends with a Comments box: the PM's question with the OM's reply indented under it, each with the name, role in full and time, and Reply and Resolve; under it a folded "Resolved by" thread that opens when pressed; then Add a comment. Write a comment and press Comment: the OM, ${loginFor("OM")}, gets a New comment on D1.2 notification that opens D1.2 at the comment. Their reply gives the PM a New reply notification. Every tool, locked or not, has the box; the client never sees it.`,
   },
   {
+    screen: "Every tool saves by itself (RDP-153)",
+    loginAs: "OM",
+    path: (id) => `/projects/${id}/tools/D1.2`,
+    expect: `On ${DEV_UNLOCKED} (Tier 1), D1.2 has no Save draft, only Submit for approval. Type a reviewer note: a moment later the foot says Saving… then ✓ Saved. Click Project overview and come back: the note is there. Type and click away at once: it saves on the way and goes. With the network off (browser dev tools, Offline), typing shows Not saved. Retrying…, and clicking a link asks Your latest changes are not saved yet. Leave anyway? with Leave and Stay; back online it saves by itself. Every other tool, D1.5 and D1.6 among them, saves the same way.`,
+  },
+  {
     screen: "Notification bell (RDP-115)",
     loginAs: "PM",
     path: () => "/",

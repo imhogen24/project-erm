@@ -112,11 +112,10 @@ test("a field with no error shows no message", async ({ page }) => {
   )
 })
 
-test("Save draft sends the values even with a required field empty", async ({
-  page,
-}) => {
+test("an edit is saved even with a required field empty", async ({ page }) => {
   await openPreview(page)
-  await page.getByRole("button", { name: "Save draft" }).click()
+  await page.getByLabel("Notes").fill("A note")
+  await expect(page.getByLabel("Last sent")).toContainText('"action": "save"')
 
   const sent = await lastSent(page)
 
@@ -144,7 +143,7 @@ test("every type sends the value it was given", async ({ page }) => {
   await page.getByRole("checkbox", { name: "Client approved" }).click()
   await page.getByRole("combobox", { name: "Priority" }).click()
   await page.getByRole("option", { name: "High" }).click()
-  await page.getByRole("button", { name: "Save draft" }).click()
+  await expect(page.getByLabel("Last sent")).toContainText('"priority": "High"')
 
   expect((await lastSent(page)).values).toMatchObject({
     projectName: "Boiler retrofit",

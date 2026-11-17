@@ -94,8 +94,7 @@ test("the AE logs the measurements with a photo link, signs and submits; the LE 
       .getByRole("button", { name: "Upload" })
   ).toHaveCount(0)
 
-  await aePage.getByRole("button", { name: "Save draft" }).click()
-  await expect(aePage.getByText("Draft saved.")).toBeVisible()
+  await expect(aePage.getByText("✓ Saved")).toBeVisible()
   await expect(
     aePage.getByRole("link", { name: /Open/ }).first()
   ).toHaveAttribute("href", /\/api\/files\//)

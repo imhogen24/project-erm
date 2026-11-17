@@ -91,8 +91,7 @@ test("the LE types the estimate, the totals follow, and it is submitted once the
     "Balanced with the total project value"
   )
 
-  await page.getByRole("button", { name: "Save draft" }).click()
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
   await page
     .getByRole("button", { name: "Sign Lead Engineer Signature" })
     .click()

@@ -173,7 +173,16 @@ export async function getRecordScreen(
       can: {
         write: active && open && roleAllows(held, toolId, "write"),
         approve: false,
-        sign: [],
+        // Signing an empty sheet saves it as a draft first, so a writer can
+        // sign before typing anything.
+        sign:
+          active && open && roleAllows(held, toolId, "write")
+            ? signatureFields(toolId)
+                .filter((field) =>
+                  (field.signedBy ?? []).some((role) => held.includes(role))
+                )
+                .map((field) => field.key)
+            : [],
         withdraw: false,
         requestChange: false,
       },

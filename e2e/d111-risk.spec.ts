@@ -89,8 +89,7 @@ test("the LE records a risk, answers the questions, decides, signs and submits; 
     .getByRole("option", { name: "Conditional Go", exact: true })
     .click()
 
-  await lePage.getByRole("button", { name: "Save draft" }).click()
-  await expect(lePage.getByText("Draft saved.")).toBeVisible()
+  await expect(lePage.getByText("✓ Saved")).toBeVisible()
   await lePage.getByRole("button", { name: "Sign Assessor Signature" }).click()
   await expect(lePage.getByText(`Signed by ${le.name} on`)).toBeVisible()
   await lePage.getByRole("button", { name: "Submit for approval" }).click()

@@ -354,9 +354,9 @@ const toolDefinition = z
       .union([z.literal(1), z.literal(3), z.literal("both")])
       .default("both"),
     replaces: z.string().min(1).optional(),
-    // The record screen saves edits by itself a moment after typing stops,
-    // and shows no Save draft or Submit button.
-    autosave: z.boolean().optional(),
+    // The tool has no Submit for approval: a step of its own locks it, such
+    // as D1.4's Send. Every tool saves by itself as it is typed.
+    withoutSubmit: z.boolean().optional(),
     // The client reads the record only once it is locked: before, it holds
     // IMHOGEN's working notes.
     clientReadsOnceLocked: z.boolean().optional(),

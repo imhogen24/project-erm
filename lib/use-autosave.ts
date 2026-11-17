@@ -32,12 +32,20 @@ type Options = {
   save: (input: SaveInput) => Promise<SaveResult>
 }
 
+// How long after the last edit a save goes, and how long after a dropped
+// connection it tries again.
+export const AUTOSAVE_DELAY = 800
+
+const RETRY_DELAY = 3000
+
 // Saves a tool's sheet as it is typed. Each edit saves a moment later; an edit
 // made while a save is on its way is saved right after it. A failure drops
 // what was queued, so an older copy is never saved over a newer one: the next
-// edit saves the whole sheet again. `saveNow` waits for any save on its way,
-// then saves what is on screen, and says whether it worked, so a step such as
-// sending reads what was typed.
+// edit saves the whole sheet again. When the connection drops, it tries the
+// newest copy again until it gets through. `saveNow` waits for any save on its
+// way, then saves what is on screen, and says whether it worked, so a step
+// such as sending reads what was typed. `unsaved` is true while anything
+// typed is not yet on the server, so leaving can be checked.
 export function useAutosave({
   projectId,
   toolId,
@@ -57,9 +65,14 @@ export function useAutosave({
     setUpdatedAt(savedUpdatedAt)
   }
 
-  const [saving, setSaving] = useState<"idle" | "saving" | "saved">("idle")
+  const [saving, setSaving] = useState<
+    "idle" | "saving" | "saved" | "retrying"
+  >("idle")
+
   const [message, setMessage] = useState<string>()
+  const [errors, setErrors] = useState<FieldError[]>([])
   const [stale, setStale] = useState(false)
+  const [unsaved, setUnsaved] = useState(false)
 
   const latest = useRef({ recordId, updatedAt })
   // The record the screen holds, kept even while a save is on its way, so a
@@ -70,6 +83,11 @@ export function useAutosave({
   // The newest values typed, so a step never saves an older copy.
   const newest = useRef<FormValues | null>(null)
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const retry = useRef<ReturnType<typeof setTimeout>>(undefined)
+  // The same as `unsaved`, read at once by a save that ends.
+  const dirty = useRef(false)
+  // False once the screen is gone, so a late failure never tries again.
+  const active = useRef(true)
 
   useEffect(() => {
     shown.current = { recordId, updatedAt }
@@ -79,7 +97,15 @@ export function useAutosave({
     }
   }, [recordId, updatedAt])
 
-  useEffect(() => () => clearTimeout(timer.current), [])
+  useEffect(() => {
+    active.current = true
+
+    return () => {
+      active.current = false
+      clearTimeout(timer.current)
+      clearTimeout(retry.current)
+    }
+  }, [])
 
   function failed(line: string) {
     queued.current = null
@@ -96,17 +122,20 @@ export function useAutosave({
     }
 
     busy.current = true
+    clearTimeout(retry.current)
     setSaving("saving")
 
     try {
       let next: FormValues | null = values
 
       while (next) {
+        const sent: FormValues = next
+
         const result = await save({
           projectId,
           toolId,
           cycle,
-          values: next,
+          values: sent,
           expectedUpdatedAt: latest.current.updatedAt,
         })
 
@@ -121,14 +150,22 @@ export function useAutosave({
           setUpdatedAt(result.updatedAt)
           setSaving("saved")
           setMessage(undefined)
+          setErrors([])
           next = queued.current
           queued.current = null
+
+          // Saved up to date, unless something newer waits to go.
+          if (!next && newest.current === sent) {
+            dirty.current = false
+            setUnsaved(false)
+          }
         } else if (result.status === "stale") {
           setStale(true)
           failed("Not saved. Someone else saved this record.")
 
           return false
         } else if (result.status === "invalid") {
+          setErrors(result.errors)
           failed(
             `Not saved: ${result.errors.map((error) => error.message).join("; ")}`
           )
@@ -143,7 +180,18 @@ export function useAutosave({
 
       return true
     } catch {
-      failed("Not saved. The connection failed.")
+      // The connection dropped: the newest copy goes again shortly.
+      queued.current = null
+      latest.current = shown.current
+      setSaving("retrying")
+      clearTimeout(retry.current)
+
+      if (active.current) {
+        retry.current = setTimeout(
+          () => void saveValues(newest.current ?? values),
+          RETRY_DELAY
+        )
+      }
 
       return false
     } finally {
@@ -154,8 +202,10 @@ export function useAutosave({
   // Saves a moment after the last edit.
   function changed(values: FormValues) {
     newest.current = values
+    dirty.current = true
+    setUnsaved(true)
     clearTimeout(timer.current)
-    timer.current = setTimeout(() => void saveValues(values), 600)
+    timer.current = setTimeout(() => void saveValues(values), AUTOSAVE_DELAY)
   }
 
   // An edit made while this waits is the one saved, never the older copy it
@@ -168,9 +218,25 @@ export function useAutosave({
     }
 
     clearTimeout(timer.current)
+    clearTimeout(retry.current)
     queued.current = null
 
     return saveValues(newest.current)
+  }
+
+  // Saves anything typed that is not saved yet, now, such as before leaving
+  // the page. True when nothing is left unsaved.
+  async function flush(): Promise<boolean> {
+    if (!dirty.current || !newest.current) {
+      while (busy.current) {
+        await new Promise((resolve) => setTimeout(resolve, 50))
+      }
+
+      return !dirty.current
+    }
+
+    // An edit made while this saved is still waiting, so not all is saved.
+    return (await saveNow(newest.current)) && !dirty.current
   }
 
   // What the foot of the sheet says: the last message, else how saving went.
@@ -180,6 +246,8 @@ export function useAutosave({
     footLine = "Saving…"
   } else if (!footLine && saving === "saved") {
     footLine = "✓ Saved"
+  } else if (!footLine && saving === "retrying") {
+    footLine = "Not saved. Retrying…"
   }
 
   return {
@@ -187,7 +255,11 @@ export function useAutosave({
     latest,
     changed,
     saveNow,
+    flush,
     footLine,
+    unsaved,
+    errors,
+    setErrors,
     stale,
     setStale,
     setMessage,

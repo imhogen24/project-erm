@@ -1,15 +1,10 @@
 "use client"
 
-import {
-  useEffect,
-  useRef,
-  useState,
-  useTransition,
-  type ReactNode,
-} from "react"
+import { useRef, useState, useTransition, type ReactNode } from "react"
 import { useRouter } from "next/navigation"
 
 import { RecordUploads } from "@/components/file-cell"
+import { LeaveGuard } from "@/components/leave-guard"
 import {
   SendBackButton,
   SendBackForm,
@@ -23,6 +18,7 @@ import type {
   FormValues,
   ToolDefinition,
 } from "@/lib/tool-definition"
+import { useAutosave } from "@/lib/use-autosave"
 
 type Result =
   | { status: "done"; recordId: string; updatedAt: string }
@@ -76,8 +72,6 @@ type Props = {
   writerAction?: ReactNode
 }
 
-type Autosaved = "idle" | "saving" | "saved" | "failed"
-
 // Typed text that is empty is left out, since the server refuses an empty date
 // or number and an empty text is the same as none. An inherited or
 // system-filled value is the system's, so it is never sent.
@@ -127,156 +121,82 @@ export function RecordForm({
 }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
-
-  // The record and the time to save over come from the server, and move on
-  // with each save, so they are held here and taken again when the page does.
-  const [recordId, setRecordId] = useState(savedRecordId)
-  const [updatedAt, setUpdatedAt] = useState(savedUpdatedAt)
-  const [seen, setSeen] = useState({ id: savedRecordId, at: savedUpdatedAt })
-
-  if (seen.id !== savedRecordId || seen.at !== savedUpdatedAt) {
-    setSeen({ id: savedRecordId, at: savedUpdatedAt })
-    setRecordId(savedRecordId)
-    setUpdatedAt(savedUpdatedAt)
-  }
-
-  const [errors, setErrors] = useState<FieldError[]>([])
-  const [message, setMessage] = useState<string>()
-  const [stale, setStale] = useState(false)
   const [sendingBack, setSendingBack] = useState(false)
 
-  // Autosave reads the newest record and time from refs, since saves follow
-  // each other faster than the screen renders. A change made while a save is
-  // on its way is saved right after it, so nothing typed is lost.
-  const [autosaved, setAutosaved] = useState<Autosaved>("idle")
-  const [autosaveError, setAutosaveError] = useState<string>()
-  const latest = useRef({ recordId, updatedAt })
-  const busy = useRef(false)
-  const waiting = useRef<FormValues | null>(null)
+  // Every change is saved a moment after typing stops; a dropped connection
+  // is tried again, and leaving asks first while anything typed is not saved.
+  const sheet = useAutosave({
+    projectId,
+    toolId: tool.id,
+    cycle,
+    recordId: savedRecordId,
+    updatedAt: savedUpdatedAt,
+    save,
+  })
 
-  // Kept in step with the record the screen holds, such as after a reload.
-  useEffect(() => {
-    if (!busy.current) {
-      latest.current = { recordId, updatedAt }
-    }
-  }, [recordId, updatedAt])
+  // The newest values typed, so a step saves them first.
+  const typed = useRef<FormValues | null>(null)
 
-  async function autosave(held: FormValues) {
-    if (busy.current) {
-      waiting.current = held
+  // Runs a step once what was typed is saved, so the step reads it. When that
+  // save fails, the step does not run: it would read an older copy.
+  function run(
+    step: (record: {
+      recordId?: string
+      updatedAt?: string
+    }) => Promise<Result>,
+    saidDone: string
+  ) {
+    sheet.setMessage(undefined)
+    sheet.setErrors([])
+    sheet.setStale(false)
+    startTransition(async () => {
+      // A tool with no record yet is saved as it is on screen, which makes
+      // the draft; otherwise only edits not saved yet go first.
+      if (canWrite) {
+        const saved =
+          !sheet.latest.current.recordId && typed.current
+            ? await sheet.saveNow(typed.current)
+            : await sheet.flush()
 
-      return
-    }
-
-    busy.current = true
-    setAutosaved("saving")
-
-    // A failed save drops what was queued behind it: the next edit saves the
-    // whole form again, so nothing typed is lost.
-    function failed(reason: string) {
-      waiting.current = null
-      setAutosaved("failed")
-      setAutosaveError(reason)
-    }
-
-    try {
-      let next: FormValues | null = held
-
-      while (next) {
-        const result: Result = await save({
-          projectId,
-          toolId: tool.id,
-          cycle,
-          values: sendable(tool, next),
-          expectedUpdatedAt: latest.current.updatedAt,
-        })
-
-        next = null
-
-        if (result.status === "done") {
-          latest.current = {
-            recordId: result.recordId,
-            updatedAt: result.updatedAt,
-          }
-          setRecordId(result.recordId)
-          setUpdatedAt(result.updatedAt)
-          setErrors([])
-          setAutosaved("saved")
-          next = waiting.current
-          waiting.current = null
-        } else if (result.status === "stale") {
-          setStale(true)
-          failed("Someone else saved this record.")
-        } else if (result.status === "invalid") {
-          setErrors(result.errors)
-          failed("Check the highlighted field.")
-        } else {
-          failed(result.message)
+        if (!saved) {
+          return
         }
       }
-    } catch {
-      failed("The connection failed.")
-    } finally {
-      busy.current = false
-    }
-  }
 
-  let autosaveLine: string | undefined
-
-  if (autosaved === "saving") {
-    autosaveLine = "Saving…"
-  } else if (autosaved === "saved") {
-    autosaveLine = "✓ Saved"
-  } else if (autosaved === "failed") {
-    autosaveLine = `Not saved. ${autosaveError ?? ""} What you typed is still here.`
-  }
-
-  function run(send: () => Promise<Result>, saidDone: string) {
-    setMessage(undefined)
-    setErrors([])
-    setStale(false)
-    startTransition(async () => {
-      const result = await send()
+      const result = await step(sheet.latest.current)
 
       if (result.status === "done") {
-        setRecordId(result.recordId)
-        setUpdatedAt(result.updatedAt)
-        setMessage(saidDone)
+        sheet.setRecord(result)
+        sheet.setMessage(saidDone)
         router.refresh()
 
         return
       }
 
       if (result.status === "stale") {
-        setStale(true)
+        sheet.setStale(true)
 
         return
       }
 
       if (result.status === "invalid") {
-        setErrors(result.errors)
+        sheet.setErrors(result.errors)
 
-        if (result.recordId) {
-          setRecordId(result.recordId)
-          setUpdatedAt(result.updatedAt)
+        if (result.recordId && result.updatedAt) {
+          sheet.setRecord({
+            recordId: result.recordId,
+            updatedAt: result.updatedAt,
+          })
         }
 
         return
       }
 
-      setMessage(result.message)
+      sheet.setMessage(result.message)
     })
   }
 
-  function saving(held: FormValues): Save {
-    return {
-      projectId,
-      toolId: tool.id,
-      cycle,
-      values: sendable(tool, held),
-      expectedUpdatedAt: updatedAt,
-    }
-  }
+  const recordId = sheet.recordId
 
   return (
     <RecordUploads.Provider
@@ -287,13 +207,13 @@ export function RecordForm({
         <ToolForm
           tool={tool}
           values={values}
-          errors={errors}
+          errors={sheet.errors}
           readOnly={!canWrite}
           pending={pending}
           recordId={recordId}
           signable={signable}
-          message={message ?? (tool.autosave ? autosaveLine : undefined)}
-          autosave={tool.autosave}
+          message={sheet.footLine}
+          submits={!tool.withoutSubmit}
           extraActions={
             send ? (
               <div className="flex flex-col gap-2 @md:items-end">
@@ -333,16 +253,36 @@ export function RecordForm({
               writerAction
             )
           }
-          onSave={(held) =>
-            tool.autosave
-              ? void autosave(held)
-              : run(() => save(saving(held)), "Draft saved.")
-          }
-          onSubmit={(held) => run(() => submit(saving(held)), "Submitted.")}
-          onSign={(fieldKey) => {
-            if (recordId) {
-              run(() => sign({ recordId, fieldKey }), "Signed.")
-            }
+          onSave={(held) => {
+            typed.current = sendable(tool, held)
+            sheet.changed(typed.current)
+          }}
+          onSubmit={(held) => {
+            typed.current = sendable(tool, held)
+            run(
+              (record) =>
+                submit({
+                  projectId,
+                  toolId: tool.id,
+                  cycle,
+                  values: sendable(tool, held),
+                  expectedUpdatedAt: record.updatedAt,
+                }),
+              "Submitted."
+            )
+          }}
+          onSign={(fieldKey, held) => {
+            // Saved first as it is on screen, which also makes the draft on a
+            // tool with none yet. The same values go with Submit later, so
+            // the signature is not taken for an edit.
+            typed.current = sendable(tool, held)
+            run(
+              async (record) =>
+                record.recordId
+                  ? sign({ recordId: record.recordId, fieldKey })
+                  : { status: "error", message: "Reload and try again." },
+              "Signed."
+            )
           }}
         />
         {/* Stays open, holding the reason, until the record has gone back. */}
@@ -358,7 +298,7 @@ export function RecordForm({
             onCancel={() => setSendingBack(false)}
           />
         )}
-        {stale && (
+        {sheet.stale && (
           <div
             role="alert"
             className="flex flex-col gap-3 border border-destructive/40 p-4 sm:flex-row sm:items-center sm:justify-between"
@@ -373,6 +313,7 @@ export function RecordForm({
             </Button>
           </div>
         )}
+        <LeaveGuard active={canWrite && sheet.unsaved} flush={sheet.flush} />
       </div>
     </RecordUploads.Provider>
   )

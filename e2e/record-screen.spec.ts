@@ -135,15 +135,15 @@ test("a person who may not read the tool, or is not on the project, sees not fou
   await expect(page.getByText(NOT_FOUND)).toBeVisible()
 })
 
-test("Save draft keeps the values after a reload", async ({ page }) => {
+test("what is typed saves by itself and is kept after a reload", async ({
+  page,
+}) => {
   const { project, lead } = await setUp()
 
   await lockEarlierTools(project.id)
   await open(page, lead.email, project.id, "D1.8")
   await notes(page).fill("Lea")
-  await page.getByRole("button", { name: "Save draft" }).click()
-
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
 
   await page.reload()
 
@@ -287,11 +287,9 @@ test("a save over someone else's newer save is refused and keeps the text", asyn
   const synthesizedBy = notes
 
   await synthesizedBy(page).fill("Lea")
-  await page.getByRole("button", { name: "Save draft" }).click()
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
 
   await synthesizedBy(second).fill("Leo")
-  await second.getByRole("button", { name: "Save draft" }).click()
 
   await expect(second.getByText(STALE)).toBeVisible()
   await expect(second.getByRole("button", { name: "Reload" })).toBeVisible()
@@ -373,8 +371,6 @@ test("at 375px the page does not scroll sideways and its buttons work", async ({
 
   await notes(page).fill("Lea")
   await expect(page.getByRole("button", { name: "Submit" })).toBeVisible()
-  await page.getByRole("button", { name: "Save draft" }).click()
-
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
   expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0)
 })

@@ -21,7 +21,7 @@ export const d16 = defineTool({
   name: "Calendar Invite & Agenda",
   workbook: "wb01",
   tier: 1,
-  autosave: true,
+  withoutSubmit: true,
   fields: [
     {
       key: "meetingDate",

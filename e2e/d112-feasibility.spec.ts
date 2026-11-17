@@ -103,8 +103,7 @@ test("the LE starts from D1.11's risks, assesses each domain, signs and submits;
     .getByRole("textbox", { name: /^Recommendation/ })
     .fill("Feasible with a revised scope.")
 
-  await lePage.getByRole("button", { name: "Save draft" }).click()
-  await expect(lePage.getByText("Draft saved.")).toBeVisible()
+  await expect(lePage.getByText("✓ Saved")).toBeVisible()
   await lePage
     .getByRole("button", { name: "Sign Head of R&D Signature" })
     .click()

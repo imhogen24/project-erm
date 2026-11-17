@@ -73,13 +73,25 @@ export function valueOf(row: JsonObject, column: string) {
 
 // The saved copy of a website request as groups of labelled values: what the
 // track's form asks, when it came in, and any column the website has added
-// since, so nothing the client filled in is left out. The answers are client
-// details, so nothing here puts them in a log or an error message.
-export function requestSheetOf(copy: {
-  requestId: string
-  serviceTrack: ServiceTrack
-  submission: JsonObject
-}): RequestSheet | null {
+// since, so nothing the client filled in is left out. `was` holds what each
+// answer the client changed was, by column. The answers are client details, so
+// nothing here puts them in a log or an error message.
+export function requestSheetOf(
+  copy: {
+    requestId: string
+    serviceTrack: ServiceTrack
+    submission: JsonObject
+  },
+  was: JsonObject = {}
+): RequestSheet | null {
+  function rowOf(column: string, label: string) {
+    const value = valueOf(copy.submission, column)
+
+    return column in was
+      ? { label, value, was: valueOf(was, column) }
+      : { label, value }
+  }
+
   if (copy.serviceTrack !== "Tier_1" && copy.serviceTrack !== "Tier_3") {
     return null
   }
@@ -99,10 +111,7 @@ export function requestSheetOf(copy: {
   const groups: RequestGroup[] = [
     ...asked.map((group) => ({
       title: group.title,
-      rows: group.fields.map((field) => ({
-        label: field.label,
-        value: valueOf(copy.submission, field.column),
-      })),
+      rows: group.fields.map((field) => rowOf(field.column, field.label)),
     })),
     {
       title: "Submission",
@@ -116,10 +125,7 @@ export function requestSheetOf(copy: {
       : [
           {
             title: "Other answers",
-            rows: extra.map((column) => ({
-              label: labelOf(column),
-              value: valueOf(copy.submission, column),
-            })),
+            rows: extra.map((column) => rowOf(column, labelOf(column))),
           },
         ]),
   ]

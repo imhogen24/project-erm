@@ -664,6 +664,11 @@
     background: color-mix(in oklab, var(--destructive) 12%, transparent);
   }
 
+  /* An answer the client changed the last time they sent D1.1 again. */
+  .changed-answer {
+    background: var(--surface-note);
+  }
+
   /* A person shown inside a tile. */
   .inset-row {
     border-radius: var(--radius-control);

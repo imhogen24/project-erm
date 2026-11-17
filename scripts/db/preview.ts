@@ -142,6 +142,12 @@ export const previews: Preview[] = [
     expect: `On ${approved}, the PM sees Change requests waiting above the workbooks: the OM asks to change D1.1 Client Email / Web Form because the client sent a photo of the equipment nameplate. Approve or Reject sits beside it. The D1.1 tile below says Change requested.`,
   },
   {
+    screen: "The client changed their request (RDP-155)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.1`,
+    expect: `On ${DEV_LOCKED} (Tier 1): as the OM, ${loginFor("OM")}, ask for a change to D1.1 on the project overview; as the PM, approve it. As the client, ${client.email}, open D1.1, change Title and Timeline, add or take off a file (needs UPLOADTHING_TOKEN to add), and press Send the changes. The PM and the OM each get a bell note, The client changed their request on ${DEV_LOCKED} (Tier 1); clicking it opens D1.1. There Title and Timeline are tinted, each with Was: and the old answer under it; the rest read as before; Changed files lists each file as Added or Removed. The tint stays until the next change request on D1.1 is approved.`,
+  },
+  {
     screen: "Withdraw a submitted tool, as the OM (RDP-152)",
     loginAs: "OM",
     path: (id) => `/projects/${id}/tools/D1.3`,

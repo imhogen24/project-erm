@@ -409,6 +409,25 @@ export async function notifyChangeDecided(
   })
 }
 
+// The project's PM and OM, once the client sends D1.1 again after an approved
+// change request, so they can look at what changed.
+export async function notifyClientChanged(
+  transaction: Transaction,
+  actor: string,
+  record: RecordRef
+): Promise<void> {
+  const team = await holdersOf(transaction, record.projectId, ["PM", "OM"])
+
+  await notify(transaction, {
+    personIds: others(actor, team),
+    kind: "client_changed",
+    title: `The client changed their request on ${await projectName(transaction, record.projectId)}`,
+    projectId: record.projectId,
+    recordId: record.id,
+    path: toolPath(record.projectId, record.toolId),
+  })
+}
+
 // Runs after the action's transaction commits. A failed email never fails the
 // action: sendEmail logs a failed send itself, and anything that stops it
 // before then, such as a bad address or no BETTER_AUTH_URL, leaves no email

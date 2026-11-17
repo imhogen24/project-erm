@@ -30,6 +30,8 @@ export const notificationKinds = [
   // Someone on the team commented on a tool, or replied to a comment.
   "commented",
   "comment_replied",
+  // The client sent D1.1 again after a change request was approved.
+  "client_changed",
 ] as const
 
 export type NotificationKind = (typeof notificationKinds)[number]

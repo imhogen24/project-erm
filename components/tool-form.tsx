@@ -54,22 +54,19 @@ type Props = {
   // The signature fields this person may sign now, and what Sign does. A
   // signature is never typed, so Sign stays usable on a read-only record.
   signable?: readonly string[]
-  onSign?: (key: string) => void
+  // Signing hands over what is on screen too, so it can be saved first.
+  onSign?: (key: string, values: FormValues) => void
   // Set while something is being sent, so a button is not pressed twice.
   pending?: boolean
   // The saved record, so a stored file link can be opened through it.
   recordId?: string
-  // What the last action said, and any buttons that belong after Save and
-  // Submit, such as Approve. Both sit in the sheet's action row.
+  // What the last action said, or how saving is going, and any buttons that
+  // belong after Submit, such as Approve. Both sit in the sheet's action row.
   message?: string
   extraActions?: ReactNode
-  // The tool saves by itself: no Save draft or Submit, and onSave is called a
-  // moment after the person stops typing.
-  autosave?: boolean
+  // A tool that a step of its own locks, such as D1.4's Send, has no Submit.
+  submits?: boolean
 }
-
-// How long after the last keystroke an autosave goes.
-const AUTOSAVE_DELAY = 800
 
 // A run of plain fields shares one box of rows. A table, a checklist and the
 // blocks that are only shown each get a box of their own.
@@ -272,7 +269,7 @@ export function ToolForm({
   recordId,
   message: said,
   extraActions,
-  autosave = false,
+  submits = true,
 }: Props) {
   const form = useForm<Record<string, RawValue>>({
     defaultValues: Object.fromEntries(
@@ -299,8 +296,9 @@ export function ToolForm({
     return toValues(tool, form.getValues())
   }
 
-  // Each change restarts the wait, so a save goes only once typing stops.
-  // Saving never needs the form complete, so a half-written draft is kept.
+  // Every sheet saves by itself: each change is handed on, and the saver waits
+  // for typing to stop. Saving never needs the form complete, so a
+  // half-written draft is kept.
   const save = useRef(onSave)
 
   useEffect(() => {
@@ -308,33 +306,22 @@ export function ToolForm({
   })
 
   useEffect(() => {
-    if (!autosave || readOnly) {
+    if (readOnly) {
       return
     }
 
-    let timer: ReturnType<typeof setTimeout> | undefined
-
-    // Only a change the person makes counts, not the form filling in.
-    const unsubscribe = form.subscribe({
+    // Only a change the person makes counts, not the form filling in. Every
+    // input, a table's rows and a file among them, changes through its
+    // Controller.
+    return form.subscribe({
       formState: { values: true },
       callback: ({ type }) => {
-        if (type !== "change") {
-          return
+        if (type === "change") {
+          save.current(toValues(tool, form.getValues()))
         }
-
-        clearTimeout(timer)
-        timer = setTimeout(
-          () => save.current(toValues(tool, form.getValues())),
-          AUTOSAVE_DELAY
-        )
       },
     })
-
-    return () => {
-      clearTimeout(timer)
-      unsubscribe()
-    }
-  }, [autosave, readOnly, form, tool])
+  }, [readOnly, form, tool])
 
   // One field's input, wired to the form, with its error under it.
   function input(field: ToolField, inputClassName?: string) {
@@ -459,7 +446,7 @@ export function ToolForm({
                   aria-label={`Sign ${field.label}`}
                   className="bg-foreground/10 hover:bg-foreground/20"
                   disabled={pending}
-                  onClick={() => onSign(field.key)}
+                  onClick={() => onSign(field.key, held())}
                 >
                   Sign
                 </ActionButton>
@@ -548,22 +535,12 @@ export function ToolForm({
           </div>
         )
       )}
-      {((!readOnly && !autosave) || extraActions || said) && (
+      {((!readOnly && submits) || extraActions || said) && (
         <SheetActions message={said}>
-          {!readOnly && !autosave && (
-            <>
-              <ActionButton
-                variant="secondary"
-                className="bg-foreground/10 hover:bg-foreground/20"
-                disabled={pending}
-                onClick={() => onSave(held())}
-              >
-                Save draft
-              </ActionButton>
-              <ActionButton type="submit" disabled={pending}>
-                Submit for approval
-              </ActionButton>
-            </>
+          {!readOnly && submits && (
+            <ActionButton type="submit" disabled={pending}>
+              Submit for approval
+            </ActionButton>
           )}
           {extraActions}
         </SheetActions>

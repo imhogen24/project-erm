@@ -82,8 +82,7 @@ test("the LE assesses every criterion, signs and submits; the PM approves", asyn
   await lePage.getByLabel("Overall Capability Status").click()
   await lePage.getByRole("option", { name: "Partially Capable" }).click()
 
-  await lePage.getByRole("button", { name: "Save draft" }).click()
-  await expect(lePage.getByText("Draft saved.")).toBeVisible()
+  await expect(lePage.getByText("✓ Saved")).toBeVisible()
   await lePage.getByRole("button", { name: "Sign Assessor Signature" }).click()
   await expect(lePage.getByText(`Signed by ${le.name} on`)).toBeVisible()
   await expect(lePage.locator("output#assessmentDate")).not.toHaveText(

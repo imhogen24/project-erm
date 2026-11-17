@@ -22,7 +22,7 @@ export const d14 = defineTool({
   id: "D1.4",
   name: "Acknowledgement Email",
   workbook: "wb01",
-  autosave: true,
+  withoutSubmit: true,
   fields: [
     {
       key: "sentTo",

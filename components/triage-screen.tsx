@@ -10,6 +10,7 @@ import {
   SendBackForm,
   SentBackNotice,
 } from "@/components/send-back"
+import { LeaveGuard } from "@/components/leave-guard"
 import { ActionButton, SheetActions } from "@/components/sheet-actions"
 import {
   DataCell,
@@ -22,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea"
 import type { ClientFile } from "@/lib/client-files"
 import type { FieldError, FormValues, TableRow } from "@/lib/tool-definition"
 import { PROCEED, REJECT, type TriageValues } from "@/lib/triage"
+import { useAutosave } from "@/lib/use-autosave"
 
 type Result =
   | { status: "done"; recordId: string; updatedAt: string }
@@ -121,95 +123,117 @@ export function TriageScreen({
 
   const [decision, setDecision] = useState(saved.triageDecision)
 
-  // The record and the time to save over move on with each save, so they are
-  // held here and taken again when the page gives new ones.
-  const [recordId, setRecordId] = useState(savedRecordId)
-  const [updatedAt, setUpdatedAt] = useState(savedUpdatedAt)
-  const [seen, setSeen] = useState({ id: savedRecordId, at: savedUpdatedAt })
+  // Every edit is saved a moment after typing stops; a dropped connection is
+  // tried again, and leaving asks first while anything is not saved.
+  const sheet = useAutosave({
+    projectId,
+    toolId: "D1.2",
+    cycle,
+    recordId: savedRecordId,
+    updatedAt: savedUpdatedAt,
+    save,
+  })
 
-  if (seen.id !== savedRecordId || seen.at !== savedUpdatedAt) {
-    setSeen({ id: savedRecordId, at: savedUpdatedAt })
-    setRecordId(savedRecordId)
-    setUpdatedAt(savedUpdatedAt)
-  }
-
-  const [errors, setErrors] = useState<FieldError[]>([])
-  const [message, setMessage] = useState<string>()
-  const [stale, setStale] = useState(false)
+  const recordId = sheet.recordId
+  const errors = sheet.errors
   const [sendingBack, setSendingBack] = useState(false)
 
   const failed = answers.some((answer) => answer.status === "Fail")
   const proceedLabel = tier3 ? "Proceed to D1.3a" : PROCEED
 
-  function setAnswer(index: number, change: Partial<(typeof answers)[number]>) {
-    setAnswers(
-      answers.map((answer, at) =>
-        at === index ? { ...answer, ...change } : answer
-      )
-    )
-
-    // A failed check takes Proceed away, so a chosen Proceed is let go.
-    if (change.status === "Fail" && decision === PROCEED) {
-      setDecision("")
-    }
+  type Held = {
+    descriptions: string[]
+    answers: typeof answers
+    decision: string
   }
 
-  function typed(): Save {
+  const held: Held = { descriptions, answers, decision }
+
+  function valuesOf(next: Held): FormValues {
     return {
-      projectId,
-      toolId: "D1.2",
-      cycle,
-      values: {
-        digitalRecords: descriptions.map((fileName): TableRow =>
-          fileName === "" ? {} : { fileName }
-        ),
-        triageChecklist: checks.map((check, index) => ({
-          check,
-          ...(answers[index]?.status && { status: answers[index].status }),
-          ...(answers[index]?.notes && {
-            reviewerNotes: answers[index].notes,
-          }),
-        })),
-        ...(decision !== "" && { triageDecision: decision }),
-      },
-      expectedUpdatedAt: updatedAt,
+      digitalRecords: next.descriptions.map((fileName): TableRow =>
+        fileName === "" ? {} : { fileName }
+      ),
+      triageChecklist: checks.map((check, index) => ({
+        check,
+        ...(next.answers[index]?.status && {
+          status: next.answers[index].status,
+        }),
+        ...(next.answers[index]?.notes && {
+          reviewerNotes: next.answers[index].notes,
+        }),
+      })),
+      ...(next.decision !== "" && { triageDecision: next.decision }),
     }
   }
 
-  function run(send: () => Promise<Result>, saidDone: string) {
-    setMessage(undefined)
-    setErrors([])
-    setStale(false)
+  function edit(change: Partial<Held>) {
+    const next = { ...held, ...change }
+
+    setDescriptions(next.descriptions)
+    setAnswers(next.answers)
+    setDecision(next.decision)
+    sheet.changed(valuesOf(next))
+  }
+
+  function setAnswer(index: number, change: Partial<(typeof answers)[number]>) {
+    edit({
+      answers: answers.map((answer, at) =>
+        at === index ? { ...answer, ...change } : answer
+      ),
+      // A failed check takes Proceed away, so a chosen Proceed is let go.
+      ...(change.status === "Fail" && decision === PROCEED && { decision: "" }),
+    })
+  }
+
+  // Runs a step once every edit is saved, so the step reads it. When that save
+  // fails, the step does not run: it would read an older copy.
+  function run(
+    step: (record: {
+      recordId?: string
+      updatedAt?: string
+    }) => Promise<Result>,
+    saidDone: string
+  ) {
+    sheet.setMessage(undefined)
+    sheet.setErrors([])
+    sheet.setStale(false)
     startTransition(async () => {
-      const result = await send()
+      // Edits not saved yet go first. Submit sends the values itself.
+      if (canWrite && !(await sheet.flush())) {
+        return
+      }
+
+      const result = await step(sheet.latest.current)
 
       if (result.status === "done") {
-        setRecordId(result.recordId)
-        setUpdatedAt(result.updatedAt)
-        setMessage(saidDone)
+        sheet.setRecord(result)
+        sheet.setMessage(saidDone)
         router.refresh()
 
         return
       }
 
       if (result.status === "stale") {
-        setStale(true)
+        sheet.setStale(true)
 
         return
       }
 
       if (result.status === "invalid") {
-        setErrors(result.errors)
+        sheet.setErrors(result.errors)
 
-        if (result.recordId) {
-          setRecordId(result.recordId)
-          setUpdatedAt(result.updatedAt)
+        if (result.recordId && result.updatedAt) {
+          sheet.setRecord({
+            recordId: result.recordId,
+            updatedAt: result.updatedAt,
+          })
         }
 
         return
       }
 
-      setMessage(result.message)
+      sheet.setMessage(result.message)
     })
   }
 
@@ -306,11 +330,11 @@ export function TriageScreen({
                     disabled={locked}
                     className="min-h-16 border-foreground/40 bg-background"
                     onChange={(event) =>
-                      setDescriptions(
-                        descriptions.map((each, at) =>
+                      edit({
+                        descriptions: descriptions.map((each, at) =>
                           at === index ? event.target.value : each
-                        )
-                      )
+                        ),
+                      })
                     }
                   />
                 </DataCell>
@@ -376,7 +400,7 @@ export function TriageScreen({
           value={decision}
           disabled={locked}
           className="grid gap-3 md:grid-cols-2"
-          onValueChange={setDecision}
+          onValueChange={(next) => edit({ decision: next })}
         >
           {decisions.map(({ option, label, effect, off }) => (
             <label
@@ -415,24 +439,30 @@ export function TriageScreen({
           ))}
         </ul>
       )}
-      {(canWrite || (canApprove && recordId) || writerAction || message) && (
-        <SheetActions message={message}>
+      {(canWrite ||
+        (canApprove && recordId) ||
+        writerAction ||
+        sheet.footLine) && (
+        <SheetActions message={sheet.footLine}>
           {canWrite && (
-            <>
-              <ActionButton
-                variant="outline"
-                disabled={pending}
-                onClick={() => run(() => save(typed()), "Draft saved.")}
-              >
-                Save draft
-              </ActionButton>
-              <ActionButton
-                disabled={pending}
-                onClick={() => run(() => submit(typed()), "Submitted.")}
-              >
-                Submit for approval
-              </ActionButton>
-            </>
+            <ActionButton
+              disabled={pending}
+              onClick={() =>
+                run(
+                  (record) =>
+                    submit({
+                      projectId,
+                      toolId: "D1.2",
+                      cycle,
+                      values: valuesOf(held),
+                      expectedUpdatedAt: record.updatedAt,
+                    }),
+                  "Submitted."
+                )
+              }
+            >
+              Submit for approval
+            </ActionButton>
           )}
           {writerAction}
           {canApprove && recordId && (
@@ -467,7 +497,7 @@ export function TriageScreen({
           onCancel={() => setSendingBack(false)}
         />
       )}
-      {stale && (
+      {sheet.stale && (
         <div
           role="alert"
           className="flex flex-col gap-3 border border-destructive/40 p-4 sm:flex-row sm:items-center sm:justify-between"
@@ -482,6 +512,7 @@ export function TriageScreen({
           </Button>
         </div>
       )}
+      <LeaveGuard active={canWrite && sheet.unsaved} flush={sheet.flush} />
     </div>
   )
 }

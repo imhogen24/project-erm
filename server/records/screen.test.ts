@@ -149,7 +149,7 @@ describe("who may open a tool", () => {
 })
 
 describe("a tool with no record yet", () => {
-  it("is open to the writer, with no record and nothing signed", async () => {
+  it("is open to the writer, with no record, who may sign before typing", async () => {
     const view = await screen(lead)
 
     expect(view).toMatchObject({
@@ -162,7 +162,7 @@ describe("a tool with no record yet", () => {
       can: {
         write: true,
         approve: false,
-        sign: [],
+        sign: ["leadSignature"],
         withdraw: false,
         requestChange: false,
       },

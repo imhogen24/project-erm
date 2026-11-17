@@ -167,9 +167,7 @@ test("the OM describes one file, and it is kept after a reload", async ({
 
   await open(page, om.email, project.id)
   await description(page, "Photo 2").fill("Front of the trailer")
-  await save(page).click()
-
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
 
   await page.reload()
 
@@ -235,9 +233,7 @@ test("the OM answers each check and the answers are kept after a reload", async 
 
   await open(page, om.email, project.id)
   await answerAll(page)
-  await save(page).click()
-
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
 
   await page.reload()
 
@@ -333,18 +329,14 @@ test("a decision let go is let go in the saved draft too", async ({ page }) => {
 
   await open(page, om.email, project.id)
   await reject(page).click()
-  await save(page).click()
-
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
 
   await page.reload()
 
   await expect(reject(page)).toHaveAttribute("aria-checked", "true")
 
   await reject(page).click()
-  await save(page).click()
-
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
 
   await page.reload()
 
@@ -386,18 +378,22 @@ test("pressing a chosen Pass again leaves the check unanswered", async ({
   await expect(result(page, 0, "Fail")).toHaveAttribute("aria-checked", "false")
 })
 
-test("pressing Proceed only chooses it and sends nothing", async ({ page }) => {
+test("pressing Proceed saves it as a draft and submits nothing", async ({
+  page,
+}) => {
   const { project, om } = await setUp()
 
   await open(page, om.email, project.id)
   await proceed(page).click()
 
   await expect(proceed(page)).toHaveAttribute("aria-checked", "true")
+  await expect(page.getByText("✓ Saved")).toBeVisible()
   await expect(page.getByText("Submitted", { exact: true })).toHaveCount(0)
 
   await page.reload()
 
-  await expect(proceed(page)).toHaveAttribute("aria-checked", "false")
+  await expect(proceed(page)).toHaveAttribute("aria-checked", "true")
+  await expect(submit(page)).toBeVisible()
 })
 
 test("submitting saves what was typed, and the OM then sees it read only", async ({
@@ -608,8 +604,6 @@ test("at 375px nothing scrolls sideways and the buttons work", async ({
   await result(page, 0, "Pass").click()
   await notes(page, 0).fill("Fine")
   await proceed(page).click()
-  await save(page).click()
-
-  await expect(page.getByText("Draft saved.")).toBeVisible()
+  await expect(page.getByText("✓ Saved")).toBeVisible()
   expect(await sidewaysScroll(page)).toBeLessThanOrEqual(0)
 })

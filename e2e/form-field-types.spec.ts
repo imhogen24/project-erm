@@ -31,8 +31,9 @@ const rows = z.array(z.record(z.string(), z.union([z.string(), z.number()])))
 
 const checks = z.record(z.string(), z.boolean())
 
+// Every edit is handed on to be saved; this waits until one has been.
 async function saveDraft(page: Page) {
-  await page.getByRole("button", { name: "Save draft" }).click()
+  await expect(page.getByLabel("Last sent")).toContainText('"action": "save"')
 }
 
 test("a table adds a row, and the saved values hold it", async ({ page }) => {
@@ -156,6 +157,7 @@ test("instructions, lists and signatures are text, never inputs", async ({
   )
   await expect(page.getByRole("textbox", { name: "Guidance" })).toHaveCount(0)
 
+  await page.getByRole("textbox").first().fill("An edit")
   await saveDraft(page)
 
   const values = (await lastSent(page)).values

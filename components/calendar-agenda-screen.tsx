@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
 import { SegmentedChoice } from "@/components/segmented-choice"
+import { LeaveGuard } from "@/components/leave-guard"
 import { ActionButton, SheetActions } from "@/components/sheet-actions"
 import {
   DataCell,
@@ -584,6 +585,7 @@ export function CalendarAgendaScreen({
           </Button>
         </div>
       )}
+      <LeaveGuard active={canWrite && sheet.unsaved} flush={sheet.flush} />
     </div>
   )
 }

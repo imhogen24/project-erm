@@ -46,7 +46,7 @@ tools.registerTool(
     id: "D1.4",
     name: "Acknowledgement Email",
     workbook: "wb01",
-    autosave: true,
+    withoutSubmit: true,
     fields: [
       { key: "sentTo", label: "Sent To", type: "email", systemFilled: true },
       { key: "ccBcc", label: "CC / BCC", type: "text" },

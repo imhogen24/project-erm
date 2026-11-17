@@ -33,7 +33,7 @@ export const d15 = defineTool({
   name: "Meeting Time Proposal",
   workbook: "wb01",
   tier: 1,
-  autosave: true,
+  withoutSubmit: true,
   fields: [
     {
       key: "slots",

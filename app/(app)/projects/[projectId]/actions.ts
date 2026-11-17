@@ -91,6 +91,8 @@ export async function requestChangeAction(
   // The project the change belongs to comes from the change itself, not from
   // anything the caller sent.
   revalidatePath(`/projects/${changed.projectId}`)
+  // The tool's own page offers the same button.
+  revalidatePath("/projects/[projectId]/tools/[toolId]", "page")
 
   return { status: "done" }
 }

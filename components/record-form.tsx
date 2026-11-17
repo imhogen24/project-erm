@@ -1,14 +1,23 @@
 "use client"
 
-import { useEffect, useRef, useState, useTransition } from "react"
+import {
+  useEffect,
+  useRef,
+  useState,
+  useTransition,
+  type ReactNode,
+} from "react"
 import { useRouter } from "next/navigation"
 
 import { RecordUploads } from "@/components/file-cell"
+import {
+  SendBackButton,
+  SendBackForm,
+  SentBackNotice,
+} from "@/components/send-back"
 import { ActionButton } from "@/components/sheet-actions"
 import { ToolForm } from "@/components/tool-form"
 import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import type {
   FieldError,
   FormValues,
@@ -62,6 +71,9 @@ type Props = {
   sendBack?: (values: { recordId: string; reason: string }) => Promise<Result>
   // Why the approver sent this draft back, shown above the sheet.
   sentBack?: string
+  // The writer's button once the record is out of their hands: Withdraw while
+  // it waits for approval, Request a change once it is locked.
+  writerAction?: ReactNode
 }
 
 type Autosaved = "idle" | "saving" | "saved" | "failed"
@@ -111,6 +123,7 @@ export function RecordForm({
   send,
   sendBack,
   sentBack,
+  writerAction,
 }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -131,7 +144,6 @@ export function RecordForm({
   const [message, setMessage] = useState<string>()
   const [stale, setStale] = useState(false)
   const [sendingBack, setSendingBack] = useState(false)
-  const [reason, setReason] = useState("")
 
   // Autosave reads the newest record and time from refs, since saves follow
   // each other faster than the screen renders. A change made while a save is
@@ -271,12 +283,7 @@ export function RecordForm({
       value={canWrite ? { projectId, toolId: tool.id } : null}
     >
       <div className="flex flex-col gap-6">
-        {sentBack && (
-          <div role="status" data-tone="error" className="note-panel text-sm">
-            <p className="font-medium">Sent back for changes</p>
-            <p className="whitespace-pre-wrap">{sentBack}</p>
-          </div>
-        )}
+        <SentBackNotice reason={sentBack} />
         <ToolForm
           tool={tool}
           values={values}
@@ -309,14 +316,11 @@ export function RecordForm({
             ) : canApprove && recordId ? (
               <>
                 {sendBack && (
-                  <ActionButton
-                    variant="secondary"
+                  <SendBackButton
+                    open={sendingBack}
                     disabled={pending}
-                    aria-expanded={sendingBack}
-                    onClick={() => setSendingBack((open) => !open)}
-                  >
-                    Send back
-                  </ActionButton>
+                    onToggle={() => setSendingBack((open) => !open)}
+                  />
                 )}
                 <ActionButton
                   disabled={pending}
@@ -325,7 +329,9 @@ export function RecordForm({
                   Approve
                 </ActionButton>
               </>
-            ) : undefined
+            ) : (
+              writerAction
+            )
           }
           onSave={(held) =>
             tool.autosave
@@ -341,42 +347,16 @@ export function RecordForm({
         />
         {/* Stays open, holding the reason, until the record has gone back. */}
         {sendBack && sendingBack && canApprove && recordId && (
-          <form
-            className="flex flex-col gap-3 border border-foreground/20 p-4"
-            onSubmit={(event) => {
-              event.preventDefault()
+          <SendBackForm
+            pending={pending}
+            onSend={(reason) =>
               run(
                 () => sendBack({ recordId, reason }),
                 "Sent back to the writer."
               )
-            }}
-          >
-            <Label htmlFor="send-back-reason">What needs changing?</Label>
-            <Textarea
-              id="send-back-reason"
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
-              rows={3}
-              required
-            />
-            <div className="flex flex-col gap-3 @md:flex-row @md:justify-end">
-              <ActionButton
-                variant="ghost"
-                onClick={() => {
-                  setSendingBack(false)
-                  setReason("")
-                }}
-              >
-                Cancel
-              </ActionButton>
-              <ActionButton
-                type="submit"
-                disabled={pending || reason.trim() === ""}
-              >
-                Send back to the writer
-              </ActionButton>
-            </div>
-          </form>
+            }
+            onCancel={() => setSendingBack(false)}
+          />
         )}
         {stale && (
           <div

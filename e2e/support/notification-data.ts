@@ -41,3 +41,26 @@ export async function addNotification(
     await database.pool.end()
   }
 }
+
+// How many "waiting for your approval" notifications the person has not read.
+export async function unreadApprovals(personId: string) {
+  const url = process.env.DATABASE_URL
+
+  if (!url) {
+    throw new Error("DATABASE_URL is not set. Run with `bun run test:e2e`.")
+  }
+
+  const database = createDatabase(url)
+
+  try {
+    const { rows } = await database.pool.query<{ unread: number }>(
+      `SELECT count(*)::int AS unread FROM notifications
+       WHERE person_id = $1 AND kind = 'approval_needed' AND read_at IS NULL`,
+      [personId]
+    )
+
+    return rows[0]!.unread
+  } finally {
+    await database.pool.end()
+  }
+}

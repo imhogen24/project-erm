@@ -11,7 +11,11 @@ import { DeliveryChip } from "@/components/delivery-chip"
 import { MeetingChoice } from "@/components/meeting-choice"
 import { MeetingProposalScreen } from "@/components/meeting-proposal-screen"
 import { MobileBar } from "@/components/mobile-bar"
+import { RecordComments } from "@/components/record-comments"
 import { RecordForm } from "@/components/record-form"
+import { RequestChange } from "@/components/request-change"
+import { SheetActions } from "@/components/sheet-actions"
+import { WithdrawRecord } from "@/components/withdraw-record"
 import { ClientRequestForm } from "@/components/client-request-form"
 import {
   ClientRequestTables,
@@ -99,6 +103,7 @@ import {
   quoteValues,
 } from "@/server/brief/project-brief"
 import { getRecordScreen } from "@/server/records/screen"
+import { listComments, type Comment } from "@/server/comments/comments"
 import { UnknownToolError } from "@/server/records/validate"
 
 import {
@@ -114,10 +119,14 @@ import {
   sendMeetingTimesAction,
   signFieldAction,
   submitRecordAction,
+  withdrawRecordAction,
   resubmitClientRequestAction,
   sendAcknowledgementAction,
   retryAcknowledgementAction,
 } from "./actions"
+import { requestChangeAction } from "../../actions"
+
+import { addCommentAction, resolveCommentAction } from "./comment-actions"
 import { projectNav } from "../../sidebar"
 
 const when = new Intl.DateTimeFormat("en-GB", {
@@ -190,6 +199,17 @@ function changedFilesOf(
       change: "Removed" as const,
     })),
   ]
+}
+
+// A comment as the screen shows it, with its time as text.
+function shownComment(comment: Comment) {
+  return {
+    id: comment.id,
+    authorName: comment.authorName,
+    authorRole: comment.authorRole,
+    body: comment.body,
+    createdAt: comment.createdAt.toISOString(),
+  }
 }
 
 export default async function Page({
@@ -596,6 +616,12 @@ export default async function Page({
         })
       : null
 
+  // The team's comments on the record, for anyone on the team who may open
+  // the tool. The client, and anyone else, gets none.
+  const comments = view.record
+    ? await listComments(getDatabase(), session.user.id, view.record.id)
+    : null
+
   // D1.5: the client chooses a time on their own screen; the IMHOGEN team
   // works on the sheet.
   const meeting =
@@ -624,6 +650,19 @@ export default async function Page({
           ),
         }
       : null
+
+  // The writer's button once the record is out of their hands. The server
+  // decides who sees it: Withdraw only for whoever submitted it, while it
+  // waits for approval; Request a change for a writer once it is locked.
+  const writerAction = !view.record ? undefined : view.can.withdraw ? (
+    <WithdrawRecord recordId={view.record.id} withdraw={withdrawRecordAction} />
+  ) : view.can.requestChange ? (
+    <RequestChange
+      recordId={view.record.id}
+      request={requestChangeAction}
+      inSheet
+    />
+  ) : undefined
 
   const checks = tool.fields.flatMap((field) =>
     field.type === "table" && field.key === "triageChecklist"
@@ -722,6 +761,7 @@ export default async function Page({
           submit={submitRecordAction}
           sign={signFieldAction}
           approve={approveRecordAction}
+          writerAction={writerAction}
         />
       )}
     </div>
@@ -741,6 +781,9 @@ export default async function Page({
       save={saveDraftAction}
       submit={submitRecordAction}
       approve={approveRecordAction}
+      sendBack={sendBackRecordAction}
+      sentBack={sentBack ?? undefined}
+      writerAction={writerAction}
     />
   ) : alignment ? (
     <MeetingChoice
@@ -778,10 +821,24 @@ export default async function Page({
         send={send}
         sendBack={sendBackRecordAction}
         sentBack={sentBack ?? undefined}
+        writerAction={writerAction}
       />
       {meetingActions}
     </div>
   )
+
+  // D1.5 and D1.6 have their own buttons and lock without approval, so
+  // Request a change sits under the screen. The wrapper is always there, so
+  // the screen keeps what it said when the button appears on lock.
+  const sheet =
+    agenda || (meeting && !meeting.asClient) ? (
+      <div className="flex flex-col gap-6">
+        {body}
+        {writerAction && <SheetActions>{writerAction}</SheetActions>}
+      </div>
+    ) : (
+      body
+    )
 
   return (
     <>
@@ -804,7 +861,16 @@ export default async function Page({
               title: `${view.toolId} ${view.toolName}`,
               iteration: view.control?.iteration,
               state: view.state,
-              badges: deliveryChip,
+              badges: (
+                <>
+                  {deliveryChip}
+                  {view.changeRequested && (
+                    <span data-open="true" className="status-chip">
+                      Change requested
+                    </span>
+                  )}
+                </>
+              ),
               action:
                 clientRequest && !webForm ? (
                   <ClientRequestPanel request={clientRequest} />
@@ -854,7 +920,20 @@ export default async function Page({
                   ].map((label) => ({ label, value: "-" })),
             }}
           >
-            {body}
+            {sheet}
+            {view.record && comments && (
+              <RecordComments
+                recordId={view.record.id}
+                threads={comments.map((thread) => ({
+                  ...shownComment(thread),
+                  replies: thread.replies.map(shownComment),
+                  resolved: thread.resolvedAt !== null,
+                  resolvedByName: thread.resolvedByName,
+                }))}
+                add={addCommentAction}
+                resolve={resolveCommentAction}
+              />
+            )}
           </ToolSheet>
         </main>
       </div>

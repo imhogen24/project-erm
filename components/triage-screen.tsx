@@ -1,10 +1,15 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useState, useTransition } from "react"
+import { useState, useTransition, type ReactNode } from "react"
 
 import { Button } from "@/components/ui/button"
 import { SegmentedChoice } from "@/components/segmented-choice"
+import {
+  SendBackButton,
+  SendBackForm,
+  SentBackNotice,
+} from "@/components/send-back"
 import { ActionButton, SheetActions } from "@/components/sheet-actions"
 import {
   DataCell,
@@ -58,6 +63,13 @@ type Props = {
   save: (values: Save) => Promise<Result>
   submit: (values: Save) => Promise<Result>
   approve: (values: { recordId: string }) => Promise<Result>
+  // Given to whoever may approve: returns the record to the OM, saying why.
+  sendBack?: (values: { recordId: string; reason: string }) => Promise<Result>
+  // Why the approver sent this draft back, shown above the sheet.
+  sentBack?: string
+  // The writer's button once the triage is out of their hands: Withdraw while
+  // it waits for approval, Request a change once it is locked.
+  writerAction?: ReactNode
 }
 
 // How wide each column is when there is room. Narrow, the rows stack instead.
@@ -89,6 +101,9 @@ export function TriageScreen({
   save,
   submit,
   approve,
+  sendBack,
+  sentBack,
+  writerAction,
 }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -121,6 +136,7 @@ export function TriageScreen({
   const [errors, setErrors] = useState<FieldError[]>([])
   const [message, setMessage] = useState<string>()
   const [stale, setStale] = useState(false)
+  const [sendingBack, setSendingBack] = useState(false)
 
   const failed = answers.some((answer) => answer.status === "Fail")
   const proceedLabel = tier3 ? "Proceed to D1.3a" : PROCEED
@@ -241,6 +257,7 @@ export function TriageScreen({
     // Final when this person can no longer write it, never just while saving,
     // so a save in flight does not turn the fields into text.
     <div data-final={!canWrite} className="flex flex-col gap-8">
+      <SentBackNotice reason={sentBack} />
       <TableBox title="Files">
         {files.length === 0 ? (
           <p className="px-4 py-4 text-sm text-muted-foreground">
@@ -398,7 +415,7 @@ export function TriageScreen({
           ))}
         </ul>
       )}
-      {(canWrite || (canApprove && recordId) || message) && (
+      {(canWrite || (canApprove && recordId) || writerAction || message) && (
         <SheetActions message={message}>
           {canWrite && (
             <>
@@ -417,15 +434,38 @@ export function TriageScreen({
               </ActionButton>
             </>
           )}
+          {writerAction}
           {canApprove && recordId && (
-            <ActionButton
-              disabled={pending}
-              onClick={() => run(() => approve({ recordId }), "Approved.")}
-            >
-              Approve
-            </ActionButton>
+            <>
+              {sendBack && (
+                <SendBackButton
+                  open={sendingBack}
+                  disabled={pending}
+                  onToggle={() => setSendingBack((open) => !open)}
+                />
+              )}
+              <ActionButton
+                disabled={pending}
+                onClick={() => run(() => approve({ recordId }), "Approved.")}
+              >
+                Approve
+              </ActionButton>
+            </>
           )}
         </SheetActions>
+      )}
+      {/* Stays open, holding the reason, until the record has gone back. */}
+      {sendBack && sendingBack && canApprove && recordId && (
+        <SendBackForm
+          pending={pending}
+          onSend={(reason) =>
+            run(
+              () => sendBack({ recordId, reason }),
+              "Sent back to the writer."
+            )
+          }
+          onCancel={() => setSendingBack(false)}
+        />
       )}
       {stale && (
         <div

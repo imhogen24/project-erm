@@ -173,8 +173,15 @@
     {
       "idx": 24,
       "version": "7",
-      "when": 1794866684707,
-      "tag": "0024_client_changed",
+      "when": 1794862054318,
+      "tag": "0024_record_comments",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1794872524461,
+      "tag": "0025_client_changed",
       "breakpoints": true
     }
   ]

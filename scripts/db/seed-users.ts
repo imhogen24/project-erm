@@ -11,6 +11,7 @@ import {
   personCompanyRoles,
   personProjectRoles,
   projects,
+  recordComments,
   roles,
   toolRecords,
   type JsonObject,
@@ -18,7 +19,11 @@ import {
   type Role,
 } from "@/db/schema"
 
-import { projectChangeRequests, projectRecords } from "./seed-data/records"
+import {
+  projectChangeRequests,
+  projectComments,
+  projectRecords,
+} from "./seed-data/records"
 import {
   emailOf,
   holdsCompanyWide,
@@ -315,6 +320,79 @@ async function addRecords(
         createdAt: new Date(received + request.day * DAY),
       })
       .onConflictDoNothing()
+  }
+
+  await addComments(database, projectId, project.name, team, recordIds)
+}
+
+// The team's sample comments on the project's tools. A record that has any
+// comments already is left alone, so running this again adds nothing.
+async function addComments(
+  database: Database,
+  projectId: string,
+  projectName: string,
+  team: Team,
+  recordIds: Map<string, string>
+) {
+  for (const comment of projectComments.get(projectName) ?? []) {
+    const recordId = recordIds.get(comment.toolId)
+    const author = holderOf(team, comment.role)
+
+    if (!recordId || !author) {
+      continue
+    }
+
+    const [existing] = await database
+      .select({ id: recordComments.id })
+      .from(recordComments)
+      .where(
+        and(
+          eq(recordComments.recordId, recordId),
+          eq(recordComments.body, comment.body)
+        )
+      )
+
+    if (existing) {
+      continue
+    }
+
+    const [record] = await database
+      .select({ createdAt: toolRecords.createdAt })
+      .from(toolRecords)
+      .where(eq(toolRecords.id, recordId))
+
+    const at = (hour: number) =>
+      new Date(record!.createdAt.getTime() + hour * 60 * 60 * 1000)
+
+    const [thread] = await database
+      .insert(recordComments)
+      .values({
+        recordId,
+        projectId,
+        authorId: author,
+        authorRole: comment.role,
+        body: comment.body,
+        createdAt: at(comment.hour),
+        resolvedAt: comment.resolved ? at(comment.hour + 3) : null,
+        resolvedBy: comment.resolved ? author : null,
+      })
+      .returning({ id: recordComments.id })
+
+    for (const reply of comment.replies ?? []) {
+      const replier = holderOf(team, reply.role)
+
+      if (replier) {
+        await database.insert(recordComments).values({
+          recordId,
+          projectId,
+          parentId: thread!.id,
+          authorId: replier,
+          authorRole: reply.role,
+          body: reply.body,
+          createdAt: at(reply.hour),
+        })
+      }
+    }
   }
 }
 

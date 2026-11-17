@@ -1,5 +1,5 @@
 {
-  "id": "9d11cd1a-f751-4341-8d00-741bc1c4a889",
+  "id": "b3607fce-dd28-4f1c-a99c-72ab997abd0a",
   "prevId": "63717ff5-57e7-4c73-a685-c8479f208a2e",
   "version": "7",
   "dialect": "postgresql",
@@ -892,6 +892,179 @@
           "tableTo": "people",
           "columnsFrom": [
             "decided_by"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.record_comments": {
+      "name": "record_comments",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "record_id": {
+          "name": "record_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "project_id": {
+          "name": "project_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "parent_id": {
+          "name": "parent_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "author_id": {
+          "name": "author_id",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "author_role": {
+          "name": "author_role",
+          "type": "role",
+          "typeSchema": "public",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "body": {
+          "name": "body",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "resolved_at": {
+          "name": "resolved_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "resolved_by": {
+          "name": "resolved_by",
+          "type": "uuid",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {
+        "record_comments_record_id_idx": {
+          "name": "record_comments_record_id_idx",
+          "columns": [
+            {
+              "expression": "record_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "record_comments_parent_id_idx": {
+          "name": "record_comments_parent_id_idx",
+          "columns": [
+            {
+              "expression": "parent_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {
+        "record_comments_record_id_tool_records_id_fk": {
+          "name": "record_comments_record_id_tool_records_id_fk",
+          "tableFrom": "record_comments",
+          "tableTo": "tool_records",
+          "columnsFrom": [
+            "record_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "record_comments_project_id_projects_id_fk": {
+          "name": "record_comments_project_id_projects_id_fk",
+          "tableFrom": "record_comments",
+          "tableTo": "projects",
+          "columnsFrom": [
+            "project_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "record_comments_parent_id_record_comments_id_fk": {
+          "name": "record_comments_parent_id_record_comments_id_fk",
+          "tableFrom": "record_comments",
+          "tableTo": "record_comments",
+          "columnsFrom": [
+            "parent_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        },
+        "record_comments_author_id_people_id_fk": {
+          "name": "record_comments_author_id_people_id_fk",
+          "tableFrom": "record_comments",
+          "tableTo": "people",
+          "columnsFrom": [
+            "author_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "restrict",
+          "onUpdate": "no action"
+        },
+        "record_comments_resolved_by_people_id_fk": {
+          "name": "record_comments_resolved_by_people_id_fk",
+          "tableFrom": "record_comments",
+          "tableTo": "people",
+          "columnsFrom": [
+            "resolved_by"
           ],
           "columnsTo": [
             "id"
@@ -1936,7 +2109,9 @@
         "change_approved",
         "change_rejected",
         "change_applied",
-        "built_on_change"
+        "built_on_change",
+        "commented",
+        "comment_resolved"
       ]
     },
     "public.change_request_status": {
@@ -1978,7 +2153,8 @@
         "intake_failed",
         "email_unconfirmed",
         "sent_back",
-        "client_changed"
+        "commented",
+        "comment_replied"
       ]
     },
     "public.record_state": {

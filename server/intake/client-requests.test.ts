@@ -14,6 +14,7 @@ import {
 import { createFakeTransport } from "@/server/email/email"
 import { recordUpload } from "@/server/files/uploads"
 import { fileReference } from "@/lib/file-reference"
+import { getDocumentControl } from "@/server/document-control/document-control"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import {
   InvalidTransitionError,
@@ -348,6 +349,8 @@ describe("resubmitClientRequest", () => {
 
     const d11 = await d11Of(projectId)
 
+    expect((await getDocumentControl(database, pm, d11.id)).iteration).toBe(1)
+
     const request = await requestChange(
       database,
       om,
@@ -375,6 +378,8 @@ describe("resubmitClientRequest", () => {
     expect((await savedAnswers(projectId)).site_location).toBe(
       "Plot 12, Tema Industrial Area, Accra"
     )
+    // The changed request is a new version of D1.1.
+    expect((await getDocumentControl(database, pm, d11.id)).iteration).toBe(2)
   })
 
   it("refuses a person who may not write D1.1", async () => {

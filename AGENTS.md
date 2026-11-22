@@ -24,6 +24,10 @@ IMPORTANT RULES:
 
 Within one agent session, do not begin a second workstream's branch before the previous one is merged. This applies per session, not repo-wide: different engineers and their agents work in parallel on separate branches.
 
+## Workbook tools
+- Before choosing field types for a workbook tool, read `docs/SHEET_COLOUR_CODES/_.md`.
+- To colour-code a workbook's tabs in Google Sheets, follow `docs/SHEET_COLOUR_CODING/_.md`.
+
 ## UI Rules
 - Before building or changing a screen, read `docs/UI_CONTEXT/_.md` and load the `frontend-design` skill. Follow its patterns and run its checklist before saying the work is done.
 - Use stritcly shadcn ui components.

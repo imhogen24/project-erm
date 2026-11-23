@@ -61,7 +61,7 @@ const signed = z.object({ signedBy: z.string(), signedAt: z.string() })
 
 // The signatures of the payload with the signer's name in place of their id,
 // since the screen shows who signed, not a person's key.
-async function withSignerNames(
+export async function withSignerNames(
   database: Database,
   toolId: string,
   payload: JsonObject

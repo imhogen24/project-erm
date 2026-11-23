@@ -178,6 +178,12 @@ export const previews: Preview[] = [
     expect: `On ${DEV_UNLOCKED} (Tier 1), D1.2 has no Save draft, only Submit for approval. Type a reviewer note: a moment later the foot says Saving… then ✓ Saved. Click Project overview and come back: the note is there. Type and click away at once: it saves on the way and goes. With the network off (browser dev tools, Offline), typing shows Not saved. Retrying…, and clicking a link asks Your latest changes are not saved yet. Leave anyway? with Leave and Stay; back online it saves by itself. Every other tool, D1.5 and D1.6 among them, saves the same way.`,
   },
   {
+    screen: "Export a tool as a PDF (RDP-162)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.14`,
+    expect: `On ${DEV_LOCKED} (Tier 1), D1.14's top bar has Export PDF at the right. Press it: a file named D1.14 Cost Estimation Sheet - Dev- Every Tool Locked (Tier 1).pdf downloads (a colon or slash in a name becomes -). It starts with the tool's ID and name, the project and Locked, then the document control (request ID, prepared by, checked by, dates, iteration). Each section follows with the sheet's own title and order: fields as label and answer, tables as tables whose long text wraps, the totals the sheet works out, signatures as who signed and when, files by name, and — for an empty answer. Every page is A4 with Page 1 of N at the foot. Every tool with a record has the button, a draft too (try any tool on ${DEV_UNLOCKED} (Tier 1) once something is typed). A tool with no record has none, and the client gets none on a tool IMHOGEN shares only once it is approved.`,
+  },
+  {
     screen: "Notification bell (RDP-115)",
     loginAs: "PM",
     path: () => "/",

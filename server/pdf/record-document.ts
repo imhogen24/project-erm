@@ -2,6 +2,7 @@ import { z } from "zod"
 
 import type { JsonObject, JsonValue } from "@/db/schema"
 import { fileIdOf } from "@/lib/file-reference"
+import { sourceName } from "@/server/pdf/preview-source"
 import type {
   Column,
   Field,
@@ -147,6 +148,11 @@ export function textOf(
 
     case "staticList": {
       return cell.items.join("\n")
+    }
+
+    // The PDF it shows is not drawn into this one, only named.
+    case "pdfPreview": {
+      return sourceName(cell.source)
     }
 
     case "table": {

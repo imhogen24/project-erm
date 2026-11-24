@@ -184,6 +184,12 @@ export const previews: Preview[] = [
     expect: `On ${DEV_LOCKED} (Tier 1), D1.14's top bar has Export PDF at the right. Press it: a file named D1.14 Cost Estimation Sheet - Dev- Every Tool Locked (Tier 1).pdf downloads (a colon or slash in a name becomes -). It starts with the tool's ID and name, the project and Locked, then the document control (request ID, prepared by, checked by, dates, iteration). Each section follows with the sheet's own title and order: fields as label and answer, tables as tables whose long text wraps, the totals the sheet works out, signatures as who signed and when, files by name, and — for an empty answer. Every page is A4 with Page 1 of N at the foot. Every tool with a record has the button, a draft too (try any tool on ${DEV_UNLOCKED} (Tier 1) once something is typed). A tool with no record has none, and the client gets none on a tool IMHOGEN shares only once it is approved.`,
   },
   {
+    screen: "PDF preview field (RDP-163, dev preview)",
+    loginAs: "PM",
+    path: () => "/dev/form-preview",
+    expect: `Near the foot, the Appendices box has three rows. Appendix A: D1.15 Project Brief & Draft Budget has View: press it and a panel slides in from the right (half the screen on a wide one, all of it on a phone) with ${DEV_LOCKED} (Tier 1)'s D1.15 as a PDF that scrolls through every page, then Download (saves the file) and Open (a new tab). Appendix B has View greyed and says Not started; Appendix C has View greyed and says No access. Log in as the HE, ${loginFor("HE")}, who may not read D1.15: Appendix A says No access too, and its address, /api/projects/<project id>/tools/D1.15/pdf, answers not found. D2.1's appendices use the same field once that tool is built.`,
+  },
+  {
     screen: "Notification bell (RDP-115)",
     loginAs: "PM",
     path: () => "/",

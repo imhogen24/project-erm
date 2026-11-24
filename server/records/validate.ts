@@ -104,6 +104,7 @@ function cellSchema(cell: Field | Column): z.ZodType {
       return z.never({ error: systemOnly })
     case "instruction":
     case "staticList":
+    case "pdfPreview":
       return z.never({ error: readOnly })
     case "table":
       return tableSchema(cell)

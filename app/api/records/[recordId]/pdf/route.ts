@@ -5,6 +5,7 @@ import { z } from "zod"
 import { requireSession } from "@/lib/session"
 import { ensureToolsRegistered } from "@/lib/tools"
 import { getDatabase } from "@/server/database"
+import { pdfResponse } from "@/server/pdf/pdf-response"
 import { recordPdf } from "@/server/pdf/record-pdf"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import { RecordNotFoundError } from "@/server/records/records"
@@ -42,14 +43,5 @@ export async function GET(
     throw error
   }
 
-  // The plain name keeps to ASCII for old browsers; filename* holds it whole.
-  const ascii = pdf.fileName.replaceAll(/[^\x20-\x7e]/g, "_")
-
-  return new Response(new Uint8Array(pdf.content), {
-    headers: {
-      "Content-Type": "application/pdf",
-      "Content-Disposition": `attachment; filename="${ascii}"; filename*=UTF-8''${encodeURIComponent(pdf.fileName)}`,
-      "Cache-Control": "private, no-store",
-    },
-  })
+  return pdfResponse(pdf, "attachment")
 }

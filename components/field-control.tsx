@@ -4,6 +4,7 @@ import type { KeyboardEvent, MouseEvent, PointerEvent } from "react"
 import { z } from "zod"
 
 import { DatePicker } from "@/components/date-picker"
+import { PdfPreviewField } from "@/components/pdf-preview-field"
 import { TimeInput } from "@/components/time-input"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
@@ -183,6 +184,8 @@ export function FieldControl({
       )
     case "signature":
       return <p className={readOnlyBlock}>{signatureText(value)}</p>
+    case "pdfPreview":
+      return <PdfPreviewField field={cell} id={id} />
     case "longText":
       return (
         <Textarea

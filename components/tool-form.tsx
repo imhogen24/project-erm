@@ -76,11 +76,12 @@ type Section =
 
 const rowWidths = "minmax(0,calc(100%/var(--page-columns,3))) minmax(0,1fr)"
 
+// A PDF preview is a row of its box, as one appendix among others.
 function isGroup(field: ToolField) {
   return (
     field.type === "table" ||
     field.type === "checklist" ||
-    readOnlyTypes.includes(field.type)
+    (readOnlyTypes.includes(field.type) && field.type !== "pdfPreview")
   )
 }
 
@@ -107,7 +108,7 @@ const liveText = z.string().optional().catch(undefined)
 const liveRow = z.array(z.record(z.string(), z.unknown())).catch([])
 
 // Shown in the form but never written, so they never leave it.
-const readOnlyTypes = ["instruction", "staticList", "signature"]
+const readOnlyTypes = ["instruction", "staticList", "signature", "pdfPreview"]
 
 const numeric = ["number", "currency", "percentage"]
 
@@ -496,8 +497,9 @@ export function ToolForm({
                 </FieldLabel>
               </DataCell>
               <DataCell label="">
+                {/* A PDF preview opens on a locked record too. */}
                 <fieldset
-                  disabled={readOnly}
+                  disabled={readOnly && field.type !== "pdfPreview"}
                   data-final={readOnly}
                   className="min-w-0 border-0 p-0"
                 >

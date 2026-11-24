@@ -1,9 +1,18 @@
+import { eq } from "drizzle-orm"
 import { notFound } from "next/navigation"
+import { z } from "zod"
 
+import { projects } from "@/db/schema"
 import { FormPreview } from "@/components/form-preview"
 import { Grain } from "@/components/grain"
+import { PdfPreviews } from "@/components/pdf-preview-field"
+import { requireSession } from "@/lib/session"
 import type { FieldError } from "@/lib/tool-definition"
+import { ensureToolsRegistered } from "@/lib/tools"
+import { getDatabase } from "@/server/database"
+import { previewStates } from "@/server/pdf/previews"
 import { defineTool } from "@/server/tools/define-tool"
+import { DEV_LOCKED } from "@/server/workflow/dev-unlocked"
 
 const square = "grid-square relative isolate bg-background"
 
@@ -93,6 +102,27 @@ const tool = defineTool({
       type: "staticList",
       items: ["ISO 128", "ISO 2768"],
     },
+    {
+      key: "appendixA",
+      label: "Appendix A: D1.15 Project Brief & Draft Budget",
+      type: "pdfPreview",
+      section: "Appendices",
+      source: { tool: "D1.15" },
+    },
+    {
+      key: "appendixB",
+      label: "Appendix B: D1.13 Draft Scope of Work",
+      type: "pdfPreview",
+      section: "Appendices",
+      source: { tool: "D1.13" },
+    },
+    {
+      key: "appendixC",
+      label: "Appendix C: D1.11 Risk Assessment Sheet",
+      type: "pdfPreview",
+      section: "Appendices",
+      source: { tool: "D1.11" },
+    },
     { key: "pmSignature", label: "PM signature", type: "signature" },
     { key: "qaSignature", label: "QA signature", type: "signature" },
   ],
@@ -120,13 +150,37 @@ const errorsToShow: FieldError[] = [
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ errors?: string }>
+  searchParams: Promise<{ errors?: string; project?: string }>
 }) {
   if (process.env.NODE_ENV === "production") {
     notFound()
   }
 
-  const { errors } = await searchParams
+  const { errors, project } = await searchParams
+
+  ensureToolsRegistered()
+
+  const session = await requireSession()
+
+  // The appendices read the seeded project where every tool is locked, or
+  // ?project=<id>, so Appendix A opens D1.15 as this person may see it. B and
+  // C show the other two states a preview can be in.
+  const [shown] = z.uuid().safeParse(project).success
+    ? [{ id: project! }]
+    : await getDatabase()
+        .select({ id: projects.id })
+        .from(projects)
+        .where(eq(projects.name, `${DEV_LOCKED} (Tier 1)`))
+
+  const states = shown
+    ? await previewStates(getDatabase(), session.user.id, shown.id, tool)
+    : {}
+
+  const previews = {
+    ...states,
+    appendixB: { status: "notStarted", name: "D1.13 Draft Scope of Work" },
+    appendixC: { status: "noAccess", name: "D1.11 Risk Assessment Sheet" },
+  } as const
 
   return (
     <div className="drafting-grid min-h-svh py-[var(--inset)]">
@@ -145,11 +199,13 @@ export default async function Page({
         <div className={`${square} mt-[var(--cell)] px-6 py-8`}>
           <Grain />
           <div className="relative max-w-4xl">
-            <FormPreview
-              tool={tool}
-              values={values}
-              errors={errors === "1" ? errorsToShow : []}
-            />
+            <PdfPreviews states={previews}>
+              <FormPreview
+                tool={tool}
+                values={values}
+                errors={errors === "1" ? errorsToShow : []}
+              />
+            </PdfPreviews>
           </div>
         </div>
       </main>

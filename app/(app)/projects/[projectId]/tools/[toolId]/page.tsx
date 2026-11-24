@@ -11,6 +11,7 @@ import { DeliveryChip } from "@/components/delivery-chip"
 import { MeetingChoice } from "@/components/meeting-choice"
 import { MeetingProposalScreen } from "@/components/meeting-proposal-screen"
 import { MobileBar } from "@/components/mobile-bar"
+import { PdfPreviews } from "@/components/pdf-preview-field"
 import { RecordComments } from "@/components/record-comments"
 import { RecordForm } from "@/components/record-form"
 import { RequestChange } from "@/components/request-change"
@@ -85,6 +86,7 @@ import { PROJECT_BRIEF, T3_QUOTE } from "@/lib/project-brief"
 import { HANDOFF } from "@/lib/handoff"
 import { handoffStart } from "@/server/handoff/handoff"
 import { briefStart, quoteStart } from "@/server/brief/project-brief"
+import { previewStates } from "@/server/pdf/previews"
 import { getRecordScreen } from "@/server/records/screen"
 import { systemValuesOf } from "@/server/records/system-values"
 import { listComments, type Comment } from "@/server/comments/comments"
@@ -747,6 +749,14 @@ export default async function Page({
       body
     )
 
+  // What each PDF preview field shows this person: the PDF, or why not.
+  const previews = await previewStates(
+    getDatabase(),
+    session.user.id,
+    projectId,
+    sheetTool
+  )
+
   return (
     <>
       <MobileBar className="xl:hidden" canInvite={canInvite} />
@@ -831,7 +841,7 @@ export default async function Page({
                   ].map((label) => ({ label, value: "-" })),
             }}
           >
-            {sheet}
+            <PdfPreviews states={previews}>{sheet}</PdfPreviews>
             {view.record && comments && (
               <RecordComments
                 recordId={view.record.id}

@@ -190,6 +190,12 @@ export const previews: Preview[] = [
     expect: `Near the foot, the Appendices box has three rows. Appendix A: D1.15 Project Brief & Draft Budget has View: press it and a panel slides in from the right (half the screen on a wide one, all of it on a phone) with ${DEV_LOCKED} (Tier 1)'s D1.15 as a PDF that scrolls through every page, then Download (saves the file) and Open (a new tab). Appendix B has View greyed and says Not started; Appendix C has View greyed and says No access. Log in as the HE, ${loginFor("HE")}, who may not read D1.15: Appendix A says No access too, and its address, /api/projects/<project id>/tools/D1.15/pdf, answers not found. D2.1's appendices use the same field once that tool is built.`,
   },
   {
+    screen: "PDF preview field on a Tier 3 project (RDP-181, dev preview)",
+    loginAs: "PM",
+    path: () => "/dev/form-preview?tier=3",
+    expect: `The preview reads ${DEV_LOCKED} (Tier 3). Appendix A still names D1.15 in its label, but View opens a panel headed T3.D1.15a T3 Drafting SOW & Quote, the tool Tier 3 uses in its place, with T3.D1.15a's record as a PDF; Download saves a file named after T3.D1.15a. Its address, /api/projects/<project id>/tools/T3.D1.15a/pdf, gives the PDF, and so does the D1.15 address on this project; on ${DEV_LOCKED} (Tier 1) the T3.D1.15a address answers not found. Without ?tier=3 the page shows D1.15 exactly as before. Log in as the HE, ${loginFor("HE")}, who may not read T3.D1.15a: Appendix A says No access.`,
+  },
+  {
     screen: "Notification bell (RDP-115)",
     loginAs: "PM",
     path: () => "/",

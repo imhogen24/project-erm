@@ -2,7 +2,10 @@ import { existsSync } from "node:fs"
 import { readFile } from "node:fs/promises"
 import path from "node:path"
 
+import { eq } from "drizzle-orm"
+
 import type { Database } from "@/db"
+import { projects } from "@/db/schema"
 import type { PreviewState, PreviewStates } from "@/lib/pdf-preview"
 import {
   PermissionDeniedError,
@@ -19,7 +22,7 @@ import {
 } from "@/server/tools/define-tool"
 import { tools } from "@/server/tools/registry"
 
-import { sourceName } from "./preview-source"
+import { shownTool, sourceName } from "./preview-source"
 import { recordPdf, type RecordPdf } from "./record-pdf"
 
 // The PDFs kept with the app, such as the company SLA. They are never public:
@@ -38,9 +41,19 @@ export function storedPdfHref(projectId: string, file: string) {
   return `/api/projects/${projectId}/documents/${file}`
 }
 
+async function trackOf(database: Database, projectId: string) {
+  const [project] = await database
+    .select({ track: projects.serviceTrack })
+    .from(projects)
+    .where(eq(projects.id, projectId))
+
+  return project?.track
+}
+
 // Each PDF preview field of the tool, by its key, as this person sees it on
-// the project. A tool they cannot read is "noAccess", and its PDF is never
-// offered to them.
+// the project. A preview names the Tier 1 tool, as the sheet does; on a
+// Tier 3 project it shows the variant that takes that tool's place. A tool
+// they cannot read is "noAccess", and its PDF is never offered to them.
 export async function previewStates(
   database: Database,
   actor: string,
@@ -54,12 +67,15 @@ export async function previewStates(
     return {}
   }
 
-  const held = await rolesOn(database, actor, projectId)
+  const [held, track] = await Promise.all([
+    rolesOn(database, actor, projectId),
+    trackOf(database, projectId),
+  ])
 
   const states = await Promise.all(
     fields.map(async (field): Promise<[string, PreviewState]> => {
       const { source } = field
-      const name = sourceName(source)
+      const name = sourceName(source, track)
 
       if ("file" in source) {
         return [
@@ -72,17 +88,20 @@ export async function previewStates(
         ]
       }
 
-      if (!roleAllows(held, source.tool, "read")) {
+      // A project whose track skips the tool has nothing to show for it.
+      const shown = track ? shownTool(source.tool, track) : undefined
+
+      if (!roleAllows(held, shown ?? source.tool, "read")) {
         return [field.key, { status: "noAccess", name }]
       }
 
-      if (!(await currentRecordId(database, projectId, source.tool))) {
+      if (!shown || !(await currentRecordId(database, projectId, shown))) {
         return [field.key, { status: "notStarted", name }]
       }
 
       return [
         field.key,
-        { status: "ready", name, href: toolPdfHref(projectId, source.tool) },
+        { status: "ready", name, href: toolPdfHref(projectId, shown) },
       ]
     })
   )
@@ -91,19 +110,24 @@ export async function previewStates(
 }
 
 // The project's record of the tool as it is now, as a PDF for this person.
-// Someone who may not read the tool is refused before anything is looked up,
-// so the refusal never says whether a record exists.
+// On a Tier 3 project the Tier 1 tool's ID gives the variant that takes its
+// place, and a tool the track skips gives nothing. Someone who may not read
+// the tool sent is refused before any record is looked up, so the refusal
+// never says whether a record exists.
 export async function toolPdf(
   database: Database,
   actor: string,
   projectId: string,
   toolId: string
 ): Promise<RecordPdf> {
-  if (!(await can(database, actor, projectId, toolId, "read"))) {
+  const track = await trackOf(database, projectId)
+  const shown = track ? shownTool(toolId, track) : undefined
+
+  if (!(await can(database, actor, projectId, shown ?? toolId, "read"))) {
     throw new PermissionDeniedError(`This person may not read ${toolId}`)
   }
 
-  const recordId = await currentRecordId(database, projectId, toolId)
+  const recordId = shown && (await currentRecordId(database, projectId, shown))
 
   if (!recordId) {
     throw new RecordNotFoundError(`${toolId} has no record on this project`)

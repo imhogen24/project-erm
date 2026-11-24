@@ -336,7 +336,7 @@ export async function recordPdf(
   }
 
   const [project] = await database
-    .select({ name: projects.name })
+    .select({ name: projects.name, track: projects.serviceTrack })
     .from(projects)
     .where(eq(projects.id, record.projectId))
 
@@ -400,7 +400,10 @@ export async function recordPdf(
     fileName: `${safeName(`${title} - ${project!.name}`)}.pdf`,
     content: await renderToBuffer(
       <RecordDocument
-        content={{ ...base, sections: sectionsOf(tool, values, names) }}
+        content={{
+          ...base,
+          sections: sectionsOf(tool, values, names, project!.track),
+        }}
       />
     ),
   }

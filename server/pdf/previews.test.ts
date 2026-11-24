@@ -4,13 +4,15 @@ import path from "node:path"
 
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest"
 
-import type { Role } from "@/db/schema"
+import type { Role, ServiceTrack } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import { RecordNotFoundError, createRecord } from "@/server/records/records"
 import { defineTool } from "@/server/tools/define-tool"
 import { tools } from "@/server/tools/registry"
 
+import { sectionsOf } from "./record-document"
+import { sourceName } from "./preview-source"
 import {
   brokenPreviewSources,
   previewStates,
@@ -53,6 +55,96 @@ tools.registerTool(brief)
 
 tools.registerTool(contract)
 
+// A Tier 1 tool and the Tier 3 tool that takes its place, as D1.15 and
+// T3.D1.15a are. Both have the same access under the permission matrix.
+const tier1Brief = defineTool({
+  id: "D1.15",
+  name: "Project Brief & Draft Budget",
+  workbook: "wb01",
+  tier: 1,
+  fields: [{ key: "summary", label: "Summary", type: "longText" }],
+})
+
+const tier3Brief = defineTool({
+  id: "T3.D1.15a",
+  name: "Project Quote",
+  workbook: "wb01",
+  tier: 3,
+  replaces: "D1.15",
+  fields: [{ key: "summary", label: "Summary", type: "longText" }],
+})
+
+// A Tier 1 tool whose Tier 3 variant has no row in the permission matrix, so
+// no one may read the variant even where they read the Tier 1 tool.
+const tier1Scope = defineTool({
+  id: "D1.13",
+  name: "Draft Scope of Work",
+  workbook: "wb01",
+  tier: 1,
+  fields: [{ key: "scope", label: "Scope", type: "longText" }],
+})
+
+const tier3Scope = defineTool({
+  id: "T3.D1.13a",
+  name: "Drafting Scope",
+  workbook: "wb01",
+  tier: 3,
+  replaces: "D1.13",
+  fields: [{ key: "scope", label: "Scope", type: "longText" }],
+})
+
+// A Tier 1 tool that Tier 3 skips: no variant takes its place.
+const tier1Only = defineTool({
+  id: "D1.5",
+  name: "Consultation Scheduling",
+  workbook: "wb01",
+  tier: 1,
+  fields: [{ key: "when", label: "When", type: "text" }],
+})
+
+for (const each of [
+  tier1Brief,
+  tier3Brief,
+  tier1Scope,
+  tier3Scope,
+  tier1Only,
+]) {
+  tools.registerTool(each)
+}
+
+// A contract whose appendices name the Tier 1 tools, as the sheet does.
+const tieredContract = defineTool({
+  id: "D2.9",
+  name: "Tiered contract",
+  workbook: "wb02",
+  fields: [
+    {
+      key: "brief",
+      label: "Appendix A: D1.15 Project Brief & Draft Budget",
+      type: "pdfPreview",
+      source: { tool: "D1.15" },
+    },
+    {
+      key: "scope",
+      label: "Appendix B: D1.13 Draft Scope of Work",
+      type: "pdfPreview",
+      source: { tool: "D1.13" },
+    },
+    {
+      key: "form",
+      label: "Appendix C: D1.1 Client Email / Web Form",
+      type: "pdfPreview",
+      source: { tool: "D1.1" },
+    },
+    {
+      key: "meeting",
+      label: "Appendix D: D1.5 Consultation Scheduling",
+      type: "pdfPreview",
+      source: { tool: "D1.5" },
+    },
+  ],
+})
+
 const pdfBytes = "%PDF-1.4 stored"
 
 let directory: string
@@ -61,10 +153,10 @@ let projectId: string
 
 let pm: string
 
-async function addProject() {
+async function addProject(track: ServiceTrack = "Tier_1") {
   const { rows } = await database.pool.query<{ id: string }>(
-    "INSERT INTO projects (name, request_id, service_track) VALUES ($1, $2, 'Tier_1') RETURNING id",
-    ["Boiler house", `T1-${crypto.randomUUID()}`]
+    "INSERT INTO projects (name, request_id, service_track) VALUES ($1, $2, $3) RETURNING id",
+    ["Boiler house", `T1-${crypto.randomUUID()}`, track]
   )
 
   return rows[0]!.id
@@ -194,6 +286,135 @@ describe("the PDF of a tool's record", () => {
     await expect(
       toolPdf(database, pm, projectId, "D1.1")
     ).rejects.toBeInstanceOf(RecordNotFoundError)
+  })
+})
+
+describe("a preview on a Tier 3 project", () => {
+  let tier3: string
+
+  // Inserted directly: these tools stand in for real ones, so the workflow
+  // would wait on tools this file does not have.
+  async function addRecordOf(toolId: string, on: string) {
+    await database.pool.query(
+      "INSERT INTO tool_records (project_id, tool_id, cycle, state, payload) VALUES ($1, $2, 1, 'draft', $3)",
+      [on, toolId, JSON.stringify({ summary: "Scan a part" })]
+    )
+  }
+
+  beforeEach(async () => {
+    tier3 = await addProject("Tier_3")
+    await database.pool.query(
+      "INSERT INTO person_project_roles (person_id, project_id, role) VALUES ($1, $2, 'PM')",
+      [pm, tier3]
+    )
+  })
+
+  it("shows the Tier 3 tool that takes the place of the one named", async () => {
+    expect(
+      (await previewStates(database, pm, tier3, tieredContract)).brief
+    ).toEqual({ status: "notStarted", name: "T3.D1.15a Project Quote" })
+
+    await addRecordOf("T3.D1.15a", tier3)
+
+    expect(
+      (await previewStates(database, pm, tier3, tieredContract)).brief
+    ).toEqual({
+      status: "ready",
+      name: "T3.D1.15a Project Quote",
+      href: `/api/projects/${tier3}/tools/T3.D1.15a/pdf`,
+    })
+  })
+
+  it("shows the tool itself when it has no Tier 3 version", async () => {
+    const states = await previewStates(database, pm, tier3, tieredContract)
+
+    expect(states.form).toEqual({
+      status: "notStarted",
+      name: "D1.1 Client Email / Web Form",
+    })
+  })
+
+  it("says Not started for a tool the Tier 3 track skips", async () => {
+    const states = await previewStates(database, pm, tier3, tieredContract)
+
+    expect(states.meeting).toEqual({
+      status: "notStarted",
+      name: "D1.5 Consultation Scheduling",
+    })
+  })
+
+  it("follows the access of the tool shown, not the one named", async () => {
+    const states = await previewStates(database, pm, tier3, tieredContract)
+
+    expect(states.scope).toEqual({
+      status: "noAccess",
+      name: "T3.D1.13a Drafting Scope",
+    })
+
+    await expect(toolPdf(database, pm, tier3, "D1.13")).rejects.toBeInstanceOf(
+      PermissionDeniedError
+    )
+  })
+
+  it("keeps showing the Tier 1 tool on a Tier 1 project", async () => {
+    await addRecordOf("D1.15", projectId)
+
+    expect(
+      (await previewStates(database, pm, projectId, tieredContract)).brief
+    ).toEqual({
+      status: "ready",
+      name: "D1.15 Project Brief & Draft Budget",
+      href: `/api/projects/${projectId}/tools/D1.15/pdf`,
+    })
+
+    expect(
+      (await previewStates(database, pm, projectId, tieredContract)).scope
+    ).toEqual({ status: "notStarted", name: "D1.13 Draft Scope of Work" })
+  })
+
+  it("gives the Tier 3 tool's PDF at the Tier 1 tool's address", async () => {
+    await expect(toolPdf(database, pm, tier3, "D1.15")).rejects.toBeInstanceOf(
+      RecordNotFoundError
+    )
+
+    await addRecordOf("T3.D1.15a", tier3)
+
+    const pdf = await toolPdf(database, pm, tier3, "D1.15")
+
+    expect(pdf.fileName).toBe("T3.D1.15a Project Quote - Boiler house.pdf")
+    expect(pdf.content.subarray(0, 5).toString()).toBe("%PDF-")
+  })
+
+  it("gives nothing for a tool the project's track does not use", async () => {
+    await addRecordOf("T3.D1.15a", tier3)
+
+    await expect(toolPdf(database, pm, tier3, "D1.5")).rejects.toBeInstanceOf(
+      RecordNotFoundError
+    )
+
+    await expect(
+      toolPdf(database, pm, projectId, "T3.D1.15a")
+    ).rejects.toBeInstanceOf(RecordNotFoundError)
+  })
+
+  it("names the tool shown in an exported PDF", () => {
+    expect(sourceName({ tool: "D1.15" }, "Tier_3")).toBe(
+      "T3.D1.15a Project Quote"
+    )
+    expect(sourceName({ tool: "D1.15" }, "Tier_1")).toBe(
+      "D1.15 Project Brief & Draft Budget"
+    )
+
+    const [appendices] = sectionsOf(tieredContract, {}, new Map(), "Tier_3")
+
+    expect(appendices).toMatchObject({
+      rows: [
+        { value: "T3.D1.15a Project Quote" },
+        { value: "T3.D1.13a Drafting Scope" },
+        { value: "D1.1 Client Email / Web Form" },
+        { value: "D1.5 Consultation Scheduling" },
+      ],
+    })
   })
 })
 

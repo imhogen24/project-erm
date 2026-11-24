@@ -247,12 +247,17 @@ export function RecordForm({
                     onToggle={() => setSendingBack((open) => !open)}
                   />
                 )}
-                <ActionButton
-                  disabled={pending}
-                  onClick={() => run(() => approve({ recordId }), "Approved.")}
-                >
-                  Approve
-                </ActionButton>
+                {/* A tool signed in turn is approved by a signature. */}
+                {!tool.signInTurn && (
+                  <ActionButton
+                    disabled={pending}
+                    onClick={() =>
+                      run(() => approve({ recordId }), "Approved.")
+                    }
+                  >
+                    Approve
+                  </ActionButton>
+                )}
               </>
             ) : (
               writerAction

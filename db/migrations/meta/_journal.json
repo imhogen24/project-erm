@@ -183,6 +183,13 @@
       "when": 1794872524461,
       "tag": "0025_client_changed",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1795539315647,
+      "tag": "0026_signature_needed",
+      "breakpoints": true
     }
   ]
 }

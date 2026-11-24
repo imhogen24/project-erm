@@ -220,6 +220,52 @@ export async function clearApprovalNeeded(
     )
 }
 
+// Whoever may sign the record's next signature in turn, such as the client on
+// T3.D2.2a once the PM has approved it. Dashboard only. The client is told
+// too: it is their own signature.
+export async function notifySignatureNeeded(
+  transaction: Transaction,
+  actor: string,
+  record: RecordRef,
+  signature: { label: string; signedBy: readonly Role[] }
+): Promise<void> {
+  const signers = await holdersOf(
+    transaction,
+    record.projectId,
+    signature.signedBy
+  )
+
+  const name = await projectName(transaction, record.projectId)
+
+  await notify(transaction, {
+    personIds: others(actor, signers),
+    kind: "signature_needed",
+    title: `${record.toolId} is waiting for your signature`,
+    text: `${signature.label} on ${toolName(record.toolId)}, ${name}`,
+    projectId: record.projectId,
+    recordId: record.id,
+    path: toolPath(record.projectId, record.toolId),
+  })
+}
+
+// Marks read the record's unread "waiting for your signature" notifications,
+// once the signature they asked for is given or the record goes back.
+export async function clearSignatureNeeded(
+  transaction: Transaction,
+  recordId: string
+): Promise<void> {
+  await transaction
+    .update(notifications)
+    .set({ readAt: new Date() })
+    .where(
+      and(
+        eq(notifications.recordId, recordId),
+        eq(notifications.kind, "signature_needed"),
+        isNull(notifications.readAt)
+      )
+    )
+}
+
 // Whoever submitted the record, told that the approver sent it back and why.
 // Dashboard only: the reason is on the record when they open it.
 export async function notifySentBack(

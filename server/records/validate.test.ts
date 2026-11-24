@@ -350,3 +350,63 @@ describe("fields the user never writes", () => {
     expect(fieldsOf({ [key]: "Hello" })).toEqual([key])
   })
 })
+
+// One of two fixed rows is picked, and the picked row needs its checklist.
+tools.registerTool(
+  defineTool({
+    id: "TEST.PICK",
+    name: "Pick one row",
+    workbook: "wb02",
+    fields: [
+      {
+        key: "options",
+        label: "Options",
+        type: "table",
+        fixedRows: [{ option: "Plain" }, { option: "Checked" }],
+        pickOne: { column: "picked", needs: ["checks"] },
+        columns: [
+          { key: "picked", label: "Check One", type: "boolean" },
+          { key: "option", label: "Option", type: "text" },
+          {
+            key: "checks",
+            label: "Checks",
+            type: "checklist",
+            items: ["Measured", "Photographed"],
+          },
+        ],
+      },
+    ],
+  })
+)
+
+describe("a table that picks one row", () => {
+  function pickSecond(checks?: JsonObject) {
+    return {
+      options: [
+        { picked: false, option: "Plain" },
+        { picked: true, option: "Checked", ...(checks && { checks }) },
+      ],
+    }
+  }
+
+  it("needs every item of a checklist the picked row needs", () => {
+    expect(
+      validateRecord("TEST.PICK", pickSecond({ Measured: true }), {
+        forSubmit: true,
+      })
+    ).toMatchObject({
+      ok: false,
+      errors: [{ field: "options", row: 1, column: "checks" }],
+    })
+  })
+
+  it("takes No as an answer", () => {
+    expect(
+      validateRecord(
+        "TEST.PICK",
+        pickSecond({ Measured: true, Photographed: false }),
+        { forSubmit: true }
+      ).ok
+    ).toBe(true)
+  })
+})

@@ -804,3 +804,137 @@ describe("defineTool, values filled on lock and submit rules", () => {
     ).toThrow("is not a select")
   })
 })
+
+describe("defineTool, picking one of a table's fixed rows", () => {
+  function picking(
+    pickOne: { column: string; needs?: string[] },
+    fixedRows: Record<string, string>[] = [
+      { option: "Standard", fee: "0" },
+      { option: "Full" },
+    ]
+  ): ToolInput {
+    return {
+      id: "T3.D2.2a",
+      name: "Pick",
+      workbook: "wb02",
+      fields: [
+        {
+          key: "options",
+          label: "Options",
+          type: "table",
+          fixedRows,
+          pickOne,
+          columns: [
+            { key: "picked", label: "Check One", type: "boolean" },
+            { key: "option", label: "Option", type: "text" },
+            { key: "fee", label: "Fee", type: "currency" },
+          ],
+        },
+      ],
+    }
+  }
+
+  it("accepts a yes/no column picked, a column it needs, and a fixed amount", () => {
+    expect(
+      defineTool(picking({ column: "picked", needs: ["fee"] })).fields[0]
+    ).toMatchObject({ pickOne: { column: "picked", needs: ["fee"] } })
+  })
+
+  it("refuses a pick in a column that is not yes/no", () => {
+    expect(() => defineTool(picking({ column: "option" }))).toThrow(
+      "A row is picked in a yes/no column the form writes"
+    )
+  })
+
+  it("refuses a pick that needs a column the table lacks", () => {
+    expect(() =>
+      defineTool(picking({ column: "picked", needs: ["notes"] }))
+    ).toThrow("notes is not an optional column the form writes")
+  })
+
+  it("refuses a fixed amount that is not a number", () => {
+    expect(() =>
+      defineTool(
+        picking({ column: "picked" }, [{ option: "Standard", fee: "free" }])
+      )
+    ).toThrow(/free.{1,2} is not a number/)
+  })
+
+  it("refuses a fixed percentage outside 0 to 100", () => {
+    const share = (text: string): ToolInput => ({
+      id: "T3.D2.2a",
+      name: "Share",
+      workbook: "wb02",
+      fields: [
+        {
+          key: "shares",
+          label: "Shares",
+          type: "table",
+          fixedRows: [{ share: text }],
+          columns: [{ key: "share", label: "Share", type: "percentage" }],
+        },
+      ],
+    })
+
+    expect(() => defineTool(share("101"))).toThrow(
+      "is not a percentage from 0 to 100"
+    )
+    expect(defineTool(share("100")).fields).toHaveLength(1)
+  })
+})
+
+describe("defineTool, signing in turn", () => {
+  const signature = (key: string): ToolInput["fields"][number] => ({
+    key,
+    label: key,
+    type: "signature",
+    signedBy: ["PM"],
+  })
+
+  function signed(
+    signInTurn: ToolInput["signInTurn"],
+    extra: Partial<ToolInput> = {}
+  ): ToolInput {
+    return {
+      id: "T3.D2.2a",
+      name: "Signed in turn",
+      workbook: "wb02",
+      signInTurn,
+      fields: [client, signature("first"), signature("second")],
+      ...extra,
+    }
+  }
+
+  it("accepts signatures in turn with an approving one among them", () => {
+    expect(
+      defineTool(signed({ order: ["first", "second"], approves: "first" }))
+        .signInTurn
+    ).toEqual({ order: ["first", "second"], approves: "first" })
+  })
+
+  it("refuses a turn that is not a signature, or one named twice", () => {
+    expect(() =>
+      defineTool(signed({ order: ["client"], approves: "client" }))
+    ).toThrow("client is not a signature field")
+    expect(() =>
+      defineTool(signed({ order: ["first", "first"], approves: "first" }))
+    ).toThrow("A signature is signed in turn once")
+  })
+
+  it("refuses an approving signature that is not signed in turn", () => {
+    expect(() =>
+      defineTool(signed({ order: ["first"], approves: "second" }))
+    ).toThrow("second is not one of the signatures signed in turn")
+  })
+
+  it("refuses a tool that locks on submit", () => {
+    expect(() =>
+      defineTool(
+        signed(
+          { order: ["first", "second"], approves: "second" },
+          { locksOnSubmit: true }
+        )
+      )
+    ).toThrow("A tool signed in turn is submitted, then approved")
+  })
+})

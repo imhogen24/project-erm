@@ -10,6 +10,7 @@ import {
   type JsonObject,
   type ProjectStatus,
   type RecordState,
+  type Role,
 } from "@/db/schema"
 import {
   getDocumentControl,
@@ -25,7 +26,7 @@ import { tools } from "@/server/tools/registry"
 import { toolStatus } from "@/server/workflow/workflow"
 
 import { getRecord } from "./records"
-import { signatureFields } from "./signatures"
+import { nextTurn, signatureFields, turnsOf } from "./signatures"
 import { UnknownToolError } from "./validate"
 
 export type ScreenState = Exclude<RecordState, "void"> | "notStarted"
@@ -58,6 +59,44 @@ export type RecordScreen = {
 }
 
 const signed = z.object({ signedBy: z.string(), signedAt: z.string() })
+
+// The signatures this person may sign now. One signed any time is open while
+// the record is a draft or submitted, or before it has one, since signing an
+// empty sheet saves it as a draft first. Of those signed in turn (signInTurn),
+// only the next one is, once submitted, and the approving one never to
+// whoever submitted it.
+function signableNow(
+  toolId: string,
+  record: {
+    state: RecordState | "notStarted"
+    payload: JsonObject
+    submittedBy?: string | null
+  },
+  held: readonly Role[],
+  actor: string
+): string[] {
+  const turns = turnsOf(toolId)
+  const next = nextTurn(toolId, record.payload)
+  const editable = ["notStarted", "draft", "submitted"].includes(record.state)
+
+  const signedAfterSubmit =
+    record.state === "submitted" || record.state === "approved"
+
+  return signatureFields(toolId)
+    .filter((field) =>
+      (field.signedBy ?? []).some((role) => held.includes(role))
+    )
+    .filter((field) => !signed.safeParse(record.payload[field.key]).success)
+    .filter((field) =>
+      turns?.order.includes(field.key)
+        ? signedAfterSubmit &&
+          next?.key === field.key &&
+          !(field.key === turns.approves && record.submittedBy === actor) &&
+          (field.key !== turns.approves || roleAllows(held, toolId, "approve"))
+        : editable
+    )
+    .map((field) => field.key)
+}
 
 // The signatures of the payload with the signer's name in place of their id,
 // since the screen shows who signed, not a person's key.
@@ -190,11 +229,12 @@ export async function getRecordScreen(
         // sign before typing anything.
         sign:
           active && open && roleAllows(held, toolId, "write")
-            ? signatureFields(toolId)
-                .filter((field) =>
-                  (field.signedBy ?? []).some((role) => held.includes(role))
-                )
-                .map((field) => field.key)
+            ? signableNow(
+                toolId,
+                { state: "notStarted", payload: {} },
+                held,
+                actor
+              )
             : [],
         withdraw: false,
         requestChange: false,
@@ -207,8 +247,6 @@ export async function getRecordScreen(
   const record = await getRecord(database, actor, newest)
 
   const payload = await withSignerNames(database, toolId, record.payload)
-
-  const editable = record.state === "draft" || record.state === "submitted"
 
   // A request still open on a locked record is shown on the project page; a
   // second one is refused.
@@ -252,16 +290,7 @@ export async function getRecordScreen(
         record.state === "locked" &&
         !openRequest &&
         mayRequestChange(held, toolId),
-      sign:
-        active && editable
-          ? signatureFields(toolId)
-              .filter(
-                (field) =>
-                  !signed.safeParse(record.payload[field.key]).success &&
-                  (field.signedBy ?? []).some((role) => held.includes(role))
-              )
-              .map((field) => field.key)
-          : [],
+      sign: active ? signableNow(toolId, record, held, actor) : [],
     },
     control: await getDocumentControl(database, actor, record.id),
     changeRequested: openRequest?.status === "requested",

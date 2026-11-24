@@ -20,6 +20,8 @@ import {
 import { INTERNAL_REVIEW, reviewValues } from "@/server/review/internal-review"
 import { RISK, riskValues } from "@/server/risk/risk"
 import { SCOPE_OF_WORK, scopeValues } from "@/server/scope/scope-of-work"
+import { T3_CONTRACT } from "@/lib/t3-contract"
+import { t3ContractValues } from "@/server/contract/t3-contract"
 
 // The record a tool's system values are worked out for. A tool with no record
 // yet is "notStarted".
@@ -96,6 +98,10 @@ export async function systemValuesOf(
 
     case INITIAL_DRAFT: {
       return await draftValues(database, projectId)
+    }
+
+    case T3_CONTRACT: {
+      return await t3ContractValues(database, projectId, payload)
     }
 
     default: {

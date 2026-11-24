@@ -11,8 +11,10 @@ import {
   type RawRow,
 } from "@/components/field-control"
 import { FileCell } from "@/components/file-cell"
+import { PdfPreviewField } from "@/components/pdf-preview-field"
 import { Button } from "@/components/ui/button"
 import { fixedValue, newRow, rowNumber } from "@/lib/fixed-rows"
+import { previewCellKey } from "@/lib/pdf-preview"
 import { fillText, type Fills } from "@/lib/placeholders"
 import type {
   Column,
@@ -32,6 +34,9 @@ type Props = {
   errors: ToolFieldError[]
   // The saved record, so a stored file link can be opened through it.
   recordId?: string
+  // The person may not change the table. Its PDF previews still open, so the
+  // inputs are disabled here rather than by the box around the table.
+  disabled?: boolean
 }
 
 const readOnlyTypes = ["instruction", "staticList", "signature"]
@@ -75,6 +80,7 @@ export function TableEditor({
   fills = {},
   errors,
   recordId,
+  disabled = false,
 }: Props) {
   const columns = field.columns
 
@@ -117,6 +123,20 @@ export function TableEditor({
     )
   }
 
+  // What a fixed row is called: the first value it fixes that is not a PDF
+  // preview's tool, such as "Client Legal Entity Name".
+  function rowName(rowIndex: number) {
+    const named = columns.find(
+      (column) =>
+        column.type !== "pdfPreview" &&
+        fixedValue(field, rowIndex, column.key) !== undefined
+    )
+
+    return named
+      ? fixedValue(field, rowIndex, named.key)
+      : `row ${rowIndex + 1}`
+  }
+
   function cellError(rowIndex: number, key: string) {
     return errors.find(
       (error) => error.row === rowIndex && error.column === key
@@ -131,6 +151,7 @@ export function TableEditor({
         size="icon"
         aria-label={`Remove row ${rowIndex + 1}`}
         title="Remove this row"
+        disabled={disabled}
         className="tile-action size-12 shrink-0"
         onClick={() => onChange(typed.filter((_, index) => index !== rowIndex))}
       >
@@ -224,9 +245,54 @@ export function TableEditor({
                 )
               }
 
+              // A fixed row's PDF preview of the tool it names. A row the
+              // person added has none.
+              const fixedText = fixedValue(field, rowIndex, column.key)
+
+              if (column.type === "pdfPreview") {
+                return (
+                  <div
+                    key={column.key}
+                    role="cell"
+                    className="col-span-2 flex flex-col gap-1 @xl:col-span-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-2 @xl:last:border-r-0"
+                  >
+                    <span className="pt-2 text-xs text-muted-foreground @xl:sr-only @xl:pt-0">
+                      {column.label}
+                      <span className="sr-only">, row {rowIndex + 1}</span>
+                    </span>
+                    {fixedText === undefined ? (
+                      // A row the person added: no source, and its Remove
+                      // button when this is the last cell.
+                      <span className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
+                        —
+                        {removable && (
+                          <span className="hidden @xl:block">
+                            {removeButton(rowIndex)}
+                          </span>
+                        )}
+                      </span>
+                    ) : (
+                      <span className="flex flex-wrap items-center gap-x-3 text-sm">
+                        <span>{fixedText}</span>
+                        <PdfPreviewField
+                          id={id}
+                          field={{
+                            key: previewCellKey(
+                              field.key,
+                              rowIndex,
+                              column.key
+                            ),
+                            label: `${column.label} for ${rowName(rowIndex)}`,
+                          }}
+                        />
+                      </span>
+                    )}
+                  </div>
+                )
+              }
+
               // A cell the app writes: a fixed row's value, with its
               // [bracketed] names filled in, or the row's number.
-              const fixedText = fixedValue(field, rowIndex, column.key)
               const numbered = rowNumber(column, rowIndex)
 
               if (fixedText !== undefined || numbered !== undefined) {
@@ -292,7 +358,10 @@ export function TableEditor({
                     {column.label}
                     <span className="sr-only">, row {rowIndex + 1}</span>
                   </label>
-                  <div className="flex items-start gap-2">
+                  <fieldset
+                    disabled={disabled}
+                    className="flex min-w-0 items-start gap-2 border-0 p-0"
+                  >
                     <div className="min-w-0 flex-1">
                       {readOnly ? (
                         <FieldControl
@@ -322,6 +391,7 @@ export function TableEditor({
                           }
                           invalid={message !== undefined}
                           describedBy={message ? `${id}-error` : undefined}
+                          placeholder={column.placeholders?.[rowIndex]}
                           // Every field in a row starts one line tall, so a
                           // row reads level; a long answer grows as it is
                           // typed.
@@ -338,7 +408,7 @@ export function TableEditor({
                         {removeButton(rowIndex)}
                       </div>
                     )}
-                  </div>
+                  </fieldset>
                   {message && (
                     <p
                       id={`${id}-error`}
@@ -372,6 +442,7 @@ export function TableEditor({
                 type="button"
                 variant="secondary"
                 className="tile-action"
+                disabled={disabled}
                 onClick={() => onChange([...typed, newRow(field)])}
               >
                 <PlusIcon aria-hidden />

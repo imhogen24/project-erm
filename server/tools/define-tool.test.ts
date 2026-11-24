@@ -657,3 +657,150 @@ describe("defineTool, fixed rows of several columns", () => {
     ).toThrow("A tool without Submit cannot lock on submit")
   })
 })
+
+describe("defineTool, a table's PDF preview column", () => {
+  const mapped = (
+    extra: Partial<TableInput["columns"][number]> = {},
+    preview: Partial<TableInput["columns"][number]> = {}
+  ): ToolInput => ({
+    id: "D2.2",
+    name: "Draft",
+    workbook: "wb02",
+    fields: [
+      {
+        key: "variables",
+        label: "Variables",
+        type: "table",
+        fixedRows: [{ variable: "Client", source: "D1.3" }],
+        columns: [
+          { key: "variable", label: "Variable", type: "text" },
+          // SAFETY: each test adds options a text column takes.
+          {
+            key: "value",
+            label: "Value",
+            type: "text",
+            ...extra,
+          } as TableInput["columns"][number],
+          // SAFETY: each test adds options a preview column takes.
+          {
+            key: "source",
+            label: "Source Reference",
+            type: "pdfPreview",
+            ...preview,
+          } as TableInput["columns"][number],
+        ],
+      },
+    ],
+  })
+
+  it("takes each fixed row's tool from the row", () => {
+    expect(defineTool(mapped()).fields).toHaveLength(1)
+  })
+
+  it("refuses a preview column that must be answered", () => {
+    expect(() => defineTool(mapped({}, { required: true }))).toThrow(
+      "A column the form never writes is never required"
+    )
+  })
+
+  it("takes a hint for each fixed row, and refuses one for a row it does not have", () => {
+    expect(
+      defineTool(mapped({ placeholders: ["e.g. Acme Ltd"] })).fields
+    ).toHaveLength(1)
+    expect(() => defineTool(mapped({ placeholders: ["One", "Two"] }))).toThrow(
+      "A placeholder is for one of the table's fixed rows"
+    )
+  })
+})
+
+describe("defineTool, values filled on lock and submit rules", () => {
+  const routed = (extra: Partial<ToolInput> = {}): ToolInput => ({
+    id: "D2.2",
+    name: "Draft",
+    workbook: "wb02",
+    fields: [
+      { key: "ready", label: "Ready?", type: "select", options: ["Yes", "No"] },
+      {
+        key: "draftedBy",
+        label: "Drafted By",
+        type: "text",
+        systemFilled: true,
+        filledOnLock: "submittedBy",
+      },
+      {
+        key: "draftDate",
+        label: "Date",
+        type: "date",
+        systemFilled: true,
+        filledOnLock: "lockedAt",
+      },
+    ],
+    ...extra,
+  })
+
+  it("accepts who submitted as text and the lock's day as a date", () => {
+    expect(defineTool(routed()).fields).toHaveLength(3)
+  })
+
+  it("refuses a field filled on lock that the form could write", () => {
+    expect(() =>
+      defineTool(
+        routed({
+          fields: [
+            {
+              key: "draftedBy",
+              label: "Drafted By",
+              type: "text",
+              filledOnLock: "submittedBy",
+            },
+          ],
+        })
+      )
+    ).toThrow("A field filled on lock is system-filled")
+  })
+
+  it("refuses the lock's day in a text field", () => {
+    expect(() =>
+      defineTool(
+        routed({
+          fields: [
+            {
+              key: "draftDate",
+              label: "Date",
+              type: "text",
+              systemFilled: true,
+              filledOnLock: "lockedAt",
+            },
+          ],
+        })
+      )
+    ).toThrow("a date for when it locked")
+  })
+
+  it("accepts a submit rule on one of a select's options", () => {
+    expect(
+      defineTool(
+        routed({
+          submitWhen: [{ field: "ready", is: "Yes", message: "Say Yes" }],
+        })
+      ).submitWhen
+    ).toHaveLength(1)
+  })
+
+  it("refuses a submit rule on an option or field that is not there", () => {
+    expect(() =>
+      defineTool(
+        routed({
+          submitWhen: [{ field: "ready", is: "Maybe", message: "Say Yes" }],
+        })
+      )
+    ).toThrow("ready is not a select with the option")
+    expect(() =>
+      defineTool(
+        routed({
+          submitWhen: [{ field: "draftedBy", is: "Yes", message: "Say Yes" }],
+        })
+      )
+    ).toThrow("is not a select")
+  })
+})

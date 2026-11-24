@@ -50,6 +50,7 @@ import {
   withoutHiddenAnswers,
   withoutInherited,
 } from "./inherited"
+import { lockValues, unmetSubmitRules } from "./filled-on-lock"
 import { keepReadOnly } from "./read-only"
 import { submittedValues } from "./submitted-values"
 import {
@@ -436,9 +437,12 @@ async function move(
       { forSubmit: true }
     )
 
-    const unmet = (tools.getTool(current.toolId)?.submitNeeds ?? []).filter(
-      (need) => !current.payload[need.field]
-    )
+    const unmet = [
+      ...(tools.getTool(current.toolId)?.submitNeeds ?? []).filter(
+        (need) => !current.payload[need.field]
+      ),
+      ...unmetSubmitRules(current.toolId, current.payload),
+    ]
 
     if (unmet.length > 0) {
       throw new ValidationError(unmet)
@@ -472,6 +476,15 @@ async function move(
 
   const now = new Date()
 
+  // Locking fills in the fields that record who submitted and when it locked,
+  // such as D2.2's Drafted By.
+  if (to === "locked") {
+    payload = {
+      ...payload,
+      ...(await lockValues(transaction, current, actor, now)),
+    }
+  }
+
   const [moved] = await transaction
     .update(toolRecords)
     .set({
@@ -492,7 +505,10 @@ async function move(
       projectId: current.projectId,
       actor,
       action: "updated",
-      reason: "Inherited values copied on submit",
+      reason:
+        to === "locked"
+          ? "Filled in when locked"
+          : "Inherited values copied on submit",
     },
     payloadChanges(current.payload, payload)
   )

@@ -442,10 +442,16 @@ export function ToolForm({
     const message = messages.get(field.key)
 
     if (field.type === "table") {
+      // A PDF preview in a row opens on a locked record too, so such a table
+      // disables its own inputs instead.
+      const previews = field.columns.some(
+        (column) => column.type === "pdfPreview"
+      )
+
       return (
         <TableBox key={field.key} title={title}>
           <fieldset
-            disabled={readOnly}
+            disabled={readOnly && !previews}
             data-final={readOnly}
             className="min-w-0 border-0 p-0"
           >
@@ -462,6 +468,7 @@ export function ToolForm({
                   onChange={control.onChange}
                   fills={fills}
                   recordId={recordId}
+                  disabled={readOnly}
                   errors={errors.filter(
                     (error) =>
                       error.field === field.key &&

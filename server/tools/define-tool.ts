@@ -154,6 +154,14 @@ const pdfPreview = z.object({
 
 export type PreviewSource = z.output<typeof pdfPreview>["source"]
 
+// A PDF preview as a table column: which tool each row shows is fixed by the
+// table's `fixedRows`, as the tool's ID, such as { source: "D1.15" }. A row
+// the person adds shows none.
+const previewColumn = z.object({
+  ...cellBase,
+  type: z.literal("pdfPreview"),
+})
+
 // A required column must be answered in every row, but only at submit.
 // `numbered` makes a column the app numbers itself, "<numbered>.<row>", such
 // as 2.1, 2.2 for an SN column: never typed and never stored. `startsAs` is
@@ -165,6 +173,9 @@ const columnRequired = {
     .regex(/^\d+(\.\d+)*$/, "A numbered column counts from a number, such as 2")
     .optional(),
   startsAs: z.string().min(1).optional(),
+  // Hint text in the empty cell of each fixed row, in order, such as the
+  // sheet's "Governs technical scope". Only shown; never stored.
+  placeholders: z.array(z.string().min(1)).min(1).optional(),
 }
 
 const column = z.discriminatedUnion("type", [
@@ -174,6 +185,7 @@ const column = z.discriminatedUnion("type", [
   checklist.extend(columnRequired),
   instruction.extend(columnRequired),
   staticList.extend(columnRequired),
+  previewColumn.extend(columnRequired),
 ])
 
 type Column = z.output<typeof column>
@@ -296,6 +308,19 @@ const table = z
       })
     }
 
+    value.columns.forEach((entry, index) => {
+      if (
+        entry.placeholders &&
+        entry.placeholders.length > (value.fixedRows?.length ?? 0)
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["columns", index, "placeholders"],
+          message: "A placeholder is for one of the table's fixed rows",
+        })
+      }
+    })
+
     value.fixedRows?.forEach((row, index) => {
       for (const [key, text] of Object.entries(row)) {
         const problem = fixedCellProblem(
@@ -385,6 +410,11 @@ function fixedCellProblem(cell: Column | undefined, text: string) {
     return "Not a column of this table"
   }
 
+  // The row's PDF preview, named by the tool it shows.
+  if (cell.type === "pdfPreview") {
+    return undefined
+  }
+
   if (!isWritten(cell)) {
     return "A fixed row fixes only a column the form writes"
   }
@@ -412,9 +442,16 @@ function holdsLabels(first: Column | undefined, labels: string[]) {
   return first.type === "text" || first.type === "longText"
 }
 
+// Filled in by the system as the record locks, in the same step: the name of
+// the person who submitted it, or the day it locked (YYYY-MM-DD). The field
+// is system-filled, so the form never writes it.
+const filledOnLock = z.enum(["submittedBy", "lockedAt"])
+
+export type FilledOnLock = z.output<typeof filledOnLock>
+
 const field = z
   .discriminatedUnion("type", [
-    plain.extend(required),
+    plain.extend({ ...required, filledOnLock: filledOnLock.optional() }),
     signature.extend(required),
     select.extend({ ...required, blockedWhile: blockedWhile.optional() }),
     checklist.extend(required),
@@ -440,6 +477,16 @@ const field = z
     (value) =>
       !(value.type === "pdfPreview" && (value.inherited || value.systemFilled)),
     { message: "A PDF preview shows a document, so it holds no value to fill" }
+  )
+  .refine(
+    (value) =>
+      !("filledOnLock" in value && value.filledOnLock) ||
+      (value.systemFilled === true &&
+        value.type === (value.filledOnLock === "lockedAt" ? "date" : "text")),
+    {
+      message:
+        "A field filled on lock is system-filled: text for who submitted, a date for when it locked",
+    }
   )
 
 // The 13 workbooks. A registered tool belongs to one of them, and its workbook
@@ -495,6 +542,18 @@ const toolDefinition = z
     submitNeeds: z
       .array(z.strictObject({ field: fieldKey, message: z.string().min(1) }))
       .optional(),
+    // Select fields that must hold one option before the record can be
+    // submitted, each with what to say until then, such as "Yes" to Ready
+    // for PM Review.
+    submitWhen: z
+      .array(
+        z.strictObject({
+          field: fieldKey,
+          is: z.string().min(1),
+          message: z.string().min(1),
+        })
+      )
+      .optional(),
     fields: z.array(field).min(1),
   })
   .refine(
@@ -516,6 +575,18 @@ const toolDefinition = z
     for (const problem of fillProblems(value.fields, value.fills ?? {})) {
       context.addIssue({ code: "custom", path: ["fills"], message: problem })
     }
+
+    value.submitWhen?.forEach((rule, index) => {
+      const named = value.fields.find((entry) => entry.key === rule.field)
+
+      if (named?.type !== "select" || !named.options.includes(rule.is)) {
+        context.addIssue({
+          code: "custom",
+          path: ["submitWhen", index],
+          message: `${rule.field} is not a select with the option "${rule.is}"`,
+        })
+      }
+    })
 
     value.fields.forEach((entry, index) => {
       if (entry.type !== "select" || !entry.blockedWhile) {

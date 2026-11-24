@@ -148,9 +148,16 @@ function tableSchema(table: TableField) {
         return
       }
 
+      // A row's PDF preview is shown, never written, so a row never holds it.
+      const shownOnly = new Set(
+        table.columns
+          .filter((column) => column.type === "pdfPreview")
+          .map((column) => column.key)
+      )
+
       fixed.forEach((cells, index) => {
         for (const [key, value] of Object.entries(cells)) {
-          if (rows[index]![key] !== value) {
+          if (!shownOnly.has(key) && rows[index]![key] !== value) {
             context.addIssue({
               code: "custom",
               path: [index, key],

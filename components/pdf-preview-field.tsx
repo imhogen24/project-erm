@@ -31,7 +31,11 @@ export function PdfPreviews({
   return <Previews.Provider value={states}>{children}</Previews.Provider>
 }
 
-type Props = { field: Extract<Field, { type: "pdfPreview" }>; id: string }
+// A preview field, or a table cell's preview under its own key and label.
+type Props = {
+  field: Pick<Extract<Field, { type: "pdfPreview" }>, "key" | "label">
+  id: string
+}
 
 // View opens the PDF in a panel from the right, like the client request: half
 // the screen on a wide one, all of it on a phone. A phone's browser may show

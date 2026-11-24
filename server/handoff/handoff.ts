@@ -16,7 +16,8 @@ import type { Transaction } from "@/server/audit/audit"
 
 type Reader = Pick<Transaction, "select">
 
-async function lockedPayload(
+// The payload of the project's latest locked record of the tool, or empty.
+export async function lockedPayload(
   database: Reader,
   projectId: string,
   toolId: string

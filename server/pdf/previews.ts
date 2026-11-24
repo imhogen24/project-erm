@@ -6,7 +6,11 @@ import { eq } from "drizzle-orm"
 
 import type { Database } from "@/db"
 import { projects } from "@/db/schema"
-import type { PreviewState, PreviewStates } from "@/lib/pdf-preview"
+import {
+  previewCellKey,
+  type PreviewState,
+  type PreviewStates,
+} from "@/lib/pdf-preview"
 import {
   PermissionDeniedError,
   can,
@@ -17,7 +21,7 @@ import { RecordNotFoundError } from "@/server/records/records"
 import { currentRecordId } from "@/server/records/screen"
 import {
   storedPdfName,
-  type PdfPreviewField,
+  type PreviewSource,
   type ToolDefinition,
 } from "@/server/tools/define-tool"
 import { tools } from "@/server/tools/registry"
@@ -28,10 +32,6 @@ import { recordPdf, type RecordPdf } from "./record-pdf"
 // The PDFs kept with the app, such as the company SLA. They are never public:
 // only the routes below send them, to someone a tool shows them to.
 export const documentsDirectory = path.join(process.cwd(), "documents")
-
-function isPreview(field: ToolDefinition["fields"][number]) {
-  return field.type === "pdfPreview"
-}
 
 export function toolPdfHref(projectId: string, toolId: string) {
   return `/api/projects/${projectId}/tools/${encodeURIComponent(toolId)}/pdf`
@@ -50,20 +50,49 @@ async function trackOf(database: Database, projectId: string) {
   return project?.track
 }
 
-// Each PDF preview field of the tool, by its key, as this person sees it on
-// the project. A preview names the Tier 1 tool, as the sheet does; on a
-// Tier 3 project it shows the variant that takes that tool's place. A tool
-// they cannot read is "noAccess", and its PDF is never offered to them.
+// Every PDF preview of the tool, by its key: each preview field, and each
+// fixed row's cell of a table's preview column, which names a tool.
+export function previewSourcesOf(
+  tool: ToolDefinition
+): [string, PreviewSource][] {
+  return tool.fields.flatMap((field): [string, PreviewSource][] => {
+    if (field.type === "pdfPreview") {
+      return [[field.key, field.source]]
+    }
+
+    if (field.type !== "table") {
+      return []
+    }
+
+    const previewColumns = field.columns.filter(
+      (column) => column.type === "pdfPreview"
+    )
+
+    return (field.fixedRows ?? []).flatMap((row, index) =>
+      previewColumns.flatMap((column): [string, PreviewSource][] => {
+        const toolId = row[column.key]
+
+        return toolId
+          ? [[previewCellKey(field.key, index, column.key), { tool: toolId }]]
+          : []
+      })
+    )
+  })
+}
+
+// Each PDF preview of the tool, by its key, as this person sees it on the
+// project. A preview names the Tier 1 tool, as the sheet does; on a Tier 3
+// project it shows the variant that takes that tool's place. A tool they
+// cannot read is "noAccess", and its PDF is never offered to them.
 export async function previewStates(
   database: Database,
   actor: string,
   projectId: string,
   tool: ToolDefinition
 ): Promise<PreviewStates> {
-  // SAFETY: the filter keeps only PDF preview fields.
-  const fields = tool.fields.filter(isPreview) as PdfPreviewField[]
+  const sources = previewSourcesOf(tool)
 
-  if (fields.length === 0) {
+  if (sources.length === 0) {
     return {}
   }
 
@@ -72,38 +101,48 @@ export async function previewStates(
     trackOf(database, projectId),
   ])
 
+  // Several cells often show the same tool, so each is looked up once.
+  const looked = new Map<string, Promise<PreviewState>>()
+
+  async function stateOf(source: PreviewSource): Promise<PreviewState> {
+    const name = sourceName(source, track)
+
+    if ("file" in source) {
+      return {
+        status: "ready",
+        name,
+        href: storedPdfHref(projectId, source.file),
+      }
+    }
+
+    // A project whose track skips the tool has nothing to show for it.
+    const shown = track ? shownTool(source.tool, track) : undefined
+
+    if (!roleAllows(held, shown ?? source.tool, "read")) {
+      return { status: "noAccess", name }
+    }
+
+    if (!shown || !(await currentRecordId(database, projectId, shown))) {
+      return { status: "notStarted", name }
+    }
+
+    return { status: "ready", name, href: toolPdfHref(projectId, shown) }
+  }
+
+  function once(source: PreviewSource) {
+    const key = "file" in source ? `file:${source.file}` : source.tool
+    const known = looked.get(key) ?? stateOf(source)
+
+    looked.set(key, known)
+
+    return known
+  }
+
   const states = await Promise.all(
-    fields.map(async (field): Promise<[string, PreviewState]> => {
-      const { source } = field
-      const name = sourceName(source, track)
-
-      if ("file" in source) {
-        return [
-          field.key,
-          {
-            status: "ready",
-            name,
-            href: storedPdfHref(projectId, source.file),
-          },
-        ]
-      }
-
-      // A project whose track skips the tool has nothing to show for it.
-      const shown = track ? shownTool(source.tool, track) : undefined
-
-      if (!roleAllows(held, shown ?? source.tool, "read")) {
-        return [field.key, { status: "noAccess", name }]
-      }
-
-      if (!shown || !(await currentRecordId(database, projectId, shown))) {
-        return [field.key, { status: "notStarted", name }]
-      }
-
-      return [
-        field.key,
-        { status: "ready", name, href: toolPdfHref(projectId, shown) },
-      ]
-    })
+    sources.map(async ([key, source]): Promise<[string, PreviewState]> => [
+      key,
+      await once(source),
+    ])
   )
 
   return Object.fromEntries(states)
@@ -184,13 +223,8 @@ export function brokenPreviewSources(all: ToolDefinition[]) {
   const ids = new Set(all.map((tool) => tool.id))
 
   return all.flatMap((tool) =>
-    tool.fields.flatMap((field) => {
-      if (field.type !== "pdfPreview") {
-        return []
-      }
-
-      const { source } = field
-      const where = `${tool.id}.${field.key}`
+    previewSourcesOf(tool).flatMap(([key, source]) => {
+      const where = `${tool.id}.${key}`
 
       if ("tool" in source) {
         return ids.has(source.tool) ? [] : [`${where}: no tool ${source.tool}`]

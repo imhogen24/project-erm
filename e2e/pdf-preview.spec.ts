@@ -149,7 +149,8 @@ test("on a phone the panel fills the screen and nothing scrolls sideways", async
   const panel = page.getByRole("dialog", { name: appendixA })
 
   await expect(panel).toBeVisible()
-  expect((await panel.boundingBox())?.width).toBe(375)
+  // The browser lays the panel out in fractions of a pixel.
+  expect((await panel.boundingBox())?.width).toBeCloseTo(375, 0)
   await expect(panel.getByRole("link", { name: "Open" })).toBeVisible()
   expect(await sidewaysScroll(page)).toBe(0)
 })

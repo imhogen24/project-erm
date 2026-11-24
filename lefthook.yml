@@ -14,3 +14,13 @@ pre-commit:
       run: bun run lint
     typecheck:
       run: bun run typecheck
+
+# A rebase or merge from main replays commits without pre-commit, so code that
+# passed alone can break once combined. Check again before it leaves.
+pre-push:
+  parallel: true
+  commands:
+    lint:
+      run: bun run lint
+    typecheck:
+      run: bun run typecheck

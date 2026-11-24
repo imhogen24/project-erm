@@ -337,7 +337,7 @@ export async function recordPdf(
   }
 
   const [project] = await database
-    .select({ name: projects.name })
+    .select({ name: projects.name, track: projects.serviceTrack })
     .from(projects)
     .where(eq(projects.id, record.projectId))
 
@@ -407,6 +407,7 @@ export async function recordPdf(
             tool,
             values,
             names,
+            project!.track,
             await fillsOf(database, record.projectId, tool.id, values)
           ),
         }}

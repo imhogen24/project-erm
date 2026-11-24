@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import type { JsonObject, JsonValue } from "@/db/schema"
+import type { JsonObject, JsonValue, ServiceTrack } from "@/db/schema"
 import { fileIdOf } from "@/lib/file-reference"
 import { fixedValue, rowNumber, startingFixedRows } from "@/lib/fixed-rows"
 import { fillText, type Fills } from "@/lib/placeholders"
@@ -122,10 +122,12 @@ function plainText(
 }
 
 // One answer as text, by the type of the field or column that holds it.
+// `track` is the project's, so a PDF preview names the tool it shows there.
 export function textOf(
   cell: Field | Column,
   answer: Answer,
-  names: ReadonlyMap<string, string> = new Map()
+  names: ReadonlyMap<string, string> = new Map(),
+  track?: ServiceTrack
 ): string {
   switch (cell.type) {
     case "signature": {
@@ -154,7 +156,7 @@ export function textOf(
 
     // The PDF it shows is not drawn into this one, only named.
     case "pdfPreview": {
-      return sourceName(cell.source)
+      return sourceName(cell.source, track)
     }
 
     case "table": {
@@ -305,11 +307,13 @@ function groupSection(
 
 // The sections of a tool's record, in the tool page's order and with its
 // titles. `values` is what the page shows: the saved answers with the
-// system's over them. `fills` fills in the [bracketed] names of fixed text.
+// system's over them. `track` is the project's service track. `fills` fills
+// in the [bracketed] names of fixed text.
 export function sectionsOf(
   tool: ToolDefinition,
   values: JsonObject,
   names: ReadonlyMap<string, string> = new Map(),
+  track?: ServiceTrack,
   fills: Fills = {}
 ): Section[] {
   const parts: (Run | Field)[] = []
@@ -338,7 +342,7 @@ export function sectionsOf(
       title: part.title ?? (index === firstRun ? "Details" : "More details"),
       rows: part.fields.map((field) => ({
         label: field.label,
-        value: textOf(field, values[field.key], names),
+        value: textOf(field, values[field.key], names, track),
       })),
     }
   })

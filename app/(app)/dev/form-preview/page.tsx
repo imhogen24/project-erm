@@ -150,27 +150,30 @@ const errorsToShow: FieldError[] = [
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ errors?: string; project?: string }>
+  searchParams: Promise<{ errors?: string; project?: string; tier?: string }>
 }) {
   if (process.env.NODE_ENV === "production") {
     notFound()
   }
 
-  const { errors, project } = await searchParams
+  const { errors, project, tier } = await searchParams
 
   ensureToolsRegistered()
 
   const session = await requireSession()
 
-  // The appendices read the seeded project where every tool is locked, or
-  // ?project=<id>, so Appendix A opens D1.15 as this person may see it. B and
-  // C show the other two states a preview can be in.
+  // The appendices read the seeded Tier 1 project where every tool is
+  // locked, its Tier 3 twin with ?tier=3, or ?project=<id>, so Appendix A
+  // opens D1.15, or T3.D1.15a in its place on Tier 3, as this person may see
+  // it. B and C show the other two states a preview can be in.
   const [shown] = z.uuid().safeParse(project).success
     ? [{ id: project! }]
     : await getDatabase()
         .select({ id: projects.id })
         .from(projects)
-        .where(eq(projects.name, `${DEV_LOCKED} (Tier 1)`))
+        .where(
+          eq(projects.name, `${DEV_LOCKED} (Tier ${tier === "3" ? 3 : 1})`)
+        )
 
   const states = shown
     ? await previewStates(getDatabase(), session.user.id, shown.id, tool)

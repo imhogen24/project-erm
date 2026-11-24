@@ -174,7 +174,9 @@ describe("laying out a record", () => {
 
     const fills = { "Client Name": "Asante Mills" }
 
-    expect(sectionsOf(template, {}, new Map(), fills)[0]).toMatchObject({
+    expect(
+      sectionsOf(template, {}, new Map(), undefined, fills)[0]
+    ).toMatchObject({
       rows: [["2.1", "Agreed with Asante Mills.", "Active"]],
     })
 
@@ -188,6 +190,7 @@ describe("laying out a record", () => {
           ],
         },
         new Map(),
+        undefined,
         fills
       )[0]
     ).toMatchObject({

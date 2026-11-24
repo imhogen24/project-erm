@@ -102,6 +102,41 @@ test("someone who cannot read the tool gets no PDF, even by its address", async 
   expect(response.headers()["content-type"]).not.toBe("application/pdf")
 })
 
+test("on a Tier 3 project the preview opens the tool that takes D1.15's place", async ({
+  page,
+}) => {
+  const project = await makeProject(`Scan Shop ${tag()}`, "Tier_3")
+  const pm = await makePerson(`Esi ${tag()}`)
+
+  await giveRoles(pm.id, project.id, ["PM"])
+  await addRecord(project.id, "T3.D1.15a", "locked")
+
+  const href = `/api/projects/${project.id}/tools/T3.D1.15a/pdf`
+
+  await openPreview(page, pm.email, project.id)
+  await page.getByRole("button", { name: `View ${appendixA}` }).click()
+
+  const panel = page.getByRole("dialog", { name: appendixA })
+
+  await expect(
+    panel.getByText("T3.D1.15a T3 Drafting SOW & Quote")
+  ).toBeVisible()
+  await expect(panel.locator("iframe")).toHaveAttribute("src", href)
+
+  const shown = await page.request.get(href)
+
+  expect(shown.status()).toBe(200)
+  expect(shown.headers()["content-disposition"]).toContain("T3.D1.15a")
+
+  // The Tier 1 tool's address gives the same record on this project.
+  const named = await page.request.get(
+    `/api/projects/${project.id}/tools/D1.15/pdf`
+  )
+
+  expect(named.status()).toBe(200)
+  expect(named.headers()["content-disposition"]).toContain("T3.D1.15a")
+})
+
 test("on a phone the panel fills the screen and nothing scrolls sideways", async ({
   page,
 }) => {
@@ -114,7 +149,8 @@ test("on a phone the panel fills the screen and nothing scrolls sideways", async
   const panel = page.getByRole("dialog", { name: appendixA })
 
   await expect(panel).toBeVisible()
-  expect((await panel.boundingBox())?.width).toBe(375)
+  // The browser lays the panel out in fractions of a pixel.
+  expect((await panel.boundingBox())?.width).toBeCloseTo(375, 0)
   await expect(panel.getByRole("link", { name: "Open" })).toBeVisible()
   expect(await sidewaysScroll(page)).toBe(0)
 })

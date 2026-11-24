@@ -145,6 +145,62 @@ describe("laying out a record", () => {
     })
   })
 
+  it("numbers rows and fills the bracketed names of fixed rows", () => {
+    const template = defineTool({
+      id: "D9.7",
+      name: "Template",
+      workbook: "wb02",
+      fills: { "Client Name": "system" },
+      fields: [
+        {
+          key: "clauses",
+          label: "Clauses",
+          type: "table",
+          fixedRows: [{ text: "Agreed with [Client Name]." }],
+          columns: [
+            { key: "sn", label: "SN", type: "text", numbered: "2" },
+            { key: "text", label: "Text", type: "longText" },
+            {
+              key: "status",
+              label: "Status",
+              type: "select",
+              options: ["Active", "Archived"],
+              startsAs: "Active",
+            },
+          ],
+        },
+      ],
+    })
+
+    const fills = { "Client Name": "Asante Mills" }
+
+    expect(
+      sectionsOf(template, {}, new Map(), undefined, fills)[0]
+    ).toMatchObject({
+      rows: [["2.1", "Agreed with Asante Mills.", "Active"]],
+    })
+
+    expect(
+      sectionsOf(
+        template,
+        {
+          clauses: [
+            { text: "Agreed with [Client Name].", status: "Archived" },
+            { text: "Added by the CA.", status: "Active" },
+          ],
+        },
+        new Map(),
+        undefined,
+        fills
+      )[0]
+    ).toMatchObject({
+      rows: [
+        ["2.1", "Agreed with Asante Mills.", "Archived"],
+        ["2.2", "Added by the CA.", "Active"],
+      ],
+    })
+  })
+
   it("names an upload it cannot find as an uploaded file", () => {
     expect(
       textOf({ key: "f", label: "F", type: "fileLink" }, fileReference(upload))

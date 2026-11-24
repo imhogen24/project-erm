@@ -5,6 +5,7 @@ import {
   type ServiceTrack,
 } from "@/db/schema"
 import { accessRow } from "@/server/permissions/matrix"
+import { allTools } from "@/workbooks"
 import {
   DEV_LOCKED,
   DEV_PROJECT,
@@ -156,7 +157,8 @@ export function currentToolFor(track: ServiceTrack) {
 const CURRENT_TIERS: readonly ServiceTrack[] = ["Tier_1", "Tier_3"]
 
 // Who writes a tool and who approves it, from the matrix: the OM and the PM
-// where the matrix names no one else.
+// where the matrix names no one else. A tool that locks on submit has no
+// approver: its writer locks it.
 export function writerOf(toolId: string): Role {
   const row = accessRow(toolId) ?? {}
 
@@ -165,6 +167,10 @@ export function writerOf(toolId: string): Role {
 
 export function approverOf(toolId: string): Role {
   const row = accessRow(toolId) ?? {}
+
+  if (allTools.some((tool) => tool.id === toolId && tool.locksOnSubmit)) {
+    return writerOf(toolId)
+  }
 
   return roles.find((role) => row[role] === "RA") ?? "PM"
 }

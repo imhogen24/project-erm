@@ -556,6 +556,17 @@ export async function transitionRecord(
     const current = await lockRecord(transaction, recordId)
     const result = await move(transaction, actor, current, to)
 
+    // A tool with no approver locks as it is submitted, in the same
+    // transaction, so the tools after it open and nobody is asked to approve.
+    if (to === "submitted" && tools.getTool(record.toolId)?.locksOnSubmit) {
+      const approved = await move(transaction, actor, result, "approved")
+
+      return {
+        moved: await move(transaction, actor, approved, "locked"),
+        emails: [],
+      }
+    }
+
     return {
       moved: result,
       emails:

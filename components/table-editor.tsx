@@ -12,6 +12,8 @@ import {
 } from "@/components/field-control"
 import { FileCell } from "@/components/file-cell"
 import { Button } from "@/components/ui/button"
+import { fixedValue, newRow, rowNumber } from "@/lib/fixed-rows"
+import { fillText, type Fills } from "@/lib/placeholders"
 import type {
   Column,
   FieldError as ToolFieldError,
@@ -24,6 +26,8 @@ type Props = {
   // The rows with their system cells worked out, such as a row's total.
   computed?: RawRow[]
   onChange: (rows: RawRow[]) => void
+  // What the [bracketed] names of fixed text are filled in with.
+  fills?: Fills
   // Only the errors that name a row of this table.
   errors: ToolFieldError[]
   // The saved record, so a stored file link can be opened through it.
@@ -68,6 +72,7 @@ export function TableEditor({
   rows: typed,
   computed = [],
   onChange,
+  fills = {},
   errors,
   recordId,
 }: Props) {
@@ -86,7 +91,12 @@ export function TableEditor({
   }))
 
   const fixed = field.prefilledRows !== undefined
-  const lockedCount = field.lockedRows?.length ?? 0
+
+  // Rows labelled in the first column, and every row that cannot be removed:
+  // those and the fixed rows of several columns.
+  const labelledCount = field.lockedRows?.length ?? 0
+
+  const lockedCount = Math.max(labelledCount, field.fixedRows?.length ?? 0)
 
   // A row the person added can be removed. Its Remove button sits inside the
   // last cell, so the table has no empty column at the right.
@@ -177,7 +187,7 @@ export function TableEditor({
               const message = cellError(rowIndex, column.key)
 
               const locked =
-                columnIndex === 0 && (fixed || rowIndex < lockedCount)
+                columnIndex === 0 && (fixed || rowIndex < labelledCount)
 
               const label =
                 (field.prefilledRows ?? field.lockedRows)?.[rowIndex] ?? ""
@@ -209,6 +219,40 @@ export function TableEditor({
                           {field.rowNotes[label]}
                         </span>
                       )}
+                    </span>
+                  </div>
+                )
+              }
+
+              // A cell the app writes: a fixed row's value, with its
+              // [bracketed] names filled in, or the row's number.
+              const fixedText = fixedValue(field, rowIndex, column.key)
+              const numbered = rowNumber(column, rowIndex)
+
+              if (fixedText !== undefined || numbered !== undefined) {
+                return (
+                  <div
+                    key={column.key}
+                    role="cell"
+                    data-fixed={fixedText !== undefined}
+                    className={`flex flex-col gap-1 data-[fixed=true]:bg-muted/60 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 @xl:last:border-r-0 ${wideTypes.includes(column.type) ? "col-span-2 @xl:col-span-1" : ""}`}
+                  >
+                    <span className="pt-2 text-xs text-muted-foreground @xl:sr-only @xl:pt-0">
+                      {column.label}
+                      <span className="sr-only">, row {rowIndex + 1}</span>
+                    </span>
+                    <span className="flex items-start gap-2 text-sm break-words">
+                      {fixedText !== undefined && (
+                        <LockSimpleIcon
+                          aria-hidden
+                          className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                        />
+                      )}
+                      <span className="min-w-0">
+                        {fixedText === undefined
+                          ? numbered
+                          : fillText(fixedText, fills)}
+                      </span>
                     </span>
                   </div>
                 )
@@ -328,7 +372,7 @@ export function TableEditor({
                 type="button"
                 variant="secondary"
                 className="tile-action"
-                onClick={() => onChange([...typed, {}])}
+                onClick={() => onChange([...typed, newRow(field)])}
               >
                 <PlusIcon aria-hidden />
                 Add row

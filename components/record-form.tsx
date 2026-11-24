@@ -18,6 +18,7 @@ import type {
   FormValues,
   ToolDefinition,
 } from "@/lib/tool-definition"
+import type { Fills } from "@/lib/placeholders"
 import { useAutosave } from "@/lib/use-autosave"
 
 type Result =
@@ -48,6 +49,8 @@ type Props = {
   values: FormValues
   recordId?: string
   updatedAt?: string
+  // What the system fills into the [bracketed] names of fixed text.
+  fills?: Fills
   // What the server allows this person to do with the record now.
   canWrite: boolean
   canApprove: boolean
@@ -105,6 +108,7 @@ export function RecordForm({
   projectId,
   cycle,
   values,
+  fills,
   recordId: savedRecordId,
   updatedAt: savedUpdatedAt,
   canWrite,
@@ -207,6 +211,7 @@ export function RecordForm({
         <ToolForm
           tool={tool}
           values={values}
+          fills={fills}
           errors={sheet.errors}
           readOnly={!canWrite}
           pending={pending}
@@ -268,7 +273,7 @@ export function RecordForm({
                   values: sendable(tool, held),
                   expectedUpdatedAt: record.updatedAt,
                 }),
-              "Submitted."
+              tool.locksOnSubmit ? "Submitted and locked." : "Submitted."
             )
           }}
           onSign={(fieldKey, held) => {

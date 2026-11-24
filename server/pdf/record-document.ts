@@ -2,6 +2,8 @@ import { z } from "zod"
 
 import type { JsonObject, JsonValue, ServiceTrack } from "@/db/schema"
 import { fileIdOf } from "@/lib/file-reference"
+import { fixedValue, rowNumber, startingFixedRows } from "@/lib/fixed-rows"
+import { fillText, type Fills } from "@/lib/placeholders"
 import { sourceName } from "@/server/pdf/preview-source"
 import type {
   Column,
@@ -172,9 +174,14 @@ export function textOf(
 }
 
 // The table's rows as saved. A table with fixed rows always has them, so
-// before anything is saved they show with only their labels.
+// before anything is saved they show with only their labels, or with the
+// values they fix.
 function rowsOf(field: TableField, answer: Answer): Row[] {
   const saved = tableRows.parse(answer)
+
+  if (saved.length === 0 && field.fixedRows) {
+    return startingFixedRows(field)
+  }
 
   if (saved.length > 0 || !field.prefilledRows) {
     return saved
@@ -201,10 +208,34 @@ function totalOf(field: TableField, rows: Row[], key: string) {
   })
 }
 
+// One cell: a row's number, a fixed value with its [bracketed] names filled
+// in, or the answer.
+function cellText(
+  field: TableField,
+  column: Column,
+  row: Row,
+  index: number,
+  names: ReadonlyMap<string, string>,
+  fills: Fills
+) {
+  const numbered = rowNumber(column, index)
+
+  if (numbered !== undefined) {
+    return numbered
+  }
+
+  const fixed = fixedValue(field, index, column.key)
+
+  return fixed === undefined
+    ? textOf(column, row[column.key], names)
+    : fillText(fixed, fills)
+}
+
 function tableSection(
   field: TableField,
   answer: Answer,
-  names: ReadonlyMap<string, string>
+  names: ReadonlyMap<string, string>,
+  fills: Fills
 ): Section {
   const rows = rowsOf(field, answer)
 
@@ -212,8 +243,10 @@ function tableSection(
     kind: "table",
     title: field.label,
     columns: field.columns.map((column) => column.label),
-    rows: rows.map((each) =>
-      field.columns.map((column) => textOf(column, each[column.key], names))
+    rows: rows.map((each, index) =>
+      field.columns.map((column) =>
+        cellText(field, column, each, index, names, fills)
+      )
     ),
   }
 
@@ -239,11 +272,12 @@ type Run = { title?: string; fields: Field[] }
 function groupSection(
   field: Field,
   answer: Answer,
-  names: ReadonlyMap<string, string>
+  names: ReadonlyMap<string, string>,
+  fills: Fills
 ): Section {
   switch (field.type) {
     case "table": {
-      return tableSection(field, answer, names)
+      return tableSection(field, answer, names, fills)
     }
 
     case "checklist": {
@@ -273,12 +307,14 @@ function groupSection(
 
 // The sections of a tool's record, in the tool page's order and with its
 // titles. `values` is what the page shows: the saved answers with the
-// system's over them. `track` is the project's service track.
+// system's over them. `track` is the project's service track. `fills` fills
+// in the [bracketed] names of fixed text.
 export function sectionsOf(
   tool: ToolDefinition,
   values: JsonObject,
   names: ReadonlyMap<string, string> = new Map(),
-  track?: ServiceTrack
+  track?: ServiceTrack,
+  fills: Fills = {}
 ): Section[] {
   const parts: (Run | Field)[] = []
 
@@ -298,7 +334,7 @@ export function sectionsOf(
 
   return parts.map((part, index): Section => {
     if (!("fields" in part)) {
-      return groupSection(part, values[part.key], names)
+      return groupSection(part, values[part.key], names, fills)
     }
 
     return {

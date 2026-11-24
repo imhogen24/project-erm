@@ -55,7 +55,11 @@ const systemSets = "Set by the system, so it cannot be chosen"
 const percentage = "Must be a percentage from 0 to 100"
 
 function cellSchema(cell: Field | Column): z.ZodType {
-  if (cell.inherited || cell.systemFilled) {
+  if (
+    cell.inherited ||
+    cell.systemFilled ||
+    ("numbered" in cell && cell.numbered)
+  ) {
     return z.never({ error: systemOnly })
   }
 
@@ -133,6 +137,29 @@ function tableSchema(table: TableField) {
   return z
     .array(row, { error: "Must be a list of rows" })
     .superRefine((rows, context) => {
+      const fixed = table.fixedRows ?? []
+
+      if (rows.length < fixed.length) {
+        context.addIssue({
+          code: "custom",
+          message: `Must keep its ${fixed.length} fixed rows`,
+        })
+
+        return
+      }
+
+      fixed.forEach((cells, index) => {
+        for (const [key, value] of Object.entries(cells)) {
+          if (rows[index]![key] !== value) {
+            context.addIssue({
+              code: "custom",
+              path: [index, key],
+              message: "A fixed row cannot be changed",
+            })
+          }
+        }
+      })
+
       const labels = table.prefilledRows ?? table.lockedRows
 
       if (!labels) {

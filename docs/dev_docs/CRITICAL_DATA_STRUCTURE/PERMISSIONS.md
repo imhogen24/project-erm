@@ -34,7 +34,7 @@ Agents: **Client · OM** (Onboarding Manager) **· PM** (Project Manager) **· L
 
 | Tool ID | Tool Name | Client | OM | PM | LE | AE | LD | FO | CA | HE | PO | IO | WS | T | QA | LFE | LO | CR | IT/Admin | MKT |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| D2.1 | Standard Contract Template | - | - | RO | - | - | - | - | RW | RO | - | - | - | - | - | - | - | RO | - | |
+| D2.1 | Standard Contract Template | - | - | RO | - | - | - | - | RW | RO | - | - | - | - | - | - | - | - | RO | - |
 | D2.2 | Initial Draft Contract | - | - | RO | - | - | - | - | RW | - | - | - | - | - | - | - | - | RO | - | |
 | D2.3 | PM Review Draft | - | - | RA | - | - | - | - | RO | - | - | - | - | - | - | - | - | RO | - | |
 | D2.4 | Finance Review Draft | - | - | RO | - | - | - | RA | RO | - | - | - | - | - | - | - | - | RO | - | |

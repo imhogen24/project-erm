@@ -17,6 +17,7 @@ import { notifyReviewAgain, notifySentBack } from "@/server/notifications/raise"
 import { systemActor } from "@/server/system/system"
 import { tools } from "@/server/tools/registry"
 import { catalogOf } from "@/server/workflow/tracks"
+import { opensAgainIn, waitsOn } from "@/server/workflow/workflow"
 
 import { signaturesOf, withoutSignatures } from "./signatures"
 
@@ -157,8 +158,12 @@ async function reopen(
 
 // Runs inside the transaction that locks `record`. A review locked with its
 // send-back answer, such as D2.3 with Revisions Required, reopens the work it
-// reviews for whoever wrote it. That work, locked again, reopens each review
-// that sent it back, for the reviewer.
+// reviews for whoever wrote it. That work, locked again, reopens the reviews
+// before the one that sent it back, which approved what is now revised, such
+// as D2.3 when D2.4 sent the draft back. Each review that sent work back
+// reopens, for the reviewer, once that work is locked again and the rule
+// that opens the review holds again: D2.3 once the draft is locked, and
+// D2.4 once D2.3 is locked with Approved too.
 export async function applySendBack(
   transaction: Transaction,
   actor: string,
@@ -173,13 +178,14 @@ export async function applySendBack(
     return
   }
 
+  const { track } = project
   const all = tools.listTools()
   const catalog = catalogOf(all)
   const review = tools.getTool(record.toolId)?.sendsBackTo
 
   if (review && record.payload[review.field] === review.is) {
     for (const id of review.tools) {
-      const used = catalog.onTrack(id, project.track)
+      const used = catalog.onTrack(id, track)
 
       const held =
         used && (await newestRecord(transaction, record.projectId, used))
@@ -195,25 +201,90 @@ export async function applySendBack(
     }
   }
 
-  for (const reviewer of all) {
-    const back = reviewer.sendsBackTo
+  // The reviews on this track, each with the tools it reviews as the track
+  // names them.
+  const reviews = all.flatMap((tool) => {
+    const back = tool.sendsBackTo
 
+    if (!back || !catalog.onTrack(tool.id, track)) {
+      return []
+    }
+
+    const reviewed = back.tools.flatMap((id) => {
+      const used = catalog.onTrack(id, track)
+
+      return used ? [used] : []
+    })
+
+    return [{ id: tool.id, back, reviewed }]
+  })
+
+  type Review = (typeof reviews)[number]
+
+  const sentBack = (each: Review, held: Held | undefined) =>
+    held?.state === "locked" && held.payload[each.back.field] === each.back.is
+
+  const ofThis = reviews.filter((each) => each.reviewed.includes(record.toolId))
+
+  const senders: string[] = []
+
+  for (const each of ofThis) {
     if (
-      !back ||
-      !back.tools.some(
-        (id) => catalog.onTrack(id, project.track) === record.toolId
-      )
+      sentBack(each, await newestRecord(transaction, record.projectId, each.id))
+    ) {
+      senders.push(each.id)
+    }
+  }
+
+  const waitedOn = new Set(senders.flatMap((id) => [...waitsOn(id, track)]))
+
+  for (const each of ofThis) {
+    if (senders.includes(each.id) || !waitedOn.has(each.id)) {
+      continue
+    }
+
+    const held = await newestRecord(transaction, record.projectId, each.id)
+
+    if (held?.state !== "locked") {
+      continue
+    }
+
+    const reason = `${record.toolId} was revised after ${senders.join(" and ")} sent it back: review it again`
+
+    await reopen(transaction, systemActor, held, reason)
+    await notifyReviewAgain(transaction, actor, held, reason)
+  }
+
+  for (const each of reviews) {
+    if (
+      !each.reviewed.includes(record.toolId) &&
+      !waitsOn(each.id, track).has(record.toolId)
     ) {
       continue
     }
 
-    const held = await newestRecord(transaction, record.projectId, reviewer.id)
+    const held = await newestRecord(transaction, record.projectId, each.id)
 
-    if (held?.state !== "locked" || held.payload[back.field] !== back.is) {
+    if (!held || !sentBack(each, held)) {
       continue
     }
 
-    const reason = `${record.toolId} was revised: review it again`
+    let revised = true
+
+    for (const id of each.reviewed) {
+      const work = await newestRecord(transaction, record.projectId, id)
+
+      revised &&= work?.state === "locked"
+    }
+
+    if (
+      !revised ||
+      !(await opensAgainIn(transaction, record.projectId, each.id))
+    ) {
+      continue
+    }
+
+    const reason = `${each.reviewed.join(" and ")} was revised: review it again`
 
     await reopen(transaction, systemActor, held, reason)
     await notifyReviewAgain(transaction, actor, held, reason)

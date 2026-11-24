@@ -257,8 +257,9 @@ class Route {
   }
 
   // Whether `toolId` can start in `cycle`, or the first cycle it has no
-  // record in when no cycle is given.
-  verdict(toolId: string, cycle?: number): Verdict {
+  // record in when no cycle is given. `again` asks whether its rule holds
+  // for a record it already has, as for a review reopened to run again.
+  verdict(toolId: string, cycle?: number, again = false): Verdict {
     const tool = this.catalog.get(toolId)!
     const map = this.maps.find((entry) => entry.workbook === tool.workbook)
     const rule = map?.tools.find((entry) => entry.tool === toolId)
@@ -326,7 +327,7 @@ class Route {
       missing.push(...this.unmetCycle(map, at))
     }
 
-    if (this.started(toolId, at)) {
+    if (!again && this.started(toolId, at)) {
       missing.push(
         repeating
           ? `${toolId} already has a record in cycle ${at}`
@@ -544,6 +545,50 @@ export async function openToolsIn(
   projectId: string
 ): Promise<OpenTool[]> {
   return (await routeOf(transaction, projectId)).openTools()
+}
+
+// Whether the rule that opens a tool holds again on the project now, read
+// inside the caller's transaction, for a tool that already has a record,
+// such as a review that runs again once the work it sent back is revised.
+export async function opensAgainIn(
+  transaction: Transaction,
+  projectId: string,
+  toolId: string
+): Promise<boolean> {
+  const route = await routeOf(transaction, projectId)
+
+  return route.verdict(toolId, 1, true).missing.length === 0
+}
+
+// Every tool a tool's rule waits for, and those they wait for in turn, as the
+// project's track names them, such as D2.3 and D2.2 for D2.4. A tool's
+// condition counts as waiting for its tool.
+export function waitsOn(toolId: string, track: ServiceTrack): Set<string> {
+  const catalog = catalogOf(tools.listTools())
+  const rules = active.flatMap((map) => map.tools)
+  const found = new Set<string>()
+  const queue = [toolId]
+
+  while (queue.length > 0) {
+    const id = queue.pop()!
+    const rule = rules.find((entry) => entry.tool === id)
+
+    const named = [
+      ...(rule?.after ? requiredTools(rule.after) : []),
+      ...(rule?.when ? [rule.when.tool] : []),
+    ]
+
+    for (const name of named) {
+      const used = catalog.onTrack(name, track) ?? name
+
+      if (!found.has(used)) {
+        found.add(used)
+        queue.push(used)
+      }
+    }
+  }
+
+  return found
 }
 
 // Runs inside the transaction that creates the record, and returns the cycle

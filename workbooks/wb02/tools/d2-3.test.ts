@@ -43,13 +43,15 @@ import { availableTools } from "@/server/workflow/workflow"
 import { d21 } from "./d2-1"
 import { d22 } from "./d2-2"
 import { d23 } from "./d2-3"
+import { d24 } from "./d2-4"
 import { t3d22a } from "./t3-d2-2a"
 
 const database = createTestDatabase()
 
 registerTestTools({ wb01: ["D1.15", "D1.16"] })
 
-for (const tool of [d21, d22, t3d22a, d23]) {
+// WB02's map names D2.4 after D2.3.
+for (const tool of [d21, d22, t3d22a, d23, d24]) {
   tools.registerTool(tool)
 }
 
@@ -534,7 +536,7 @@ describe("on Tier 3", () => {
 })
 
 describe("who sees it", () => {
-  it("lets the PM write it, the CA and CR read it, and nobody else see it", async () => {
+  it("lets the PM write it, the FO, CA and CR read it, and nobody else see it", async () => {
     const cr = await addPerson("Yaw Boateng", ["CR"])
     const om = await addPerson("Kofi Asare", ["OM"])
     const fo = await addPerson("Esi Badu", ["FO"])
@@ -542,14 +544,15 @@ describe("who sees it", () => {
 
     expect(await can(database, pm, projectId, "D2.3", "write")).toBe(true)
 
-    for (const reader of [ca, cr]) {
+    // The FO reads it to review the draft in D2.4.
+    for (const reader of [fo, ca, cr]) {
       expect(await can(database, reader, projectId, "D2.3", "read")).toBe(true)
       expect(await can(database, reader, projectId, "D2.3", "write")).toBe(
         false
       )
     }
 
-    for (const stranger of [om, fo, client]) {
+    for (const stranger of [om, client]) {
       expect(await can(database, stranger, projectId, "D2.3", "read")).toBe(
         false
       )

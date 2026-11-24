@@ -1,8 +1,10 @@
 import type { Database } from "@/db"
 import type { JsonObject } from "@/db/schema"
 import { fieldFills, type Fills } from "@/lib/placeholders"
+import { FINANCE_REVIEW } from "@/lib/finance-review"
 import { INITIAL_DRAFT } from "@/lib/initial-draft"
 import { STANDARD_CONTRACT } from "@/lib/standard-contract"
+import { financeReviewFills } from "@/server/contract/finance-review"
 import { draftFills } from "@/server/contract/initial-draft"
 import { contractFills } from "@/server/contract/standard-contract"
 import { tools } from "@/server/tools/registry"
@@ -21,6 +23,10 @@ export async function systemFillsOf(
 
     case INITIAL_DRAFT: {
       return await draftFills(database, projectId)
+    }
+
+    case FINANCE_REVIEW: {
+      return await financeReviewFills(database, projectId)
     }
 
     default: {

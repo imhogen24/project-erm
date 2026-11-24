@@ -92,6 +92,8 @@ import { INITIAL_DRAFT } from "@/lib/initial-draft"
 import { draftStart } from "@/server/contract/initial-draft"
 import { PM_REVIEW } from "@/lib/pm-review"
 import { pmReviewStart } from "@/server/contract/pm-review"
+import { FINANCE_REVIEW } from "@/lib/finance-review"
+import { financeReviewStart } from "@/server/contract/finance-review"
 import { systemFillsOf } from "@/server/records/fills"
 import { previewStates } from "@/server/pdf/previews"
 import { getRecordScreen } from "@/server/records/screen"
@@ -236,6 +238,11 @@ async function startOf(toolId: string, projectId: string): Promise<FormValues> {
     case PM_REVIEW: {
       // SAFETY: the start is built for this tool's own fields.
       return (await pmReviewStart(getDatabase(), projectId)) as FormValues
+    }
+
+    case FINANCE_REVIEW: {
+      // SAFETY: the start is built for this tool's own fields.
+      return financeReviewStart() as FormValues
     }
 
     default: {
@@ -509,7 +516,7 @@ export default async function Page({
   // deliverables. D1.16: the terms, directives and checklist from the brief
   // and the sheet. D2.1: today, the project's PM, Ghana and GHS. D2.2: the
   // client's legal name and D1.15's figures. D2.3: the sheet's rows, and
-  // D1.15's client dependencies on Tier 1.
+  // D1.15's client dependencies on Tier 1. D2.4: the sheet's rows.
   if (!view.record && view.can.write) {
     formValues = {
       ...(await startOf(toolId, projectId)),

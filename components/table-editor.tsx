@@ -16,7 +16,7 @@ import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { fixedValue, newRow, rowNumber } from "@/lib/fixed-rows"
 import { previewCellKey } from "@/lib/pdf-preview"
-import { fillText, type Fills } from "@/lib/placeholders"
+import { fillText, placeholdersIn, type Fills } from "@/lib/placeholders"
 import type {
   Column,
   FieldError as ToolFieldError,
@@ -136,13 +136,17 @@ export function TableEditor({
   }
 
   // What a fixed row is called: the first value it fixes that is not a PDF
-  // preview's tool, such as "Client Legal Entity Name".
+  // preview's tool or a [bracketed] fill, such as "Client Legal Entity Name".
   function rowName(rowIndex: number) {
-    const named = columns.find(
-      (column) =>
+    const named = columns.find((column) => {
+      const text = fixedValue(field, rowIndex, column.key)
+
+      return (
         column.type !== "pdfPreview" &&
-        fixedValue(field, rowIndex, column.key) !== undefined
-    )
+        text !== undefined &&
+        placeholdersIn(text).length === 0
+      )
+    })
 
     return named
       ? fixedValue(field, rowIndex, named.key)

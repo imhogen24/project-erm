@@ -19,6 +19,7 @@ import {
   phases,
 } from "@/lib/initial-draft"
 import { ipOptions } from "@/lib/t3-contract"
+import { deliverableCategories, projectMilestones } from "@/lib/pm-review"
 import {
   t3Deliverables,
   t3Exclusions,
@@ -842,6 +843,38 @@ function stageT3D22a() {
   })
 }
 
+// The PM's review of the draft, approved, signed and submitted, which locked
+// it, so D2.4 is open for the FO. Tier 3 has no D1.15, so 4.0 holds the one
+// row the PM filled in.
+function stageD23() {
+  return payloadOf({
+    scopeVerification: deliverableCategories.map((category) => ({
+      category,
+      clauseRef: "Section 2.1",
+      status: "Accurate",
+    })),
+    projectVerification: projectMilestones.map((milestone) => ({
+      milestone,
+      timeline: "As drafted",
+      feasible: "Yes",
+    })),
+    clientDependencies: [
+      {
+        dependency: "Client must sign off on CAD before Fab",
+        clauseRef: "Section 4.2",
+        protected: "Yes",
+      },
+    ],
+    operationalStatus: "Approved",
+    dateReviewCompleted: "2026-11-02",
+    signOffDate: "2026-11-02",
+    pmSignature: {
+      signedBy: "role:PM",
+      signedAt: "2026-11-02T10:00:00.000Z",
+    },
+  })
+}
+
 function tier1Records(name: string): SeedRecord[] {
   const stage = stageOf(name)
   const files = stageFiles(stage)
@@ -875,6 +908,7 @@ function tier1Records(name: string): SeedRecord[] {
     },
     { toolId: "D2.1", state: "locked", day: 29, payload: stageD21() },
     { toolId: "D2.2", state: "locked", day: 31, payload: stageD22() },
+    { toolId: "D2.3", state: "locked", day: 33, payload: stageD23() },
   ]
 }
 
@@ -913,6 +947,7 @@ function tier3Records(name: string): SeedRecord[] {
     },
     { toolId: "D2.1", state: "locked", day: 26, payload: stageD21() },
     { toolId: "T3.D2.2a", state: "locked", day: 28, payload: stageT3D22a() },
+    { toolId: "D2.3", state: "locked", day: 30, payload: stageD23() },
   ]
 }
 

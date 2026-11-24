@@ -89,8 +89,9 @@ export const permissionMatrix = {
     "IT/Admin": "RO",
   },
   "D2.1": { PM: "RO", CA: "RW", HE: "RO", "IT/Admin": "RO" },
-  "D2.2": { PM: "RO", CA: "RW", CR: "RO" },
-  "D2.3": { PM: "RA", CA: "RO", CR: "RO" },
+  // The FO reads the draft and the PM's review, which D2.4 shows them.
+  "D2.2": { PM: "RO", FO: "RO", CA: "RW", CR: "RO" },
+  "D2.3": { PM: "RA", FO: "RO", CA: "RO", CR: "RO" },
   "D2.4": { PM: "RO", FO: "RA", CA: "RO", CR: "RO" },
   "D2.5": { PM: "RO", FO: "RO", CA: "RO", HE: "RA", CR: "RO" },
   "D2.6": { PM: "RO", FO: "RO", CA: "RW", HE: "RO", CR: "RO" },
@@ -276,8 +277,12 @@ export const extraApprovers = new Map<string, readonly Role[]>([
 
 // Who writes a tool is decided with the tool too. A review that the matrix
 // gives no writer is filled in by the role that reviews it: the PM writes,
-// signs and submits D2.3 (RA), which locks it, since nobody else approves it.
-export const extraWriters = new Map<string, readonly Role[]>([["D2.3", ["PM"]]])
+// signs and submits D2.3 (RA), and the FO D2.4, which locks it, since nobody
+// else approves it.
+export const extraWriters = new Map<string, readonly Role[]>([
+  ["D2.3", ["PM"]],
+  ["D2.4", ["FO"]],
+])
 
 // The roles that fill a tool in: those the matrix gives RW, and those named
 // in `extraWriters`, in the order of the role list.

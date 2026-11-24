@@ -145,7 +145,6 @@ export async function handoffValues(
     return {}
   }
 
-  const brief = briefOf(project.track)
   const { clientName, value } = known
 
   return {

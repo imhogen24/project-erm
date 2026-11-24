@@ -5,6 +5,7 @@ import {
   brokenReplacements,
   createToolRegistry,
 } from "@/server/tools/registry"
+import { brokenPreviewSources } from "@/server/pdf/previews"
 import { brokenWorkflowRules } from "@/server/workflow/check"
 import { workflowMaps } from "@/server/workflow/workflow"
 
@@ -43,6 +44,14 @@ describe("registered tools", () => {
     registerAllTools(registry)
 
     expect(brokenInheritedLinks(registry.listTools())).toEqual([])
+  })
+
+  it("has no PDF preview of a tool or stored PDF that is not there", () => {
+    const registry = createToolRegistry()
+
+    registerAllTools(registry)
+
+    expect(brokenPreviewSources(registry.listTools())).toEqual([])
   })
 
   it("has no tier variant that replaces a tool that is not there", () => {

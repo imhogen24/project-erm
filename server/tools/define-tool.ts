@@ -134,6 +134,25 @@ const staticList = z.object({
   items: distinctTexts,
 })
 
+// A file kept with the app in `documents/`, such as "company-sla.pdf".
+export const storedPdfName = z
+  .string()
+  .regex(/^[a-z0-9][a-z0-9-]*\.pdf$/, "A stored PDF is a lowercase .pdf name")
+
+// A PDF shown for reference, read only, and never stored: the project's record
+// of another tool, as it is now, or a PDF kept with the app. `title` is the
+// stored PDF's name as people know it, such as "Company SLA".
+const pdfPreview = z.object({
+  ...cellBase,
+  type: z.literal("pdfPreview"),
+  source: z.union([
+    z.strictObject({ tool: z.string().min(1) }),
+    z.strictObject({ file: storedPdfName, title: z.string().min(1) }),
+  ]),
+})
+
+export type PreviewSource = z.output<typeof pdfPreview>["source"]
+
 // A required column must be answered in every row, but only at submit.
 const columnRequired = { required: z.boolean().optional() }
 
@@ -149,7 +168,7 @@ const column = z.discriminatedUnion("type", [
 type Column = z.output<typeof column>
 
 // The form never writes these, so they can never be required of it.
-const unwritten = ["signature", "instruction", "staticList"]
+const unwritten = ["signature", "instruction", "staticList", "pdfPreview"]
 
 function isWritten(cell: Column) {
   return !(cell.inherited || cell.systemFilled || unwritten.includes(cell.type))
@@ -307,6 +326,7 @@ const field = z
     checklist.extend(required),
     instruction.extend(required),
     staticList.extend(required),
+    pdfPreview.extend(required),
     table,
   ])
   .refine(holdsSystemOptions, { message: strangerSystemOption })
@@ -316,12 +336,17 @@ const field = z
   })
   .refine((value) => !(value.required && unwritten.includes(value.type)), {
     message:
-      "A signature, instruction or static list is never written in the form, so it is never required",
+      "A signature, instruction, static list or PDF preview is never written in the form, so it is never required",
   })
   .refine((value) => !(value.systemFilled && value.required), {
     message:
       "A system-filled field is filled in by the system, so it is never required",
   })
+  .refine(
+    (value) =>
+      !(value.type === "pdfPreview" && (value.inherited || value.systemFilled)),
+    { message: "A PDF preview shows a document, so it holds no value to fill" }
+  )
 
 // The 13 workbooks. A registered tool belongs to one of them, and its workbook
 // is read only from here, never from the letters of its id.
@@ -440,6 +465,8 @@ export type FieldType = Field["type"]
 export type TableField = Extract<Field, { type: "table" }>
 
 export type SignatureField = Extract<Field, { type: "signature" }>
+
+export type PdfPreviewField = Extract<Field, { type: "pdfPreview" }>
 
 export type { Column }
 

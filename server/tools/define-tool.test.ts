@@ -354,6 +354,70 @@ describe("defineTool, the wider field types", () => {
   })
 })
 
+describe("defineTool, PDF previews", () => {
+  const appendix = {
+    key: "appendixA",
+    label: "Appendix A: D1.15 Project Brief & Draft Budget",
+    type: "pdfPreview",
+  } as const
+
+  it("points to another tool, or to a stored PDF with its title", () => {
+    const tool = withFields([
+      { ...appendix, source: { tool: "D1.15" } },
+      {
+        ...appendix,
+        key: "appendixD",
+        source: { file: "company-sla.pdf", title: "Company SLA" },
+      },
+    ])
+
+    expect(tool.fields.map((field) => field.type)).toEqual([
+      "pdfPreview",
+      "pdfPreview",
+    ])
+  })
+
+  it("refuses a preview with no source, or a stored PDF with no title", () => {
+    const fields = [
+      { ...appendix },
+      { ...appendix, source: {} },
+      { ...appendix, source: { file: "company-sla.pdf" } },
+      { ...appendix, source: { tool: "D1.15", file: "a.pdf", title: "A" } },
+    ]
+
+    for (const field of fields) {
+      // SAFETY: each is a broken definition, to see it refused.
+      expect(() => withFields([field as ToolInput["fields"][number]])).toThrow()
+    }
+  })
+
+  it("refuses a stored PDF name that is not a plain lowercase .pdf", () => {
+    for (const file of ["../secret.pdf", "Company SLA.pdf", "sla.docx", ""]) {
+      expect(() =>
+        withFields([{ ...appendix, source: { file, title: "SLA" } }])
+      ).toThrow()
+    }
+  })
+
+  it("refuses a preview marked required, inherited or system-filled", () => {
+    const source = { tool: "D1.15" }
+
+    const fields: ToolInput["fields"] = [
+      { ...appendix, source, required: true },
+      { ...appendix, source, systemFilled: true },
+      {
+        ...appendix,
+        source,
+        inherited: { tool: "D1.15", field: "budget" },
+      },
+    ]
+
+    for (const field of fields) {
+      expect(() => withFields([field])).toThrow()
+    }
+  })
+})
+
 describe("defineTool, tier variants", () => {
   it("serves both tiers unless it says otherwise", () => {
     expect(withFields([client]).tier).toBe("both")

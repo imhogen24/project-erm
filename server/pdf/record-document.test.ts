@@ -151,6 +151,44 @@ describe("laying out a record", () => {
     ).toBe("Uploaded file")
   })
 
+  it("names what a PDF preview points to, among the fields around it", () => {
+    const withAppendix = defineTool({
+      id: "D9.8",
+      name: "Contract",
+      workbook: "wb02",
+      fields: [
+        { key: "client", label: "Client", type: "text", section: "Appendices" },
+        {
+          key: "sla",
+          label: "Appendix D: Company SLA",
+          type: "pdfPreview",
+          section: "Appendices",
+          source: { file: "company-sla.pdf", title: "Company SLA" },
+        },
+        {
+          key: "brief",
+          label: "Appendix A",
+          type: "pdfPreview",
+          section: "Appendices",
+          source: { tool: "D9.9" },
+        },
+      ],
+    })
+
+    expect(sectionsOf(withAppendix, { client: "Ama" })).toEqual([
+      {
+        kind: "rows",
+        title: "Appendices",
+        rows: [
+          { label: "Client", value: "Ama" },
+          { label: "Appendix D: Company SLA", value: "Company SLA" },
+          // A tool that is not registered is named by its ID.
+          { label: "Appendix A", value: "D9.9" },
+        ],
+      },
+    ])
+  })
+
   it("finds the uploads of fields and table cells", () => {
     expect(
       uploadIdsOf(tool, {

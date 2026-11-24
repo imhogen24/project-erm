@@ -106,6 +106,30 @@ export async function withSignerNames(
   }
 }
 
+// The id of the tool's record on the project as it is now: the newest cycle's,
+// never a voided one. Undefined while the tool has no record. It checks no
+// permission; reading the record does.
+export async function currentRecordId(
+  database: Pick<Database, "select">,
+  projectId: string,
+  toolId: string
+): Promise<string | undefined> {
+  const [newest] = await database
+    .select({ id: toolRecords.id })
+    .from(toolRecords)
+    .where(
+      and(
+        eq(toolRecords.projectId, projectId),
+        eq(toolRecords.toolId, toolId),
+        ne(toolRecords.state, "void")
+      )
+    )
+    .orderBy(desc(toolRecords.cycle), desc(toolRecords.createdAt))
+    .limit(1)
+
+  return newest?.id
+}
+
 // Everything the record screen needs for one tool: the newest record that is
 // not void, or why the tool cannot be started, and what this person may do.
 // Reading needs read access to the tool; anyone else gets the same refusal as a
@@ -143,18 +167,7 @@ export async function getRecordScreen(
 
   const active = project!.status === "active"
 
-  const [newest] = await database
-    .select({ id: toolRecords.id })
-    .from(toolRecords)
-    .where(
-      and(
-        eq(toolRecords.projectId, projectId),
-        eq(toolRecords.toolId, toolId),
-        ne(toolRecords.state, "void")
-      )
-    )
-    .orderBy(desc(toolRecords.cycle), desc(toolRecords.createdAt))
-    .limit(1)
+  const newest = await currentRecordId(database, projectId, toolId)
 
   if (!newest) {
     const status = await toolStatus(database, projectId, toolId)
@@ -191,7 +204,7 @@ export async function getRecordScreen(
     }
   }
 
-  const record = await getRecord(database, actor, newest.id)
+  const record = await getRecord(database, actor, newest)
 
   const payload = await withSignerNames(database, toolId, record.payload)
 

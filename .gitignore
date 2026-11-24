@@ -58,3 +58,6 @@ __pycache__/
 /scripts/sheets/wb*_plan.json
 /scripts/sheets/wb*_requests.json
 /scripts/sheets/wb*_dump*.txt
+
+# Claude Code agent worktrees
+/.claude/worktrees/

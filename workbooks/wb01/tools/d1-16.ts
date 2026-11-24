@@ -18,10 +18,10 @@ const signOff = "5.0 Final sign-off"
 
 // The minutes of the meeting where engineering hands the project to
 // contracting, on both tiers. Who hands off and receives, the client, the
-// request ID, the project value (D1.15's budget, or T3.D1.15a's total) and the
-// link to the brief are the system's (server/handoff). The LE types the
-// meeting, the scope summary, the payment terms, the directives and the
-// checklist, signs the engineering release and submits; the PM signs the
+// request ID and the project value (D1.15's budget, or T3.D1.15a's total) are
+// the system's (server/handoff); 2.0 shows the brief itself as a PDF. The LE
+// types the meeting, the scope summary, the payment terms, the directives and
+// the checklist, signs the engineering release and submits; the PM signs the
 // contracting acceptance and approves, which locks it and opens Workbook 2.
 export const d116 = defineTool({
   id: "D1.16",
@@ -78,17 +78,13 @@ export const d116 = defineTool({
       systemFilled: true,
       section: metadata,
     },
+    // The sheet names D1.15; on a Tier 3 project the preview shows T3.D1.15a.
     {
       key: "referenceDocument",
-      label: "Reference document",
-      type: "table",
-      systemFilled: true,
-      readOnly: true,
+      label: "Reference Document",
+      type: "pdfPreview",
       section: transfer,
-      columns: [
-        { key: "document", label: "Reference Document", type: "text" },
-        { key: "link", label: "Link", type: "text" },
-      ],
+      source: { tool: "D1.15" },
     },
     {
       key: "scopeSummary",

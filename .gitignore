@@ -52,3 +52,9 @@ yarn.lock
 # playwright
 /test-results/
 /playwright-report/
+
+# sheet colour-coding scratch output
+__pycache__/
+/scripts/sheets/wb*_plan.json
+/scripts/sheets/wb*_requests.json
+/scripts/sheets/wb*_dump*.txt

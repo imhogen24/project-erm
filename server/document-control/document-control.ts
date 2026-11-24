@@ -11,6 +11,7 @@ import {
   type Role,
 } from "@/db/schema"
 import { accessRow, type Access } from "@/server/permissions/matrix"
+import { roleAllows } from "@/server/permissions/permissions"
 import { getRecord } from "@/server/records/records"
 import { systemActor } from "@/server/system/system"
 
@@ -151,7 +152,12 @@ export async function getDocumentControl(
   )
 
   const writers = rolesWith(record.toolId, "RW")
-  const approvers = rolesWith(record.toolId, "RA")
+
+  // The same rule as the Approve button, so a role that only reads the tool
+  // but approves it anyway, such as the PM on D1.2 and D1.4, counts.
+  const approvers = roles.filter((role) =>
+    roleAllows([role], record.toolId, "approve")
+  )
 
   let preparedBy: Signer | null = null
 

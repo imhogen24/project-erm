@@ -91,6 +91,12 @@ export const previews: Preview[] = [
     expect: `On ${DEV_UNLOCKED} (Tier 1), log in as the OM, ${loginFor("OM")}, fill in D1.2 and press Submit for approval. Then, as the PM, ${loginFor("PM")}, the submitted D1.2 has Send back beside Approve. Send back opens What needs changing?; Send back to the writer stays off until a reason is typed, then says Sent back to the writer. As the OM again, D1.2 is editable with Sent back for changes and the PM's reason at the top. Change it and submit again: the PM sees Approve and Send back once more.`,
   },
   {
+    screen: "The PM as Checked by on D1.2 and D1.4 (RDP-159)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D1.2`,
+    expect: `On ${DEV_UNLOCKED} (Tier 1), log in as the OM, ${loginFor("OM")}, fill in D1.2 and press Submit for approval: the top bar's Checked by already names the project's PM, and Date checked is still empty. As the PM, ${loginFor("PM")}, press Approve: Checked by still names the PM, with PM beside the name, and Date checked shows when they approved. D1.4 does the same once the PM presses Send, and so does each tool's Export PDF. D1.3 and D1.8 name their approver as before.`,
+  },
+  {
     screen: "Projects that need a team (IT/Admin)",
     loginAs: "IT/Admin",
     path: () => "/admin/team",

@@ -60,9 +60,7 @@ export async function holderOf(
 
 // The brief the handoff transfers: D1.15 on Tier 1, T3.D1.15a on Tier 3.
 function briefOf(track: string) {
-  return track === "Tier_3"
-    ? { toolId: "T3.D1.15a", name: "T3 Drafting SOW & Quote" }
-    : { toolId: "D1.15", name: "Project Brief & Draft Budget" }
+  return track === "Tier_3" ? { toolId: "T3.D1.15a" } : { toolId: "D1.15" }
 }
 
 const amount = z.coerce.number().finite().catch(0)
@@ -126,8 +124,8 @@ export async function clientAndValue(
   }
 }
 
-// What 1.0 and 2.0 of D1.16 show: the request ID, who hands off and who
-// receives, the client, the approved brief's value and a link to it.
+// What 1.0 of D1.16 shows: the request ID, who hands off and who receives,
+// the client and the approved brief's value. 2.0's brief is a PDF preview.
 export async function handoffValues(
   database: Reader,
   projectId: string
@@ -156,12 +154,6 @@ export async function handoffValues(
     contractAdmin: await holderOf(database, projectId, "CA"),
     clientName,
     projectValue: value ? ghs(value) : "",
-    referenceDocument: [
-      {
-        document: `${brief.toolId} ${brief.name}`,
-        link: `/projects/${projectId}/tools/${brief.toolId}`,
-      },
-    ],
   }
 }
 

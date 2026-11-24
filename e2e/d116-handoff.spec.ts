@@ -28,10 +28,10 @@ const minutes = {
   checklist: handoffChecklist.map((each) => ({ ...each, status: "Done" })),
 }
 
-// A Tier 1 project with D1.1 to D1.15 locked, D1.15's budget at GHS 94,400,
-// with its LE, PM and Contract Admin.
-async function setUp() {
-  const project = await makeProject(`Rice Mill ${tag()}`)
+// A project with every tool before D1.16 locked, D1.15's budget (or
+// T3.D1.15a's total) at GHS 94,400, with its LE, PM and Contract Admin.
+async function setUp(track: "Tier_1" | "Tier_3" = "Tier_1") {
+  const project = await makeProject(`Rice Mill ${tag()}`, track)
   const le = await makePerson(`Kojo ${tag()}`)
   const pm = await makePerson(`Ama ${tag()}`)
   const ca = await makePerson(`Gifty ${tag()}`)
@@ -40,9 +40,22 @@ async function setUp() {
   await giveRoles(pm.id, project.id, ["PM"])
   await giveRoles(ca.id, project.id, ["CA"])
   await addClientRequest(project.id, { organization_name: "Asante Mills" })
-  await lockEarlierTools(project.id)
 
-  for (const toolId of ["D1.8", "D1.9", "D1.12", "D1.13"]) {
+  if (track === "Tier_1") {
+    await lockEarlierTools(project.id)
+  } else {
+    for (const toolId of ["D1.1", "D1.2", "T3.D1.3a", "T3.D1.8a"]) {
+      await addRecord(project.id, toolId, "locked")
+    }
+
+    await addRecord(project.id, "D1.4", "locked", {
+      payload: { deliveryStatus: "Delivered" },
+    })
+  }
+
+  for (const toolId of track === "Tier_1"
+    ? ["D1.8", "D1.9", "D1.12", "D1.13"]
+    : ["D1.9", "D1.12", "D1.13"]) {
     await addRecord(project.id, toolId, "locked")
   }
 
@@ -55,11 +68,18 @@ async function setUp() {
   await addRecord(project.id, "D1.14", "locked", {
     payload: { minimumOverheadMet: true },
   })
-  await addRecord(project.id, "D1.15", "locked", {
-    payload: {
-      budget: [{ value: 94400, paymentSchedule: "40% at signing" }],
-    },
-  })
+
+  if (track === "Tier_1") {
+    await addRecord(project.id, "D1.15", "locked", {
+      payload: {
+        budget: [{ value: 94400, paymentSchedule: "40% at signing" }],
+      },
+    })
+  } else {
+    await addRecord(project.id, "T3.D1.15a", "locked", {
+      payload: { totalT3ProjectValue: 94400 },
+    })
+  }
 
   return { project, le, pm, ca }
 }
@@ -77,7 +97,7 @@ async function open(browser: Browser, email: string, projectId: string) {
   return page
 }
 
-test("D1.16 shows who hands off and receives, D1.15's value and link, and starts the terms and directives", async ({
+test("D1.16 shows who hands off and receives, D1.15's value and the brief, and starts the terms and directives", async ({
   browser,
 }) => {
   const { project, le, ca } = await setUp()
@@ -86,17 +106,52 @@ test("D1.16 shows who hands off and receives, D1.15's value and link, and starts
   await expect(page.locator("output#leadEngineer")).toHaveText(le.name)
   await expect(page.locator("output#contractAdmin")).toHaveText(ca.name)
   await expect(page.locator("output#projectValue")).toHaveText("GHS 94,400.00")
-  await expect(
-    page
-      .getByRole("table", { name: "Reference document" })
-      .getByRole("link", { name: "Open" })
-  ).toHaveAttribute("href", `/projects/${project.id}/tools/D1.15`)
+  await expect(page.getByRole("table", { name: /reference/i })).toHaveCount(0)
   await expect(page.getByLabel("Payment Terms Agreed")).toHaveValue(
     "40% at signing"
   )
   await expect(
     page.getByLabel("Source Reference, row 2", { exact: true })
   ).toHaveValue("D1.11")
+  await page.close()
+})
+
+test("View opens the brief as a PDF in a panel, and the LE stays on D1.16", async ({
+  browser,
+}) => {
+  const { project, le } = await setUp()
+  const page = await open(browser, le.email, project.id)
+  const href = `/api/projects/${project.id}/tools/D1.15/pdf`
+
+  await page.getByRole("button", { name: "View Reference Document" }).click()
+
+  const panel = page.getByRole("dialog", { name: "Reference Document" })
+
+  await expect(panel).toBeVisible()
+  await expect(
+    panel.getByText("D1.15 Project Brief & Draft Budget")
+  ).toBeAttached()
+  await expect(panel.locator("iframe")).toHaveAttribute("src", href)
+  await expect(page).toHaveURL(`/projects/${project.id}/tools/D1.16`)
+  expect((await page.request.get(href)).status()).toBe(200)
+  await page.close()
+})
+
+test("on a Tier 3 project View opens T3.D1.15a", async ({ browser }) => {
+  const { project, le } = await setUp("Tier_3")
+  const page = await open(browser, le.email, project.id)
+  const href = `/api/projects/${project.id}/tools/T3.D1.15a/pdf`
+
+  await expect(page.locator("output#projectValue")).toHaveText("GHS 94,400.00")
+  await page.getByRole("button", { name: "View Reference Document" }).click()
+
+  const panel = page.getByRole("dialog", { name: "Reference Document" })
+
+  await expect(
+    panel.getByText("T3.D1.15a T3 Drafting SOW & Quote")
+  ).toBeVisible()
+  await expect(panel.locator("iframe")).toHaveAttribute("src", href)
+  expect((await page.request.get(href)).status()).toBe(200)
   await page.close()
 })
 

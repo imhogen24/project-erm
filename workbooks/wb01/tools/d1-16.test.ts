@@ -4,6 +4,7 @@ import type { JsonObject, Role } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { handoffChecklist, handoffDirectives } from "@/lib/handoff"
 import { handoffStart, handoffValues } from "@/server/handoff/handoff"
+import { sourceName } from "@/server/pdf/preview-source"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
 import {
   ValidationError,
@@ -14,13 +15,17 @@ import {
 import { tools } from "@/server/tools/registry"
 import { loadUnorderedWorkflow } from "@/server/workflow/testing"
 
+import { d115 } from "./d1-15"
 import { d116 } from "./d1-16"
+import { t3d115a } from "./t3-d1-15a"
 
 const database = createTestDatabase()
 
-tools.registerTool(d116)
+for (const each of [d115, t3d115a, d116]) {
+  tools.registerTool(each)
+}
 
-loadUnorderedWorkflow({ wb01: ["D1.16"] })
+loadUnorderedWorkflow({ wb01: ["D1.15", "T3.D1.15a", "D1.16"] })
 
 const minutes = {
   meetingDate: "2026-11-20",
@@ -100,19 +105,13 @@ afterAll(async () => {
 })
 
 describe("what the system fills", () => {
-  it("names who hands off and receives, the client, D1.15's value and links to it", async () => {
+  it("names who hands off and receives, the client and D1.15's value", async () => {
     expect(await handoffValues(database, projectId)).toEqual({
       requestId: "T1-42",
       leadEngineer: "Kojo Antwi",
       contractAdmin: "Gifty Ofori",
       clientName: "Asante Mills",
       projectValue: "GHS 94,400.00",
-      referenceDocument: [
-        {
-          document: "D1.15 Project Brief & Draft Budget",
-          link: `/projects/${projectId}/tools/D1.15`,
-        },
-      ],
     })
   })
 
@@ -132,24 +131,42 @@ describe("what the system fills", () => {
     })
   })
 
-  it("on Tier 3 takes the value and link from T3.D1.15a", async () => {
+  it("on Tier 3 takes the value from T3.D1.15a", async () => {
     await resetTestData(database)
     await addProject("Tier_3")
     await addRecord("T3.D1.15a", "locked", { totalT3ProjectValue: 60000 })
 
     expect(await handoffValues(database, projectId)).toMatchObject({
       projectValue: "GHS 60,000.00",
-      referenceDocument: [
-        {
-          document: "T3.D1.15a T3 Drafting SOW & Quote",
-          link: `/projects/${projectId}/tools/T3.D1.15a`,
-        },
-      ],
     })
     expect(await handoffStart(database, projectId)).toMatchObject({
       paymentTerms: "",
       directives: [{}, {}, { source: "T3.D1.15a" }],
     })
+  })
+})
+
+describe("the reference brief", () => {
+  it("is a PDF preview of D1.15, named as the tool each tier shows", () => {
+    const brief = d116.fields.find((each) => each.key === "referenceDocument")
+
+    expect(brief).toMatchObject({
+      label: "Reference Document",
+      type: "pdfPreview",
+      source: { tool: "D1.15" },
+    })
+    expect(sourceName({ tool: "D1.15" }, "Tier_1")).toBe(
+      "D1.15 Project Brief & Draft Budget"
+    )
+    expect(sourceName({ tool: "D1.15" }, "Tier_3")).toBe(
+      "T3.D1.15a T3 Drafting SOW & Quote"
+    )
+  })
+
+  it("is never filled in by the system", async () => {
+    expect(await handoffValues(database, projectId)).not.toHaveProperty(
+      "referenceDocument"
+    )
   })
 })
 

@@ -31,6 +31,7 @@ import {
 import { startingFixedRows } from "@/lib/fixed-rows"
 import { hasLiveValues, liveValues } from "@/lib/live-values"
 import { fieldFills, fillFields, type Fills } from "@/lib/placeholders"
+import { shownFromSources, shownFromValues } from "@/lib/shown-from"
 import type {
   CellValue,
   Column,
@@ -318,7 +319,22 @@ export function ToolForm({
   // Only a tool with sums re-renders on each keystroke.
   useWatch({ control: form.control, disabled: !hasLiveValues(tool.id) })
 
-  const live = liveValues(tool.id, toValues(tool, form.getValues()))
+  // The answers a field is shown from, such as D2.3's status, so what it
+  // says follows them as they change.
+  const sources = shownFromSources(tool)
+
+  useWatch({
+    control: form.control,
+    name: sources,
+    disabled: sources.length === 0,
+  })
+
+  const typed = toValues(tool, form.getValues())
+
+  const live = {
+    ...liveValues(tool.id, typed),
+    ...shownFromValues(tool, typed),
+  }
 
   // The fields the [bracketed] names are filled from, such as D2.1's [X]%,
   // so the fixed text follows them as they are typed.
@@ -382,7 +398,7 @@ export function ToolForm({
     // value, or a grey note until the system fills it.
     if (field.systemFilled) {
       const shown =
-        liveText.parse(live?.[field.key]) ??
+        liveText.parse(live[field.key]) ??
         textOf(rawCell(field, values[field.key])) ??
         ""
 
@@ -464,7 +480,7 @@ export function ToolForm({
                   rows={Array.isArray(control.value) ? control.value : []}
                   // SAFETY: the live sums are numbers and text, which a raw
                   // cell holds.
-                  computed={liveRow.parse(live?.[field.key] ?? []) as RawRow[]}
+                  computed={liveRow.parse(live[field.key] ?? []) as RawRow[]}
                   onChange={control.onChange}
                   fills={fills}
                   recordId={recordId}

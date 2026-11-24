@@ -210,8 +210,8 @@ function checkMap(
 }
 
 // Describes every rule that names a tool, field or option that does not
-// exist. A map is checked once its workbook has a tool, since until then
-// nothing in it can start.
+// exist, and every tool a review sends back that does not. A map is checked
+// once its workbook has a tool, since until then nothing in it can start.
 export function brokenWorkflowRules(
   maps: readonly WorkbookMap[],
   tools: readonly ToolDefinition[]
@@ -231,6 +231,24 @@ export function brokenWorkflowRules(
 
     if (own.length > 0) {
       checkMap(catalog, map, own, broken)
+    }
+  }
+
+  for (const tool of tools) {
+    for (const id of tool.sendsBackTo?.tools ?? []) {
+      if (!catalog.get(id)) {
+        broken.push(`${tool.id} sends back ${id}, which does not exist`)
+
+        continue
+      }
+
+      for (const track of tracksOf(tool)) {
+        if (!catalog.onTrack(id, track)) {
+          broken.push(
+            `${tool.id} sends back ${id}, which ${track} projects do not use`
+          )
+        }
+      }
     }
   }
 

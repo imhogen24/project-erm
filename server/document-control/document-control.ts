@@ -10,7 +10,7 @@ import {
   toolRecords,
   type Role,
 } from "@/db/schema"
-import { accessRow, type Access } from "@/server/permissions/matrix"
+import { writingRoles } from "@/server/permissions/matrix"
 import { roleAllows } from "@/server/permissions/permissions"
 import { getRecord } from "@/server/records/records"
 import { systemActor } from "@/server/system/system"
@@ -45,13 +45,6 @@ export type DocumentControl = {
 }
 
 type Assigned = { personId: string; name: string; role: Role }
-
-// The roles with this access to the tool, in the order of the role list.
-function rolesWith(toolId: string, access: Access): Role[] {
-  const row = accessRow(toolId) ?? {}
-
-  return roles.filter((role) => row[role] === access)
-}
 
 function signer(personId: string, name: string, role: Role | null): Signer {
   return {
@@ -151,7 +144,7 @@ export async function getDocumentControl(
         ).map((person) => [person.id, person.name])
   )
 
-  const writers = rolesWith(record.toolId, "RW")
+  const writers = writingRoles(record.toolId)
 
   // The same rule as the Approve button, so a role that only reads the tool
   // but approves it anyway, such as the PM on D1.2 and D1.4, counts.

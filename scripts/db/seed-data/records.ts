@@ -12,6 +12,14 @@ import { handoffChecklist, handoffDirectives } from "@/lib/handoff"
 import { needsCategories, specCategories } from "@/lib/needs-assessment"
 import { contractDefaults, standardClauses } from "@/lib/standard-contract"
 import {
+  appendices,
+  coreVariables,
+  legalDirectives,
+  paymentSchedules,
+  phases,
+} from "@/lib/initial-draft"
+import { ipOptions } from "@/lib/t3-contract"
+import {
   t3Deliverables,
   t3Exclusions,
   t3PricingLines,
@@ -23,6 +31,7 @@ import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 import { loginFor, staffWith } from "./people"
 import {
   approverOf,
+  client,
   currentToolFor,
   NEEDS_TEAM,
   requestIdOf,
@@ -771,6 +780,68 @@ function stageD21() {
   })
 }
 
+// The CA's initial draft contract, signed and submitted, which locked it, so
+// D2.3 is open for the PM.
+function stageD22() {
+  const values = [client.organisation, client.name, "GHS 94,400.00", "8 weeks"]
+
+  return payloadOf({
+    draftedBy: staffWith("CA").name,
+    draftDate: "2026-10-24",
+    coreVariables: coreVariables.map((row, index) => ({
+      variable: row.variable,
+      value: values[index]!,
+    })),
+    paymentMilestones: paymentSchedules.map((milestone, index) => ({
+      milestone,
+      schedule: index === 0 ? "40% at Contract Signing, 60% at Handover" : "-",
+    })),
+    projectMilestones: phases.map((milestone, index) => ({
+      milestone,
+      timeline: index === 0 ? "1 week" : "-",
+    })),
+    deliverables: phases.map((phase) => ({
+      deliverableNumber: phase,
+      deliverable: `[${phase} Key Deliverables]`,
+    })),
+    legalDirectives: legalDirectives.map((category) => ({
+      category,
+      clause: "Stated in the contract.",
+      location: "Section 4.1",
+    })),
+    appendices: appendices.map((row) => ({
+      attachment: row.attachment,
+      status: "Attached",
+    })),
+    initialDraftComplete: "Yes",
+    readyForPmReview: "Yes",
+    routingDate: "2026-10-24",
+    caSignature: {
+      signedBy: "role:CA",
+      signedAt: "2026-10-24T10:00:00.000Z",
+    },
+  })
+}
+
+// The OM's Tier 3 contract mapping with Standard Release, signed by the FO,
+// the PM and the client, which locked it, so D2.3 is open for the PM.
+function stageT3D22a() {
+  return payloadOf({
+    ipElection: ipOptions.map((row, index) => ({
+      picked: index === 0,
+      option: row.option!,
+      definition: row.definition!,
+      ...(row.fee !== undefined && { fee: Number(row.fee) }),
+    })),
+    foSignature: { signedBy: "role:FO", signedAt: "2026-10-28T10:00:00.000Z" },
+    pmSignature: { signedBy: "role:PM", signedAt: "2026-10-28T12:00:00.000Z" },
+    clientSignature: {
+      signedBy: "role:Client",
+      signedAt: "2026-10-29T10:00:00.000Z",
+    },
+  })
+}
+
 function tier1Records(name: string): SeedRecord[] {
   const stage = stageOf(name)
   const files = stageFiles(stage)
@@ -803,6 +874,7 @@ function tier1Records(name: string): SeedRecord[] {
       payload: stageD116("D1.15"),
     },
     { toolId: "D2.1", state: "locked", day: 29, payload: stageD21() },
+    { toolId: "D2.2", state: "locked", day: 31, payload: stageD22() },
   ]
 }
 
@@ -840,6 +912,7 @@ function tier3Records(name: string): SeedRecord[] {
       payload: stageD116("T3.D1.15a"),
     },
     { toolId: "D2.1", state: "locked", day: 26, payload: stageD21() },
+    { toolId: "T3.D2.2a", state: "locked", day: 28, payload: stageT3D22a() },
   ]
 }
 

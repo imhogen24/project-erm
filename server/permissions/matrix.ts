@@ -1,4 +1,4 @@
-import type { Role } from "@/db/schema"
+import { roles, type Role } from "@/db/schema"
 
 export type Access = "RW" | "RO" | "RA"
 
@@ -273,6 +273,23 @@ export const extraApprovers = new Map<string, readonly Role[]>([
   ["D1.2", ["PM"]],
   ["D1.4", ["PM"]],
 ])
+
+// Who writes a tool is decided with the tool too. A review that the matrix
+// gives no writer is filled in by the role that reviews it: the PM writes,
+// signs and submits D2.3 (RA), which locks it, since nobody else approves it.
+export const extraWriters = new Map<string, readonly Role[]>([["D2.3", ["PM"]]])
+
+// The roles that fill a tool in: those the matrix gives RW, and those named
+// in `extraWriters`, in the order of the role list.
+export function writingRoles(toolId: string): Role[] {
+  const row = accessRow(toolId) ?? {}
+  const extra = extraWriters.get(toolId) ?? []
+
+  return roles.filter(
+    (role) =>
+      row[role] === "RW" || (row[role] !== undefined && extra.includes(role))
+  )
+}
 
 // Roles that may ask for a change to a locked record although they only read
 // it. The OM may ask for a change to the client's D1.1; the client makes it.

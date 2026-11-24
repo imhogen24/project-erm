@@ -1,1 +1,2 @@
 .env.development filter=dotenvx.protect
+*.pdf binary

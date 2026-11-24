@@ -1,7 +1,7 @@
 import type { Role } from "@/db/schema"
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 
-import { loginFor } from "./seed-data/people"
+import { loginFor, staffWith } from "./seed-data/people"
 import {
   CURRENT_TOOL,
   NEEDS_TEAM,
@@ -59,6 +59,12 @@ export const previews: Preview[] = [
     loginAs: "PM",
     path: (id) => `/projects/${id}/tools/D1.16`,
     expect: `On ${approve}: the LE's minutes, read only, with Sign on Contracting Acceptance, then Approve and Send back. Approving locks it, which closes Workbook 1. On ${approved} it reads locked. The OM, HE and IT/Admin read it; the client does not see it.`,
+  },
+  {
+    screen: "D2.1 standard contract template, as the CA (RDP-161)",
+    loginAs: "CA",
+    path: (id) => `/projects/${id}/tools/D2.1`,
+    expect: `On ${approved}, where D1.16 is locked, D2.1 is open. 1.0 starts filled in and can be changed: Last Legal Review Date is today, Reviewed By is the project's PM (${staffWith("PM").name}), Governing Jurisdiction Ghana, Default Currency GHS. 2.0: type 40 in Payable upon Execution (%). The table lists the sheet's eight clauses, SN 2.1 to 2.8, each with a padlock: their category and text cannot be changed or removed, only Status (Active / Archived). Clause 2.1 names ${client.organisation}, and 2.3 reads the total sum of GHS 94,400.00 as follows: 40% upon execution, following what you typed. Add row gives a row numbered 2.9 with Status Active and a bin to remove it; fill in its category and text. 3.0: Appendix A (D1.15), B (D1.13), C (D1.11) and D (the stored SLA PDF) each have View, which opens the PDF beside the sheet. Press Submit (there is no approver): it says Submitted and locked, and D2.1 reads Locked with Request a change. The PM, HE and IT/Admin read it without editing; the OM and the client do not see it. ${DEV_LOCKED} (Tier 1) and (Tier 3) have it locked with sample clauses, and Export PDF shows the filled-in clauses.`,
   },
   {
     screen: "Every tool built, locked or open",

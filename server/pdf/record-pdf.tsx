@@ -22,6 +22,7 @@ import {
   hiddenFromClient,
 } from "@/server/records/records"
 import { withSignerNames } from "@/server/records/screen"
+import { fillsOf } from "@/server/records/fills"
 import { systemValuesOf } from "@/server/records/system-values"
 import { tools } from "@/server/tools/registry"
 
@@ -400,7 +401,15 @@ export async function recordPdf(
     fileName: `${safeName(`${title} - ${project!.name}`)}.pdf`,
     content: await renderToBuffer(
       <RecordDocument
-        content={{ ...base, sections: sectionsOf(tool, values, names) }}
+        content={{
+          ...base,
+          sections: sectionsOf(
+            tool,
+            values,
+            names,
+            await fillsOf(database, record.projectId, tool.id, values)
+          ),
+        }}
       />
     ),
   }

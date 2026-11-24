@@ -10,6 +10,7 @@ import { reviewDirectives } from "@/lib/internal-review"
 import { conclusionQuestions } from "@/lib/risk"
 import { handoffChecklist, handoffDirectives } from "@/lib/handoff"
 import { needsCategories, specCategories } from "@/lib/needs-assessment"
+import { contractDefaults, standardClauses } from "@/lib/standard-contract"
 import {
   t3Deliverables,
   t3Exclusions,
@@ -744,6 +745,32 @@ function stageD116(briefTool: string) {
   })
 }
 
+// The CA's standard contract template: the eight clauses with Limitation of
+// Liability archived, one clause the CA added, and 40% on execution. Locked
+// as the CA submitted it, since nobody approves D2.1.
+function stageD21() {
+  return payloadOf({
+    lastLegalReviewDate: "2026-10-22",
+    reviewedBy: staffWith("PM").name,
+    jurisdiction: contractDefaults.jurisdiction,
+    currency: contractDefaults.currency,
+    executionPercentage: 40,
+    clauses: [
+      ...standardClauses.map((clause) => ({
+        category: clause.category,
+        text: clause.text,
+        status:
+          clause.category === "Limitation of Liability" ? "Archived" : "Active",
+      })),
+      {
+        category: "Site Access",
+        text: "The Client gives IMHOGEN safe access to the site during working hours.",
+        status: "Active",
+      },
+    ],
+  })
+}
+
 function tier1Records(name: string): SeedRecord[] {
   const stage = stageOf(name)
   const files = stageFiles(stage)
@@ -775,6 +802,7 @@ function tier1Records(name: string): SeedRecord[] {
       day: 27,
       payload: stageD116("D1.15"),
     },
+    { toolId: "D2.1", state: "locked", day: 29, payload: stageD21() },
   ]
 }
 
@@ -811,6 +839,7 @@ function tier3Records(name: string): SeedRecord[] {
       day: 24,
       payload: stageD116("T3.D1.15a"),
     },
+    { toolId: "D2.1", state: "locked", day: 26, payload: stageD21() },
   ]
 }
 

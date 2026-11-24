@@ -86,6 +86,9 @@ import { PROJECT_BRIEF, T3_QUOTE } from "@/lib/project-brief"
 import { HANDOFF } from "@/lib/handoff"
 import { handoffStart } from "@/server/handoff/handoff"
 import { briefStart, quoteStart } from "@/server/brief/project-brief"
+import { STANDARD_CONTRACT } from "@/lib/standard-contract"
+import { contractStart } from "@/server/contract/standard-contract"
+import { systemFillsOf } from "@/server/records/fills"
 import { previewStates } from "@/server/pdf/previews"
 import { getRecordScreen } from "@/server/records/screen"
 import { systemValuesOf } from "@/server/records/system-values"
@@ -214,6 +217,11 @@ async function startOf(toolId: string, projectId: string): Promise<FormValues> {
     case HANDOFF: {
       // SAFETY: the start is built for this tool's own fields.
       return (await handoffStart(getDatabase(), projectId)) as FormValues
+    }
+
+    case STANDARD_CONTRACT: {
+      // SAFETY: the start is built for this tool's own fields.
+      return (await contractStart(getDatabase(), projectId)) as FormValues
     }
 
     default: {
@@ -485,7 +493,7 @@ export default async function Page({
   // D1.12: the critical risks from D1.11's register. D1.14: 4.0 from D1.13's
   // deliverables. D1.15: from D1.13 and D1.14. T3.D1.15a: from the standard
   // deliverables. D1.16: the terms, directives and checklist from the brief
-  // and the sheet.
+  // and the sheet. D2.1: today, the project's PM, Ghana and GHS.
   if (!view.record && view.can.write) {
     formValues = {
       ...(await startOf(toolId, projectId)),
@@ -505,6 +513,10 @@ export default async function Page({
   )) as FormValues
 
   formValues = { ...formValues, ...system }
+
+  // The [bracketed] names in fixed text the system fills, such as D2.1's
+  // client name and total, read live and never stored.
+  const fills = await systemFillsOf(getDatabase(), projectId, toolId)
 
   // A tool the client reads only once locked tells them so until then.
   const notSharedYet =
@@ -718,6 +730,7 @@ export default async function Page({
         projectId={projectId}
         cycle={view.cycle}
         values={formValues}
+        fills={fills}
         recordId={view.record?.id}
         updatedAt={view.record?.updatedAt.toISOString()}
         canWrite={view.can.write}

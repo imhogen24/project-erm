@@ -37,7 +37,12 @@ async function lockedPayload(
   return record?.payload ?? {}
 }
 
-async function holderOf(database: Reader, projectId: string, role: Role) {
+// The name of the person holding the role on the project, or empty.
+export async function holderOf(
+  database: Reader,
+  projectId: string,
+  role: Role
+) {
   const [person] = await database
     .select({ name: people.name })
     .from(personProjectRoles)
@@ -81,6 +86,46 @@ const organisation = z.object({
   organization_name: z.string().optional().catch(undefined),
 })
 
+// The client's organisation, as their web request names it, and the approved
+// brief's total: D1.15's budget on Tier 1, T3.D1.15a's total on Tier 3.
+export async function clientAndValue(
+  database: Reader,
+  projectId: string
+): Promise<{ clientName: string; value: number | undefined } | undefined> {
+  const [project] = await database
+    .select({ name: projects.name, track: projects.serviceTrack })
+    .from(projects)
+    .where(eq(projects.id, projectId))
+
+  if (!project) {
+    return undefined
+  }
+
+  const [saved] = await database
+    .select({ submission: intakeSubmissions.submission })
+    .from(intakeSubmissions)
+    .where(eq(intakeSubmissions.projectId, projectId))
+    .limit(1)
+
+  const payload = await lockedPayload(
+    database,
+    projectId,
+    briefOf(project.track).toolId
+  )
+
+  return {
+    clientName:
+      organisation.parse(saved?.submission ?? {}).organization_name ??
+      project.name,
+    value:
+      project.track === "Tier_3"
+        ? tier3Quote.parse(payload).totalT3ProjectValue
+        : tier1Brief
+            .parse(payload)
+            .budget.reduce((sum, line) => sum + line.value, 0),
+  }
+}
+
 // What 1.0 and 2.0 of D1.16 show: the request ID, who hands off and who
 // receives, the client, the approved brief's value and a link to it.
 export async function handoffValues(
@@ -96,33 +141,20 @@ export async function handoffValues(
     .from(projects)
     .where(eq(projects.id, projectId))
 
-  if (!project) {
+  const known = await clientAndValue(database, projectId)
+
+  if (!project || !known) {
     return {}
   }
 
-  const [saved] = await database
-    .select({ submission: intakeSubmissions.submission })
-    .from(intakeSubmissions)
-    .where(eq(intakeSubmissions.projectId, projectId))
-    .limit(1)
-
   const brief = briefOf(project.track)
-  const payload = await lockedPayload(database, projectId, brief.toolId)
-
-  const value =
-    project.track === "Tier_3"
-      ? tier3Quote.parse(payload).totalT3ProjectValue
-      : tier1Brief
-          .parse(payload)
-          .budget.reduce((sum, line) => sum + line.value, 0)
+  const { clientName, value } = known
 
   return {
     requestId: project.requestId,
     leadEngineer: await holderOf(database, projectId, "LE"),
     contractAdmin: await holderOf(database, projectId, "CA"),
-    clientName:
-      organisation.parse(saved?.submission ?? {}).organization_name ??
-      project.name,
+    clientName,
     projectValue: value ? ghs(value) : "",
     referenceDocument: [
       {

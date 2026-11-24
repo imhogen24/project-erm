@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import { roles } from "@/db/schema"
+import { placeholdersIn } from "@/lib/placeholders"
 
 const fieldKey = z
   .string()
@@ -154,7 +155,17 @@ const pdfPreview = z.object({
 export type PreviewSource = z.output<typeof pdfPreview>["source"]
 
 // A required column must be answered in every row, but only at submit.
-const columnRequired = { required: z.boolean().optional() }
+// `numbered` makes a column the app numbers itself, "<numbered>.<row>", such
+// as 2.1, 2.2 for an SN column: never typed and never stored. `startsAs` is
+// the option a select column starts on in each new row, such as "Active".
+const columnRequired = {
+  required: z.boolean().optional(),
+  numbered: z
+    .string()
+    .regex(/^\d+(\.\d+)*$/, "A numbered column counts from a number, such as 2")
+    .optional(),
+  startsAs: z.string().min(1).optional(),
+}
 
 const column = z.discriminatedUnion("type", [
   plain.extend(columnRequired),
@@ -171,7 +182,12 @@ type Column = z.output<typeof column>
 const unwritten = ["signature", "instruction", "staticList", "pdfPreview"]
 
 function isWritten(cell: Column) {
-  return !(cell.inherited || cell.systemFilled || unwritten.includes(cell.type))
+  return !(
+    cell.inherited ||
+    cell.systemFilled ||
+    cell.numbered ||
+    unwritten.includes(cell.type)
+  )
 }
 
 const required = { required: z.boolean().default(false) }
@@ -182,7 +198,10 @@ const required = { required: z.boolean().default(false) }
 // rows after them that the person adds, names and removes. `optionalRows` names
 // rows whose required columns may stay empty. `startsWithRow` opens a table
 // with no locked rows on one empty row. `readOnly` shows the table in the form without letting the form change
-// it: the system and the screens built for it write its rows.
+// it: the system and the screens built for it write its rows. `fixedRows` are
+// rows the table always starts with, each fixing the values of the columns it
+// names, which can never be edited or removed; its other columns stay
+// editable, and rows the person adds may follow them, as with `lockedRows`.
 const table = z
   .object({
     ...cellBase,
@@ -191,6 +210,10 @@ const table = z
     columns: z.array(column).min(1),
     prefilledRows: distinctTexts.optional(),
     lockedRows: distinctTexts.optional(),
+    fixedRows: z
+      .array(z.record(fieldKey, z.string().min(1)))
+      .min(1)
+      .optional(),
     optionalRows: distinctTexts.optional(),
     // A short note shown under a fixed or locked row's label, such as
     // "Material" under "M". Only shown; never stored.
@@ -264,7 +287,57 @@ const table = z
       })
     }
 
-    if (value.startsWithRow && (value.prefilledRows || value.lockedRows)) {
+    if (value.fixedRows && (value.prefilledRows || value.lockedRows)) {
+      context.addIssue({
+        code: "custom",
+        path: ["fixedRows"],
+        message:
+          "A table has fixed rows of several columns, or labels, not both",
+      })
+    }
+
+    value.fixedRows?.forEach((row, index) => {
+      for (const [key, text] of Object.entries(row)) {
+        const problem = fixedCellProblem(
+          value.columns.find((entry) => entry.key === key),
+          text
+        )
+
+        if (problem) {
+          context.addIssue({
+            code: "custom",
+            path: ["fixedRows", index, key],
+            message: problem,
+          })
+        }
+      }
+    })
+
+    value.columns.forEach((entry, index) => {
+      if (entry.numbered && entry.type !== "text") {
+        context.addIssue({
+          code: "custom",
+          path: ["columns", index, "numbered"],
+          message: "Only a text column is numbered",
+        })
+      }
+
+      if (
+        entry.startsAs !== undefined &&
+        !(entry.type === "select" && entry.options.includes(entry.startsAs))
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["columns", index, "startsAs"],
+          message: "A column starts as one of its select's options",
+        })
+      }
+    })
+
+    if (
+      value.startsWithRow &&
+      (value.prefilledRows || value.lockedRows || value.fixedRows)
+    ) {
       context.addIssue({
         code: "custom",
         path: ["startsWithRow"],
@@ -305,6 +378,27 @@ const table = z
       })
     }
   })
+
+// A fixed cell is a column the form would write, holding text it can hold.
+function fixedCellProblem(cell: Column | undefined, text: string) {
+  if (!cell) {
+    return "Not a column of this table"
+  }
+
+  if (!isWritten(cell)) {
+    return "A fixed row fixes only a column the form writes"
+  }
+
+  if (cell.type === "select") {
+    return cell.options.includes(text)
+      ? undefined
+      : `"${text}" is not one of the options`
+  }
+
+  return cell.type === "text" || cell.type === "longText"
+    ? undefined
+    : "A fixed row fixes only text or a select"
+}
 
 function holdsLabels(first: Column | undefined, labels: string[]) {
   if (!first || first.inherited) {
@@ -385,6 +479,17 @@ const toolDefinition = z
     // The client reads the record only once it is locked: before, it holds
     // IMHOGEN's working notes.
     clientReadsOnceLocked: z.boolean().optional(),
+    // Submitting locks the record straight away: the tool has no approver.
+    locksOnSubmit: z.boolean().optional(),
+    // What each `[Name]` in a table's fixed rows is filled in from when shown
+    // or exported: "system", worked out from the project's other records, or
+    // a field of this record, such as a percentage typed beside the table.
+    fills: z
+      .record(
+        z.string().min(1),
+        z.union([z.literal("system"), z.strictObject({ field: fieldKey })])
+      )
+      .optional(),
     // System-filled fields that must hold a value before the record can be
     // submitted, each with what to say until then, such as an invite sent.
     submitNeeds: z
@@ -404,7 +509,14 @@ const toolDefinition = z
   .refine((value) => value.replaces !== value.id, {
     message: "A tool cannot replace itself",
   })
+  .refine((value) => !(value.locksOnSubmit && value.withoutSubmit), {
+    message: "A tool without Submit cannot lock on submit",
+  })
   .superRefine((value, context) => {
+    for (const problem of fillProblems(value.fields, value.fills ?? {})) {
+      context.addIssue({ code: "custom", path: ["fills"], message: problem })
+    }
+
     value.fields.forEach((entry, index) => {
       if (entry.type !== "select" || !entry.blockedWhile) {
         return
@@ -427,6 +539,38 @@ const toolDefinition = z
   })
 
 type FieldOutput = z.output<typeof field>
+
+type Fills = Record<string, "system" | { field: string }>
+
+// Every `[Name]` in fixed text must say where it is filled in from, and a fill
+// from a field must name a field of the tool that holds one value.
+function fillProblems(fields: FieldOutput[], fills: Fills) {
+  const named = fields.flatMap((entry) =>
+    entry.type === "table"
+      ? (entry.fixedRows ?? []).flatMap((row) =>
+          Object.values(row).flatMap(placeholdersIn)
+        )
+      : []
+  )
+
+  const unnamed = [...new Set(named)].flatMap((name) =>
+    name in fills ? [] : [`"[${name}]" is not listed in fills`]
+  )
+
+  const strays = Object.entries(fills).flatMap(([name, source]) => {
+    if (source === "system") {
+      return []
+    }
+
+    const from = fields.find((entry) => entry.key === source.field)
+
+    return from && from.type !== "table" && !unwritten.includes(from.type)
+      ? []
+      : [`"[${name}]" is filled from ${source.field}, which holds no value`]
+  })
+
+  return [...unnamed, ...strays]
+}
 
 // The rule must name one of the select's options, and a column of a table with
 // fixed rows whose select can hold the value.

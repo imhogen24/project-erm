@@ -558,3 +558,102 @@ describe("defineTool, web request links", () => {
     ).toThrow()
   })
 })
+
+type TableInput = Extract<ToolInput["fields"][number], { type: "table" }>
+
+describe("defineTool, fixed rows of several columns", () => {
+  const clauses = (
+    extra: Partial<TableInput> = {},
+    columns: TableInput["columns"] = []
+  ): ToolInput => ({
+    id: "D2.1",
+    name: "Template",
+    workbook: "wb02",
+    fills: { "Client Name": "system", X: { field: "share" } },
+    fields: [
+      { key: "share", label: "Share", type: "percentage" },
+      {
+        key: "clauses",
+        label: "Clauses",
+        type: "table",
+        fixedRows: [
+          { category: "Parties", text: "With [Client Name], [X]% now." },
+        ],
+        columns: [
+          { key: "sn", label: "SN", type: "text", numbered: "2" },
+          { key: "category", label: "Category", type: "text" },
+          { key: "text", label: "Text", type: "longText" },
+          {
+            key: "status",
+            label: "Status",
+            type: "select",
+            options: ["Active", "Archived"],
+            startsAs: "Active",
+          },
+          ...columns,
+        ],
+        ...extra,
+      },
+    ],
+  })
+
+  it("accepts fixed rows, a numbered column and a starting option", () => {
+    expect(defineTool(clauses()).fields).toHaveLength(2)
+  })
+
+  it("refuses a fixed value for a column that is not there", () => {
+    expect(() =>
+      defineTool(clauses({ fixedRows: [{ clause: "Parties" }] }))
+    ).toThrow("Not a column of this table")
+  })
+
+  it("refuses a fixed value in the numbered column", () => {
+    expect(() => defineTool(clauses({ fixedRows: [{ sn: "2.1" }] }))).toThrow(
+      "A fixed row fixes only a column the form writes"
+    )
+  })
+
+  it("refuses fixed rows beside labelled rows", () => {
+    expect(() => defineTool(clauses({ lockedRows: ["Parties"] }))).toThrow(
+      "not both"
+    )
+  })
+
+  it("refuses a starting option the select does not have", () => {
+    expect(() =>
+      defineTool(
+        clauses({}, [
+          {
+            key: "kind",
+            label: "Kind",
+            type: "select",
+            options: ["A"],
+            startsAs: "B",
+          },
+        ])
+      )
+    ).toThrow("A column starts as one of its select's options")
+  })
+
+  it("refuses a bracketed name nobody fills", () => {
+    expect(() =>
+      defineTool(
+        clauses({
+          fixedRows: [{ category: "Parties", text: "With [Client Name] [Y]" }],
+        })
+      )
+    ).toThrow("is not listed in fills")
+  })
+
+  it("refuses a fill from a field the tool does not have", () => {
+    expect(() =>
+      defineTool({ ...clauses(), fills: { X: { field: "missing" } } })
+    ).toThrow("which holds no value")
+  })
+
+  it("refuses locking on submit for a tool with no Submit", () => {
+    expect(() =>
+      defineTool({ ...clauses(), locksOnSubmit: true, withoutSubmit: true })
+    ).toThrow("A tool without Submit cannot lock on submit")
+  })
+})

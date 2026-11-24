@@ -80,7 +80,7 @@ export const permissionMatrix = {
     "IT/Admin": "RO",
   },
   "D1.16": { OM: "RO", PM: "RA", LE: "RW", HE: "RO", "IT/Admin": "RO" },
-  "D2.1": { PM: "RO", CA: "RW", HE: "RO", CR: "RO" },
+  "D2.1": { PM: "RO", CA: "RW", HE: "RO", "IT/Admin": "RO" },
   "D2.2": { PM: "RO", CA: "RW", CR: "RO" },
   "D2.3": { PM: "RA", CA: "RO", CR: "RO" },
   "D2.4": { PM: "RO", FO: "RA", CA: "RO", CR: "RO" },

@@ -28,7 +28,9 @@ import {
   FieldLegend,
   FieldSet,
 } from "@/components/ui/field"
+import { startingFixedRows } from "@/lib/fixed-rows"
 import { hasLiveValues, liveValues } from "@/lib/live-values"
+import { fieldFills, fillFields, type Fills } from "@/lib/placeholders"
 import type {
   CellValue,
   Column,
@@ -43,6 +45,9 @@ import type {
 type Props = {
   tool: ToolDefinition
   values: FormValues
+  // What the system fills into the [bracketed] names of fixed text. The names
+  // filled from the tool's own fields follow what is typed.
+  fills?: Fills
   // What the server found wrong. The form only shows it: one message under a
   // field, or under the exact cell of a table.
   errors?: ToolFieldError[]
@@ -149,6 +154,33 @@ function startingRows(
   const labels = field.prefilledRows
   const locked = field.lockedRows ?? []
 
+  // Fixed rows of several columns come first, with their fixed values over
+  // whatever was saved, then the rows the person added. A fixed row not saved
+  // yet starts each other column on its starting option, such as Active.
+  if (field.fixedRows) {
+    const fixed = field.fixedRows
+    const starts = startingFixedRows(field)
+
+    return [...fixed, ...saved.slice(fixed.length)].map((_, index) => {
+      const row = saved[index] ?? {}
+
+      return Object.fromEntries(
+        field.columns
+          .filter((column) => !readOnlyTypes.includes(column.type))
+          .map((column) => {
+            const typed = rawCell(column, row[column.key])
+            const start = starts[index]?.[column.key]
+
+            return [
+              column.key,
+              fixed[index]?.[column.key] ??
+                (typed === "" && start !== undefined ? start : typed),
+            ]
+          })
+      )
+    })
+  }
+
   // Locked rows come first, then whatever the person added. A table that
   // starts on a row opens with one empty row when nothing is saved.
   const held =
@@ -194,6 +226,7 @@ function toCell(
     readOnlyTypes.includes(cell.type) ||
     cell.inherited ||
     cell.systemFilled ||
+    ("numbered" in cell && cell.numbered) ||
     raw === undefined ||
     text === ""
   ) {
@@ -260,6 +293,7 @@ function toValues(
 export function ToolForm({
   tool,
   values,
+  fills: systemFills = {},
   errors = [],
   onSave,
   onSubmit,
@@ -285,6 +319,21 @@ export function ToolForm({
   useWatch({ control: form.control, disabled: !hasLiveValues(tool.id) })
 
   const live = liveValues(tool.id, toValues(tool, form.getValues()))
+
+  // The fields the [bracketed] names are filled from, such as D2.1's [X]%,
+  // so the fixed text follows them as they are typed.
+  const fillKeys = fillFields(tool.fills)
+
+  const filledFrom = useWatch({
+    control: form.control,
+    name: fillKeys,
+    disabled: fillKeys.length === 0,
+  })
+
+  const fills: Fills = {
+    ...systemFills,
+    ...fieldFills(tool.fills, (key) => filledFrom?.[fillKeys.indexOf(key)]),
+  }
 
   // A message about the whole field. A message about one cell goes to the cell.
   const messages = new Map(
@@ -411,6 +460,7 @@ export function ToolForm({
                   // cell holds.
                   computed={liveRow.parse(live?.[field.key] ?? []) as RawRow[]}
                   onChange={control.onChange}
+                  fills={fills}
                   recordId={recordId}
                   errors={errors.filter(
                     (error) =>
@@ -541,7 +591,7 @@ export function ToolForm({
         <SheetActions message={said}>
           {!readOnly && submits && (
             <ActionButton type="submit" disabled={pending}>
-              Submit for approval
+              {tool.locksOnSubmit ? "Submit" : "Submit for approval"}
             </ActionButton>
           )}
           {extraActions}

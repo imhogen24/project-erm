@@ -1,10 +1,15 @@
 import type { ReactNode } from "react"
-import { ArrowLeftIcon, CaretDownIcon } from "@phosphor-icons/react/ssr"
+import {
+  ArrowLeftIcon,
+  CaretDownIcon,
+  DownloadSimpleIcon,
+} from "@phosphor-icons/react/ssr"
 import Link from "next/link"
 
 import { Grain } from "@/components/grain"
 import { StateBadge } from "@/components/state-badge"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import type { ToolState } from "@/lib/tool-state"
 
 // One fact of the document control: the value, a short tag beside it as a
@@ -57,6 +62,7 @@ export function RecordTopBar({
   tier,
   requestId,
   action,
+  exportHref,
   badges,
   control,
 }: {
@@ -71,6 +77,9 @@ export function RecordTopBar({
   requestId?: string
   // A button about the project, such as the one that opens the client request.
   action?: ReactNode
+  // Where the record downloads as a PDF. Unset while there is no record, or
+  // nothing in it the person may read yet.
+  exportHref?: string
   // Chips beside the state, such as D1.4's delivery status.
   badges?: ReactNode
   control: Fact[]
@@ -105,7 +114,21 @@ export function RecordTopBar({
               )}
             </div>
           </div>
-          {action && <div className="flex shrink-0">{action}</div>}
+          {(action || exportHref) && (
+            <div className="flex shrink-0 flex-wrap gap-2">
+              {action}
+              {exportHref && (
+                <Button asChild variant="outline" className="h-10 gap-2 px-4">
+                  {/* A plain link: the browser downloads the file, so the
+                      page needs no script for it. */}
+                  <a href={exportHref} download>
+                    <DownloadSimpleIcon aria-hidden className="size-4" />
+                    Export PDF
+                  </a>
+                </Button>
+              )}
+            </div>
+          )}
         </div>
       </div>
       {/* Wide: every fact in one row, each as wide as its text, wrapping only

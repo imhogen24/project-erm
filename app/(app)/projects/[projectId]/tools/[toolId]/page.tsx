@@ -69,40 +69,24 @@ import { getProjectOverview } from "@/server/projects/projects"
 import {
   NEEDS_ASSESSMENT,
   clientTechnicalAnswers,
-  synthesisValues,
 } from "@/server/needs/needs-assessment"
 import { hiddenFromClient, sentBackReason } from "@/server/records/records"
-import { INTERNAL_REVIEW, reviewValues } from "@/server/review/internal-review"
-import { CAPABILITY, capabilityValues } from "@/server/capability/capability"
-import { RISK, riskValues } from "@/server/risk/risk"
-import {
-  SCOPE_OF_WORK,
-  clientMeeting,
-  scopeValues,
-} from "@/server/scope/scope-of-work"
+import { SCOPE_OF_WORK, clientMeeting } from "@/server/scope/scope-of-work"
 import { AlignmentMeetingActions } from "@/components/alignment-meeting-actions"
 import {
   missingToConfirm,
   missingToSendTimes,
   proposalOf as meetingOf,
 } from "@/lib/meeting-proposal"
-import {
-  FEASIBILITY,
-  feasibilityStart,
-  feasibilityValues,
-} from "@/server/feasibility/feasibility"
+import { FEASIBILITY, feasibilityStart } from "@/server/feasibility/feasibility"
 import { COST_ESTIMATION } from "@/lib/cost-estimation"
-import { costStart, costValues } from "@/server/cost/cost-estimation"
+import { costStart } from "@/server/cost/cost-estimation"
 import { PROJECT_BRIEF, T3_QUOTE } from "@/lib/project-brief"
 import { HANDOFF } from "@/lib/handoff"
-import { handoffStart, handoffValues } from "@/server/handoff/handoff"
-import {
-  briefStart,
-  briefValues,
-  quoteStart,
-  quoteValues,
-} from "@/server/brief/project-brief"
+import { handoffStart } from "@/server/handoff/handoff"
+import { briefStart, quoteStart } from "@/server/brief/project-brief"
 import { getRecordScreen } from "@/server/records/screen"
+import { systemValuesOf } from "@/server/records/system-values"
 import { listComments, type Comment } from "@/server/comments/comments"
 import { UnknownToolError } from "@/server/records/validate"
 
@@ -199,6 +183,41 @@ function changedFilesOf(
       change: "Removed" as const,
     })),
   ]
+}
+
+// What a tool with no record yet starts its writer from. Empty for a tool
+// that starts blank.
+async function startOf(toolId: string, projectId: string): Promise<FormValues> {
+  switch (toolId) {
+    case FEASIBILITY: {
+      // SAFETY: the start is built for this tool's own fields.
+      return (await feasibilityStart(getDatabase(), projectId)) as FormValues
+    }
+
+    case COST_ESTIMATION: {
+      // SAFETY: the start is built for this tool's own fields.
+      return (await costStart(getDatabase(), projectId)) as FormValues
+    }
+
+    case PROJECT_BRIEF: {
+      // SAFETY: the start is built for this tool's own fields.
+      return (await briefStart(getDatabase(), projectId)) as FormValues
+    }
+
+    case T3_QUOTE: {
+      // SAFETY: the start is built for this tool's own fields.
+      return quoteStart() as FormValues
+    }
+
+    case HANDOFF: {
+      // SAFETY: the start is built for this tool's own fields.
+      return (await handoffStart(getDatabase(), projectId)) as FormValues
+    }
+
+    default: {
+      return {}
+    }
+  }
 }
 
 // A comment as the screen shows it, with its time as text.
@@ -416,16 +435,6 @@ export default async function Page({
   let sheetTool: ToolDefinition = tool
 
   if (toolId === NEEDS_ASSESSMENT) {
-    formValues = {
-      ...formValues,
-      ...(await synthesisValues(
-        getDatabase(),
-        projectId,
-        view.record ? { id: view.record.id, state: toState(view.state) } : null,
-        view.can.write ? session.user.name : undefined
-      )),
-    }
-
     const answers = await clientTechnicalAnswers(getDatabase(), projectId)
 
     sheetTool = {
@@ -436,61 +445,6 @@ export default async function Page({
           : field
       ),
     }
-  }
-
-  // D1.9: 1.0 and 2.0 come from the project, its request and its records.
-  if (toolId === INTERNAL_REVIEW) {
-    // SAFETY: the system's values are built for D1.9's own fields.
-    const system = (await reviewValues(getDatabase(), projectId)) as FormValues
-
-    formValues = { ...formValues, ...system }
-  }
-
-  // D1.10: 1.0 comes from the project, its request and the signature.
-  if (toolId === CAPABILITY) {
-    // SAFETY: the system's values are built for D1.10's own fields.
-    const system = (await capabilityValues(
-      getDatabase(),
-      projectId,
-      view.record?.payload ?? {}
-    )) as FormValues
-
-    formValues = { ...formValues, ...system }
-  }
-
-  // D1.11: 1.0 comes from the project, D1.10 and the signature.
-  if (toolId === RISK) {
-    // SAFETY: the system's values are built for D1.11's own fields.
-    const system = (await riskValues(
-      getDatabase(),
-      projectId,
-      view.record?.payload ?? {}
-    )) as FormValues
-
-    formValues = { ...formValues, ...system }
-  }
-
-  // D1.12: 1.0 and 4.0 come from the project, D1.10, the request and the
-  // signature; the critical risks start from D1.11's register.
-  if (toolId === FEASIBILITY) {
-    if (!view.record && view.can.write) {
-      // SAFETY: the starting rows are built for D1.12's own table.
-      const start = (await feasibilityStart(
-        getDatabase(),
-        projectId
-      )) as FormValues
-
-      formValues = { ...start, ...formValues }
-    }
-
-    // SAFETY: the system's values are built for D1.12's own fields.
-    const system = (await feasibilityValues(
-      getDatabase(),
-      projectId,
-      view.record?.payload ?? {}
-    )) as FormValues
-
-    formValues = { ...formValues, ...system }
   }
 
   // D1.13: the scope's metadata and routing are the system's. The client
@@ -504,14 +458,6 @@ export default async function Page({
   let meetingActions: ReactNode
 
   if (toolId === SCOPE_OF_WORK) {
-    // SAFETY: the system's values are built for D1.13's own fields.
-    const system = (await scopeValues(getDatabase(), projectId, {
-      state: view.state,
-      payload: view.record?.payload ?? {},
-    })) as FormValues
-
-    formValues = { ...formValues, ...system }
-
     if (
       view.can.write &&
       view.state !== "locked" &&
@@ -533,69 +479,30 @@ export default async function Page({
     }
   }
 
-  // D1.14: the totals are worked out on the sheet as the LE types; 4.0 starts
-  // from D1.13's deliverables, and 5.0 holds D1.12's cost floor.
-  if (toolId === COST_ESTIMATION) {
-    if (!view.record && view.can.write) {
-      // SAFETY: the starting rows are built for D1.14's own table.
-      const start = (await costStart(getDatabase(), projectId)) as FormValues
-
-      formValues = { ...start, ...formValues }
+  // A tool with no record yet starts its writer from what earlier tools hold.
+  // D1.12: the critical risks from D1.11's register. D1.14: 4.0 from D1.13's
+  // deliverables. D1.15: from D1.13 and D1.14. T3.D1.15a: from the standard
+  // deliverables. D1.16: the terms, directives and checklist from the brief
+  // and the sheet.
+  if (!view.record && view.can.write) {
+    formValues = {
+      ...(await startOf(toolId, projectId)),
+      ...formValues,
     }
-
-    // SAFETY: the system's values are built for D1.14's own fields.
-    const system = (await costValues(getDatabase(), projectId, {
-      state: view.state,
-      payload: view.record?.payload ?? {},
-    })) as FormValues
-
-    formValues = { ...formValues, ...system }
   }
 
-  // D1.15: 1.0 is the system's; the rest starts from D1.13 and D1.14.
-  if (toolId === PROJECT_BRIEF) {
-    if (!view.record && view.can.write) {
-      // SAFETY: the starting values are built for D1.15's own fields.
-      const start = (await briefStart(getDatabase(), projectId)) as FormValues
+  // What the system fills, read live: D1.8's author and dates, D1.9 to D1.16's
+  // metadata, D1.14's totals and D1.15's 1.0. The PDF shows the same.
+  // SAFETY: the system's values are built for the tool's own fields.
+  const system = (await systemValuesOf(
+    getDatabase(),
+    projectId,
+    toolId,
+    view.record ? { ...view.record, state: toState(view.state) } : null,
+    view.can.write ? session.user.name : undefined
+  )) as FormValues
 
-      formValues = { ...start, ...formValues }
-    }
-
-    // SAFETY: the system's values are built for D1.15's own fields.
-    const system = (await briefValues(getDatabase(), projectId)) as FormValues
-
-    formValues = { ...formValues, ...system }
-  }
-
-  // T3.D1.15a: the standard deliverables to start from, and the request ID.
-  if (toolId === T3_QUOTE) {
-    if (!view.record && view.can.write) {
-      // SAFETY: the starting rows are built for T3.D1.15a's own table.
-      formValues = { ...(quoteStart() as FormValues), ...formValues }
-    }
-
-    // SAFETY: the system's values are built for T3.D1.15a's own fields.
-    const system = (await quoteValues(getDatabase(), projectId)) as FormValues
-
-    formValues = { ...formValues, ...system }
-  }
-
-  // D1.16: who hands off and receives, the client, the value and the link to
-  // the brief are the system's; the terms, directives and checklist start
-  // from the brief and the sheet.
-  if (toolId === HANDOFF) {
-    if (!view.record && view.can.write) {
-      // SAFETY: the starting values are built for D1.16's own fields.
-      const start = (await handoffStart(getDatabase(), projectId)) as FormValues
-
-      formValues = { ...start, ...formValues }
-    }
-
-    // SAFETY: the system's values are built for D1.16's own fields.
-    const system = (await handoffValues(getDatabase(), projectId)) as FormValues
-
-    formValues = { ...formValues, ...system }
-  }
+  formValues = { ...formValues, ...system }
 
   // A tool the client reads only once locked tells them so until then.
   const notSharedYet =
@@ -875,6 +782,10 @@ export default async function Page({
                 clientRequest && !webForm ? (
                   <ClientRequestPanel request={clientRequest} />
                 ) : undefined,
+              exportHref:
+                view.record && !notSharedYet
+                  ? `/api/records/${view.record.id}/pdf`
+                  : undefined,
               projectHref: `/projects/${projectId}`,
               projectName: view.project.name,
               tier: overview?.serviceTrack.replace("_", " "),

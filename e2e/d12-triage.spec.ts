@@ -440,6 +440,13 @@ test("the PM sees a submitted D1.2 read only, approves it, and D1.3 opens", asyn
 
   await expect(page.getByText("Locked", { exact: true })).toBeVisible()
 
+  // The PM only reads D1.2 in the matrix, but approves it, so they are the
+  // one who checked it.
+  const control = page.locator('header[aria-label="Document control"]')
+
+  await expect(control.getByText(pm.name).first()).toBeVisible()
+  await expect(control.getByText("Not assigned")).toHaveCount(0)
+
   await page.goto(`/projects/${project.id}/tools/D1.3`)
 
   await expect(page.getByText(/This tool opens after/)).toHaveCount(0)

@@ -12,7 +12,11 @@ import {
 import type { Transaction } from "@/server/audit/audit"
 import { requireEnv } from "@/server/database"
 import { sendEmail, type Transport } from "@/server/email/email"
-import { accessRow, type Access } from "@/server/permissions/matrix"
+import {
+  accessRow,
+  writingRoles,
+  type Access,
+} from "@/server/permissions/matrix"
 import { roleAllows } from "@/server/permissions/permissions"
 import { getTool } from "@/server/tools/registry"
 import type { OpenTool } from "@/server/workflow/workflow"
@@ -395,7 +399,7 @@ export async function notifyToolsOpened(
     const writers = await holdersOf(
       transaction,
       projectId,
-      rolesWith(tool.toolId, "RW")
+      writingRoles(tool.toolId).filter((role) => role !== "Client")
     )
 
     await notify(transaction, {
@@ -407,6 +411,31 @@ export async function notifyToolsOpened(
       path: toolPath(projectId, tool.toolId),
     })
   }
+}
+
+// The people who write a review, when the work it sent back has been revised
+// and locked again, so the review is open to them once more.
+export async function notifyReviewAgain(
+  transaction: Transaction,
+  actor: string,
+  record: RecordRef,
+  reason: string
+): Promise<void> {
+  const writers = await holdersOf(
+    transaction,
+    record.projectId,
+    writingRoles(record.toolId).filter((role) => role !== "Client")
+  )
+
+  await notify(transaction, {
+    personIds: others(actor, writers),
+    kind: "tool_open",
+    title: `${record.toolId} is open again`,
+    text: `${toolName(record.toolId)} on ${await projectName(transaction, record.projectId)}: ${reason}`,
+    projectId: record.projectId,
+    recordId: record.id,
+    path: toolPath(record.projectId, record.toolId),
+  })
 }
 
 // The project's PM, when a writer asks to reopen a locked record.

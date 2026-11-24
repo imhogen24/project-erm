@@ -4,7 +4,7 @@ import {
   type Role,
   type ServiceTrack,
 } from "@/db/schema"
-import { accessRow } from "@/server/permissions/matrix"
+import { accessRow, writingRoles } from "@/server/permissions/matrix"
 import { allTools } from "@/workbooks"
 import {
   DEV_LOCKED,
@@ -160,9 +160,7 @@ const CURRENT_TIERS: readonly ServiceTrack[] = ["Tier_1", "Tier_3"]
 // where the matrix names no one else. A tool that locks on submit has no
 // approver: its writer locks it.
 export function writerOf(toolId: string): Role {
-  const row = accessRow(toolId) ?? {}
-
-  return roles.find((role) => role !== "Client" && row[role] === "RW") ?? "OM"
+  return writingRoles(toolId).find((role) => role !== "Client") ?? "OM"
 }
 
 export function approverOf(toolId: string): Role {

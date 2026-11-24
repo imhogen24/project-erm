@@ -3,7 +3,12 @@ import { afterAll, beforeEach, describe, expect, it } from "vitest"
 import { roles, type Role } from "@/db/schema"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 
-import { accessRow, extraApprovers, permissionMatrix } from "./matrix"
+import {
+  accessRow,
+  extraApprovers,
+  extraWriters,
+  permissionMatrix,
+} from "./matrix"
 import {
   PermissionDeniedError,
   assertCan,
@@ -156,7 +161,15 @@ describe("every row of the matrix", () => {
         const approves =
           access !== undefined && extraApprovers.get(toolId)?.includes(role)
 
-        const want = approves ? [base[0], base[1], true] : base
+        // A role named to write a tool writes it, whatever its letter.
+        const writes =
+          access !== undefined && extraWriters.get(toolId)?.includes(role)
+
+        const want = [
+          base[0],
+          writes ? true : base[1],
+          approves ? true : base[2],
+        ]
 
         expect(
           actions.map((action) => roleAllows([role], toolId, action))

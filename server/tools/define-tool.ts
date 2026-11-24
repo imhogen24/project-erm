@@ -174,8 +174,9 @@ const columnRequired = {
     .optional(),
   startsAs: z.string().min(1).optional(),
   // Hint text in the empty cell of each fixed row, in order, such as the
-  // sheet's "Governs technical scope". Only shown; never stored.
-  placeholders: z.array(z.string().min(1)).min(1).optional(),
+  // sheet's "Governs technical scope", or of each row a table with no fixed
+  // rows starts with. An empty hint shows none. Only shown; never stored.
+  placeholders: z.array(z.string()).min(1).optional(),
 }
 
 const column = z.discriminatedUnion("type", [
@@ -352,10 +353,13 @@ const table = z
       })
     }
 
+    // A table with no fixed rows starts from rows the system gives it, so
+    // its hints are for those.
     value.columns.forEach((entry, index) => {
       if (
         entry.placeholders &&
-        entry.placeholders.length > (value.fixedRows?.length ?? 0)
+        value.fixedRows &&
+        entry.placeholders.length > value.fixedRows.length
       ) {
         context.addIssue({
           code: "custom",
@@ -509,9 +513,24 @@ const filledOnLock = z.enum(["submittedBy", "lockedAt"])
 
 export type FilledOnLock = z.output<typeof filledOnLock>
 
+// A system-filled text that says what another field's answer means, such as
+// D2.3's Next Step Directive from its status: `field` is a select of the
+// tool, and `values` gives the text for each of its options that has one.
+// Shown as the answer changes, never stored.
+const shownFrom = z.strictObject({
+  field: fieldKey,
+  values: z.record(z.string().min(1), z.string().min(1)),
+})
+
+export type ShownFrom = z.output<typeof shownFrom>
+
 const field = z
   .discriminatedUnion("type", [
-    plain.extend({ ...required, filledOnLock: filledOnLock.optional() }),
+    plain.extend({
+      ...required,
+      filledOnLock: filledOnLock.optional(),
+      shownFrom: shownFrom.optional(),
+    }),
     signature.extend(required),
     select.extend({ ...required, blockedWhile: blockedWhile.optional() }),
     checklist.extend(required),
@@ -537,6 +556,15 @@ const field = z
     (value) =>
       !(value.type === "pdfPreview" && (value.inherited || value.systemFilled)),
     { message: "A PDF preview shows a document, so it holds no value to fill" }
+  )
+  .refine(
+    (value) =>
+      !("shownFrom" in value && value.shownFrom) ||
+      (value.systemFilled === true && value.type === "text"),
+    {
+      message:
+        "A field shown from another field's answer is system-filled text",
+    }
   )
   .refine(
     (value) =>
@@ -623,6 +651,18 @@ const toolDefinition = z
         approves: fieldKey,
       })
       .optional(),
+    // A review that can send earlier work back: locking the record while the
+    // select `field` holds `is` reopens the project's record of each of
+    // `tools` (on a Tier 3 project, the tool that takes its place) as a new
+    // iteration, for whoever wrote it. When that record is locked again, this
+    // tool reopens as a new iteration too, so it is reviewed again.
+    sendsBackTo: z
+      .strictObject({
+        field: fieldKey,
+        is: z.string().min(1),
+        tools: z.array(z.string().min(1)).min(1),
+      })
+      .optional(),
     fields: z.array(field).min(1),
   })
   .refine(
@@ -652,6 +692,56 @@ const toolDefinition = z
     for (const problem of fillProblems(value.fields, value.fills ?? {})) {
       context.addIssue({ code: "custom", path: ["fills"], message: problem })
     }
+
+    const back = value.sendsBackTo
+
+    if (back) {
+      const named = value.fields.find((entry) => entry.key === back.field)
+
+      if (named?.type !== "select" || !named.options.includes(back.is)) {
+        context.addIssue({
+          code: "custom",
+          path: ["sendsBackTo"],
+          message: `${back.field} is not a select with the option "${back.is}"`,
+        })
+      }
+
+      if (back.tools.includes(value.id)) {
+        context.addIssue({
+          code: "custom",
+          path: ["sendsBackTo", "tools"],
+          message: "A tool cannot send itself back",
+        })
+      }
+    }
+
+    value.fields.forEach((entry, index) => {
+      const from = "shownFrom" in entry ? entry.shownFrom : undefined
+
+      if (!from) {
+        return
+      }
+
+      const source = value.fields.find((each) => each.key === from.field)
+
+      const strays =
+        source?.type === "select"
+          ? Object.keys(from.values).filter(
+              (option) => !source.options.includes(option)
+            )
+          : []
+
+      if (source?.type !== "select" || strays.length > 0) {
+        context.addIssue({
+          code: "custom",
+          path: ["fields", index, "shownFrom"],
+          message:
+            source?.type === "select"
+              ? `${strays.map((option) => `"${option}"`).join(", ")} is not one of ${from.field}'s options`
+              : `${from.field} is not a select of this tool`,
+        })
+      }
+    })
 
     value.submitWhen?.forEach((rule, index) => {
       const named = value.fields.find((entry) => entry.key === rule.field)

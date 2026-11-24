@@ -12,6 +12,7 @@ import {
   accessRow,
   extraApprovers,
   extraChangeRequesters,
+  extraWriters,
   type Access,
   type Action,
 } from "./matrix"
@@ -46,6 +47,10 @@ export function roleAllows(
     const access = row[role]
 
     if (action === "approve" && extraApprovers.get(toolId)?.includes(role)) {
+      return access !== undefined
+    }
+
+    if (action === "write" && extraWriters.get(toolId)?.includes(role)) {
       return access !== undefined
     }
 

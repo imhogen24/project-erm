@@ -21,7 +21,11 @@ import { INTERNAL_REVIEW, reviewValues } from "@/server/review/internal-review"
 import { RISK, riskValues } from "@/server/risk/risk"
 import { SCOPE_OF_WORK, scopeValues } from "@/server/scope/scope-of-work"
 import { T3_CONTRACT } from "@/lib/t3-contract"
+import { PM_REVIEW } from "@/lib/pm-review"
+import { shownFromValues } from "@/lib/shown-from"
+import { pmReviewValues } from "@/server/contract/pm-review"
 import { t3ContractValues } from "@/server/contract/t3-contract"
+import { tools } from "@/server/tools/registry"
 
 // The record a tool's system values are worked out for. A tool with no record
 // yet is "notStarted".
@@ -33,9 +37,27 @@ export type ShownRecord = {
 
 // What the system fills into a tool's fields, read live from the project, its
 // request and its other records, as the tool page shows it over the saved
-// answers. Empty for a tool with no such fields. `writer` is the name of the
-// person writing D1.8, shown as its author until it is submitted.
+// answers, with what each field shown from another field's answer says.
+// Empty for a tool with no such fields. `writer` is the name of the person
+// writing D1.8, shown as its author until it is submitted.
 export async function systemValuesOf(
+  database: Database,
+  projectId: string,
+  toolId: string,
+  record: ShownRecord,
+  writer?: string
+): Promise<JsonObject> {
+  const values = await workedOut(database, projectId, toolId, record, writer)
+  const tool = tools.getTool(toolId)
+
+  if (!tool) {
+    return values
+  }
+
+  return { ...values, ...shownFromValues(tool, record?.payload ?? {}) }
+}
+
+async function workedOut(
   database: Database,
   projectId: string,
   toolId: string,
@@ -102,6 +124,10 @@ export async function systemValuesOf(
 
     case T3_CONTRACT: {
       return await t3ContractValues(database, projectId, payload)
+    }
+
+    case PM_REVIEW: {
+      return await pmReviewValues(database, projectId)
     }
 
     default: {

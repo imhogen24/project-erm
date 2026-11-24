@@ -54,6 +54,7 @@ import {
 } from "./inherited"
 import { lockValues, unmetSubmitRules } from "./filled-on-lock"
 import { keepReadOnly } from "./read-only"
+import { applySendBack } from "./send-back"
 import { submittedValues } from "./submitted-values"
 import {
   nextTurn,
@@ -536,6 +537,7 @@ async function move(
 
   if (to === "locked") {
     await applyApprovedChange(transaction, actor, current)
+    await applySendBack(transaction, actor, moved!)
     await applyHardStop(transaction, actor, current)
 
     await notifyToolsOpened(

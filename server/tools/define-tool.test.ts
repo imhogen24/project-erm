@@ -938,3 +938,128 @@ describe("defineTool, signing in turn", () => {
     ).toThrow("A tool signed in turn is submitted, then approved")
   })
 })
+
+describe("defineTool, reviews that send work back", () => {
+  const review = (extra: Partial<ToolInput> = {}): ToolInput => ({
+    id: "D2.3",
+    name: "Review",
+    workbook: "wb02",
+    fields: [
+      {
+        key: "status",
+        label: "Status",
+        type: "select",
+        options: ["Approved", "Revisions Required"],
+      },
+      {
+        key: "next",
+        label: "Next Step",
+        type: "text",
+        systemFilled: true,
+        shownFrom: { field: "status", values: { Approved: "Go on" } },
+      },
+    ],
+    ...extra,
+  })
+
+  it("takes a text shown from a select's answer", () => {
+    expect(defineTool(review()).fields).toHaveLength(2)
+  })
+
+  it("refuses a shown text from a field that is not a select, or an option it lacks", () => {
+    const [status, next] = review().fields
+
+    expect(() =>
+      defineTool(
+        review({
+          fields: [
+            status!,
+            // SAFETY: each test changes options a system-filled text takes.
+            {
+              ...next!,
+              shownFrom: { field: "status", values: { Rejected: "Stop" } },
+            } as ToolInput["fields"][number],
+          ],
+        })
+      )
+    ).toThrow(/Rejected\W+ is not one of status's options/)
+    expect(() =>
+      defineTool(
+        review({
+          fields: [
+            status!,
+            // SAFETY: each test changes options a system-filled text takes.
+            {
+              ...next!,
+              shownFrom: { field: "next", values: { Approved: "Go" } },
+            } as ToolInput["fields"][number],
+          ],
+        })
+      )
+    ).toThrow("next is not a select of this tool")
+  })
+
+  it("refuses a shown text the form would write", () => {
+    const [status, next] = review().fields
+
+    expect(() =>
+      defineTool(
+        review({
+          fields: [
+            status!,
+            // SAFETY: each test changes options a system-filled text takes.
+            { ...next!, systemFilled: false } as ToolInput["fields"][number],
+          ],
+        })
+      )
+    ).toThrow("A field shown from another field's answer is system-filled text")
+  })
+
+  it("sends back on one of a select's options, never itself", () => {
+    expect(
+      defineTool(
+        review({
+          sendsBackTo: {
+            field: "status",
+            is: "Revisions Required",
+            tools: ["D2.2"],
+          },
+        })
+      ).sendsBackTo
+    ).toEqual({ field: "status", is: "Revisions Required", tools: ["D2.2"] })
+    expect(() =>
+      defineTool(
+        review({
+          sendsBackTo: { field: "status", is: "Maybe", tools: ["D2.2"] },
+        })
+      )
+    ).toThrow(/status is not a select with the option/)
+    expect(() =>
+      defineTool(
+        review({
+          sendsBackTo: { field: "status", is: "Approved", tools: ["D2.3"] },
+        })
+      )
+    ).toThrow("A tool cannot send itself back")
+  })
+
+  it("takes hints for the rows a table with no fixed rows starts with", () => {
+    expect(
+      withFields([
+        {
+          key: "rows",
+          label: "Rows",
+          type: "table",
+          columns: [
+            {
+              key: "note",
+              label: "Note",
+              type: "text",
+              placeholders: ["", "e.g. Section 2.1"],
+            },
+          ],
+        },
+      ]).fields
+    ).toHaveLength(1)
+  })
+})

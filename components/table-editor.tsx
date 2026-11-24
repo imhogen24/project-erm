@@ -13,6 +13,7 @@ import {
 import { FileCell } from "@/components/file-cell"
 import { PdfPreviewField } from "@/components/pdf-preview-field"
 import { Button } from "@/components/ui/button"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { fixedValue, newRow, rowNumber } from "@/lib/fixed-rows"
 import { previewCellKey } from "@/lib/pdf-preview"
 import { fillText, type Fills } from "@/lib/placeholders"
@@ -114,6 +115,17 @@ export function TableEditor({
   const total = field.subtotal
     ? { column: field.subtotal, amount: sumOf(rows, field.subtotal) }
     : undefined
+
+  // Picking a row lets go of any other; pressing the picked one again lets go
+  // of it, leaving nothing picked.
+  function pick(rowIndex: number, key: string, picked: boolean) {
+    onChange(
+      typed.map((row, index) => ({
+        ...row,
+        [key]: picked && index === rowIndex,
+      }))
+    )
+  }
 
   function setCell(rowIndex: number, key: string, value: RawCell) {
     onChange(
@@ -363,7 +375,26 @@ export function TableEditor({
                     className="flex min-w-0 items-start gap-2 border-0 p-0"
                   >
                     <div className="min-w-0 flex-1">
-                      {readOnly ? (
+                      {column.key === field.pickOne?.column ? (
+                        <RadioGroup
+                          value={row[column.key] === true ? "picked" : ""}
+                          onValueChange={(value) =>
+                            pick(rowIndex, column.key, value === "picked")
+                          }
+                          aria-label={`${column.label}: ${rowName(rowIndex)}`}
+                          className="flex h-12 items-center"
+                        >
+                          <RadioGroupItem
+                            id={id}
+                            value="picked"
+                            aria-label={rowName(rowIndex)}
+                            aria-invalid={message !== undefined}
+                            aria-describedby={
+                              message ? `${id}-error` : undefined
+                            }
+                          />
+                        </RadioGroup>
+                      ) : readOnly ? (
                         <FieldControl
                           cell={column}
                           id={id}
@@ -435,7 +466,8 @@ export function TableEditor({
             label={field.subtotalLabel ?? "Subtotal"}
           />
         )}
-        {!fixed && !shownOnly && (
+        {/* A table that picks one of its fixed rows holds no others. */}
+        {!fixed && !shownOnly && !field.pickOne && (
           <div role="row">
             <div role="cell" className="p-4 @xl:p-3">
               <Button

@@ -33,6 +33,7 @@ import { availableTools } from "@/server/workflow/workflow"
 
 import { d21 } from "./d2-1"
 import { d22 } from "./d2-2"
+import { t3d22a } from "./t3-d2-2a"
 
 const database = createTestDatabase()
 
@@ -41,6 +42,9 @@ registerTestTools({ wb01: ["D1.3", "D1.15", "D1.16"] })
 tools.registerTool(d21)
 
 tools.registerTool(d22)
+
+// WB02's map names the Tier 3 variant beside D2.2.
+tools.registerTool(t3d22a)
 
 // WB02 keeps its real order: D2.2 waits for D2.1.
 loadUnorderedWorkflow({ wb01: ["D1.3", "D1.15", "D1.16"] })

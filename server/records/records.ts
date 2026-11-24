@@ -29,8 +29,10 @@ import {
 import type { Transport } from "@/server/email/email"
 import {
   clearApprovalNeeded,
+  clearSignatureNeeded,
   notifyApprovalNeeded,
   notifySentBack,
+  notifySignatureNeeded,
   notifyToolsOpened,
   sendNotificationEmails,
 } from "@/server/notifications/raise"
@@ -54,8 +56,10 @@ import { lockValues, unmetSubmitRules } from "./filled-on-lock"
 import { keepReadOnly } from "./read-only"
 import { submittedValues } from "./submitted-values"
 import {
+  nextTurn,
   signatureField,
   signaturesOf,
+  turnsOf,
   unsignedFields,
   withoutSignatures,
 } from "./signatures"
@@ -461,8 +465,14 @@ async function move(
     }
   }
 
-  if (to === "approved") {
-    const unsigned = unsignedFields(current.toolId, current.payload)
+  // A tool signed in turn is approved by a signature, and locked by the
+  // last one, so the signatures after the approving one wait for the lock.
+  const signedInTurn = turnsOf(current.toolId) !== undefined
+
+  if (to === "approved" || (to === "locked" && signedInTurn)) {
+    const unsigned = unsignedFields(current.toolId, current.payload, {
+      forApproval: to === "approved",
+    })
 
     if (unsigned.length > 0) {
       throw new ValidationError(unsigned)
@@ -581,6 +591,14 @@ export async function transitionRecord(
         moved: await move(transaction, actor, approved, "locked"),
         emails: [],
       }
+    }
+
+    // A tool signed in turn asks for its first signature instead of an
+    // approval.
+    if (to === "submitted" && turnsOf(record.toolId)) {
+      await askNextSignature(transaction, actor, result)
+
+      return { moved: result, emails: [] }
     }
 
     return {
@@ -815,8 +833,81 @@ export async function submitRecord(
   return transitionRecord(database, actor, recordId, "submitted", transport)
 }
 
+// Asks whoever signs next on a record signed in turn.
+async function askNextSignature(
+  transaction: Transaction,
+  actor: string,
+  record: ToolRecord
+): Promise<void> {
+  const next = nextTurn(record.toolId, record.payload)
+
+  if (next) {
+    await notifySignatureNeeded(transaction, actor, record, {
+      label: next.label,
+      signedBy: next.signedBy ?? [],
+    })
+  }
+}
+
+// A signature signed in turn is signed once the record is submitted, only
+// when every one before it is signed. The approving one is never signed by
+// whoever submitted the record, as with Approve.
+function assertTurn(current: ToolRecord, fieldKey: string, actor: string) {
+  const turns = turnsOf(current.toolId)!
+  const next = nextTurn(current.toolId, current.payload)
+  const field = signatureField(current.toolId, fieldKey)!
+
+  if (current.state !== "submitted" && current.state !== "approved") {
+    throw new RecordNotEditableError(
+      current.state === "draft"
+        ? `${field.label} is signed once the record is submitted`
+        : `A ${current.state} record cannot be signed`
+    )
+  }
+
+  if (next?.key !== fieldKey) {
+    throw new InvalidTransitionError(
+      next
+        ? `${field.label} is signed after ${next.label}`
+        : `${field.label} is already signed`
+    )
+  }
+
+  if (fieldKey === turns.approves && current.submittedBy === actor) {
+    throw new SelfApprovalError(
+      "The person who submitted this record cannot approve it"
+    )
+  }
+}
+
+// After a signature signed in turn: the approving one approves the record,
+// the last one locks it, and otherwise whoever signs next is asked.
+async function afterTurn(
+  transaction: Transaction,
+  actor: string,
+  record: ToolRecord,
+  fieldKey: string
+): Promise<ToolRecord> {
+  await clearSignatureNeeded(transaction, record.id)
+
+  const approved =
+    fieldKey === turnsOf(record.toolId)!.approves
+      ? await move(transaction, actor, record, "approved")
+      : record
+
+  if (nextTurn(approved.toolId, approved.payload)) {
+    await askNextSignature(transaction, actor, approved)
+
+    return approved
+  }
+
+  return move(transaction, actor, approved, "locked")
+}
+
 // Writes who signed and when into a signature field of a draft or submitted
-// record. Only a person holding one of the roles the field names may sign.
+// record. Only a person holding one of the roles the field names may sign,
+// whatever access they have to the rest of the record. A tool signed in turn
+// takes its signatures after submit, one after another (assertTurn).
 export async function signField(
   database: Database,
   actor: string,
@@ -841,12 +932,22 @@ export async function signField(
     )
   }
 
+  const turns = turnsOf(record.toolId)
+  const inTurn = turns?.order.includes(fieldKey) ?? false
+
+  // The approving signature is an approval, so it needs the right to approve.
+  if (turns?.approves === fieldKey) {
+    await assertMay(database, actor, record.projectId, record.toolId, "approve")
+  }
+
   return database.transaction(async (transaction) => {
     await assertProjectActive(transaction, record.projectId)
 
     const current = await lockRecord(transaction, recordId)
 
-    if (current.state !== "draft" && current.state !== "submitted") {
+    if (inTurn) {
+      assertTurn(current, fieldKey, actor)
+    } else if (current.state !== "draft" && current.state !== "submitted") {
       throw new RecordNotEditableError(
         `A ${current.state} record cannot be signed`
       )
@@ -875,7 +976,7 @@ export async function signField(
       payloadChanges(current.payload, payload)
     )
 
-    return updated!
+    return inTurn ? afterTurn(transaction, actor, updated!, fieldKey) : updated!
   })
 }
 
@@ -891,6 +992,16 @@ export async function approveRecord(
   const record = await loadRecord(database, recordId)
 
   await assertMay(database, actor, record.projectId, record.toolId, "approve")
+
+  const turns = turnsOf(record.toolId)
+
+  if (turns) {
+    const approving = signatureField(record.toolId, turns.approves)!
+
+    throw new InvalidTransitionError(
+      `${record.toolId} is approved by signing ${approving.label}`
+    )
+  }
 
   return database.transaction(async (transaction) => {
     await assertProjectActive(transaction, record.projectId)
@@ -967,6 +1078,7 @@ export async function sendBackRecord(
     )
 
     await notifySentBack(transaction, actor, current, said)
+    await clearSignatureNeeded(transaction, recordId)
 
     return returned!
   })
@@ -1021,6 +1133,7 @@ export async function withdrawRecord(
     )
 
     await clearApprovalNeeded(transaction, recordId)
+    await clearSignatureNeeded(transaction, recordId)
 
     return returned!
   })

@@ -32,6 +32,8 @@ export const notificationKinds = [
   "comment_replied",
   // The client sent D1.1 again after a change request was approved.
   "client_changed",
+  // A record signed in turn waits for this person's signature.
+  "signature_needed",
 ] as const
 
 export type NotificationKind = (typeof notificationKinds)[number]

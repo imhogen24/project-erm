@@ -235,9 +235,53 @@ const table = z
     // What the subtotal row is called, as the sheet names it.
     subtotalLabel: z.string().min(1).optional(),
     readOnly: z.boolean().optional(),
+    // One of the fixed rows is picked: `column` is a yes/no column that holds
+    // true in exactly that row at submit, and each column `needs` names must
+    // be answered in the picked row only. The table holds its fixed rows and
+    // no others.
+    pickOne: z
+      .strictObject({
+        column: fieldKey,
+        needs: z.array(fieldKey).min(1).optional(),
+      })
+      .optional(),
   })
   .superRefine((value, context) => {
     const keys = value.columns.map((entry) => entry.key)
+
+    if (value.pickOne) {
+      const picked = value.columns.find(
+        (entry) => entry.key === value.pickOne!.column
+      )
+
+      if (picked?.type !== "boolean" || !isWritten(picked)) {
+        context.addIssue({
+          code: "custom",
+          path: ["pickOne", "column"],
+          message: "A row is picked in a yes/no column the form writes",
+        })
+      }
+
+      if (!value.fixedRows) {
+        context.addIssue({
+          code: "custom",
+          path: ["pickOne"],
+          message: "Only one of a table's fixed rows is picked",
+        })
+      }
+
+      for (const key of value.pickOne.needs ?? []) {
+        const needed = value.columns.find((entry) => entry.key === key)
+
+        if (!needed || !isWritten(needed) || needed.required) {
+          context.addIssue({
+            code: "custom",
+            path: ["pickOne", "needs"],
+            message: `${key} is not an optional column the form writes`,
+          })
+        }
+      }
+    }
 
     if (new Set(keys).size !== keys.length) {
       context.addIssue({
@@ -404,6 +448,9 @@ const table = z
     }
   })
 
+// The types whose fixed cell is a number written as text.
+export const numericTypes = ["number", "currency", "percentage"]
+
 // A fixed cell is a column the form would write, holding text it can hold.
 function fixedCellProblem(cell: Column | undefined, text: string) {
   if (!cell) {
@@ -425,9 +472,22 @@ function fixedCellProblem(cell: Column | undefined, text: string) {
       : `"${text}" is not one of the options`
   }
 
+  // An amount written as text, such as "0" for a fee that is always nothing.
+  if (numericTypes.includes(cell.type)) {
+    const value = Number(text)
+
+    if (!Number.isFinite(value) || text.trim() === "") {
+      return `"${text}" is not a number`
+    }
+
+    return cell.type === "percentage" && (value < 0 || value > 100)
+      ? `"${text}" is not a percentage from 0 to 100`
+      : undefined
+  }
+
   return cell.type === "text" || cell.type === "longText"
     ? undefined
-    : "A fixed row fixes only text or a select"
+    : "A fixed row fixes only text, a number or a select"
 }
 
 function holdsLabels(first: Column | undefined, labels: string[]) {
@@ -554,6 +614,15 @@ const toolDefinition = z
         })
       )
       .optional(),
+    // Signature fields signed one after another once the record is
+    // submitted, in `order`. Signing `approves` is the approval, so the tool
+    // has no Approve button, and signing the last one locks the record.
+    signInTurn: z
+      .strictObject({
+        order: z.array(fieldKey).min(1),
+        approves: fieldKey,
+      })
+      .optional(),
     fields: z.array(field).min(1),
   })
   .refine(
@@ -572,6 +641,14 @@ const toolDefinition = z
     message: "A tool without Submit cannot lock on submit",
   })
   .superRefine((value, context) => {
+    for (const problem of signInTurnProblems(value)) {
+      context.addIssue({
+        code: "custom",
+        path: ["signInTurn"],
+        message: problem,
+      })
+    }
+
     for (const problem of fillProblems(value.fields, value.fills ?? {})) {
       context.addIssue({ code: "custom", path: ["fills"], message: problem })
     }
@@ -612,6 +689,43 @@ const toolDefinition = z
 type FieldOutput = z.output<typeof field>
 
 type Fills = Record<string, "system" | { field: string }>
+
+// Each signature signed in turn is a signature field of the tool, named once,
+// and the approving one is among them. Signing in turn follows a submit and
+// an approval, so the tool has both.
+function signInTurnProblems(value: {
+  fields: FieldOutput[]
+  signInTurn?: { order: string[]; approves: string }
+  locksOnSubmit?: boolean
+  withoutSubmit?: boolean
+}) {
+  const turns = value.signInTurn
+
+  if (!turns) {
+    return []
+  }
+
+  const strays = turns.order.flatMap((key) =>
+    value.fields.some(
+      (entry) => entry.key === key && entry.type === "signature"
+    )
+      ? []
+      : [`${key} is not a signature field`]
+  )
+
+  return [
+    ...strays,
+    ...(new Set(turns.order).size === turns.order.length
+      ? []
+      : ["A signature is signed in turn once"]),
+    ...(turns.order.includes(turns.approves)
+      ? []
+      : [`${turns.approves} is not one of the signatures signed in turn`]),
+    ...(value.locksOnSubmit || value.withoutSubmit
+      ? ["A tool signed in turn is submitted, then approved by a signature"]
+      : []),
+  ]
+}
 
 // Every `[Name]` in fixed text must say where it is filled in from, and a fill
 // from a field must name a field of the tool that holds one value.

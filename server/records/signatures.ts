@@ -45,12 +45,44 @@ export function withoutSignatures(
   )
 }
 
-// One error for each signature field that is not signed yet.
-export function unsignedFields(
+export function isSigned(payload: JsonObject, key: string) {
+  return signed.safeParse(payload[key]).success
+}
+
+// The signatures the tool collects one after another once submitted, and the
+// one that approves it. Undefined for a tool signed any time.
+export function turnsOf(toolId: string) {
+  return tools.getTool(toolId)?.signInTurn
+}
+
+// The signature whose turn it is: the first one signed in turn that is not
+// signed yet. Undefined once all are, or for a tool signed any time.
+export function nextTurn(
   toolId: string,
   payload: JsonObject
+): SignatureField | undefined {
+  const key = turnsOf(toolId)?.order.find((each) => !isSigned(payload, each))
+
+  return key === undefined ? undefined : signatureField(toolId, key)
+}
+
+// One error for each signature field that is not signed yet. `forApproval`
+// leaves out the signatures signed in turn after the approving one, since
+// they are signed once it is approved.
+export function unsignedFields(
+  toolId: string,
+  payload: JsonObject,
+  options: { forApproval?: boolean } = {}
 ): FieldError[] {
+  const turns = turnsOf(toolId)
+
+  const later =
+    options.forApproval && turns
+      ? turns.order.slice(turns.order.indexOf(turns.approves) + 1)
+      : []
+
   return signatureFields(toolId)
-    .filter((field) => !signed.safeParse(payload[field.key]).success)
+    .filter((field) => !later.includes(field.key))
+    .filter((field) => !isSigned(payload, field.key))
     .map((field) => ({ field: field.key, message: "Must be signed" }))
 }

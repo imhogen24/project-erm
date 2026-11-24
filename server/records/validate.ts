@@ -2,11 +2,12 @@ import { z } from "zod"
 
 import type { JsonObject } from "@/db/schema"
 import { fileIdOf } from "@/lib/file-reference"
-import type {
-  Column,
-  Field,
-  TableField,
-  ToolDefinition,
+import {
+  numericTypes,
+  type Column,
+  type Field,
+  type TableField,
+  type ToolDefinition,
 } from "@/server/tools/define-tool"
 import { tools } from "@/server/tools/registry"
 
@@ -155,8 +156,26 @@ function tableSchema(table: TableField) {
           .map((column) => column.key)
       )
 
+      if (table.pickOne && rows.length !== fixed.length) {
+        context.addIssue({
+          code: "custom",
+          message: `Must hold only its ${fixed.length} fixed rows`,
+        })
+
+        return
+      }
+
+      // A fixed amount, such as a fee of "0", is saved as a number.
+      const numeric = new Set(
+        table.columns
+          .filter((column) => numericTypes.includes(column.type))
+          .map((column) => column.key)
+      )
+
       fixed.forEach((cells, index) => {
-        for (const [key, value] of Object.entries(cells)) {
+        for (const [key, text] of Object.entries(cells)) {
+          const value = numeric.has(key) ? Number(text) : text
+
           if (!shownOnly.has(key) && rows[index]![key] !== value) {
             context.addIssue({
               code: "custom",
@@ -255,7 +274,10 @@ const blank = z.union([
   z.array(z.unknown()).length(0),
 ])
 
-function isMissing(field: Field, value: JsonObject[string] | undefined) {
+function isMissing(
+  field: Field | Column,
+  value: JsonObject[string] | undefined
+) {
   if (blank.safeParse(value).success) {
     return true
   }
@@ -289,6 +311,45 @@ function unansweredCells(table: TableField, value: JsonObject[string]) {
         message: "Required",
       }))
   )
+}
+
+// A table's rows as saved, each a row of JSON cells, or none.
+const jsonRows = z.array(z.record(z.string(), z.json())).catch([])
+
+function objectRows(value: JsonObject[string] | undefined) {
+  return jsonRows.parse(value)
+}
+
+// At submit, a table that picks one of its rows has exactly one picked, with
+// the columns the pick needs answered in that row.
+function unpicked(table: TableField, value: JsonObject[string]): FieldError[] {
+  const rule = table.pickOne
+
+  if (!rule) {
+    return []
+  }
+
+  const rows = objectRows(value)
+
+  const picked = rows.flatMap((row, index) =>
+    row[rule.column] === true ? [index] : []
+  )
+
+  if (picked.length !== 1) {
+    return [{ field: table.key, message: "Pick one option" }]
+  }
+
+  const row = rows[picked[0]!]!
+
+  return table.columns
+    .filter((column) => rule.needs?.includes(column.key))
+    .filter((column) => isMissing(column, row[column.key]))
+    .map(({ key }) => ({
+      field: table.key,
+      row: picked[0]!,
+      column: key,
+      message: "Required for the option picked",
+    }))
 }
 
 // A select option that is refused while some fixed rows of a table hold a
@@ -367,7 +428,10 @@ export function validateRecord(
     if (field.required && isMissing(field, payload[field.key])) {
       errors.push({ field: field.key, message: "Required" })
     } else if (field.type === "table") {
-      errors.push(...unansweredCells(field, payload[field.key]))
+      errors.push(
+        ...unansweredCells(field, payload[field.key]),
+        ...unpicked(field, payload[field.key])
+      )
     }
   }
 

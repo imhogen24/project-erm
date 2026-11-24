@@ -12,6 +12,7 @@ import { requireSession } from "@/lib/session"
 import { getDatabase } from "@/server/database"
 import { isClientAccount } from "@/server/intake/client-requests"
 import { listProjectsFor } from "@/server/projects/projects"
+import { signaturesWaitingFor } from "@/server/records/waiting-signatures"
 
 // Every box is a whole number of grid squares: the title is 2 squares tall and
 // each project is 4 wide and 2 tall, sharing its lines with its neighbours.
@@ -20,10 +21,11 @@ const square = "grid-square relative isolate bg-background"
 export default async function Page() {
   const session = await requireSession()
 
-  const [projects, canInvite, client] = await Promise.all([
+  const [projects, canInvite, client, waiting] = await Promise.all([
     listProjectsFor(getDatabase(), session.user.id),
     isItAdmin(session.user.id),
     isClientAccount(getDatabase(), session.user.id),
+    signaturesWaitingFor(getDatabase(), session.user.id),
   ])
 
   // A client starts their own projects from the last square of the grid.
@@ -87,6 +89,13 @@ export default async function Page() {
                               Your roles: {project.roles.join(", ")}
                             </p>
                           </div>
+                          {/* A tool waiting for this person to sign it, such
+                              as the client's signature on T3.D2.2a. */}
+                          {waiting.get(project.id)?.map((toolId) => (
+                            <Badge key={toolId} className="whitespace-normal">
+                              {toolId} is waiting for your signature
+                            </Badge>
+                          ))}
                         </CardHeader>
                         <div className="flex justify-end px-6 pb-6 text-muted-foreground transition-colors group-hover:text-primary">
                           <ArrowUpRightIcon className="size-5" />

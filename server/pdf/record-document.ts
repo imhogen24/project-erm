@@ -155,8 +155,9 @@ export function textOf(
     }
 
     // The PDF it shows is not drawn into this one, only named.
+    // A table's preview column names its source row by row, in cellText.
     case "pdfPreview": {
-      return sourceName(cell.source, track)
+      return "source" in cell ? sourceName(cell.source, track) : EMPTY
     }
 
     case "table": {
@@ -216,7 +217,8 @@ function cellText(
   row: Row,
   index: number,
   names: ReadonlyMap<string, string>,
-  fills: Fills
+  fills: Fills,
+  track?: ServiceTrack
 ) {
   const numbered = rowNumber(column, index)
 
@@ -225,6 +227,11 @@ function cellText(
   }
 
   const fixed = fixedValue(field, index, column.key)
+
+  // A row's PDF preview is named, as a preview field is.
+  if (column.type === "pdfPreview") {
+    return fixed === undefined ? EMPTY : sourceName({ tool: fixed }, track)
+  }
 
   return fixed === undefined
     ? textOf(column, row[column.key], names)
@@ -235,7 +242,8 @@ function tableSection(
   field: TableField,
   answer: Answer,
   names: ReadonlyMap<string, string>,
-  fills: Fills
+  fills: Fills,
+  track?: ServiceTrack
 ): Section {
   const rows = rowsOf(field, answer)
 
@@ -245,7 +253,7 @@ function tableSection(
     columns: field.columns.map((column) => column.label),
     rows: rows.map((each, index) =>
       field.columns.map((column) =>
-        cellText(field, column, each, index, names, fills)
+        cellText(field, column, each, index, names, fills, track)
       )
     ),
   }
@@ -273,11 +281,12 @@ function groupSection(
   field: Field,
   answer: Answer,
   names: ReadonlyMap<string, string>,
-  fills: Fills
+  fills: Fills,
+  track?: ServiceTrack
 ): Section {
   switch (field.type) {
     case "table": {
-      return tableSection(field, answer, names, fills)
+      return tableSection(field, answer, names, fills, track)
     }
 
     case "checklist": {
@@ -334,7 +343,7 @@ export function sectionsOf(
 
   return parts.map((part, index): Section => {
     if (!("fields" in part)) {
-      return groupSection(part, values[part.key], names, fills)
+      return groupSection(part, values[part.key], names, fills, track)
     }
 
     return {

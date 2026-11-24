@@ -88,6 +88,8 @@ import { handoffStart } from "@/server/handoff/handoff"
 import { briefStart, quoteStart } from "@/server/brief/project-brief"
 import { STANDARD_CONTRACT } from "@/lib/standard-contract"
 import { contractStart } from "@/server/contract/standard-contract"
+import { INITIAL_DRAFT } from "@/lib/initial-draft"
+import { draftStart } from "@/server/contract/initial-draft"
 import { systemFillsOf } from "@/server/records/fills"
 import { previewStates } from "@/server/pdf/previews"
 import { getRecordScreen } from "@/server/records/screen"
@@ -222,6 +224,11 @@ async function startOf(toolId: string, projectId: string): Promise<FormValues> {
     case STANDARD_CONTRACT: {
       // SAFETY: the start is built for this tool's own fields.
       return (await contractStart(getDatabase(), projectId)) as FormValues
+    }
+
+    case INITIAL_DRAFT: {
+      // SAFETY: the start is built for this tool's own fields.
+      return (await draftStart(getDatabase(), projectId)) as FormValues
     }
 
     default: {
@@ -493,7 +500,8 @@ export default async function Page({
   // D1.12: the critical risks from D1.11's register. D1.14: 4.0 from D1.13's
   // deliverables. D1.15: from D1.13 and D1.14. T3.D1.15a: from the standard
   // deliverables. D1.16: the terms, directives and checklist from the brief
-  // and the sheet. D2.1: today, the project's PM, Ghana and GHS.
+  // and the sheet. D2.1: today, the project's PM, Ghana and GHS. D2.2: the
+  // client's legal name and D1.15's figures.
   if (!view.record && view.can.write) {
     formValues = {
       ...(await startOf(toolId, projectId)),

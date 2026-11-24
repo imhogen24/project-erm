@@ -6,10 +6,17 @@ export type PreviewState =
   | { status: "notStarted"; name: string }
   | { status: "noAccess"; name: string }
 
-// Each PDF preview field of a tool, by its key.
+// Each PDF preview of a tool: a field by its key, and a table cell by
+// `previewCellKey`.
 export type PreviewStates = Record<string, PreviewState>
 
 export const previewNotes = {
   notStarted: "Not started",
   noAccess: "No access",
 } as const
+
+// The key of a table cell's PDF preview among a tool's previews, such as
+// "coreVariables.0.source". A field key holds no dot, so the two never meet.
+export function previewCellKey(table: string, row: number, column: string) {
+  return `${table}.${row}.${column}`
+}

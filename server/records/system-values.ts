@@ -2,9 +2,11 @@ import type { Database } from "@/db"
 import type { JsonObject, RecordState } from "@/db/schema"
 import { COST_ESTIMATION } from "@/lib/cost-estimation"
 import { HANDOFF } from "@/lib/handoff"
+import { INITIAL_DRAFT } from "@/lib/initial-draft"
 import { PROJECT_BRIEF, T3_QUOTE } from "@/lib/project-brief"
 import { briefValues, quoteValues } from "@/server/brief/project-brief"
 import { CAPABILITY, capabilityValues } from "@/server/capability/capability"
+import { draftValues } from "@/server/contract/initial-draft"
 import { costValues } from "@/server/cost/cost-estimation"
 import {
   FEASIBILITY,
@@ -90,6 +92,10 @@ export async function systemValuesOf(
 
     case HANDOFF: {
       return await handoffValues(database, projectId)
+    }
+
+    case INITIAL_DRAFT: {
+      return await draftValues(database, projectId)
     }
 
     default: {

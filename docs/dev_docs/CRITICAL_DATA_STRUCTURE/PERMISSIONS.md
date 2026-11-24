@@ -25,8 +25,8 @@ Agents: **Client · OM** (Onboarding Manager) **· PM** (Project Manager) **· L
 | D1.12 | Feasibility Report | RO | RO | RA | RW | - | - | - | - | RO | - | - | - | - | RO | - | - | RO | RO | - |
 | D1.13 | Draft Scope of Work | RO | RO | RA | RW | - | - | RO | - | - | - | - | - | - | - | - | - | RO | RO | - |
 | D1.14 | Cost Estimation Sheet | - | RO | RA | RW | - | - | RO | - | - | - | - | - | - | - | - | - | RO | RO | - |
-| D1.15 | Project Brief & Budget | RO | RO | RA | RW | - | - | RO | - | - | - | - | - | - | - | - | - | RO | RO | - |
-| D1.16 | Handoff Meeting Minutes | - | RO | RA | RW | - | - | - | - | RO | - | - | - | - | - | - | - | - | RO | - |
+| D1.15 | Project Brief & Budget | RO | RO | RA | RW | - | - | RO | RO | - | - | - | - | - | - | - | - | RO | RO | - |
+| D1.16 | Handoff Meeting Minutes | - | RO | RA | RW | - | - | - | RO | RO | - | - | - | - | - | - | - | - | RO | - |
 
 ---
 

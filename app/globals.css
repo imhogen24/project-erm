@@ -590,6 +590,8 @@
     font-size: 1rem;
     color: var(--foreground);
     overflow-wrap: anywhere;
+    /* A sent script keeps its paragraphs. */
+    white-space: pre-line;
   }
 
   .system-value[data-empty="true"] {

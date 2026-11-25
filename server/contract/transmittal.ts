@@ -65,7 +65,8 @@ function savedOf(payload: JsonObject) {
   return saved.parse(payload)
 }
 
-async function namesOf(database: Reader, projectId: string) {
+// The project's name and the client's, as the scripts name them.
+export async function namesOf(database: Reader, projectId: string) {
   const [project] = await database
     .select({ name: projects.name })
     .from(projects)

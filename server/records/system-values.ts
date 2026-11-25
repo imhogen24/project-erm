@@ -32,6 +32,8 @@ import { BASELINE } from "@/lib/baseline"
 import { baselineValues } from "@/server/contract/baseline"
 import { TRANSMITTAL } from "@/lib/transmittal"
 import { transmittalValues } from "@/server/contract/transmittal"
+import { NEGOTIATION_INVITE } from "@/lib/negotiation-invite"
+import { negotiationInviteValues } from "@/server/contract/negotiation-invite"
 import { t3ContractValues } from "@/server/contract/t3-contract"
 import { tools } from "@/server/tools/registry"
 
@@ -152,6 +154,10 @@ async function workedOut(
 
     case TRANSMITTAL: {
       return await transmittalValues(database, projectId, payload)
+    }
+
+    case NEGOTIATION_INVITE: {
+      return await negotiationInviteValues(database, projectId, payload)
     }
 
     default: {

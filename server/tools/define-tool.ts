@@ -44,6 +44,14 @@ const cellBase = {
   // in when the email is sent". Only shown.
   systemNote: z.string().min(1).optional(),
   section: z.string().min(1).optional(),
+  // IMHOGEN's own: the client never gets the field's value, from the server,
+  // the form or the PDF, such as the hard limits kept in view before a
+  // negotiation. A table cell ignores it.
+  internalOnly: z.boolean().optional(),
+  // Kept by the system for its own steps, such as which version of an invite
+  // went, and never shown in the form or the PDF. Only a system-filled field
+  // is kept this way. A table cell ignores it.
+  hidden: z.boolean().optional(),
 }
 
 const distinctTexts = z
@@ -554,6 +562,10 @@ const field = z
   .refine((value) => !(value.systemFilled && value.required), {
     message:
       "A system-filled field is filled in by the system, so it is never required",
+  })
+  .refine((value) => !value.hidden || value.systemFilled === true, {
+    message:
+      "Only a system-filled field is hidden: anything else is the person's to fill in",
   })
   .refine(
     (value) =>

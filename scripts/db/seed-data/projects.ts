@@ -366,11 +366,27 @@ export const stageProjects: readonly SeedProject[] = [
   ),
 ]
 
+// A Tier 1 project whose client accepted the draft contract as it is in
+// D2.7, so D2.8, the negotiation meeting invite, never opens.
+export const ACCEPTED_AS_IS_PROJECT = `${DEV_PROJECT}D2.7 Accepted as-is (Tier 1)`
+
+const acceptedAsIs = tier1Stage(
+  ACCEPTED_AS_IS_PROJECT,
+  "active",
+  "2026-09-14T09:00:00Z",
+  "Accra",
+  client,
+  "everyone",
+  "Small rice mill with destoner",
+  "Mill 1 tonne of paddy an hour with a destoner and polisher."
+)
+
 export const projects: readonly SeedProject[] = [
   ...toolProjects.map((each) => each.project),
   ...testProjects.map((each) => each.project),
   needsTeam,
   ...stageProjects,
+  acceptedAsIs,
 ]
 
 export function seedProjectNamed(name: string) {

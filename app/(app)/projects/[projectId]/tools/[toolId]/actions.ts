@@ -14,6 +14,10 @@ import {
   RetryNotAllowedError,
   retryAcknowledgement,
 } from "@/server/acknowledgement/delivery"
+import {
+  InviteNotReadyError,
+  sendNegotiationInvite,
+} from "@/server/contract/negotiation-invite"
 import { sendTransmittal } from "@/server/contract/transmittal"
 import { getDatabase } from "@/server/database"
 import { resubmitClientRequest } from "@/server/intake/client-requests"
@@ -358,6 +362,37 @@ export async function sendTransmittalAction(values: {
       if (
         error instanceof SendNotReadyError ||
         error instanceof EmailRefusedError
+      ) {
+        return { status: "error", message: error.message }
+      }
+
+      throw error
+    }
+  })
+}
+
+// The CA's Send calendar invite on D2.8: the negotiation meeting to the
+// client. What stops it comes back in words for the button.
+export async function sendNegotiationInviteAction(values: {
+  recordId: string
+}): Promise<RecordResult> {
+  const parsed = recordInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Check the form and try again." }
+  }
+
+  const input = parsed.data
+
+  return attempt(async (actor) => {
+    try {
+      return done(
+        await sendNegotiationInvite(getDatabase(), actor, input.recordId)
+      )
+    } catch (error) {
+      if (
+        error instanceof InviteNotReadyError ||
+        error instanceof InviteRefusedError
       ) {
         return { status: "error", message: error.message }
       }

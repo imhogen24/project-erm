@@ -103,6 +103,17 @@ import {
   missingToSend as transmittalMissing,
   transmittalStart,
 } from "@/server/contract/transmittal"
+import { NEGOTIATION_INVITE } from "@/lib/negotiation-invite"
+import {
+  missingToInvite as negotiationMissing,
+  negotiationInviteStart,
+} from "@/server/contract/negotiation-invite"
+import { clientAttendees as inviteesFromClient } from "@/server/meetings/calendar-invite"
+import {
+  readsAsClient,
+  toolAsShown,
+  withoutInternalValues,
+} from "@/server/records/shown-fields"
 import { systemFillsOf } from "@/server/records/fills"
 import { previewStates } from "@/server/pdf/previews"
 import { getRecordScreen } from "@/server/records/screen"
@@ -127,6 +138,7 @@ import {
   resubmitClientRequestAction,
   sendAcknowledgementAction,
   sendTransmittalAction,
+  sendNegotiationInviteAction,
   retryAcknowledgementAction,
 } from "./actions"
 import { requestChangeAction } from "../../actions"
@@ -270,6 +282,13 @@ async function startOf(toolId: string, projectId: string): Promise<FormValues> {
       return (await transmittalStart(getDatabase(), projectId)) as FormValues
     }
 
+    case NEGOTIATION_INVITE: {
+      const start = await negotiationInviteStart(getDatabase(), projectId)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
     default: {
       return {}
     }
@@ -403,7 +422,12 @@ export default async function Page({
   let send:
     | {
         missing: string[]
-        run: typeof sendAcknowledgementAction | typeof sendTransmittalAction
+        run:
+          | typeof sendAcknowledgementAction
+          | typeof sendTransmittalAction
+          | typeof sendNegotiationInviteAction
+        label?: string
+        done?: string
       }
     | undefined
 
@@ -500,6 +524,29 @@ export default async function Page({
         ? transmittalMissing(sentTo, view.record.payload)
         : ["choose whether to follow up after 3 days"],
       run: sendTransmittalAction,
+    }
+  }
+
+  // D2.8: the CA sends the meeting's calendar invite while D2.8 is a draft,
+  // and again after changing 1.0, which updates the same meeting.
+  if (
+    toolId === NEGOTIATION_INVITE &&
+    view.project.status === "active" &&
+    view.can.write &&
+    (view.state === "draft" || view.state === "notStarted")
+  ) {
+    const hasClient =
+      (await inviteesFromClient(getDatabase(), projectId)).length > 0
+
+    send = {
+      missing: negotiationMissing(
+        view.record?.payload ?? {},
+        new Date(),
+        hasClient
+      ),
+      run: sendNegotiationInviteAction,
+      label: "Send calendar invite",
+      done: "Invite sent.",
     }
   }
 
@@ -600,6 +647,22 @@ export default async function Page({
   )) as FormValues
 
   formValues = { ...formValues, ...system }
+
+  // Never the fields the system keeps for its own steps, and for the client,
+  // none of IMHOGEN's own fields, such as D2.8's hard limits. The server
+  // already leaves their values out of what the client reads.
+  const asClient = await readsAsClient(
+    getDatabase(),
+    session.user.id,
+    projectId
+  )
+
+  sheetTool = toolAsShown(sheetTool, { client: asClient })
+
+  if (asClient) {
+    // SAFETY: only keys are taken out, so each value keeps its type.
+    formValues = withoutInternalValues(toolId, formValues) as FormValues
+  }
 
   // The [bracketed] names in fixed text the system fills, such as D2.1's
   // client name and total, read live and never stored.

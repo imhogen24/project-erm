@@ -64,6 +64,10 @@ type Props = {
   send?: {
     missing: string[]
     run: (values: { recordId: string }) => Promise<Result>
+    // What the button says, such as "Send calendar invite", and what it says
+    // once done. "Send" and "Sent." when not given.
+    label?: string
+    done?: string
   }
   // Given to whoever may approve: returns the record to its writer, saying
   // why.
@@ -226,15 +230,15 @@ export function RecordForm({
                   disabled={pending || send.missing.length > 0 || !recordId}
                   onClick={() => {
                     if (recordId) {
-                      run(() => send.run({ recordId }), "Sent.")
+                      run(() => send.run({ recordId }), send.done ?? "Sent.")
                     }
                   }}
                 >
-                  Send
+                  {send.label ?? "Send"}
                 </ActionButton>
                 {send.missing.length > 0 && (
                   <p className="text-sm text-muted-foreground @md:text-right">
-                    Send needs: {send.missing.join("; ")}.
+                    {send.label ?? "Send"} needs: {send.missing.join("; ")}.
                   </p>
                 )}
               </div>

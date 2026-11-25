@@ -24,6 +24,7 @@ import {
 import { withSignerNames } from "@/server/records/screen"
 import { fillsOf } from "@/server/records/fills"
 import { systemValuesOf } from "@/server/records/system-values"
+import { readsAsClient, toolAsShown } from "@/server/records/shown-fields"
 import { tools } from "@/server/tools/registry"
 
 import {
@@ -320,15 +321,16 @@ function safeName(name: string) {
 
 export type RecordPdf = { fileName: string; content: Buffer }
 
-// One tool record as a PDF, for this person: the fields they see on the tool
-// page and nothing else, with the record's document control at the top. A
-// record they may not read, a void record or an unknown tool is the same
-// RecordNotFoundError, or the PermissionDeniedError of `getRecord`.
-export async function recordPdf(
+// What one tool record's PDF holds for this person, and its file's name: the
+// fields they see on the tool page and nothing else, with the record's
+// document control at the top. A record they may not read, a void record or
+// an unknown tool is the same RecordNotFoundError, or the
+// PermissionDeniedError of `getRecord`.
+export async function recordContent(
   database: Database,
   personId: string,
   recordId: string
-): Promise<RecordPdf> {
+): Promise<{ fileName: string; content: Content }> {
   const record = await getRecord(database, personId, recordId)
   const tool = tools.getTool(record.toolId)
 
@@ -344,6 +346,7 @@ export async function recordPdf(
   const control = await getDocumentControl(database, personId, recordId)
 
   const title = `${tool.id} ${tool.name}`
+  const fileName = `${safeName(`${title} - ${project!.name}`)}.pdf`
 
   const base = {
     title,
@@ -356,16 +359,12 @@ export async function recordPdf(
   // until then, so the client's PDF says so and holds none of them.
   if (await hiddenFromClient(database, personId, record)) {
     return {
-      fileName: `${safeName(`${title} - ${project!.name}`)}.pdf`,
-      content: await renderToBuffer(
-        <RecordDocument
-          content={{
-            ...base,
-            sections: [],
-            note: "IMHOGEN shares this with you once it is approved.",
-          }}
-        />
-      ),
+      fileName,
+      content: {
+        ...base,
+        sections: [],
+        note: "IMHOGEN shares this with you once it is approved.",
+      },
     }
   }
 
@@ -397,21 +396,39 @@ export async function recordPdf(
         ).map((file) => [file.id, file.name])
   )
 
+  // Never the fields the system keeps for its own steps, and for the client,
+  // none of IMHOGEN's own fields, such as D2.8's hard limits.
+  const client = await readsAsClient(database, personId, record.projectId)
+
   return {
-    fileName: `${safeName(`${title} - ${project!.name}`)}.pdf`,
-    content: await renderToBuffer(
-      <RecordDocument
-        content={{
-          ...base,
-          sections: sectionsOf(
-            tool,
-            values,
-            names,
-            project!.track,
-            await fillsOf(database, record.projectId, tool.id, values)
-          ),
-        }}
-      />
-    ),
+    fileName,
+    content: {
+      ...base,
+      sections: sectionsOf(
+        toolAsShown(tool, { client }),
+        values,
+        names,
+        project!.track,
+        await fillsOf(database, record.projectId, tool.id, values)
+      ),
+    },
+  }
+}
+
+// One tool record as a PDF, for this person (see `recordContent`).
+export async function recordPdf(
+  database: Database,
+  personId: string,
+  recordId: string
+): Promise<RecordPdf> {
+  const { fileName, content } = await recordContent(
+    database,
+    personId,
+    recordId
+  )
+
+  return {
+    fileName,
+    content: await renderToBuffer(<RecordDocument content={content} />),
   }
 }

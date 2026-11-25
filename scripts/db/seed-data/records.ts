@@ -19,6 +19,11 @@ import {
   phases,
 } from "@/lib/initial-draft"
 import { ipOptions } from "@/lib/t3-contract"
+import {
+  APPROVED_FOR_CLIENT,
+  macroRisks,
+  signOffCheckpoints,
+} from "@/lib/executive-review"
 import { deliverableCategories, projectMilestones } from "@/lib/pm-review"
 import {
   OVERHEAD_MET,
@@ -42,7 +47,9 @@ import {
   currentToolFor,
   NEEDS_TEAM,
   requestIdOf,
+  routeOf,
   seedProjectNamed,
+  testProjects,
   toolProjectName,
   toolProjects,
   type SeedProject,
@@ -55,7 +62,8 @@ import {
 // The projects for the tool being built (CURRENT_TOOL in projects.ts) have
 // every tool before it locked, and the tool itself not started, submitted for
 // approval, or approved. The Every Tool Locked projects have every tool built
-// locked, and the Every Tool Unlocked ones only the client's web form.
+// locked, and the Every Tool Unlocked ones only the client's web form. Each
+// Test project has every tool before its own locked, so its tool is open.
 
 export type SeedState = "draft" | "submitted" | "locked"
 
@@ -882,7 +890,7 @@ function stageD23() {
 }
 
 // The FO's review of the draft, approved, signed and submitted, which locked
-// it, so D2.5 is open for the Head of R&D / Ops. Row 2.2 holds D1.14's
+// it, so D2.5 follows for the Head of R&D / Ops. Row 2.2 holds D1.14's
 // answer, filled in each time it is shown.
 function stageD24() {
   return payloadOf({
@@ -907,6 +915,29 @@ function stageD24() {
     foSignature: {
       signedBy: "role:FO",
       signedAt: "2026-11-04T10:00:00.000Z",
+    },
+  })
+}
+
+// The Head of R&D / Ops's review, approved for client transmission, signed
+// and submitted, which locked it, so D2.6 is open for the CA.
+function stageD25() {
+  return payloadOf({
+    signOffVerification: signOffCheckpoints.map((checkpoint) => ({
+      checkpoint,
+      status: "Verified",
+    })),
+    riskAssessment: macroRisks.map((risk) => ({
+      ...risk,
+      status: "Yes",
+    })),
+    strategicAlignment: "Yes",
+    justification: "Establishes a foothold in agricultural processing.",
+    executiveDecision: APPROVED_FOR_CLIENT,
+    signOffDate: "2026-11-06",
+    heSignature: {
+      signedBy: "role:HE",
+      signedAt: "2026-11-06T10:00:00.000Z",
     },
   })
 }
@@ -946,6 +977,7 @@ function tier1Records(name: string): SeedRecord[] {
     { toolId: "D2.2", state: "locked", day: 31, payload: stageD22() },
     { toolId: "D2.3", state: "locked", day: 33, payload: stageD23() },
     { toolId: "D2.4", state: "locked", day: 35, payload: stageD24() },
+    { toolId: "D2.5", state: "locked", day: 37, payload: stageD25() },
   ]
 }
 
@@ -986,6 +1018,7 @@ function tier3Records(name: string): SeedRecord[] {
     { toolId: "T3.D2.2a", state: "locked", day: 28, payload: stageT3D22a() },
     { toolId: "D2.3", state: "locked", day: 30, payload: stageD23() },
     { toolId: "D2.4", state: "locked", day: 32, payload: stageD24() },
+    { toolId: "D2.5", state: "locked", day: 34, payload: stageD25() },
   ]
 }
 
@@ -1045,9 +1078,27 @@ function toolRecords(project: SeedProject, stage: ToolStage): SeedRecord[] {
   ]
 }
 
+// A test project's records: the sample answers of every tool before its own,
+// all locked, so its tool is open and starts from them.
+function testRecords(project: SeedProject, toolId: string): SeedRecord[] {
+  const route = routeOf(project.serviceTrack)
+  const at = route.indexOf(toolId)
+
+  const all =
+    project.serviceTrack === "Tier_1"
+      ? tier1Records(project.name)
+      : tier3Records(project.name)
+
+  return all.filter((record) => route.indexOf(record.toolId) < at)
+}
+
 export const projectRecords = new Map<string, SeedRecord[]>([
   ...toolProjects.map(
     ({ project, stage }) => [project.name, toolRecords(project, stage)] as const
+  ),
+  ...testProjects.map(
+    ({ project, toolId }) =>
+      [project.name, testRecords(project, toolId)] as const
   ),
   [NEEDS_TEAM, [{ ...unlocked(NEEDS_TEAM)[0]!, state: "locked" }]],
   [`${DEV_LOCKED} (Tier 1)`, tier1Records(`${DEV_LOCKED} (Tier 1)`)],

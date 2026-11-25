@@ -89,7 +89,7 @@ ${clientTable()}
 
 ## Projects
 
-Everyone above is on every project but the one waiting for a team, so each account sees the same projects from its own role's side. The projects named after a tool are for the tool being built: Fill in has it open and empty for the role that writes it, Approve has it submitted for the role that approves it, and Approved has it locked for everyone to read.
+Everyone above is on every project but the one waiting for a team, so each account sees the same projects from its own role's side. The projects named after a tool are for the tool being built: Fill in has it open and empty for the role that writes it, Approve has it submitted for the role that approves it, and Approved has it locked for everyone to read. Each \`Dev: Test\` project is for testing one tool: every tool before it is locked with sample answers, and the tool is open and empty, starting from those answers as a real project would. Run \`bun run db:reset\` to put every project back as seeded.
 
 ${projectList()}
 

@@ -96,6 +96,8 @@ import { FINANCE_REVIEW } from "@/lib/finance-review"
 import { financeReviewStart } from "@/server/contract/finance-review"
 import { EXECUTIVE_REVIEW } from "@/lib/executive-review"
 import { executiveReviewStart } from "@/server/contract/executive-review"
+import { BASELINE } from "@/lib/baseline"
+import { baselineStart } from "@/server/contract/baseline"
 import { systemFillsOf } from "@/server/records/fills"
 import { previewStates } from "@/server/pdf/previews"
 import { getRecordScreen } from "@/server/records/screen"
@@ -250,6 +252,11 @@ async function startOf(toolId: string, projectId: string): Promise<FormValues> {
     case EXECUTIVE_REVIEW: {
       // SAFETY: the start is built for this tool's own fields.
       return executiveReviewStart() as FormValues
+    }
+
+    case BASELINE: {
+      // SAFETY: the start is built for this tool's own fields.
+      return (await baselineStart(getDatabase(), projectId)) as FormValues
     }
 
     default: {
@@ -524,6 +531,7 @@ export default async function Page({
   // and the sheet. D2.1: today, the project's PM, Ghana and GHS. D2.2: the
   // client's legal name and D1.15's figures. D2.3: the sheet's rows, and
   // D1.15's client dependencies on Tier 1. D2.4 and D2.5: the sheet's rows.
+  // D2.6: the draft's contract value and duration.
   if (!view.record && view.can.write) {
     formValues = {
       ...(await startOf(toolId, projectId)),

@@ -18,6 +18,8 @@ import {
   currentToolFor,
   client,
   projects as seedProjects,
+  routeOf,
+  testProjects,
   toolProjectName,
 } from "./seed-data/projects"
 import { projectRecords } from "./seed-data/records"
@@ -202,6 +204,38 @@ describe("the projects", () => {
     )
 
     expect(open).toContain(CURRENT_TOOL)
+  })
+
+  it("has a Test project for every tool after D1.1 on each tier, with that tool open and every one before it locked", async () => {
+    await seed(url)
+
+    for (const track of ["Tier_1", "Tier_3"] as const) {
+      expect(
+        testProjects
+          .filter((each) => each.project.serviceTrack === track)
+          .map((each) => each.toolId)
+      ).toEqual(routeOf(track).slice(1))
+    }
+
+    for (const { project, toolId } of testProjects) {
+      const id = await projectIdOf(project.name)
+
+      const { rows } = await database.pool.query<{
+        tool_id: string
+        state: string
+      }>(`SELECT tool_id, state FROM tool_records WHERE project_id = $1`, [id])
+
+      const route = routeOf(project.serviceTrack)
+
+      expect(rows.every((row) => row.state === "locked")).toBe(true)
+      expect(
+        rows.every((row) => route.indexOf(row.tool_id) < route.indexOf(toolId))
+      ).toBe(true)
+      expect(
+        (await availableTools(database, id)).map((tool) => tool.toolId),
+        project.name
+      ).toContain(toolId)
+    }
   })
 
   it(`has ${CURRENT_TOOL} submitted by the LE on Approve, and approved by the PM on Approved`, async () => {

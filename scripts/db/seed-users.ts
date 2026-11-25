@@ -254,52 +254,58 @@ async function addRecords(
     })
   )
 
-  for (const record of projectRecords.get(project.name) ?? []) {
-    const [existing] = await database
-      .select({ id: toolRecords.id })
-      .from(toolRecords)
-      .where(
-        and(
-          eq(toolRecords.projectId, projectId),
-          eq(toolRecords.toolId, record.toolId)
-        )
-      )
-      .limit(1)
+  // Records already there are kept, so running this again adds nothing. The
+  // rest go in with one insert: a project has a record for each tool.
+  const existing = await database
+    .select({ id: toolRecords.id, toolId: toolRecords.toolId })
+    .from(toolRecords)
+    .where(eq(toolRecords.projectId, projectId))
 
-    if (existing) {
-      recordIds.set(record.toolId, existing.id)
+  for (const record of existing) {
+    recordIds.set(record.toolId, record.id)
+  }
 
-      continue
-    }
+  const missing = (projectRecords.get(project.name) ?? []).filter(
+    (record) => !recordIds.has(record.toolId)
+  )
 
-    const started = new Date(received + record.day * DAY + 2 * HOUR)
-    const submitted = new Date(started.getTime() + 3 * HOUR)
-    const approved = new Date(submitted.getTime() + 5 * HOUR)
-    const done = record.state === "locked"
-
-    const [inserted] = await database
+  if (missing.length > 0) {
+    const inserted = await database
       .insert(toolRecords)
-      .values({
-        projectId,
-        toolId: record.toolId,
-        state: record.state,
-        payload: withTeamIds(record.payload, holders),
-        createdAt: started,
-        updatedAt: done ? approved : submitted,
-        submittedBy:
-          record.state === "draft"
-            ? null
-            : (holderOf(team, writerOf(record.toolId)) ?? holderOf(team, "OM")),
-        submittedAt: record.state === "draft" ? null : submitted,
-        approvedBy: done
-          ? (holderOf(team, approverOf(record.toolId)) ?? holderOf(team, "PM"))
-          : null,
-        approvedAt: done ? approved : null,
-        lockedAt: done ? approved : null,
-      })
-      .returning({ id: toolRecords.id })
+      .values(
+        missing.map((record) => {
+          const started = new Date(received + record.day * DAY + 2 * HOUR)
+          const submitted = new Date(started.getTime() + 3 * HOUR)
+          const approved = new Date(submitted.getTime() + 5 * HOUR)
+          const done = record.state === "locked"
 
-    recordIds.set(record.toolId, inserted!.id)
+          return {
+            projectId,
+            toolId: record.toolId,
+            state: record.state,
+            payload: withTeamIds(record.payload, holders),
+            createdAt: started,
+            updatedAt: done ? approved : submitted,
+            submittedBy:
+              record.state === "draft"
+                ? null
+                : (holderOf(team, writerOf(record.toolId)) ??
+                  holderOf(team, "OM")),
+            submittedAt: record.state === "draft" ? null : submitted,
+            approvedBy: done
+              ? (holderOf(team, approverOf(record.toolId)) ??
+                holderOf(team, "PM"))
+              : null,
+            approvedAt: done ? approved : null,
+            lockedAt: done ? approved : null,
+          }
+        })
+      )
+      .returning({ id: toolRecords.id, toolId: toolRecords.toolId })
+
+    for (const record of inserted) {
+      recordIds.set(record.toolId, record.id)
+    }
   }
 
   for (const request of projectChangeRequests.get(project.name) ?? []) {
@@ -638,15 +644,28 @@ export async function seed(url: string): Promise<SeedUser[]> {
       }
 
       const team: Team = new Map()
+      const held = rolesOnProject(project)
 
-      for (const { handle, role } of rolesOnProject(project)) {
+      for (const { handle, role } of held) {
         staffByHandle(handle)
-
-        await giveProjectRole(database, ids.get(handle)!, projectId, role)
 
         if (!team.has(role)) {
           team.set(role, ids.get(handle)!)
         }
+      }
+
+      // One insert for the whole team: there are many test projects.
+      if (held.length > 0) {
+        await database
+          .insert(personProjectRoles)
+          .values(
+            held.map(({ handle, role }) => ({
+              personId: ids.get(handle)!,
+              projectId,
+              role,
+            }))
+          )
+          .onConflictDoNothing()
       }
 
       teams.set(project.name, { projectId, team })

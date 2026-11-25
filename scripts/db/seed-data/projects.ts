@@ -245,6 +245,69 @@ export const toolProjects: readonly {
   })
 )
 
+// The tools a track runs, in the order they open: the registry's order, less
+// the tools of the other tier.
+export function routeOf(track: ServiceTrack): string[] {
+  const tier = track === "Tier_1" ? 1 : 3
+
+  return allTools
+    .filter((tool) => tool.tier === "both" || tool.tier === tier)
+    .map((tool) => tool.id)
+}
+
+export const TEST_PROJECT = `${DEV_PROJECT}Test `
+
+export function testProjectName(track: ServiceTrack, toolId: string) {
+  const tool = allTools.find((each) => each.id === toolId)
+
+  return `${TEST_PROJECT}${toolId} ${tool?.name ?? ""} (${tierLabel(track)})`
+}
+
+// One project for each tool on each tier, to test that tool: every tool
+// before it is locked with sample answers, and the tool itself is open and
+// empty, starting from those answers as a real project would. The client's
+// web form, D1.1, is the first record of every project, so it has none.
+// A newly built tool gets its project once it is registered.
+export const testProjects: readonly {
+  project: SeedProject
+  toolId: string
+}[] = CURRENT_TIERS.flatMap((track, tierIndex) =>
+  routeOf(track)
+    .slice(1)
+    .map((toolId, index) => {
+      const received = new Date(
+        Date.UTC(2026, 6, 1 + index, 9 + tierIndex)
+      ).toISOString()
+
+      const name = testProjectName(track, toolId)
+
+      return {
+        toolId,
+        project:
+          track === "Tier_1"
+            ? tier1Stage(
+                name,
+                "active",
+                received,
+                "Accra",
+                client,
+                "everyone",
+                "Small rice mill with destoner",
+                "Mill 1 tonne of paddy an hour with a destoner and polisher."
+              )
+            : tier3Stage(
+                name,
+                "active",
+                received,
+                "Accra",
+                client,
+                "everyone",
+                "Drawings of the aggregate hopper and its chute, measured on site"
+              ),
+      }
+    })
+)
+
 // A request no one has been assigned to yet, for the IT/Admin to staff.
 export const NEEDS_TEAM = `${DEV_PROJECT}New request · Assign a team (IT/Admin)`
 
@@ -305,6 +368,7 @@ export const stageProjects: readonly SeedProject[] = [
 
 export const projects: readonly SeedProject[] = [
   ...toolProjects.map((each) => each.project),
+  ...testProjects.map((each) => each.project),
   needsTeam,
   ...stageProjects,
 ]

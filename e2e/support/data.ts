@@ -378,7 +378,12 @@ export async function makeClient(name = `Client ${tag()}`) {
 
 // What UploadThing's callback saves once a file is stored, for tests that
 // stand in for UploadThing.
-export async function addUpload(personId: string, key: string, name: string) {
+export async function addUpload(
+  personId: string,
+  key: string,
+  name: string,
+  projectId?: string
+) {
   return withDatabase(async (database) => {
     const [file] = await database
       .insert(files)
@@ -389,6 +394,7 @@ export async function addUpload(personId: string, key: string, name: string) {
         size: 2048,
         contentType: "application/pdf",
         uploadedBy: personId,
+        projectId,
       })
       .returning({ id: files.id, name: files.name })
 

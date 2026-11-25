@@ -11,6 +11,14 @@ import type { RenderedEmail } from "./html"
 import { meetingTimes, type MeetingTimesData } from "./meeting-times"
 import { newRequest, type NewRequestData } from "./new-request"
 import { sentBack, type SentBackData } from "./sent-back"
+import {
+  signatureOverdue,
+  type SignatureOverdueData,
+} from "./signature-overdue"
+import {
+  signatureReminder,
+  type SignatureReminderData,
+} from "./signature-reminder"
 import { signatureNeeded, type SignatureNeededData } from "./signature-needed"
 import {
   transmittalFollowUp,
@@ -35,6 +43,8 @@ export type EmailDataByKind = {
   follow_up_sent: FollowUpSentData
   sent_back: SentBackData
   signature_needed: SignatureNeededData
+  signature_reminder: SignatureReminderData
+  signature_overdue: SignatureOverdueData
 }
 
 export type EmailKind = keyof EmailDataByKind
@@ -57,6 +67,8 @@ const templates: Templates = {
   follow_up_sent: followUpSent,
   sent_back: sentBack,
   signature_needed: signatureNeeded,
+  signature_reminder: signatureReminder,
+  signature_overdue: signatureOverdue,
 }
 
 // SAFETY: templates is an object literal typed Templates, so its keys are

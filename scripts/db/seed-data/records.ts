@@ -52,6 +52,7 @@ import {
 } from "@/lib/transmittal"
 import { YES, inviteScriptFor } from "@/lib/negotiation-invite"
 import { TERMS_AGREED } from "@/lib/negotiation-notes"
+import { UPDATED, finalTasks } from "@/lib/final-contract"
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 
 import { loginFor, staffWith } from "./people"
@@ -1047,7 +1048,7 @@ function stageD29() {
         clause: "Sec 3.1 - Total Value",
         requestedChange: "Wants 10% discount on final price",
         baselineLimit: "Min viable is GHS 90,000",
-        resolution: "Agreed to 5% discount",
+        resolution: "Agreed to a discount down to the walk-away floor",
       },
       {
         clause: "Sec 4.1 - Timeline",
@@ -1064,7 +1065,7 @@ function stageD29() {
       },
     ],
     meetingOutcome: TERMS_AGREED,
-    nextSteps: "Contract Admin to apply the 5% discount to the final contract.",
+    nextSteps: "Contract Admin to apply the discount to the final contract.",
     leadSignature: {
       signedBy: "role:CA",
       signedAt: "2026-12-01T11:00:00.000Z",
@@ -1072,13 +1073,62 @@ function stageD29() {
   })
 }
 
-// D2.8 and D2.9 follow D2.7 only where the client asked to negotiate.
-function negotiated(name: string, day: number): SeedRecord[] {
+// The finalized contract: D2.9's two concessions written into the contract,
+// at the tier's own walk-away floor, the FO's re-check and the CA signed, and
+// the tasks done, which locked it and opened D2.11.
+function stageD210(finalValue: string) {
+  return payloadOf({
+    editedBy: staffWith("CA").name,
+    finalEditDate: "2026-12-03",
+    amendments: [
+      {
+        concession: "Agreed to a discount down to the walk-away floor",
+        section: "Section 3.1",
+        newText: `Total Contract Value is ${finalValue}`,
+        status: UPDATED,
+      },
+      {
+        concession: "IMHOGEN held firm at 7 weeks",
+        section: "Section 4.1",
+        newText: "Total Project Timeline is 7 weeks from the advance payment",
+        status: UPDATED,
+      },
+    ],
+    financeSignature: {
+      signedBy: "role:FO",
+      signedAt: "2026-12-02T15:00:00.000Z",
+    },
+    finalTasks: finalTasks.map((task) => ({
+      task,
+      assignee: CONTRACT_ADMIN,
+      status: TASK_DONE,
+    })),
+    readyForSignature: "Yes",
+    caSignature: {
+      signedBy: "role:CA",
+      signedAt: "2026-12-03T10:00:00.000Z",
+    },
+  })
+}
+
+// D2.8 and D2.9 follow D2.7 only where the client asked to negotiate, and
+// D2.10 there after D2.9.
+function negotiated(
+  name: string,
+  day: number,
+  finalValue: string
+): SeedRecord[] {
   return name === ACCEPTED_AS_IS_PROJECT
     ? []
     : [
         { toolId: "D2.8", state: "locked", day, payload: stageD28(name) },
         { toolId: "D2.9", state: "locked", day: day + 2, payload: stageD29() },
+        {
+          toolId: "D2.10",
+          state: "locked",
+          day: day + 4,
+          payload: stageD210(finalValue),
+        },
       ]
 }
 
@@ -1133,7 +1183,7 @@ function tier1Records(name: string): SeedRecord[] {
         name === ACCEPTED_AS_IS_PROJECT ? ACCEPTED_AS_IS : REQUESTED_NEGOTIATION
       ),
     },
-    ...negotiated(name, 43),
+    ...negotiated(name, 43, "GHS 90,000.00"),
   ]
 }
 
@@ -1182,7 +1232,7 @@ function tier3Records(name: string): SeedRecord[] {
       payload: stageD26("GHS 60,000.00", "GHS 57,000.00"),
     },
     { toolId: "D2.7", state: "locked", day: 38, payload: stageD27(name) },
-    ...negotiated(name, 40),
+    ...negotiated(name, 40, "GHS 57,000.00"),
   ]
 }
 

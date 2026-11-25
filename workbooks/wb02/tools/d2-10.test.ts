@@ -38,6 +38,7 @@ import { d27 } from "./d2-7"
 import { d28 } from "./d2-8"
 import { d29 } from "./d2-9"
 import { d210 } from "./d2-10"
+import { d211 } from "./d2-11"
 import { t3d22a } from "./t3-d2-2a"
 
 const database = createTestDatabase()
@@ -56,6 +57,7 @@ for (const tool of [
   d28,
   d29,
   d210,
+  d211,
 ]) {
   tools.registerTool(tool)
 }
@@ -291,7 +293,7 @@ describe("the financial re-check", () => {
   it("is asked for on a negotiated contract, and the FO is told once the record starts", async () => {
     await reachNotes()
 
-    expect(await fieldsOff(database, projectId, "D2.10")).toEqual(new Set())
+    expect(await fieldsOff(database, projectId, "D2.10", {})).toEqual(new Set())
 
     await draft({ amendments: [] })
 
@@ -305,7 +307,7 @@ describe("the financial re-check", () => {
   it("is left out, and nobody is told, when nobody negotiated", async () => {
     await reachAcceptedAsIs()
 
-    expect(await fieldsOff(database, projectId, "D2.10")).toEqual(
+    expect(await fieldsOff(database, projectId, "D2.10", {})).toEqual(
       new Set(["pricingQuestion", "financeSignature"])
     )
 

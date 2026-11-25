@@ -81,11 +81,17 @@ type Props = {
 
 // Typed text that is empty is left out, since the server refuses an empty date
 // or number and an empty text is the same as none. An inherited or
-// system-filled value is the system's, so it is never sent.
+// system-filled value, or a read-only table, is the system's, so it is never
+// sent.
 function sendable(tool: ToolDefinition, values: FormValues): FormValues {
   const systems = new Set(
     tool.fields
-      .filter((field) => field.inherited || field.systemFilled)
+      .filter(
+        (field) =>
+          field.inherited ||
+          field.systemFilled ||
+          (field.type === "table" && field.readOnly)
+      )
       .map((field) => field.key)
   )
 

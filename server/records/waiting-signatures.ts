@@ -4,7 +4,7 @@ import type { Database } from "@/db"
 import { personProjectRoles, projects, toolRecords } from "@/db/schema"
 import { tools } from "@/server/tools/registry"
 
-import { nextTurn } from "./signatures"
+import { approvingTurn, nextTurn, turnsOpen } from "./signatures"
 
 // The tools signed in turn whose next signature is this person's to give, by
 // project, for their dashboard: the client signing T3.D2.2a, for example. A
@@ -28,6 +28,7 @@ export async function signaturesWaitingFor(
       projectId: toolRecords.projectId,
       toolId: toolRecords.toolId,
       payload: toolRecords.payload,
+      state: toolRecords.state,
       submittedBy: toolRecords.submittedBy,
       role: personProjectRoles.role,
     })
@@ -42,7 +43,7 @@ export async function signaturesWaitingFor(
         eq(personProjectRoles.personId, personId),
         eq(projects.status, "active"),
         inArray(toolRecords.toolId, signedInTurn),
-        inArray(toolRecords.state, ["submitted", "approved"])
+        inArray(toolRecords.state, ["draft", "submitted", "approved"])
       )
     )
 
@@ -50,12 +51,12 @@ export async function signaturesWaitingFor(
 
   for (const row of rows) {
     const next = nextTurn(row.toolId, row.payload)
-    const turns = tools.getTool(row.toolId)?.signInTurn
 
     const mine =
       next !== undefined &&
+      turnsOpen(row.toolId, row.state, row.payload) &&
       (next.signedBy ?? []).includes(row.role) &&
-      !(next.key === turns?.approves && row.submittedBy === personId)
+      !(next.key === approvingTurn(row.toolId) && row.submittedBy === personId)
 
     const listed = waiting.get(row.projectId) ?? []
 

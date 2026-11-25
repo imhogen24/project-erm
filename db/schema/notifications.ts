@@ -36,6 +36,8 @@ export const notificationKinds = [
   "signature_needed",
   // The client was reminded about a contract they have not answered yet.
   "follow_up_sent",
+  // A contract sent for signature is still not fully signed after 7 days.
+  "signature_overdue",
 ] as const
 
 export type NotificationKind = (typeof notificationKinds)[number]

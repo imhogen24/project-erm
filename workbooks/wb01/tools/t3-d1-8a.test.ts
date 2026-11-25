@@ -28,6 +28,7 @@ loadUnorderedWorkflow({ wb01: ["T3.D1.8a"] })
 const fakeStorage: Storages = {
   uploadthing: {
     signedLink: async (key) => `https://signed.example/${key}`,
+    read: async (key) => Buffer.from(key),
   },
 }
 

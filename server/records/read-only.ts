@@ -21,7 +21,13 @@ export function keepReadOnly(
     tools
       .getTool(toolId)
       ?.fields.flatMap((field) =>
-        field.type === "table" && field.readOnly ? [field.key] : []
+        field.type === "table" &&
+        (field.readOnly ||
+          (field.readOnlyWhen &&
+            (stored ?? values)[field.readOnlyWhen.field] ===
+              field.readOnlyWhen.is))
+          ? [field.key]
+          : []
       ) ?? []
 
   const errors: FieldError[] = []

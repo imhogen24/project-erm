@@ -53,10 +53,18 @@ const cellBase = {
   // went, and never shown in the form or the PDF. Only a system-filled field
   // is kept this way. A table cell ignores it.
   hidden: z.boolean().optional(),
-  // Shown, and asked for at submit, only while the project has a locked
-  // record of the `locked` tool, such as D2.10's financial re-check, which
-  // only a negotiated contract (D2.9 locked) needs. A table cell ignores it.
-  onlyWhen: z.strictObject({ locked: z.string().min(1) }).optional(),
+  // Shown, and asked for at submit, only while `onlyWhen` holds: the
+  // project has a locked record of the `locked` tool, such as D2.10's
+  // financial re-check, which only a negotiated contract (D2.9 locked)
+  // needs; or this record's select `field` holds `is`, such as D2.11's
+  // signatures, given in the app only for Digital Signature. A table cell
+  // ignores it.
+  onlyWhen: z
+    .union([
+      z.strictObject({ locked: z.string().min(1) }),
+      z.strictObject({ field: fieldKey, is: z.string().min(1) }),
+    ])
+    .optional(),
 }
 
 const distinctTexts = z
@@ -93,6 +101,9 @@ const signature = z.object({
   // Whoever signs it is told, in the app and by email, as soon as the record
   // is started, such as the FO on D2.10, who signs a record they only read.
   askedOnStart: z.boolean().optional(),
+  // A system-filled field that keeps when its signer first opened the
+  // record once it was their turn to sign, such as D2.11's Date Viewed.
+  viewedAs: fieldKey.optional(),
 })
 
 // `systemOptions` are options only the system sets. They are shown, but the
@@ -252,6 +263,12 @@ const table = z
     // What the subtotal row is called, as the sheet names it.
     subtotalLabel: z.string().min(1).optional(),
     readOnly: z.boolean().optional(),
+    // Read only, as `readOnly`, while the record's select `field` holds
+    // `is`, such as D2.11's signature tracker, which signing in the app
+    // fills; otherwise the form writes it.
+    readOnlyWhen: z
+      .strictObject({ field: fieldKey, is: z.string().min(1) })
+      .optional(),
     // One of the fixed rows is picked: `column` is a yes/no column that holds
     // true in exactly that row at submit, and each column `needs` names must
     // be answered in the picked row only. The table holds its fixed rows and
@@ -549,6 +566,8 @@ const field = z
       // Hint text in the empty field, such as the sheet's example answer.
       // Only shown; never stored.
       placeholder: z.string().min(1).optional(),
+      // A file field that takes only a PDF, such as D2.11's final contract.
+      pdfOnly: z.boolean().optional(),
     }),
     signature.extend(required),
     select.extend({ ...required, blockedWhile: blockedWhile.optional() }),
@@ -694,15 +713,28 @@ const toolDefinition = z
     // Once locked the record can never change: no change request can be
     // raised on it, such as a baseline that negotiation holds to.
     noChangeRequests: z.boolean().optional(),
-    // Signature fields signed one after another once the record is
-    // submitted, in `order`. Signing `approves` is the approval, so the tool
-    // has no Approve button, and signing the last one locks the record.
+    // Signature fields signed one after another, in `order`, and the last
+    // one locks the record. With `approves`, they are signed once the record
+    // is submitted, and signing `approves` is the approval, so the tool has
+    // no Approve button. With `from`, they are signed while the record is
+    // still a draft, once the system fills that field, such as D2.11's
+    // contract once it is sent; nobody approves it.
     signInTurn: z
-      .strictObject({
-        order: z.array(fieldKey).min(1),
-        approves: fieldKey,
-      })
+      .union([
+        z.strictObject({
+          order: z.array(fieldKey).min(1),
+          approves: fieldKey,
+        }),
+        z.strictObject({
+          order: z.array(fieldKey).min(1),
+          from: fieldKey,
+        }),
+      ])
       .optional(),
+    // The only roles that save the form, such as the CA on D2.11. Anyone
+    // else the matrix lets write it may only sign the signatures they are
+    // named on.
+    writers: z.array(z.enum(roles)).min(1).optional(),
     // A review that can send earlier work back: locking the record while the
     // select `field` holds `is` reopens the project's record of each of
     // `tools` (on a Tier 3 project, the tool that takes its place) as a new
@@ -742,6 +774,10 @@ const toolDefinition = z
         path: ["signInTurn"],
         message: problem,
       })
+    }
+
+    for (const problem of answerConditionProblems(value.fields)) {
+      context.addIssue({ code: "custom", path: ["fields"], message: problem })
     }
 
     for (const problem of fillProblems(value.fields, value.fills ?? {})) {
@@ -880,11 +916,13 @@ type FieldOutput = z.output<typeof field>
 type Fills = Record<string, "system" | { field: string }>
 
 // Each signature signed in turn is a signature field of the tool, named once,
-// and the approving one is among them. Signing in turn follows a submit and
-// an approval, so the tool has both.
+// and the approving one is among them. Signing in turn after a submit needs
+// a submit and an approval, so the tool has both. Signing from a field
+// needs that field to be one the system fills.
 function signInTurnProblems(value: {
   fields: FieldOutput[]
-  signInTurn?: { order: string[]; approves: string }
+  signInTurn?:
+    { order: string[]; approves: string } | { order: string[]; from: string }
   locksOnSubmit?: boolean
   withoutSubmit?: boolean
 }) {
@@ -902,11 +940,33 @@ function signInTurnProblems(value: {
       : [`${key} is not a signature field`]
   )
 
+  const once =
+    new Set(turns.order).size === turns.order.length
+      ? []
+      : ["A signature is signed in turn once"]
+
+  if ("from" in turns) {
+    const from = value.fields.find((entry) => entry.key === turns.from)
+
+    // The last signature locks the record, so a field filled only on lock
+    // could never open signing.
+    const lockFilled =
+      from !== undefined && "filledOnLock" in from && from.filledOnLock
+
+    return [
+      ...strays,
+      ...once,
+      ...(from?.systemFilled && !lockFilled
+        ? []
+        : [
+            `${turns.from} is not a field the system fills while the record is a draft`,
+          ]),
+    ]
+  }
+
   return [
     ...strays,
-    ...(new Set(turns.order).size === turns.order.length
-      ? []
-      : ["A signature is signed in turn once"]),
+    ...once,
     ...(turns.order.includes(turns.approves)
       ? []
       : [`${turns.approves} is not one of the signatures signed in turn`]),
@@ -914,6 +974,39 @@ function signInTurnProblems(value: {
       ? ["A tool signed in turn is submitted, then approved by a signature"]
       : []),
   ]
+}
+
+// A field shown, or a table read only, while one of the record's answers
+// holds names a select field and one of its options, and a signature's
+// first view is kept in a field the system fills.
+function answerConditionProblems(fields: FieldOutput[]) {
+  const answers = (field: string, is: string, owner: string) => {
+    const select = fields.find((entry) => entry.key === field)
+
+    return select?.type === "select" && select.options.includes(is)
+      ? []
+      : [
+          `${owner} waits for ${field} to be "${is}", which is not one of its select's options`,
+        ]
+  }
+
+  return fields.flatMap((entry) => [
+    ...(entry.onlyWhen && "field" in entry.onlyWhen
+      ? answers(entry.onlyWhen.field, entry.onlyWhen.is, entry.key)
+      : []),
+    ...(entry.type === "table" && entry.readOnlyWhen
+      ? answers(entry.readOnlyWhen.field, entry.readOnlyWhen.is, entry.key)
+      : []),
+    ...(entry.type === "signature" &&
+    entry.viewedAs &&
+    !fields.some(
+      (each) => each.key === entry.viewedAs && each.systemFilled === true
+    )
+      ? [
+          `${entry.key} keeps its first view in ${entry.viewedAs}, which is not a field the system fills`,
+        ]
+      : []),
+  ])
 }
 
 // Every `[Name]` in fixed text must say where it is filled in from, and a fill

@@ -8,6 +8,8 @@ import type { fileStorages } from "@/db/schema"
 export type FileStorage = {
   // A short-lived link that opens the private file.
   signedLink(key: string): Promise<string>
+  // The file's bytes, such as a contract to attach to an email.
+  read(key: string): Promise<Buffer>
 }
 
 export type Storages = Record<(typeof fileStorages)[number], FileStorage>
@@ -22,6 +24,15 @@ const uploadThing: FileStorage = {
     const { ufsUrl } = await utapi.generateSignedURL(key, { expiresIn: "5m" })
 
     return ufsUrl
+  },
+  async read(key) {
+    const response = await fetch(await uploadThing.signedLink(key))
+
+    if (!response.ok) {
+      throw new Error(`The file could not be read: ${response.status}`)
+    }
+
+    return Buffer.from(await response.arrayBuffer())
   },
 }
 

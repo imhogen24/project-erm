@@ -18,6 +18,7 @@ import {
   InviteNotReadyError,
   sendNegotiationInvite,
 } from "@/server/contract/negotiation-invite"
+import { sendSignatureRequest } from "@/server/contract/signature-contract"
 import { sendTransmittal } from "@/server/contract/transmittal"
 import { getDatabase } from "@/server/database"
 import { resubmitClientRequest } from "@/server/intake/client-requests"
@@ -358,6 +359,37 @@ export async function sendTransmittalAction(values: {
   return attempt(async (actor) => {
     try {
       return done(await sendTransmittal(getDatabase(), actor, input.recordId))
+    } catch (error) {
+      if (
+        error instanceof SendNotReadyError ||
+        error instanceof EmailRefusedError
+      ) {
+        return { status: "error", message: error.message }
+      }
+
+      throw error
+    }
+  })
+}
+
+// The CA's Send on D2.11: the final contract to the client for signature.
+// What stops it comes back in words for the button.
+export async function sendSignatureRequestAction(values: {
+  recordId: string
+}): Promise<RecordResult> {
+  const parsed = recordInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Check the form and try again." }
+  }
+
+  const input = parsed.data
+
+  return attempt(async (actor) => {
+    try {
+      return done(
+        await sendSignatureRequest(getDatabase(), actor, input.recordId)
+      )
     } catch (error) {
       if (
         error instanceof SendNotReadyError ||

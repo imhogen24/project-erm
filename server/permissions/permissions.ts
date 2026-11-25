@@ -51,6 +51,14 @@ export function roleAllows(
       return access !== undefined
     }
 
+    // A tool that names its writers lets nobody else save it: they may
+    // only sign the signatures they are named on (signField).
+    const only = tools.getTool(toolId)?.writers
+
+    if (action === "write" && only && !only.includes(role)) {
+      return false
+    }
+
     if (action === "write" && extraWriters.get(toolId)?.includes(role)) {
       return access !== undefined
     }

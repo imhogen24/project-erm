@@ -53,6 +53,10 @@ const cellBase = {
   // went, and never shown in the form or the PDF. Only a system-filled field
   // is kept this way. A table cell ignores it.
   hidden: z.boolean().optional(),
+  // Shown, and asked for at submit, only while the project has a locked
+  // record of the `locked` tool, such as D2.10's financial re-check, which
+  // only a negotiated contract (D2.9 locked) needs. A table cell ignores it.
+  onlyWhen: z.strictObject({ locked: z.string().min(1) }).optional(),
 }
 
 const distinctTexts = z
@@ -86,6 +90,9 @@ const signature = z.object({
   ...cellBase,
   type: z.literal("signature"),
   signedBy: z.array(z.enum(roles)).min(1).optional(),
+  // Whoever signs it is told, in the app and by email, as soon as the record
+  // is started, such as the FO on D2.10, who signs a record they only read.
+  askedOnStart: z.boolean().optional(),
 })
 
 // `systemOptions` are options only the system sets. They are shown, but the
@@ -560,6 +567,10 @@ const field = z
     message:
       "A signature, instruction, static list or PDF preview is never written in the form, so it is never required",
   })
+  .refine((value) => !(value.onlyWhen && value.required), {
+    message:
+      "A field shown only on some projects is never required: submit asks only for its signature",
+  })
   .refine((value) => !(value.systemFilled && value.required), {
     message:
       "A system-filled field is filled in by the system, so it is never required",
@@ -659,6 +670,9 @@ const toolDefinition = z
             field: fieldKey,
             column: fieldKey.optional(),
             is: z.string().min(1),
+            // With `column`, a table with no rows passes too, such as a
+            // list of amendments that a contract nobody negotiated lacks.
+            orNoRows: z.literal(true).optional(),
             message: z.string().min(1),
           }),
           z.strictObject({

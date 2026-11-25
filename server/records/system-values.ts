@@ -35,6 +35,8 @@ import { transmittalValues } from "@/server/contract/transmittal"
 import { NEGOTIATION_INVITE } from "@/lib/negotiation-invite"
 import { negotiationInviteValues } from "@/server/contract/negotiation-invite"
 import { NEGOTIATION_NOTES } from "@/lib/negotiation-notes"
+import { FINAL_CONTRACT } from "@/lib/final-contract"
+import { finalContractValues } from "@/server/contract/final-contract"
 import { negotiationNotesValues } from "@/server/contract/negotiation-notes"
 import { t3ContractValues } from "@/server/contract/t3-contract"
 import { tools } from "@/server/tools/registry"
@@ -164,6 +166,10 @@ async function workedOut(
 
     case NEGOTIATION_NOTES: {
       return await negotiationNotesValues(database, projectId, payload)
+    }
+
+    case FINAL_CONTRACT: {
+      return await finalContractValues(database, projectId, payload)
     }
 
     default: {

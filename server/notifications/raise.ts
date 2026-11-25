@@ -45,6 +45,16 @@ export type PendingEmail =
       recordTitle: string
     }
   | {
+      kind: "signature_needed"
+      key: string
+      to: string
+      projectId: string
+      recordId: string
+      path: string
+      recordTitle: string
+      signature: string
+    }
+  | {
       kind: "sent_back"
       key: string
       to: string
@@ -234,15 +244,17 @@ export async function clearApprovalNeeded(
     )
 }
 
-// Whoever may sign the record's next signature in turn, such as the client on
-// T3.D2.2a once the PM has approved it. Dashboard only. The client is told
-// too: it is their own signature.
+// Whoever may sign one of the record's signatures, such as the client on
+// T3.D2.2a once the PM has approved it, or the FO on a negotiated D2.10. The
+// client is told too: it is their own signature. The emails to send once the
+// transaction commits come back; a caller that only tells the dashboard
+// leaves them.
 export async function notifySignatureNeeded(
   transaction: Transaction,
   actor: string,
   record: RecordRef,
   signature: { label: string; signedBy: readonly Role[] }
-): Promise<void> {
+): Promise<PendingEmail[]> {
   const signers = await holdersOf(
     transaction,
     record.projectId,
@@ -251,15 +263,30 @@ export async function notifySignatureNeeded(
 
   const name = await projectName(transaction, record.projectId)
 
-  await notify(transaction, {
+  const path = toolPath(record.projectId, record.toolId)
+
+  const written = await notify(transaction, {
     personIds: others(actor, signers),
     kind: "signature_needed",
     title: `${record.toolId} is waiting for your signature`,
     text: `${signature.label} on ${toolName(record.toolId)}, ${name}`,
     projectId: record.projectId,
     recordId: record.id,
-    path: toolPath(record.projectId, record.toolId),
+    path,
   })
+
+  const addresses = await addressesOf(transaction, written)
+
+  return written.map((row) => ({
+    kind: "signature_needed",
+    key: row.id,
+    to: addresses.get(row.personId)!,
+    projectId: record.projectId,
+    recordId: record.id,
+    path,
+    recordTitle: `${record.toolId} ${toolName(record.toolId)} on ${name}`,
+    signature: signature.label,
+  }))
 }
 
 // Marks read the record's unread "waiting for your signature" notifications,
@@ -577,6 +604,27 @@ export async function sendNotificationEmails(
             kind: email.kind,
             data: { projectName: email.projectName, link },
             projectId: email.projectId,
+            key: email.key,
+          },
+          transport
+        )
+
+        continue
+      }
+
+      if (email.kind === "signature_needed") {
+        await sendEmail(
+          database,
+          {
+            to: email.to,
+            kind: email.kind,
+            data: {
+              recordTitle: email.recordTitle,
+              signature: email.signature,
+              link,
+            },
+            projectId: email.projectId,
+            recordId: email.recordId,
             key: email.key,
           },
           transport

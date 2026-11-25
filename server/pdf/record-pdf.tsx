@@ -24,6 +24,7 @@ import {
 import { withSignerNames } from "@/server/records/screen"
 import { fillsOf } from "@/server/records/fills"
 import { systemValuesOf } from "@/server/records/system-values"
+import { fieldsOff, withoutFieldsOff } from "@/server/records/only-when"
 import { readsAsClient, toolAsShown } from "@/server/records/shown-fields"
 import { tools } from "@/server/tools/registry"
 
@@ -405,7 +406,10 @@ export async function recordContent(
     content: {
       ...base,
       sections: sectionsOf(
-        toolAsShown(tool, { client }),
+        withoutFieldsOff(
+          toolAsShown(tool, { client }),
+          await fieldsOff(database, record.projectId, tool.id)
+        ),
         values,
         names,
         project!.track,

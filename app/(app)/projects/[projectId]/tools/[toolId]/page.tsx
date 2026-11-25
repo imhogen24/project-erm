@@ -105,6 +105,8 @@ import {
 } from "@/server/contract/transmittal"
 import { NEGOTIATION_INVITE } from "@/lib/negotiation-invite"
 import { NEGOTIATION_NOTES } from "@/lib/negotiation-notes"
+import { FINAL_CONTRACT } from "@/lib/final-contract"
+import { finalContractStart } from "@/server/contract/final-contract"
 import { negotiationNotesStart } from "@/server/contract/negotiation-notes"
 import {
   missingToInvite as negotiationMissing,
@@ -116,6 +118,7 @@ import {
   toolAsShown,
   withoutInternalValues,
 } from "@/server/records/shown-fields"
+import { fieldsOff, withoutFieldsOff } from "@/server/records/only-when"
 import { systemFillsOf } from "@/server/records/fills"
 import { previewStates } from "@/server/pdf/previews"
 import { getRecordScreen } from "@/server/records/screen"
@@ -293,6 +296,13 @@ async function startOf(toolId: string, projectId: string): Promise<FormValues> {
 
     case NEGOTIATION_NOTES: {
       const start = await negotiationNotesStart(getDatabase(), projectId)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
+    case FINAL_CONTRACT: {
+      const start = await finalContractStart(getDatabase(), projectId)
 
       // SAFETY: the start is built for this tool's own fields.
       return start as FormValues
@@ -636,7 +646,8 @@ export default async function Page({
   // and the sheet. D2.1: today, the project's PM, Ghana and GHS. D2.2: the
   // client's legal name and D1.15's figures. D2.3: the sheet's rows, and
   // D1.15's client dependencies on Tier 1. D2.4 and D2.5: the sheet's rows.
-  // D2.6: the draft's contract value and duration.
+  // D2.6: the draft's contract value and duration. D2.10: D2.9's agreed
+  // concessions.
   if (!view.record && view.can.write) {
     formValues = {
       ...(await startOf(toolId, projectId)),
@@ -666,7 +677,12 @@ export default async function Page({
     projectId
   )
 
-  sheetTool = toolAsShown(sheetTool, { client: asClient })
+  // Nor the fields this project does not ask for, such as D2.10's financial
+  // re-check on a contract nobody negotiated.
+  sheetTool = withoutFieldsOff(
+    toolAsShown(sheetTool, { client: asClient }),
+    await fieldsOff(getDatabase(), projectId, toolId)
+  )
 
   if (asClient) {
     // SAFETY: only keys are taken out, so each value keeps its type.

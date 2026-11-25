@@ -2,6 +2,7 @@ import { serviceTracks, type ServiceTrack } from "@/db/schema"
 import type { ToolDefinition } from "@/server/tools/define-tool"
 
 import {
+  openingsOf,
   requiredTools,
   type Condition,
   type Requirement,
@@ -136,12 +137,24 @@ function checkMap(
 
     const tracks = tracksOf(tool)
 
-    if (rule.after) {
-      checkRequirement(catalog, rule.tool, rule.after, tracks, broken)
+    if (rule.openings && (rule.after || rule.when)) {
+      broken.push(
+        `${rule.tool} has openings, so its own after and when are never read`
+      )
     }
 
-    if (rule.when) {
-      checkCondition(catalog, rule.tool, rule.when, tracks, broken)
+    if (rule.openings && rule.openings.length < 2) {
+      broken.push(`${rule.tool} has openings, but fewer than two`)
+    }
+
+    for (const opening of openingsOf(rule)) {
+      if (opening.after) {
+        checkRequirement(catalog, rule.tool, opening.after, tracks, broken)
+      }
+
+      if (opening.when) {
+        checkCondition(catalog, rule.tool, opening.when, tracks, broken)
+      }
     }
   }
 

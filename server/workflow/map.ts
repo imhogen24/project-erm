@@ -18,13 +18,28 @@ export type Condition = {
   note?: string
 }
 
-export type ToolRule = {
-  tool: string
-  // A rule with no `after` starts as soon as its workbook opens.
+// One way a tool can open: the tools that must be locked first, and the
+// answer one of them must hold.
+export type Opening = {
   after?: Requirement
   when?: Condition
+}
+
+export type ToolRule = Opening & {
+  tool: string
+  // A rule with no `after` starts as soon as its workbook opens.
+  // `openings` are other ways the tool opens, used instead of `after` and
+  // `when`: it opens when any one of them holds, such as D2.10 after D2.9
+  // with Terms Agreed, or after D2.7 with the draft accepted as it is.
+  openings?: readonly Opening[]
   // Runs once per payment milestone, in the cycles the map's `cycles` sets.
   repeats?: true
+}
+
+// The ways a rule opens its tool: its openings, or its own `after` and
+// `when` as the one way.
+export function openingsOf(rule: ToolRule): readonly Opening[] {
+  return rule.openings ?? [{ after: rule.after, when: rule.when }]
 }
 
 // An answer that ends the route. Locking it sets the project's status, which

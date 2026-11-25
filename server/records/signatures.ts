@@ -72,7 +72,7 @@ export function nextTurn(
 export function unsignedFields(
   toolId: string,
   payload: JsonObject,
-  options: { forApproval?: boolean } = {}
+  options: { forApproval?: boolean; off?: ReadonlySet<string> } = {}
 ): FieldError[] {
   const turns = turnsOf(toolId)
 
@@ -83,6 +83,7 @@ export function unsignedFields(
 
   return signatureFields(toolId)
     .filter((field) => !later.includes(field.key))
+    .filter((field) => !options.off?.has(field.key))
     .filter((field) => !isSigned(payload, field.key))
     .map((field) => ({ field: field.key, message: "Must be signed" }))
 }

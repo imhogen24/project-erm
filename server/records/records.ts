@@ -54,6 +54,7 @@ import {
   withoutInherited,
 } from "./inherited"
 import { lockValues, unmetSubmitRules } from "./filled-on-lock"
+import { fieldsOff } from "./only-when"
 import { keepReadOnly } from "./read-only"
 import {
   hasInternalFields,
@@ -197,12 +198,23 @@ async function assertMay(
 export async function createRecord(
   database: Database,
   actor: string,
-  input: NewRecord
+  input: NewRecord,
+  transport?: Transport
 ): Promise<ToolRecord> {
+  const outbox: PendingEmail[] = []
+
   try {
-    return await database.transaction((transaction) =>
-      createRecordIn(transaction, actor, input)
-    )
+    const record = await database.transaction(async (transaction) => {
+      const created = await createRecordIn(transaction, actor, input)
+
+      outbox.push(...(await askOnStart(transaction, actor, created)))
+
+      return created
+    })
+
+    await sendNotificationEmails(database, outbox, transport)
+
+    return record
   } catch (error) {
     // Drizzle wraps the driver's error, so the broken rule is on its cause.
     if (
@@ -489,6 +501,7 @@ async function move(
   if (to === "approved" || (to === "locked" && signedInTurn)) {
     const unsigned = unsignedFields(current.toolId, current.payload, {
       forApproval: to === "approved",
+      off: await fieldsOff(transaction, current.projectId, current.toolId),
     })
 
     if (unsigned.length > 0) {
@@ -794,7 +807,8 @@ async function staleError(
 export async function saveDraft(
   database: Database,
   actor: string,
-  input: DraftSave
+  input: DraftSave,
+  transport?: Transport
 ): Promise<ToolRecord> {
   await assertMay(database, actor, input.projectId, input.toolId, "write")
 
@@ -812,12 +826,17 @@ export async function saveDraft(
     const first = keepReadOnly(input.toolId, undefined, values)
 
     try {
-      return await createRecord(database, actor, {
-        projectId: input.projectId,
-        toolId: input.toolId,
-        cycle: input.cycle,
-        payload: first,
-      })
+      return await createRecord(
+        database,
+        actor,
+        {
+          projectId: input.projectId,
+          toolId: input.toolId,
+          cycle: input.cycle,
+          payload: first,
+        },
+        transport
+      )
     } catch (error) {
       const created =
         error instanceof ToolNotAvailableError &&
@@ -858,6 +877,36 @@ export async function submitRecord(
   transport?: Transport
 ): Promise<ToolRecord> {
   return transitionRecord(database, actor, recordId, "submitted", transport)
+}
+
+// Tells whoever signs each `askedOnStart` signature the project asks for,
+// once its record is started, such as the FO on a negotiated D2.10.
+async function askOnStart(
+  transaction: Transaction,
+  actor: string,
+  record: ToolRecord
+): Promise<PendingEmail[]> {
+  const off = await fieldsOff(transaction, record.projectId, record.toolId)
+  const emails: PendingEmail[] = []
+
+  for (const field of tools.getTool(record.toolId)?.fields ?? []) {
+    if (
+      field.type !== "signature" ||
+      !field.askedOnStart ||
+      off.has(field.key)
+    ) {
+      continue
+    }
+
+    emails.push(
+      ...(await notifySignatureNeeded(transaction, actor, record, {
+        label: field.label,
+        signedBy: field.signedBy ?? [],
+      }))
+    )
+  }
+
+  return emails
 }
 
 // Asks whoever signs next on a record signed in turn.
@@ -959,6 +1008,14 @@ export async function signField(
     throw new PermissionDeniedError(
       `Only ${signers.join(", ")} may sign ${field.label}`
     )
+  }
+
+  if (
+    (await fieldsOff(database, record.projectId, record.toolId)).has(fieldKey)
+  ) {
+    throw new ValidationError([
+      { field: fieldKey, message: "This project does not ask for it" },
+    ])
   }
 
   const turns = turnsOf(record.toolId)

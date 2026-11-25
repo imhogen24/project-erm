@@ -16,9 +16,11 @@ import { tools, type ToolRegistry } from "@/server/tools/registry"
 import { assertWorkflowMaps } from "./check"
 import { opensEveryTool } from "./dev-unlocked"
 import {
+  openingsOf,
   requiredTools,
   type Condition,
   type HardStop,
+  type Opening,
   type Requirement,
   type ToolRule,
   type WorkbookMap,
@@ -222,6 +224,54 @@ class Route {
     ]
   }
 
+  // What one way of opening the tool still needs.
+  private unmetOpening(
+    rule: ToolRule,
+    opening: Opening,
+    cycle: number
+  ): string[] {
+    const waiting = { ...rule, ...opening }
+
+    return [
+      ...(opening.after ? this.unmet(opening.after, waiting, cycle) : []),
+      ...(opening.when
+        ? this.unmetCondition(opening.when, waiting, cycle)
+        : []),
+    ]
+  }
+
+  // Nothing when any way of opening the tool holds; otherwise what each
+  // still needs.
+  private unmetOpenings(rule: ToolRule, cycle: number): string[] {
+    const each = openingsOf(rule).map((opening) =>
+      this.unmetOpening(rule, opening, cycle)
+    )
+
+    if (each.some((missing) => missing.length === 0)) {
+      return []
+    }
+
+    return each.length === 1
+      ? each[0]!
+      : [
+          `none of its ways to open holds: ${each.map((missing) => missing.join(" and ")).join("; or ")}`,
+        ]
+  }
+
+  // Whether a way of opening the tool can still hold: its condition's tool
+  // is not already locked with another answer.
+  private possible(rule: ToolRule, opening: Opening, cycle: number) {
+    const { when } = opening
+
+    if (!when) {
+      return true
+    }
+
+    const record = this.locked(when.tool, this.cycleFor(rule, when.tool, cycle))
+
+    return !record || isOneOf(when.oneOf, record.payload[when.field])
+  }
+
   // The map check allows only a number field or a table here, so the value is
   // a number, a list of rows, or not filled in.
   private cycleCount(map: WorkbookMap): number {
@@ -315,12 +365,8 @@ class Route {
     // the workbook at once (dev-unlocked.ts).
     const waits = !(opensEveryTool(this.project.name) && !map.opens)
 
-    if (waits && rule?.after) {
-      missing.push(...this.unmet(rule.after, rule, at))
-    }
-
-    if (waits && rule?.when) {
-      missing.push(...this.unmetCondition(rule.when, rule, at))
+    if (waits && rule) {
+      missing.push(...this.unmetOpenings(rule, at))
     }
 
     if (repeating) {
@@ -344,7 +390,7 @@ class Route {
     const tool = this.catalog.get(toolId)!
     const map = this.maps.find((entry) => entry.workbook === tool.workbook)
     const rule = map?.tools.find((entry) => entry.tool === toolId)
-    const condition = rule?.when
+    const condition = rule?.openings ? undefined : rule?.when
 
     if (!condition?.note) {
       return null
@@ -384,10 +430,25 @@ class Route {
       return ids.filter((id) => !open.includes(id))
     }
 
+    // Only the ways of opening that can still hold: on a project where the
+    // client asked to negotiate, D2.10 waits for D2.9, not for D2.7.
+    // Once one way holds, the rule waits for nothing.
+    const openings =
+      !rule ||
+      openingsOf(rule).some(
+        (opening) => this.unmetOpening(rule, opening, cycle).length === 0
+      )
+        ? []
+        : openingsOf(rule).filter((opening) =>
+            this.possible(rule, opening, cycle)
+          )
+
     return [
       ...new Set([
         ...(map?.opens ? waiting(map.opens.after) : []),
-        ...(rule?.after ? waiting(rule.after, rule) : []),
+        ...openings.flatMap((opening) =>
+          opening.after ? waiting(opening.after, rule) : []
+        ),
       ]),
     ]
   }
@@ -573,10 +634,10 @@ export function waitsOn(toolId: string, track: ServiceTrack): Set<string> {
     const id = queue.pop()!
     const rule = rules.find((entry) => entry.tool === id)
 
-    const named = [
-      ...(rule?.after ? requiredTools(rule.after) : []),
-      ...(rule?.when ? [rule.when.tool] : []),
-    ]
+    const named = (rule ? openingsOf(rule) : []).flatMap((opening) => [
+      ...(opening.after ? requiredTools(opening.after) : []),
+      ...(opening.when ? [opening.when.tool] : []),
+    ])
 
     for (const name of named) {
       const used = catalog.onTrack(name, track) ?? name

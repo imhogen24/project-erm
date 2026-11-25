@@ -51,6 +51,7 @@ import {
   subjectFor,
 } from "@/lib/transmittal"
 import { YES, inviteScriptFor } from "@/lib/negotiation-invite"
+import { TERMS_AGREED } from "@/lib/negotiation-notes"
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 
 import { loginFor, staffWith } from "./people"
@@ -1032,11 +1033,53 @@ function stageD28(projectName: string) {
   })
 }
 
-// D2.8 follows D2.7 only where the client asked to negotiate.
+// The negotiation meeting's notes: two clauses the client challenged and
+// what was agreed, one item left open, signed and submitted with Terms
+// Agreed, which locked it and opened D2.10.
+function stageD29() {
+  return payloadOf({
+    actualDate: "2026-12-01",
+    startEndTime: "10:00 to 10:45",
+    leadNegotiator: staffWith("CA").name,
+    clientNegotiator: client.name,
+    redlines: [
+      {
+        clause: "Sec 3.1 - Total Value",
+        requestedChange: "Wants 10% discount on final price",
+        baselineLimit: "Min viable is GHS 90,000",
+        resolution: "Agreed to 5% discount",
+      },
+      {
+        clause: "Sec 4.1 - Timeline",
+        requestedChange: "Wants delivery compressed to 6 weeks",
+        baselineLimit: "Min 7 weeks",
+        resolution: "IMHOGEN held firm at 7 weeks",
+      },
+    ],
+    parkingLot: [
+      {
+        item: "Client legal to review the IP buyout wording",
+        owner: "Client Legal Team",
+        deadline: "2026-12-08",
+      },
+    ],
+    meetingOutcome: TERMS_AGREED,
+    nextSteps: "Contract Admin to apply the 5% discount to the final contract.",
+    leadSignature: {
+      signedBy: "role:CA",
+      signedAt: "2026-12-01T11:00:00.000Z",
+    },
+  })
+}
+
+// D2.8 and D2.9 follow D2.7 only where the client asked to negotiate.
 function negotiated(name: string, day: number): SeedRecord[] {
   return name === ACCEPTED_AS_IS_PROJECT
     ? []
-    : [{ toolId: "D2.8", state: "locked", day, payload: stageD28(name) }]
+    : [
+        { toolId: "D2.8", state: "locked", day, payload: stageD28(name) },
+        { toolId: "D2.9", state: "locked", day: day + 2, payload: stageD29() },
+      ]
 }
 
 function tier1Records(name: string): SeedRecord[] {

@@ -768,6 +768,69 @@ describe("checking the map", () => {
     ])
   })
 
+  it("finds openings mixed with after, or only one of them", () => {
+    const maps = withRules("wb01", (rules) =>
+      rules.map((rule) =>
+        rule.tool === "D1.5"
+          ? {
+              tool: "D1.5",
+              after: { all: ["D1.3"] },
+              openings: [{ after: { all: ["D1.4"] } }],
+            }
+          : rule
+      )
+    )
+
+    expect(brokenWorkflowRules(maps, all())).toEqual([
+      "D1.5 has openings, so its own after and when are never read",
+      "D1.5 has openings, but fewer than two",
+    ])
+  })
+
+  it("finds a wait in an opening for a tool that does not exist", () => {
+    const maps = withRules("wb01", (rules) =>
+      rules.map((rule) =>
+        rule.tool === "D1.5"
+          ? {
+              tool: "D1.5",
+              openings: [
+                { after: { all: ["D1.3"] } },
+                { after: { all: ["D1.77"] } },
+              ],
+            }
+          : rule
+      )
+    )
+
+    expect(brokenWorkflowRules(maps, all())).toEqual([
+      "D1.5 waits for D1.77, which does not exist",
+    ])
+  })
+
+  it("opens a tool by whichever of its openings holds first", async () => {
+    loadWorkflow(
+      withRules("wb01", (rules) =>
+        rules.map((rule) =>
+          rule.tool === "D1.5"
+            ? {
+                tool: "D1.5",
+                openings: [
+                  { after: { all: ["D1.3"] } },
+                  { after: { all: ["D1.4"] } },
+                ],
+              }
+            : rule
+        )
+      )
+    )
+
+    expect(await open("D1.5")).toEqual([])
+
+    await recordIn("locked", "D1.4")
+
+    expect(await open("D1.5")).toEqual(["D1.5@1"])
+  })
+
   it("finds a field that cannot decide the route", () => {
     const maps = testMaps.map((map) =>
       map.workbook === "wb03"

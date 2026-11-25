@@ -13,7 +13,9 @@ import type { WorkbookMap } from "./map"
 // Negotiation opens D2.8, the negotiation meeting invite, and D2.8 locked
 // opens D2.9, the meeting notes. D2.9 locked with Client Withdrawn closes the
 // project, and with Deadlock sends D2.8 back for another meeting (its
-// `sendsBackTo`). The tools after it are added as each is built.
+// `sendsBackTo`). D2.10, the finalized contract, opens after D2.9 with Terms
+// Agreed, or straight after D2.7 when the client accepted the draft as it is.
+// The tools after it are added as each is built.
 export const wb02: WorkbookMap = {
   workbook: "wb02",
   opens: { after: { all: ["D1.16"] } },
@@ -52,6 +54,27 @@ export const wb02: WorkbookMap = {
       },
     },
     { tool: "D2.9", after: { all: ["D2.8"] } },
+    {
+      tool: "D2.10",
+      openings: [
+        {
+          after: { all: ["D2.9"] },
+          when: {
+            tool: "D2.9",
+            field: "meetingOutcome",
+            oneOf: ["Terms Agreed - Proceed to D2.10"],
+          },
+        },
+        {
+          after: { all: ["D2.7"] },
+          when: {
+            tool: "D2.7",
+            field: "initialResponse",
+            oneOf: ["Accepted as-is"],
+          },
+        },
+      ],
+    },
   ],
   stops: [
     {

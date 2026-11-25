@@ -75,6 +75,11 @@ const sampleData: EmailDataByKind = {
     reason: "D2.9 sent it back: Deadlock - Escalate",
     link: "https://erm.example.com/s",
   },
+  signature_needed: {
+    recordTitle: "D2.10 Finalized Contract on Boiler",
+    signature: "Finance Rep",
+    link: "https://erm.example.com/n",
+  },
 }
 
 function failingTransport(): Transport {
@@ -323,7 +328,7 @@ describe("sendEmail", () => {
 })
 
 describe("templates", () => {
-  it("covers the five staff kinds and the six client kinds", () => {
+  it("covers the six staff kinds and the six client kinds", () => {
     expect([...emailKinds].sort()).toEqual([
       "acknowledgement",
       "approval_needed",
@@ -334,6 +339,7 @@ describe("templates", () => {
       "meeting_times",
       "new_request",
       "sent_back",
+      "signature_needed",
       "transmittal_follow_up",
       "verify_email",
     ])

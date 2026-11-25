@@ -56,7 +56,7 @@ const tableRows = z.array(z.record(z.string(), z.unknown())).catch([])
 function meets(
   payload: JsonObject,
   rule:
-    | { field: string; column?: string; is: string }
+    | { field: string; column?: string; is: string; orNoRows?: true }
     | { field: string; isNot: string }
 ) {
   const value = payload[rule.field]
@@ -75,7 +75,10 @@ function meets(
 
   const rows = tableRows.parse(value)
 
-  return rows.length > 0 && rows.every((row) => row[column] === rule.is)
+  return (
+    (rows.length > 0 || rule.orNoRows === true) &&
+    rows.every((row) => row[column] === rule.is)
+  )
 }
 
 // The tool's select fields, or table columns, that do not yet hold the option

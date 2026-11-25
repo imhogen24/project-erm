@@ -264,6 +264,11 @@ describe("the records", () => {
         // D1.5 sent or the meeting D1.6 copied from D1.5, is never typed, so
         // it is not checked as typed.
         for (const field of tools.getTool(record.toolId)?.fields ?? []) {
+          // A review's own answer Approved, such as D2.3's status, is typed.
+          if (field.type === "select" && field.options.includes("Approved")) {
+            submitted[field.key] = record.payload[field.key]
+          }
+
           if (
             field.systemFilled ||
             field.inherited ||

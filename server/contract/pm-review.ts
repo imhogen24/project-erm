@@ -60,11 +60,16 @@ export async function pmReviewStart(
   }
 }
 
-// The day the project's draft, D2.2 or T3.D2.2a, was last locked, as
-// YYYY-MM-DD, or empty while it never was.
-async function draftLockedOn(database: Reader, projectId: string) {
+// The day the project's record of the tool was last locked, as YYYY-MM-DD,
+// or empty while it never was. The tool is named as on Tier 1, so "D2.2"
+// reads T3.D2.2a on a Tier 3 project.
+export async function lockedOn(
+  database: Reader,
+  projectId: string,
+  id: string
+) {
   const track = await trackOf(database, projectId)
-  const toolId = track ? shownTool(REVIEWED_DRAFT, track) : undefined
+  const toolId = track ? shownTool(id, track) : undefined
 
   if (!toolId) {
     return ""
@@ -95,7 +100,7 @@ export async function pmReviewValues(
 ): Promise<JsonObject> {
   const [draft, dateReceived] = await Promise.all([
     draftValues(database, projectId),
-    draftLockedOn(database, projectId),
+    lockedOn(database, projectId, REVIEWED_DRAFT),
   ])
 
   return {

@@ -24,6 +24,8 @@ import { T3_CONTRACT } from "@/lib/t3-contract"
 import { PM_REVIEW } from "@/lib/pm-review"
 import { shownFromValues } from "@/lib/shown-from"
 import { pmReviewValues } from "@/server/contract/pm-review"
+import { FINANCE_REVIEW } from "@/lib/finance-review"
+import { financeReviewValues } from "@/server/contract/finance-review"
 import { t3ContractValues } from "@/server/contract/t3-contract"
 import { tools } from "@/server/tools/registry"
 
@@ -128,6 +130,10 @@ async function workedOut(
 
     case PM_REVIEW: {
       return await pmReviewValues(database, projectId)
+    }
+
+    case FINANCE_REVIEW: {
+      return await financeReviewValues(database, projectId)
     }
 
     default: {

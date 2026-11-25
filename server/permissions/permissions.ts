@@ -7,6 +7,7 @@ import {
   projects,
   type Role,
 } from "@/db/schema"
+import { tools } from "@/server/tools/registry"
 
 import {
   accessRow,
@@ -160,11 +161,16 @@ export async function assertCompanyRole(
 }
 
 // Who may ask for a change to a locked record: whoever may write the tool, and
-// the few roles named for it in extraChangeRequesters.
+// the few roles named for it in extraChangeRequesters. Nobody may for a tool
+// that can never change once locked, such as D2.6's baseline.
 export function mayRequestChange(
   roles: readonly Role[],
   toolId: string
 ): boolean {
+  if (tools.getTool(toolId)?.noChangeRequests) {
+    return false
+  }
+
   return (
     roleAllows(roles, toolId, "write") ||
     roles.some((role) => extraChangeRequesters.get(toolId)?.includes(role))

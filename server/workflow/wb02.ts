@@ -7,9 +7,9 @@ import type { WorkbookMap } from "./map"
 // project. The Finance Officer's review, D2.4, waits for D2.3 locked with
 // Approved, and the Head of R&D / Ops's review, D2.5, for D2.4 locked with
 // Approved. Sending the draft back is each review's own (its `sendsBackTo`).
-// D2.5 locked with Rejected closes the project. The tools after them are
-// added as each is built; D2.6 waits for D2.5 locked with Approved for
-// Client Transmission.
+// D2.5 locked with Rejected closes the project, and with Approved for Client
+// Transmission opens D2.6, the baseline. The tools after it are added as each
+// is built.
 export const wb02: WorkbookMap = {
   workbook: "wb02",
   opens: { after: { all: ["D1.16"] } },
@@ -27,6 +27,15 @@ export const wb02: WorkbookMap = {
       tool: "D2.5",
       after: { all: ["D2.4"] },
       when: { tool: "D2.4", field: "commercialStatus", oneOf: ["Approved"] },
+    },
+    {
+      tool: "D2.6",
+      after: { all: ["D2.5"] },
+      when: {
+        tool: "D2.5",
+        field: "executiveDecision",
+        oneOf: ["Approved for Client Transmission"],
+      },
     },
   ],
   stops: [

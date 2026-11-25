@@ -28,6 +28,8 @@ import { FINANCE_REVIEW } from "@/lib/finance-review"
 import { financeReviewValues } from "@/server/contract/finance-review"
 import { EXECUTIVE_REVIEW } from "@/lib/executive-review"
 import { executiveReviewValues } from "@/server/contract/executive-review"
+import { BASELINE } from "@/lib/baseline"
+import { baselineValues } from "@/server/contract/baseline"
 import { t3ContractValues } from "@/server/contract/t3-contract"
 import { tools } from "@/server/tools/registry"
 
@@ -140,6 +142,10 @@ async function workedOut(
 
     case EXECUTIVE_REVIEW: {
       return await executiveReviewValues(database, projectId)
+    }
+
+    case BASELINE: {
+      return await baselineValues(database, projectId)
     }
 
     default: {

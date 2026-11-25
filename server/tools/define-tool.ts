@@ -635,16 +635,22 @@ const toolDefinition = z
       .optional(),
     // Select fields that must hold one option before the record can be
     // submitted, each with what to say until then, such as "Yes" to Ready
-    // for PM Review.
+    // for PM Review. With `column`, `field` is a table and every one of its
+    // rows must hold the option in that select column, such as each task
+    // Done.
     submitWhen: z
       .array(
         z.strictObject({
           field: fieldKey,
+          column: fieldKey.optional(),
           is: z.string().min(1),
           message: z.string().min(1),
         })
       )
       .optional(),
+    // Once locked the record can never change: no change request can be
+    // raised on it, such as a baseline that negotiation holds to.
+    noChangeRequests: z.boolean().optional(),
     // Signature fields signed one after another once the record is
     // submitted, in `order`. Signing `approves` is the approval, so the tool
     // has no Approve button, and signing the last one locks the record.
@@ -749,11 +755,19 @@ const toolDefinition = z
     value.submitWhen?.forEach((rule, index) => {
       const named = value.fields.find((entry) => entry.key === rule.field)
 
-      if (named?.type !== "select" || !named.options.includes(rule.is)) {
+      const select = rule.column
+        ? named?.type === "table"
+          ? named.columns.find((entry) => entry.key === rule.column)
+          : undefined
+        : named
+
+      if (select?.type !== "select" || !select.options.includes(rule.is)) {
         context.addIssue({
           code: "custom",
           path: ["submitWhen", index],
-          message: `${rule.field} is not a select with the option "${rule.is}"`,
+          message: rule.column
+            ? `${rule.field} is not a table with a select column ${rule.column} holding "${rule.is}"`
+            : `${rule.field} is not a select with the option "${rule.is}"`,
         })
       }
     })

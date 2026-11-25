@@ -1,4 +1,5 @@
 import { eq } from "drizzle-orm"
+import { z } from "zod"
 
 import { people, type JsonObject } from "@/db/schema"
 import type { Transaction } from "@/server/audit/audit"
@@ -45,15 +46,34 @@ export async function lockValues(
   )
 }
 
-// The tool's select fields that do not yet hold the option submitting needs,
-// each with what to say about it.
+// A table's rows, as far as a submit rule reads them: anything else is no
+// rows, which never meets the rule.
+const tableRows = z.array(z.record(z.string(), z.unknown())).catch([])
+
+// Whether the record holds the option a submit rule needs: in the select
+// field itself, or, for a table, in that column of every one of its rows.
+function meets(
+  payload: JsonObject,
+  rule: { field: string; column?: string; is: string }
+) {
+  const { column } = rule
+
+  if (!column) {
+    return payload[rule.field] === rule.is
+  }
+
+  const rows = tableRows.parse(payload[rule.field])
+
+  return rows.length > 0 && rows.every((row) => row[column] === rule.is)
+}
+
+// The tool's select fields, or table columns, that do not yet hold the option
+// submitting needs, each with what to say about it.
 export function unmetSubmitRules(
   toolId: string,
   payload: JsonObject
 ): FieldError[] {
   return (tools.getTool(toolId)?.submitWhen ?? []).flatMap((rule) =>
-    payload[rule.field] === rule.is
-      ? []
-      : [{ field: rule.field, message: rule.message }]
+    meets(payload, rule) ? [] : [{ field: rule.field, message: rule.message }]
   )
 }

@@ -445,6 +445,9 @@ export function ToolForm({
               required={isBox || !isGroup(field) ? field.required : undefined}
               invalid={Boolean(message)}
               describedBy={message ? errorId : undefined}
+              placeholder={
+                "placeholder" in field ? field.placeholder : undefined
+              }
             />
             {message && <FieldError id={errorId}>{message}</FieldError>}
           </Field>

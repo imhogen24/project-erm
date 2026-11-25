@@ -96,6 +96,18 @@ export async function makeProject(
   return { id, name, requestId }
 }
 
+// The project's status, such as "closed" once a hard stop is locked.
+export async function projectStatusOf(projectId: string) {
+  const [project] = await withDatabase((database) =>
+    database
+      .select({ status: projects.status })
+      .from(projects)
+      .where(eq(projects.id, projectId))
+  )
+
+  return project?.status
+}
+
 export async function giveRoles(
   personId: string,
   projectId: string,

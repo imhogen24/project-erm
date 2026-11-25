@@ -21,6 +21,12 @@ import {
 import { ipOptions } from "@/lib/t3-contract"
 import { deliverableCategories, projectMilestones } from "@/lib/pm-review"
 import {
+  OVERHEAD_MET,
+  financialElements,
+  paymentMilestones,
+  riskProtections,
+} from "@/lib/finance-review"
+import {
   t3Deliverables,
   t3Exclusions,
   t3PricingLines,
@@ -875,6 +881,36 @@ function stageD23() {
   })
 }
 
+// The FO's review of the draft, approved, signed and submitted, which locked
+// it, so D2.5 is open for the Head of R&D / Ops. Row 2.2 holds D1.14's
+// answer, filled in each time it is shown.
+function stageD24() {
+  return payloadOf({
+    valueVerification: financialElements.map((element, index) => ({
+      element,
+      clauseRef: index === 1 ? `[${OVERHEAD_MET}]` : "Section 3.1",
+      status: "Accurate",
+    })),
+    paymentVerification: paymentMilestones.map((milestone) => ({
+      milestone,
+      clauseRef: "Section 3.3",
+      cashFlowSafe: "Yes",
+    })),
+    riskVerification: riskProtections.map((protection) => ({
+      protection,
+      clauseRef: "Section 8.1",
+      protected: "Yes",
+    })),
+    commercialStatus: "Approved",
+    dateReviewCompleted: "2026-11-04",
+    signOffDate: "2026-11-04",
+    foSignature: {
+      signedBy: "role:FO",
+      signedAt: "2026-11-04T10:00:00.000Z",
+    },
+  })
+}
+
 function tier1Records(name: string): SeedRecord[] {
   const stage = stageOf(name)
   const files = stageFiles(stage)
@@ -909,6 +945,7 @@ function tier1Records(name: string): SeedRecord[] {
     { toolId: "D2.1", state: "locked", day: 29, payload: stageD21() },
     { toolId: "D2.2", state: "locked", day: 31, payload: stageD22() },
     { toolId: "D2.3", state: "locked", day: 33, payload: stageD23() },
+    { toolId: "D2.4", state: "locked", day: 35, payload: stageD24() },
   ]
 }
 
@@ -948,6 +985,7 @@ function tier3Records(name: string): SeedRecord[] {
     { toolId: "D2.1", state: "locked", day: 26, payload: stageD21() },
     { toolId: "T3.D2.2a", state: "locked", day: 28, payload: stageT3D22a() },
     { toolId: "D2.3", state: "locked", day: 30, payload: stageD23() },
+    { toolId: "D2.4", state: "locked", day: 32, payload: stageD24() },
   ]
 }
 

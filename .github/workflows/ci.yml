@@ -6,6 +6,13 @@ on:
   push:
     branches: [main]
 
+# A new push to a pull request stops the run for the push before it. Each run
+# on main gets a group of its own, so none is cancelled or replaced while it
+# waits.
+concurrency:
+  group: ci-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -57,7 +64,54 @@ jobs:
       - run: bun install --frozen-lockfile
       - run: bun run test
 
+  # The browser tests run on pull requests only: main gets the same code the
+  # pull request already passed. They are split across four machines, each
+  # with its own database, so the groups cannot touch each other's data.
   e2e:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: erm
+          POSTGRES_PASSWORD: erm
+          POSTGRES_DB: erm_dev
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U erm -d erm_dev"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://erm:erm@localhost:5433/erm_dev
+      BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
+      BETTER_AUTH_URL: http://localhost:3000
+      E2E_PRODUCTION: skip
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run db:migrate
+      - run: bun run db:seed
+      # The runner already has Chrome's system libraries, so only the browser
+      # is fetched, from Playwright, never from Ubuntu's package servers.
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ hashFiles('bun.lock') }}
+      - run: bunx playwright install chromium
+      - run: bun run test:e2e --shard=${{ matrix.shard }}/4
+
+  # The one browser test that needs a production build, kept apart so the
+  # other groups do not wait for the build.
+  e2e-production:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -77,17 +131,26 @@ jobs:
       DATABASE_URL: postgres://erm:erm@localhost:5433/erm_dev
       BETTER_AUTH_SECRET: ci-only-secret-not-used-anywhere-else
       BETTER_AUTH_URL: http://localhost:3000
+      E2E_PRODUCTION: only
     steps:
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v2
       - run: bun install --frozen-lockfile
       - run: bun run db:migrate
-      - run: bun run db:seed
-      # The runner already has Chrome's system libraries, so only the browser
-      # is fetched, from Playwright, never from Ubuntu's package servers.
       - uses: actions/cache@v4
         with:
           path: ~/.cache/ms-playwright
           key: playwright-${{ hashFiles('bun.lock') }}
       - run: bunx playwright install chromium
       - run: bun run test:e2e
+
+  # One check that is green only when every browser test group passed, so a
+  # single name can be made required on main.
+  e2e-done:
+    if: always() && github.event_name == 'pull_request'
+    needs: [e2e, e2e-production]
+    runs-on: ubuntu-latest
+    steps:
+      - if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
+      - run: echo "All browser tests passed."

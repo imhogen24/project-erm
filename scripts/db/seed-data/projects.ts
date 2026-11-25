@@ -381,12 +381,28 @@ const acceptedAsIs = tier1Stage(
   "Mill 1 tonne of paddy an hour with a destoner and polisher."
 )
 
+// A Tier 1 project whose final contract was signed on paper (D2.11 sent by
+// Physical Courier), so D2.12 starts on Physical Scan with no files.
+export const PAPER_SIGNED_PROJECT = `${DEV_PROJECT}D2.11 Signed on Paper (Tier 1)`
+
+const paperSigned = tier1Stage(
+  PAPER_SIGNED_PROJECT,
+  "active",
+  "2026-09-15T09:00:00Z",
+  "Kumasi",
+  client,
+  "everyone",
+  "Cassava grater with press",
+  "Grate and press 500 kg of cassava an hour for gari."
+)
+
 export const projects: readonly SeedProject[] = [
   ...toolProjects.map((each) => each.project),
   ...testProjects.map((each) => each.project),
   needsTeam,
   ...stageProjects,
   acceptedAsIs,
+  paperSigned,
 ]
 
 export function seedProjectNamed(name: string) {

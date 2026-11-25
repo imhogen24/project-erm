@@ -37,6 +37,8 @@ import { negotiationInviteValues } from "@/server/contract/negotiation-invite"
 import { NEGOTIATION_NOTES } from "@/lib/negotiation-notes"
 import { FINAL_CONTRACT } from "@/lib/final-contract"
 import { SIGNATURE_CONTRACT } from "@/lib/signature-contract"
+import { EXECUTED_CONTRACT } from "@/lib/executed-contract"
+import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
 import { finalContractValues } from "@/server/contract/final-contract"
 import { negotiationNotesValues } from "@/server/contract/negotiation-notes"
@@ -176,6 +178,10 @@ async function workedOut(
 
     case SIGNATURE_CONTRACT: {
       return await signatureValues(database, projectId, payload)
+    }
+
+    case EXECUTED_CONTRACT: {
+      return await executedValues(database, projectId, payload)
     }
 
     default: {

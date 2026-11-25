@@ -111,6 +111,11 @@ import { NEGOTIATION_INVITE } from "@/lib/negotiation-invite"
 import { NEGOTIATION_NOTES } from "@/lib/negotiation-notes"
 import { FINAL_CONTRACT } from "@/lib/final-contract"
 import { SIGNATURE_CONTRACT } from "@/lib/signature-contract"
+import { EXECUTED_CONTRACT } from "@/lib/executed-contract"
+import {
+  executedStart,
+  startExecutedRecord,
+} from "@/server/contract/executed-contract"
 import {
   signatureMissing,
   signatureStart,
@@ -238,7 +243,7 @@ function changedFilesOf(
 async function startOf(
   toolId: string,
   projectId: string,
-  writer: string
+  writer: { id: string; name: string }
 ): Promise<FormValues> {
   switch (toolId) {
     case FEASIBILITY: {
@@ -323,7 +328,14 @@ async function startOf(
     }
 
     case SIGNATURE_CONTRACT: {
-      const start = await signatureStart(getDatabase(), projectId, writer)
+      const start = await signatureStart(getDatabase(), projectId, writer.name)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
+    case EXECUTED_CONTRACT: {
+      const start = await executedStart(getDatabase(), projectId)
 
       // SAFETY: the start is built for this tool's own fields.
       return start as FormValues
@@ -383,6 +395,21 @@ export default async function Page({
 
   if (!tool) {
     notFound()
+  }
+
+  // D2.12 after a contract signed in the app starts its draft, the first
+  // time the CA opens it, with the signed contract and signing log the app
+  // makes. The screen is read again either way, since someone else may have
+  // started it meanwhile.
+  if (toolId === EXECUTED_CONTRACT && !view.record && view.can.write) {
+    await startExecutedRecord(getDatabase(), session.user.id, projectId)
+
+    view = await getRecordScreen(
+      getDatabase(),
+      session.user.id,
+      projectId,
+      toolId
+    )
   }
 
   // The signer whose turn it is opening the record for the first time once
@@ -704,10 +731,11 @@ export default async function Page({
   // client's legal name and D1.15's figures. D2.3: the sheet's rows, and
   // D1.15's client dependencies on Tier 1. D2.4 and D2.5: the sheet's rows.
   // D2.6: the draft's contract value and duration. D2.10: D2.9's agreed
-  // concessions. D2.11: the client contact, the HE and the script.
+  // concessions. D2.11: the client contact, the HE and the script. D2.12:
+  // the platform D2.11 was signed on.
   if (!view.record && view.can.write) {
     formValues = {
-      ...(await startOf(toolId, projectId, session.user.name)),
+      ...(await startOf(toolId, projectId, session.user)),
       ...formValues,
     }
   }

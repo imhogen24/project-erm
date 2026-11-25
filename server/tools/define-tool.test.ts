@@ -1063,3 +1063,108 @@ describe("defineTool, reviews that send work back", () => {
     ).toHaveLength(1)
   })
 })
+
+describe("defineTool, signing from a field and answers that decide", () => {
+  const route: ToolInput["fields"][number] = {
+    key: "route",
+    label: "Route",
+    type: "select",
+    options: ["In app", "On paper"],
+  }
+
+  const sentAt: ToolInput["fields"][number] = {
+    key: "sentAt",
+    label: "Sent at",
+    type: "text",
+    systemFilled: true,
+  }
+
+  function tool(fields: ToolInput["fields"], extra: Partial<ToolInput> = {}) {
+    return defineTool({
+      id: "D2.11",
+      name: "Signed from a field",
+      workbook: "wb02",
+      fields: [route, sentAt, ...fields],
+      ...extra,
+    })
+  }
+
+  const signature = (
+    extra: Partial<
+      Extract<ToolInput["fields"][number], { type: "signature" }>
+    > = {}
+  ): ToolInput["fields"][number] => ({
+    key: "clientSignature",
+    label: "Client",
+    type: "signature",
+    signedBy: ["Client"],
+    ...extra,
+  })
+
+  it("signs from a field the system fills on a draft, and may lock on submit", () => {
+    expect(
+      tool([signature()], {
+        signInTurn: { order: ["clientSignature"], from: "sentAt" },
+        locksOnSubmit: true,
+      }).signInTurn
+    ).toEqual({ order: ["clientSignature"], from: "sentAt" })
+  })
+
+  it("refuses to sign from a field the form writes, or one filled on lock", () => {
+    expect(() =>
+      tool([signature()], {
+        signInTurn: { order: ["clientSignature"], from: "route" },
+      })
+    ).toThrow(
+      "route is not a field the system fills while the record is a draft"
+    )
+    expect(() =>
+      tool(
+        [
+          signature(),
+          {
+            key: "lockedOn",
+            label: "Locked on",
+            type: "date",
+            systemFilled: true,
+            filledOnLock: "lockedAt",
+          },
+        ],
+        { signInTurn: { order: ["clientSignature"], from: "lockedOn" } }
+      )
+    ).toThrow(
+      "lockedOn is not a field the system fills while the record is a draft"
+    )
+  })
+
+  it("refuses an answer that is not one of the select's options", () => {
+    expect(() =>
+      tool([signature({ onlyWhen: { field: "route", is: "In ap" } })])
+    ).toThrow(/clientSignature waits for route to be .*In ap/)
+    expect(() =>
+      tool([
+        {
+          key: "tracker",
+          label: "Tracker",
+          type: "table",
+          readOnlyWhen: { field: "sentAt", is: "In app" },
+          columns: [{ key: "status", label: "Status", type: "text" }],
+        },
+      ])
+    ).toThrow(/tracker waits for sentAt to be .*In app/)
+  })
+
+  it("keeps a first view only in a field the system fills", () => {
+    expect(() => tool([signature({ viewedAs: "route" })])).toThrow(
+      "clientSignature keeps its first view in route, which is not a field the system fills"
+    )
+    expect(
+      tool([
+        signature({
+          viewedAs: "sentAt",
+          onlyWhen: { field: "route", is: "In app" },
+        }),
+      ]).fields
+    ).toHaveLength(3)
+  })
+})

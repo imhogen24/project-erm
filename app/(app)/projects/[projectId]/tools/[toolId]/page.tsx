@@ -71,7 +71,11 @@ import {
   NEEDS_ASSESSMENT,
   clientTechnicalAnswers,
 } from "@/server/needs/needs-assessment"
-import { hiddenFromClient, sentBackReason } from "@/server/records/records"
+import {
+  hiddenFromClient,
+  recordViewed,
+  sentBackReason,
+} from "@/server/records/records"
 import { SCOPE_OF_WORK, clientMeeting } from "@/server/scope/scope-of-work"
 import { AlignmentMeetingActions } from "@/components/alignment-meeting-actions"
 import {
@@ -106,6 +110,11 @@ import {
 import { NEGOTIATION_INVITE } from "@/lib/negotiation-invite"
 import { NEGOTIATION_NOTES } from "@/lib/negotiation-notes"
 import { FINAL_CONTRACT } from "@/lib/final-contract"
+import { SIGNATURE_CONTRACT } from "@/lib/signature-contract"
+import {
+  signatureMissing,
+  signatureStart,
+} from "@/server/contract/signature-contract"
 import { finalContractStart } from "@/server/contract/final-contract"
 import { negotiationNotesStart } from "@/server/contract/negotiation-notes"
 import {
@@ -142,6 +151,7 @@ import {
   withdrawRecordAction,
   resubmitClientRequestAction,
   sendAcknowledgementAction,
+  sendSignatureRequestAction,
   sendTransmittalAction,
   sendNegotiationInviteAction,
   retryAcknowledgementAction,
@@ -225,7 +235,11 @@ function changedFilesOf(
 
 // What a tool with no record yet starts its writer from. Empty for a tool
 // that starts blank.
-async function startOf(toolId: string, projectId: string): Promise<FormValues> {
+async function startOf(
+  toolId: string,
+  projectId: string,
+  writer: string
+): Promise<FormValues> {
   switch (toolId) {
     case FEASIBILITY: {
       // SAFETY: the start is built for this tool's own fields.
@@ -308,6 +322,13 @@ async function startOf(toolId: string, projectId: string): Promise<FormValues> {
       return start as FormValues
     }
 
+    case SIGNATURE_CONTRACT: {
+      const start = await signatureStart(getDatabase(), projectId, writer)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
     default: {
       return {}
     }
@@ -362,6 +383,21 @@ export default async function Page({
 
   if (!tool) {
     notFound()
+  }
+
+  // The signer whose turn it is opening the record for the first time once
+  // it can be signed, such as the client on D2.11, is kept as when they
+  // viewed it.
+  if (
+    view.record &&
+    (await recordViewed(getDatabase(), session.user.id, view.record.id))
+  ) {
+    view = await getRecordScreen(
+      getDatabase(),
+      session.user.id,
+      projectId,
+      toolId
+    )
   }
 
   // A tool cannot be opened until the tool before it is locked. Its address
@@ -445,6 +481,7 @@ export default async function Page({
           | typeof sendAcknowledgementAction
           | typeof sendTransmittalAction
           | typeof sendNegotiationInviteAction
+          | typeof sendSignatureRequestAction
         label?: string
         done?: string
       }
@@ -543,6 +580,26 @@ export default async function Page({
         ? transmittalMissing(sentTo, view.record.payload)
         : ["choose whether to follow up after 3 days"],
       run: sendTransmittalAction,
+    }
+  }
+
+  // D2.11: the CA sends the final contract for signature while D2.11 is a
+  // draft not yet sent. Once sent, it waits for the signatures.
+  if (
+    toolId === SIGNATURE_CONTRACT &&
+    view.project.status === "active" &&
+    view.can.write &&
+    (view.state === "draft" || view.state === "notStarted") &&
+    !view.record?.payload.dispatchConfirmed
+  ) {
+    send = {
+      missing: await signatureMissing(
+        getDatabase(),
+        projectId,
+        view.record?.payload ?? {}
+      ),
+      run: sendSignatureRequestAction,
+      done: "Sent for signature.",
     }
   }
 
@@ -647,10 +704,10 @@ export default async function Page({
   // client's legal name and D1.15's figures. D2.3: the sheet's rows, and
   // D1.15's client dependencies on Tier 1. D2.4 and D2.5: the sheet's rows.
   // D2.6: the draft's contract value and duration. D2.10: D2.9's agreed
-  // concessions.
+  // concessions. D2.11: the client contact, the HE and the script.
   if (!view.record && view.can.write) {
     formValues = {
-      ...(await startOf(toolId, projectId)),
+      ...(await startOf(toolId, projectId, session.user.name)),
       ...formValues,
     }
   }
@@ -677,11 +734,25 @@ export default async function Page({
     projectId
   )
 
+  // A table the system fills while one answer holds, such as D2.11's
+  // signature tracker while the contract is signed in the app, reads as the
+  // system's.
+  sheetTool = {
+    ...sheetTool,
+    fields: sheetTool.fields.map((field) =>
+      field.type === "table" &&
+      field.readOnlyWhen &&
+      formValues[field.readOnlyWhen.field] === field.readOnlyWhen.is
+        ? { ...field, readOnly: true }
+        : field
+    ),
+  }
+
   // Nor the fields this project does not ask for, such as D2.10's financial
   // re-check on a contract nobody negotiated.
   sheetTool = withoutFieldsOff(
     toolAsShown(sheetTool, { client: asClient }),
-    await fieldsOff(getDatabase(), projectId, toolId)
+    await fieldsOff(getDatabase(), projectId, toolId, formValues)
   )
 
   if (asClient) {

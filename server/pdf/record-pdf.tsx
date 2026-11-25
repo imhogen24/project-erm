@@ -408,7 +408,7 @@ export async function recordContent(
       sections: sectionsOf(
         withoutFieldsOff(
           toolAsShown(tool, { client }),
-          await fieldsOff(database, record.projectId, tool.id)
+          await fieldsOff(database, record.projectId, tool.id, values)
         ),
         values,
         names,

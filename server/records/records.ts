@@ -64,10 +64,12 @@ import {
 import { applySendBack } from "./send-back"
 import { submittedValues } from "./submitted-values"
 import {
+  approvingTurn,
   nextTurn,
   signatureField,
   signaturesOf,
   turnsOf,
+  turnsOpen,
   unsignedFields,
   withoutSignatures,
 } from "./signatures"
@@ -501,7 +503,12 @@ async function move(
   if (to === "approved" || (to === "locked" && signedInTurn)) {
     const unsigned = unsignedFields(current.toolId, current.payload, {
       forApproval: to === "approved",
-      off: await fieldsOff(transaction, current.projectId, current.toolId),
+      off: await fieldsOff(
+        transaction,
+        current.projectId,
+        current.toolId,
+        current.payload
+      ),
     })
 
     if (unsigned.length > 0) {
@@ -634,7 +641,7 @@ export async function transitionRecord(
     // A tool signed in turn asks for its first signature instead of an
     // approval.
     if (to === "submitted" && turnsOf(record.toolId)) {
-      await askNextSignature(transaction, actor, result)
+      outbox.push(...(await askNextSignature(transaction, actor, result)))
 
       return { moved: result, emails: outbox }
     }
@@ -713,7 +720,12 @@ async function writeDraft(
     next
   )
 
-  const payload = edited ? next : { ...next, ...signatures }
+  // A tool signed from a field is signed for what it sent, which an edit can
+  // no longer change (freezesOnceSet), so its signatures stay.
+  const turns = turnsOf(current.toolId)
+  const keeps = turns !== undefined && "from" in turns
+
+  const payload = edited && !keeps ? next : { ...next, ...signatures }
 
   if (isDeepStrictEqual(payload, current.payload)) {
     return current
@@ -734,7 +746,7 @@ async function writeDraft(
 
   await writeAudit(transaction, entry, payloadChanges(before, next))
 
-  if (edited) {
+  if (edited && !keeps) {
     await writeAudit(
       transaction,
       { ...entry, reason: "Signatures cleared: the record was edited" },
@@ -886,7 +898,13 @@ async function askOnStart(
   actor: string,
   record: ToolRecord
 ): Promise<PendingEmail[]> {
-  const off = await fieldsOff(transaction, record.projectId, record.toolId)
+  const off = await fieldsOff(
+    transaction,
+    record.projectId,
+    record.toolId,
+    record.payload
+  )
+
   const emails: PendingEmail[] = []
 
   for (const field of tools.getTool(record.toolId)?.fields ?? []) {
@@ -909,35 +927,52 @@ async function askOnStart(
   return emails
 }
 
-// Asks whoever signs next on a record signed in turn.
-async function askNextSignature(
+// Asks whoever signs next on a record signed in turn, in the app, and returns
+// the emails to send once the transaction commits.
+export async function askNextSignature(
   transaction: Transaction,
   actor: string,
   record: ToolRecord
-): Promise<void> {
+): Promise<PendingEmail[]> {
   const next = nextTurn(record.toolId, record.payload)
 
-  if (next) {
-    await notifySignatureNeeded(transaction, actor, record, {
-      label: next.label,
-      signedBy: next.signedBy ?? [],
-    })
-  }
+  return next
+    ? notifySignatureNeeded(transaction, actor, record, {
+        label: next.label,
+        signedBy: next.signedBy ?? [],
+      })
+    : []
 }
 
-// A signature signed in turn is signed once the record is submitted, only
-// when every one before it is signed. The approving one is never signed by
-// whoever submitted the record, as with Approve.
+// A signature signed in turn is signed once the record is submitted, or, for
+// a tool signed from a field, once the system fills it, only when every one
+// before it is signed. The approving one is never signed by whoever
+// submitted the record, as with Approve.
 function assertTurn(current: ToolRecord, fieldKey: string, actor: string) {
   const turns = turnsOf(current.toolId)!
   const next = nextTurn(current.toolId, current.payload)
   const field = signatureField(current.toolId, fieldKey)!
 
-  if (current.state !== "submitted" && current.state !== "approved") {
+  const onDraft = "from" in turns
+
+  if (current.state === "draft" && !onDraft) {
     throw new RecordNotEditableError(
-      current.state === "draft"
-        ? `${field.label} is signed once the record is submitted`
-        : `A ${current.state} record cannot be signed`
+      `${field.label} is signed once the record is submitted`
+    )
+  }
+
+  if (
+    current.state === "draft" &&
+    !turnsOpen(current.toolId, "draft", current.payload)
+  ) {
+    throw new RecordNotEditableError(`${field.label} is signed once it is sent`)
+  }
+
+  const signable = onDraft ? ["draft"] : ["submitted", "approved"]
+
+  if (!signable.includes(current.state)) {
+    throw new RecordNotEditableError(
+      `A ${current.state} record cannot be signed`
     )
   }
 
@@ -949,7 +984,10 @@ function assertTurn(current: ToolRecord, fieldKey: string, actor: string) {
     )
   }
 
-  if (fieldKey === turns.approves && current.submittedBy === actor) {
+  if (
+    fieldKey === approvingTurn(current.toolId) &&
+    current.submittedBy === actor
+  ) {
     throw new SelfApprovalError(
       "The person who submitted this record cannot approve it"
     )
@@ -957,7 +995,9 @@ function assertTurn(current: ToolRecord, fieldKey: string, actor: string) {
 }
 
 // After a signature signed in turn: the approving one approves the record,
-// the last one locks it, and otherwise whoever signs next is asked.
+// the last one locks it, and otherwise whoever signs next is asked. The last
+// signature of a tool signed from a field locks its draft straight away:
+// nobody approves it.
 async function afterTurn(
   transaction: Transaction,
   actor: string,
@@ -968,14 +1008,18 @@ async function afterTurn(
   await clearSignatureNeeded(transaction, record.id)
 
   const approved =
-    fieldKey === turnsOf(record.toolId)!.approves
+    fieldKey === approvingTurn(record.toolId)
       ? await move(transaction, actor, record, "approved", outbox)
       : record
 
   if (nextTurn(approved.toolId, approved.payload)) {
-    await askNextSignature(transaction, actor, approved)
+    outbox.push(...(await askNextSignature(transaction, actor, approved)))
 
     return approved
+  }
+
+  if (approved.state === "draft") {
+    return lockDraftIn(transaction, actor, approved.id, {}, outbox)
   }
 
   return move(transaction, actor, approved, "locked", outbox)
@@ -1011,7 +1055,9 @@ export async function signField(
   }
 
   if (
-    (await fieldsOff(database, record.projectId, record.toolId)).has(fieldKey)
+    (
+      await fieldsOff(database, record.projectId, record.toolId, record.payload)
+    ).has(fieldKey)
   ) {
     throw new ValidationError([
       { field: fieldKey, message: "This project does not ask for it" },
@@ -1022,7 +1068,7 @@ export async function signField(
   const inTurn = turns?.order.includes(fieldKey) ?? false
 
   // The approving signature is an approval, so it needs the right to approve.
-  if (turns?.approves === fieldKey) {
+  if (approvingTurn(record.toolId) === fieldKey) {
     await assertMay(database, actor, record.projectId, record.toolId, "approve")
   }
 
@@ -1090,8 +1136,10 @@ export async function approveRecord(
 
   const turns = turnsOf(record.toolId)
 
-  if (turns) {
-    const approving = signatureField(record.toolId, turns.approves)!
+  const approves = approvingTurn(record.toolId)
+
+  if (turns && approves) {
+    const approving = signatureField(record.toolId, approves)!
 
     throw new InvalidTransitionError(
       `${record.toolId} is approved by signing ${approving.label}`
@@ -1277,7 +1325,8 @@ export async function lockDraftIn(
   transaction: Transaction,
   actor: string,
   recordId: string,
-  systemValues: JsonObject = {}
+  systemValues: JsonObject = {},
+  outbox: PendingEmail[] = []
 ): Promise<ToolRecord> {
   const current = await lockRecord(transaction, recordId)
 
@@ -1334,8 +1383,7 @@ export async function lockDraftIn(
     [stateChange("draft", "approved")]
   )
 
-  // The tools locked this way send no work back, so no email waits on it.
-  return move(transaction, actor, approved!, "locked", [])
+  return move(transaction, actor, approved!, "locked", outbox)
 }
 
 // D1.4's Send, after the email has gone. The caller checks the permission.
@@ -1451,4 +1499,58 @@ export async function setSystemValues(
   )
 
   return updated!
+}
+
+// Keeps when the person whose turn it is to sign first opens the record,
+// once it can be signed, in the field their signature names (`viewedAs`),
+// such as the client opening D2.11 once it is sent. Anyone else's open, or
+// a second one, changes nothing.
+export async function recordViewed(
+  database: Database,
+  actor: string,
+  recordId: string,
+  now = new Date()
+): Promise<boolean> {
+  const record = await loadRecord(database, recordId)
+  const next = nextTurn(record.toolId, record.payload)
+  const viewedAs = next?.viewedAs
+
+  if (
+    !next ||
+    !viewedAs ||
+    record.state !== "draft" ||
+    record.payload[viewedAs] !== undefined ||
+    !turnsOpen(record.toolId, record.state, record.payload)
+  ) {
+    return false
+  }
+
+  const held = await rolesOn(database, actor, record.projectId)
+
+  if (!(next.signedBy ?? []).some((role) => held.includes(role))) {
+    return false
+  }
+
+  return database.transaction(async (transaction) => {
+    const current = await lockRecord(transaction, recordId)
+
+    if (
+      current.payload[viewedAs] !== undefined ||
+      nextTurn(current.toolId, current.payload)?.key !== next.key ||
+      !turnsOpen(current.toolId, current.state, current.payload)
+    ) {
+      return false
+    }
+
+    await setSystemValues(
+      transaction,
+      actor,
+      recordId,
+      { [viewedAs]: now.toISOString() },
+      `${next.label}: first opened by the signer`,
+      "draft"
+    )
+
+    return true
+  })
 }

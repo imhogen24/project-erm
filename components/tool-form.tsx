@@ -13,6 +13,7 @@ import {
   type RawRow,
   type RawValue,
 } from "@/components/field-control"
+import { FileCell } from "@/components/file-cell"
 import { ActionButton, SheetActions } from "@/components/sheet-actions"
 import {
   DataCell,
@@ -28,6 +29,7 @@ import {
   FieldLegend,
   FieldSet,
 } from "@/components/ui/field"
+import { fileIdOf } from "@/lib/file-reference"
 import { startingFixedRows } from "@/lib/fixed-rows"
 import { hasLiveValues, liveValues } from "@/lib/live-values"
 import { fieldFills, fillFields, type Fills } from "@/lib/placeholders"
@@ -413,6 +415,16 @@ export function ToolForm({
           >
             {shown === "" ? (
               (field.systemNote ?? "Filled in by the system")
+            ) : field.type === "fileLink" && fileIdOf(shown) ? (
+              // A file uploaded in the ERM, such as D2.11's contract once
+              // sent, opens through the record and cannot be removed.
+              <FileCell
+                id={`${field.key}-file`}
+                value={shown}
+                recordId={recordId}
+                readOnly
+                onChange={() => undefined}
+              />
             ) : field.type === "fileLink" ? (
               // A link the system filled in, such as the copy of an email
               // sent, opens.
@@ -436,6 +448,30 @@ export function ToolForm({
     // A true/false field is a box with its label beside it.
     const isBox =
       field.type === "boolean" && !field.inherited && !field.systemFilled
+
+    // A file field takes an upload, as a file cell in a table does.
+    if (field.type === "fileLink") {
+      return (
+        <Controller
+          name={field.key}
+          control={form.control}
+          render={({ field: control }) => (
+            <Field data-invalid={Boolean(message)}>
+              <FileCell
+                id={field.key}
+                value={z.string().catch("").parse(control.value)}
+                recordId={recordId}
+                accept={field.pdfOnly ? "application/pdf" : undefined}
+                invalid={Boolean(message)}
+                describedBy={message ? errorId : undefined}
+                onChange={control.onChange}
+              />
+              {message && <FieldError id={errorId}>{message}</FieldError>}
+            </Field>
+          )}
+        />
+      )
+    }
 
     return (
       <Controller

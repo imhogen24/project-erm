@@ -26,7 +26,13 @@ import { tools } from "@/server/tools/registry"
 import { toolStatus } from "@/server/workflow/workflow"
 
 import { getRecord } from "./records"
-import { nextTurn, signatureFields, turnsOf } from "./signatures"
+import {
+  approvingTurn,
+  nextTurn,
+  signatureFields,
+  turnsOf,
+  turnsOpen,
+} from "./signatures"
 import { UnknownToolError } from "./validate"
 
 export type ScreenState = Exclude<RecordState, "void"> | "notStarted"
@@ -78,9 +84,8 @@ function signableNow(
   const turns = turnsOf(toolId)
   const next = nextTurn(toolId, record.payload)
   const editable = ["notStarted", "draft", "submitted"].includes(record.state)
-
-  const signedAfterSubmit =
-    record.state === "submitted" || record.state === "approved"
+  const approves = approvingTurn(toolId)
+  const open = turnsOpen(toolId, record.state, record.payload)
 
   return signatureFields(toolId)
     .filter((field) =>
@@ -89,10 +94,10 @@ function signableNow(
     .filter((field) => !signed.safeParse(record.payload[field.key]).success)
     .filter((field) =>
       turns?.order.includes(field.key)
-        ? signedAfterSubmit &&
+        ? open &&
           next?.key === field.key &&
-          !(field.key === turns.approves && record.submittedBy === actor) &&
-          (field.key !== turns.approves || roleAllows(held, toolId, "approve"))
+          !(field.key === approves && record.submittedBy === actor) &&
+          (field.key !== approves || roleAllows(held, toolId, "approve"))
         : editable
     )
     .map((field) => field.key)

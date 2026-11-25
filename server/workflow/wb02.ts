@@ -15,7 +15,8 @@ import type { WorkbookMap } from "./map"
 // project, and with Deadlock sends D2.8 back for another meeting (its
 // `sendsBackTo`). D2.10, the finalized contract, opens after D2.9 with Terms
 // Agreed, or straight after D2.7 when the client accepted the draft as it is.
-// The tools after it are added as each is built.
+// D2.10 locked opens D2.11, the contract both sides sign. The tools after it
+// are added as each is built.
 export const wb02: WorkbookMap = {
   workbook: "wb02",
   opens: { after: { all: ["D1.16"] } },
@@ -75,6 +76,7 @@ export const wb02: WorkbookMap = {
         },
       ],
     },
+    { tool: "D2.11", after: { all: ["D2.10"] } },
   ],
   stops: [
     {

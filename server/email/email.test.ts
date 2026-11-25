@@ -80,6 +80,15 @@ const sampleData: EmailDataByKind = {
     signature: "Finance Rep",
     link: "https://erm.example.com/n",
   },
+  signature_reminder: {
+    subject: "IMHO GEN Engineering Services Agreement - Boiler - for signature",
+    clientName: "Asante Mills",
+    link: "https://erm.example.com/r",
+  },
+  signature_overdue: {
+    projectName: "Boiler",
+    link: "https://erm.example.com/o",
+  },
 }
 
 function failingTransport(): Transport {
@@ -328,7 +337,7 @@ describe("sendEmail", () => {
 })
 
 describe("templates", () => {
-  it("covers the six staff kinds and the six client kinds", () => {
+  it("covers the seven staff kinds and the seven client kinds", () => {
     expect([...emailKinds].sort()).toEqual([
       "acknowledgement",
       "approval_needed",
@@ -340,6 +349,8 @@ describe("templates", () => {
       "new_request",
       "sent_back",
       "signature_needed",
+      "signature_overdue",
+      "signature_reminder",
       "transmittal_follow_up",
       "verify_email",
     ])
@@ -353,7 +364,8 @@ describe("templates", () => {
         each !== "meeting_times" &&
         each !== "calendar_invite" &&
         each !== "contract_transmittal" &&
-        each !== "transmittal_follow_up"
+        each !== "transmittal_follow_up" &&
+        each !== "signature_reminder"
     )) {
       const email = renderEmail(kind, sampleData[kind])
 

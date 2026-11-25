@@ -19,6 +19,10 @@ type Props = {
   id: string
   value: string
   recordId?: string
+  // The file types the upload offers, such as "application/pdf".
+  accept?: string
+  // Opens the file but cannot remove it, such as a contract already sent.
+  readOnly?: boolean
   invalid?: boolean
   describedBy?: string
   onChange: (value: string) => void
@@ -40,6 +44,8 @@ export function FileCell({
   id,
   value,
   recordId,
+  accept = "image/*,video/*,application/pdf",
+  readOnly = false,
   invalid,
   describedBy,
   onChange,
@@ -101,15 +107,17 @@ export function FileCell({
             </a>
           </Button>
         )}
-        <Button
-          type="button"
-          variant="ghost"
-          size="icon"
-          aria-label="Remove the file"
-          onClick={() => onChange("")}
-        >
-          <XIcon aria-hidden />
-        </Button>
+        {!readOnly && (
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            aria-label="Remove the file"
+            onClick={() => onChange("")}
+          >
+            <XIcon aria-hidden />
+          </Button>
+        )}
       </div>
     )
   }
@@ -137,7 +145,7 @@ export function FileCell({
             <input
               ref={input}
               type="file"
-              accept="image/*,video/*,application/pdf"
+              accept={accept}
               className="sr-only"
               tabIndex={-1}
               onChange={(event) => {

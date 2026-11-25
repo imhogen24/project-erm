@@ -55,6 +55,53 @@ export function turnsOf(toolId: string) {
   return tools.getTool(toolId)?.signInTurn
 }
 
+// The signature signed in turn that approves the record, if any: a tool
+// signed from a field, such as D2.11, has none.
+export function approvingTurn(toolId: string): string | undefined {
+  const turns = turnsOf(toolId)
+
+  return turns && "approves" in turns ? turns.approves : undefined
+}
+
+// Whether a field shown only while one of this record's answers holds, such
+// as D2.11's signatures for Digital Signature, is shown. A field shown only
+// once another tool is locked is worked out with the database
+// (only-when.ts), so it counts as shown here.
+export function shownFor(
+  field: { onlyWhen?: { locked: string } | { field: string; is: string } },
+  payload: JsonObject
+): boolean {
+  const when = field.onlyWhen
+
+  return !when || "locked" in when || payload[when.field] === when.is
+}
+
+// Whether the record's signatures in turn can be signed now: once submitted,
+// or, for a tool signed from a field, while it is a draft that holds that
+// field, and only while the next signature is shown.
+export function turnsOpen(
+  toolId: string,
+  state: string,
+  payload: JsonObject
+): boolean {
+  const turns = turnsOf(toolId)
+  const next = nextTurn(toolId, payload)
+
+  if (!turns || !next || !shownFor(next, payload)) {
+    return false
+  }
+
+  if ("from" in turns) {
+    const from = payload[turns.from]
+
+    return (
+      state === "draft" && from !== undefined && from !== null && from !== ""
+    )
+  }
+
+  return state === "submitted" || state === "approved"
+}
+
 // The signature whose turn it is: the first one signed in turn that is not
 // signed yet. Undefined once all are, or for a tool signed any time.
 export function nextTurn(
@@ -76,9 +123,11 @@ export function unsignedFields(
 ): FieldError[] {
   const turns = turnsOf(toolId)
 
+  const approves = approvingTurn(toolId)
+
   const later =
-    options.forApproval && turns
-      ? turns.order.slice(turns.order.indexOf(turns.approves) + 1)
+    options.forApproval && turns && approves
+      ? turns.order.slice(turns.order.indexOf(approves) + 1)
       : []
 
   return signatureFields(toolId)

@@ -1,4 +1,5 @@
 import { roles, type Role } from "@/db/schema"
+import { tools } from "@/server/tools/registry"
 
 export type Access = "RW" | "RO" | "RA"
 
@@ -291,10 +292,13 @@ export const extraWriters = new Map<string, readonly Role[]>([
 export function writingRoles(toolId: string): Role[] {
   const row = accessRow(toolId) ?? {}
   const extra = extraWriters.get(toolId) ?? []
+  const only = tools.getTool(toolId)?.writers
 
   return roles.filter(
     (role) =>
-      row[role] === "RW" || (row[role] !== undefined && extra.includes(role))
+      (row[role] === "RW" ||
+        (row[role] !== undefined && extra.includes(role))) &&
+      (!only || only.includes(role))
   )
 }
 

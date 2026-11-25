@@ -1,7 +1,32 @@
 import { defineConfig, devices } from "@playwright/test"
 
+// One file checks what a production build hides, and only it needs the slow
+// production build. "skip" leaves it out and "only" runs just it, so CI can
+// keep the build out of the other jobs. Unset, a local run does both.
+const production = process.env.E2E_PRODUCTION
+
+const productionSpec = "**/form-preview-production.spec.ts"
+
+const devServer = {
+  // In CI the database is a service container, so skip the Docker step in `predev`.
+  command: process.env.CI ? "bunx next dev --turbopack" : "bun run dev",
+  url: "http://localhost:3000/api/auth/ok",
+  reuseExistingServer: !process.env.CI,
+  timeout: 120_000,
+}
+
+const productionServer = {
+  // A production build on its own port, to check what production hides.
+  command: "bun run build && bunx next start -p 3100",
+  url: "http://localhost:3100/api/auth/ok",
+  reuseExistingServer: !process.env.CI,
+  timeout: 240_000,
+}
+
 export default defineConfig({
   testDir: "./e2e",
+  testMatch: production === "only" ? productionSpec : undefined,
+  testIgnore: production === "skip" ? productionSpec : undefined,
   // Removes the projects and people the tests make, before and after the run.
   globalSetup: "./e2e/global-cleanup.ts",
   fullyParallel: false,
@@ -13,20 +38,10 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
-  webServer: [
-    {
-      // In CI the database is a service container, so skip the Docker step in `predev`.
-      command: process.env.CI ? "bunx next dev --turbopack" : "bun run dev",
-      url: "http://localhost:3000/api/auth/ok",
-      reuseExistingServer: !process.env.CI,
-      timeout: 120_000,
-    },
-    {
-      // A production build on its own port, to check what production hides.
-      command: "bun run build && bunx next start -p 3100",
-      url: "http://localhost:3100/api/auth/ok",
-      reuseExistingServer: !process.env.CI,
-      timeout: 240_000,
-    },
-  ],
+  webServer:
+    production === "only"
+      ? [productionServer]
+      : production === "skip"
+        ? [devServer]
+        : [devServer, productionServer],
 })

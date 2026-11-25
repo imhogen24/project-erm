@@ -35,6 +35,7 @@ import { d21 } from "./d2-1"
 import { d22 } from "./d2-2"
 import { d23 } from "./d2-3"
 import { d24 } from "./d2-4"
+import { d25 } from "./d2-5"
 import { t3d22a } from "./t3-d2-2a"
 
 const database = createTestDatabase()
@@ -48,10 +49,13 @@ tools.registerTool(d22)
 // WB02's map names the Tier 3 variant beside D2.2.
 tools.registerTool(t3d22a)
 
-// WB02's map names D2.3 after the draft, and D2.4 after D2.3.
+// WB02's map names D2.3 after the draft, D2.4 after D2.3 and D2.5 after
+// D2.4.
 tools.registerTool(d23)
 
 tools.registerTool(d24)
+
+tools.registerTool(d25)
 
 // WB02 keeps its real order: D2.2 waits for D2.1.
 loadUnorderedWorkflow({ wb01: ["D1.3", "D1.15", "D1.16"] })
@@ -385,20 +389,21 @@ describe("submitting", () => {
 })
 
 describe("who sees it", () => {
-  it("lets only the CA write it, and the PM and CR read it", async () => {
+  it("lets only the CA write it, and the PM, HE and CR read it", async () => {
     const cr = await addPerson("Yaw Boateng", ["CR"])
     const om = await addPerson("Kofi Asare", ["OM"])
     const he = await addPerson("Esi Badu", ["HE"])
     const client = await addPerson("Akosua Client", ["Client"])
 
-    for (const reader of [pm, cr]) {
+    // The HE reads it to review the draft in D2.5.
+    for (const reader of [pm, he, cr]) {
       expect(await can(database, reader, projectId, "D2.2", "read")).toBe(true)
       expect(await can(database, reader, projectId, "D2.2", "write")).toBe(
         false
       )
     }
 
-    for (const stranger of [om, he, client]) {
+    for (const stranger of [om, client]) {
       expect(await can(database, stranger, projectId, "D2.2", "read")).toBe(
         false
       )

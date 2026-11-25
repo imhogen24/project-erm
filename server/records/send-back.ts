@@ -43,6 +43,7 @@ async function newestRecord(
       state: toolRecords.state,
       payload: toolRecords.payload,
       updatedAt: toolRecords.updatedAt,
+      lockedAt: toolRecords.lockedAt,
       submittedBy: toolRecords.submittedBy,
     })
     .from(toolRecords)
@@ -158,12 +159,13 @@ async function reopen(
 
 // Runs inside the transaction that locks `record`. A review locked with its
 // send-back answer, such as D2.3 with Revisions Required, reopens the work it
-// reviews for whoever wrote it. That work, locked again, reopens the reviews
-// before the one that sent it back, which approved what is now revised, such
-// as D2.3 when D2.4 sent the draft back. Each review that sent work back
-// reopens, for the reviewer, once that work is locked again and the rule
-// that opens the review holds again: D2.3 once the draft is locked, and
-// D2.4 once D2.3 is locked with Approved too.
+// reviews for whoever wrote it. That work, locked again, reopens the first of
+// the reviews before the one that sent it back, which approved what is now
+// revised: D2.3 when D2.4 or D2.5 sent the draft back. The reviews after it
+// wait their turn, and each reopens, for its reviewer, once the work is
+// locked again, every review it waits for has run again since, and the rule
+// that opens it holds again: after D2.5 sent the draft back, D2.3 runs again,
+// then D2.4 once D2.3 is locked with Approved, then D2.5 once D2.4 is.
 export async function applySendBack(
   transaction: Transaction,
   actor: string,
@@ -202,7 +204,7 @@ export async function applySendBack(
   }
 
   // The reviews on this track, each with the tools it reviews as the track
-  // names them.
+  // names them, and every tool its rule waits for.
   const reviews = all.flatMap((tool) => {
     const back = tool.sendsBackTo
 
@@ -216,40 +218,81 @@ export async function applySendBack(
       return used ? [used] : []
     })
 
-    return [{ id: tool.id, back, reviewed }]
+    return [{ id: tool.id, back, reviewed, waits: waitsOn(tool.id, track) }]
   })
 
   type Review = (typeof reviews)[number]
 
+  const newest = (id: string) => newestRecord(transaction, record.projectId, id)
+
   const sentBack = (each: Review, held: Held | undefined) =>
     held?.state === "locked" && held.payload[each.back.field] === each.back.is
 
-  const ofThis = reviews.filter((each) => each.reviewed.includes(record.toolId))
+  // A locked review whose work was locked again after it, so it approved
+  // what is now revised.
+  const outdated = async (each: Review, held: Held | undefined) => {
+    if (held?.state !== "locked" || !held.lockedAt) {
+      return false
+    }
 
-  const senders: string[] = []
+    for (const id of each.reviewed) {
+      const work = await newest(id)
 
-  for (const each of ofThis) {
-    if (
-      sentBack(each, await newestRecord(transaction, record.projectId, each.id))
-    ) {
-      senders.push(each.id)
+      if (
+        work?.state === "locked" &&
+        work.lockedAt &&
+        work.lockedAt > held.lockedAt
+      ) {
+        return true
+      }
+    }
+
+    return false
+  }
+
+  // The reviews locked with their send-back answer now.
+  const senders: Review[] = []
+
+  for (const each of reviews) {
+    if (sentBack(each, await newest(each.id))) {
+      senders.push(each)
     }
   }
 
-  const waitedOn = new Set(senders.flatMap((id) => [...waitsOn(id, track)]))
+  const ofThis = reviews.filter((each) => each.reviewed.includes(record.toolId))
+
+  const sentThis = senders.filter((each) => ofThis.includes(each))
+
+  const waitedOn = new Set(sentThis.flatMap((each) => [...each.waits]))
+
+  const candidates: Review[] = []
 
   for (const each of ofThis) {
-    if (senders.includes(each.id) || !waitedOn.has(each.id)) {
+    if (
+      !sentThis.includes(each) &&
+      waitedOn.has(each.id) &&
+      (await newest(each.id))?.state === "locked"
+    ) {
+      candidates.push(each)
+    }
+  }
+
+  // Only the first of them runs again now: one that waits for none of the
+  // others, nor for a review that sent the work back.
+  const blocking = new Set([...candidates, ...sentThis].map((each) => each.id))
+
+  for (const each of candidates) {
+    if ([...each.waits].some((id) => blocking.has(id))) {
       continue
     }
 
-    const held = await newestRecord(transaction, record.projectId, each.id)
+    const held = await newest(each.id)
 
     if (held?.state !== "locked") {
       continue
     }
 
-    const reason = `${record.toolId} was revised after ${senders.join(" and ")} sent it back: review it again`
+    const reason = `${record.toolId} was revised after ${sentThis.map((sender) => sender.id).join(" and ")} sent it back: review it again`
 
     await reopen(transaction, systemActor, held, reason)
     await notifyReviewAgain(transaction, actor, held, reason)
@@ -258,23 +301,41 @@ export async function applySendBack(
   for (const each of reviews) {
     if (
       !each.reviewed.includes(record.toolId) &&
-      !waitsOn(each.id, track).has(record.toolId)
+      !each.waits.has(record.toolId)
     ) {
       continue
     }
 
-    const held = await newestRecord(transaction, record.projectId, each.id)
+    const held = await newest(each.id)
 
-    if (!held || !sentBack(each, held)) {
+    // It runs again when it sent the work back, or when it approved work a
+    // later review sent back since.
+    const due =
+      held &&
+      (sentBack(each, held) ||
+        (senders.some((sender) => sender.waits.has(each.id)) &&
+          (await outdated(each, held))))
+
+    if (!held || !due) {
       continue
     }
 
     let revised = true
 
     for (const id of each.reviewed) {
-      const work = await newestRecord(transaction, record.projectId, id)
+      revised &&= (await newest(id))?.state === "locked"
+    }
 
-      revised &&= work?.state === "locked"
+    // Every review it waits for has run again since the work was revised.
+    for (const before of reviews) {
+      if (!revised || !each.waits.has(before.id)) {
+        continue
+      }
+
+      const earlier = await newest(before.id)
+
+      revised &&=
+        earlier?.state === "locked" && !(await outdated(before, earlier))
     }
 
     if (

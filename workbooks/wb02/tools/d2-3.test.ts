@@ -44,14 +44,15 @@ import { d21 } from "./d2-1"
 import { d22 } from "./d2-2"
 import { d23 } from "./d2-3"
 import { d24 } from "./d2-4"
+import { d25 } from "./d2-5"
 import { t3d22a } from "./t3-d2-2a"
 
 const database = createTestDatabase()
 
 registerTestTools({ wb01: ["D1.15", "D1.16"] })
 
-// WB02's map names D2.4 after D2.3.
-for (const tool of [d21, d22, t3d22a, d23, d24]) {
+// WB02's map names D2.4 after D2.3, and D2.5 after D2.4.
+for (const tool of [d21, d22, t3d22a, d23, d24, d25]) {
   tools.registerTool(tool)
 }
 

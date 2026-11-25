@@ -530,6 +530,9 @@ const field = z
       ...required,
       filledOnLock: filledOnLock.optional(),
       shownFrom: shownFrom.optional(),
+      // Hint text in the empty field, such as the sheet's example answer.
+      // Only shown; never stored.
+      placeholder: z.string().min(1).optional(),
     }),
     signature.extend(required),
     select.extend({ ...required, blockedWhile: blockedWhile.optional() }),

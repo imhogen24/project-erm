@@ -26,6 +26,8 @@ import { shownFromValues } from "@/lib/shown-from"
 import { pmReviewValues } from "@/server/contract/pm-review"
 import { FINANCE_REVIEW } from "@/lib/finance-review"
 import { financeReviewValues } from "@/server/contract/finance-review"
+import { EXECUTIVE_REVIEW } from "@/lib/executive-review"
+import { executiveReviewValues } from "@/server/contract/executive-review"
 import { t3ContractValues } from "@/server/contract/t3-contract"
 import { tools } from "@/server/tools/registry"
 
@@ -134,6 +136,10 @@ async function workedOut(
 
     case FINANCE_REVIEW: {
       return await financeReviewValues(database, projectId)
+    }
+
+    case EXECUTIVE_REVIEW: {
+      return await executiveReviewValues(database, projectId)
     }
 
     default: {

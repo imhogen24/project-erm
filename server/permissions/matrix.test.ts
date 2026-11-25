@@ -170,11 +170,23 @@ describe("permission matrix", () => {
     })
   })
 
+  // The HE reads it too, since D2.5 shows it as the Finance review.
   it("gives D2.4 exactly the access agreed for the finance review", () => {
     expect(permissionMatrix["D2.4"]).toEqual({
       PM: "RO",
       FO: "RA",
       CA: "RO",
+      HE: "RO",
+      CR: "RO",
+    })
+  })
+
+  it("gives D2.5 exactly the access agreed for the executive review", () => {
+    expect(permissionMatrix["D2.5"]).toEqual({
+      PM: "RO",
+      FO: "RO",
+      CA: "RO",
+      HE: "RA",
       CR: "RO",
     })
   })

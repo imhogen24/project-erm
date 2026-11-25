@@ -20,6 +20,12 @@ import {
 } from "@/lib/initial-draft"
 import { ipOptions } from "@/lib/t3-contract"
 import {
+  CONTRACT_ADMIN,
+  DONE as TASK_DONE,
+  archiveTasks,
+  contractVariables,
+} from "@/lib/baseline"
+import {
   APPROVED_FOR_CLIENT,
   macroRisks,
   signOffCheckpoints,
@@ -920,7 +926,7 @@ function stageD24() {
 }
 
 // The Head of R&D / Ops's review, approved for client transmission, signed
-// and submitted, which locked it, so D2.6 is open for the CA.
+// and submitted, which locked it, so D2.6 follows for the CA.
 function stageD25() {
   return payloadOf({
     signOffVerification: signOffCheckpoints.map((checkpoint) => ({
@@ -938,6 +944,35 @@ function stageD25() {
     heSignature: {
       signedBy: "role:HE",
       signedAt: "2026-11-06T10:00:00.000Z",
+    },
+  })
+}
+
+// The CA's baseline, every task Done, signed and submitted, which locked it,
+// so D2.7 is open for the CA to email the draft contract. The value is the
+// tier's approved total: D1.15's on Tier 1, T3.D1.15a's on Tier 3.
+function stageD26(value: string, floor: string) {
+  const baselines = [value, "40%", "8 weeks", "30 Days Post-Delivery"]
+  const limits = [floor, "35%", "7 weeks", "60 Days"]
+
+  return payloadOf({
+    lockExecutedBy: staffWith("CA").name,
+    dateLocked: "2026-11-08",
+    baseline: contractVariables.map((row, index) => ({
+      variable: row.variable,
+      baselineValue: baselines[index]!,
+      absoluteLimit: limits[index]!,
+    })),
+    archiveTasks: archiveTasks.map((task) => ({
+      task,
+      assignee: CONTRACT_ADMIN,
+      status: TASK_DONE,
+    })),
+    readyForTransmittal: "Yes",
+    verificationDate: "2026-11-08",
+    caSignature: {
+      signedBy: "role:CA",
+      signedAt: "2026-11-08T10:00:00.000Z",
     },
   })
 }
@@ -978,6 +1013,12 @@ function tier1Records(name: string): SeedRecord[] {
     { toolId: "D2.3", state: "locked", day: 33, payload: stageD23() },
     { toolId: "D2.4", state: "locked", day: 35, payload: stageD24() },
     { toolId: "D2.5", state: "locked", day: 37, payload: stageD25() },
+    {
+      toolId: "D2.6",
+      state: "locked",
+      day: 39,
+      payload: stageD26("GHS 94,400.00", "GHS 90,000.00"),
+    },
   ]
 }
 
@@ -1019,6 +1060,12 @@ function tier3Records(name: string): SeedRecord[] {
     { toolId: "D2.3", state: "locked", day: 30, payload: stageD23() },
     { toolId: "D2.4", state: "locked", day: 32, payload: stageD24() },
     { toolId: "D2.5", state: "locked", day: 34, payload: stageD25() },
+    {
+      toolId: "D2.6",
+      state: "locked",
+      day: 36,
+      payload: stageD26("GHS 60,000.00", "GHS 57,000.00"),
+    },
   ]
 }
 

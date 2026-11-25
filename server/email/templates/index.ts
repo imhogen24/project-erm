@@ -2,9 +2,18 @@ import { acknowledgement, type AcknowledgementData } from "./acknowledgement"
 import { approvalNeeded, type ApprovalNeededData } from "./approval-needed"
 import { assigned, type AssignedData } from "./assigned"
 import { calendarInvite, type CalendarInviteData } from "./calendar-invite"
+import {
+  contractTransmittal,
+  type ContractTransmittalData,
+} from "./contract-transmittal"
+import { followUpSent, type FollowUpSentData } from "./follow-up-sent"
 import type { RenderedEmail } from "./html"
 import { meetingTimes, type MeetingTimesData } from "./meeting-times"
 import { newRequest, type NewRequestData } from "./new-request"
+import {
+  transmittalFollowUp,
+  type TransmittalFollowUpData,
+} from "./transmittal-follow-up"
 import { verifyEmail, type VerifyEmailData } from "./verify-email"
 
 export type { RenderedEmail } from "./html"
@@ -19,6 +28,9 @@ export type EmailDataByKind = {
   verify_email: VerifyEmailData
   meeting_times: MeetingTimesData
   calendar_invite: CalendarInviteData
+  contract_transmittal: ContractTransmittalData
+  transmittal_follow_up: TransmittalFollowUpData
+  follow_up_sent: FollowUpSentData
 }
 
 export type EmailKind = keyof EmailDataByKind
@@ -36,6 +48,9 @@ const templates: Templates = {
   verify_email: verifyEmail,
   meeting_times: meetingTimes,
   calendar_invite: calendarInvite,
+  contract_transmittal: contractTransmittal,
+  transmittal_follow_up: transmittalFollowUp,
+  follow_up_sent: followUpSent,
 }
 
 // SAFETY: templates is an object literal typed Templates, so its keys are

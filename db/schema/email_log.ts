@@ -1,4 +1,11 @@
-import { pgEnum, pgTable, text, timestamp, uuid } from "drizzle-orm/pg-core"
+import {
+  jsonb,
+  pgEnum,
+  pgTable,
+  text,
+  timestamp,
+  uuid,
+} from "drizzle-orm/pg-core"
 
 import { projects } from "./access"
 import { toolRecords } from "./records"
@@ -13,6 +20,16 @@ export const emailStatuses = [
 ] as const
 
 export type EmailStatus = (typeof emailStatuses)[number]
+
+// The email as it went out, kept only for an email a tool shows again, such
+// as D2.7's contract to the client. Attachments are named, not stored.
+export type EmailCopy = {
+  to: string
+  cc: string[]
+  subject: string
+  text: string
+  attachments: string[]
+}
 
 export const emailStatusEnum = pgEnum("email_status", emailStatuses)
 
@@ -38,6 +55,8 @@ export const emailLog = pgTable("email_log", {
   // Set when the delivery check gave up on an email still at sent, after 72
   // hours with no answer. It is not checked again.
   unconfirmedAt: timestamp("unconfirmed_at", { withTimezone: true }),
+  // Filled in once sent, only when the sender asked to keep a copy.
+  copy: jsonb().$type<EmailCopy>(),
   createdAt: timestamp("created_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

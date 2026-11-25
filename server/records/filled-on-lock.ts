@@ -51,18 +51,29 @@ export async function lockValues(
 const tableRows = z.array(z.record(z.string(), z.unknown())).catch([])
 
 // Whether the record holds the option a submit rule needs: in the select
-// field itself, or, for a table, in that column of every one of its rows.
+// field itself, or, for a table, in that column of every one of its rows; or,
+// with `isNot`, any answer other than that option.
 function meets(
   payload: JsonObject,
-  rule: { field: string; column?: string; is: string }
+  rule:
+    | { field: string; column?: string; is: string }
+    | { field: string; isNot: string }
 ) {
+  const value = payload[rule.field]
+
+  if ("isNot" in rule) {
+    const answer = z.string().catch("").parse(value)
+
+    return answer !== "" && answer !== rule.isNot
+  }
+
   const { column } = rule
 
   if (!column) {
-    return payload[rule.field] === rule.is
+    return value === rule.is
   }
 
-  const rows = tableRows.parse(payload[rule.field])
+  const rows = tableRows.parse(value)
 
   return rows.length > 0 && rows.every((row) => row[column] === rule.is)
 }

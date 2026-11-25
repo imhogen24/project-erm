@@ -24,8 +24,10 @@ export type EmailMessage = {
 
 export type EmailAttachment = {
   filename: string
+  // Text, such as a calendar file, or base64 for a binary file such as a PDF.
   content: string
   contentType: string
+  encoding?: "base64"
 }
 
 // The idempotency key is the email's own key, so a provider that accepted an
@@ -48,6 +50,8 @@ export type EmailInput<K extends EmailKind> = {
   projectId?: string
   recordId?: string
   key: string
+  // Keeps what was sent on the row, for a tool that shows the email again.
+  keepCopy?: boolean
 }
 
 export type EmailLogRow = typeof emailLog.$inferSelect
@@ -83,7 +87,7 @@ function createResendTransport(apiKey: string): Transport {
           // Resend reads a string as base64, so the file goes as bytes.
           attachments: message.attachments?.map((file) => ({
             filename: file.filename,
-            content: Buffer.from(file.content),
+            content: Buffer.from(file.content, file.encoding ?? "utf8"),
             contentType: file.contentType,
           })),
         },
@@ -191,6 +195,15 @@ export async function sendEmail<K extends EmailKind>(
       status: "sent",
       messageId: id,
       error: null,
+      ...(input.keepCopy && {
+        copy: {
+          to,
+          cc,
+          subject: email.subject,
+          text: email.text,
+          attachments: (email.attachments ?? []).map((file) => file.filename),
+        },
+      }),
     })
   } catch (error) {
     return await finish(database, row.id, {
@@ -288,7 +301,7 @@ async function claimFailed(database: Database, key: string) {
 async function finish(
   database: Database,
   id: string,
-  values: Pick<Partial<EmailLogRow>, "status" | "messageId" | "error">
+  values: Pick<Partial<EmailLogRow>, "status" | "messageId" | "error" | "copy">
 ) {
   const [row] = await database
     .update(emailLog)

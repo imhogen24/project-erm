@@ -411,9 +411,22 @@ export function ToolForm({
             data-empty={shown === ""}
             className="system-value"
           >
-            {shown === ""
-              ? (field.systemNote ?? "Filled in by the system")
-              : shown}
+            {shown === "" ? (
+              (field.systemNote ?? "Filled in by the system")
+            ) : field.type === "fileLink" ? (
+              // A link the system filled in, such as the copy of an email
+              // sent, opens.
+              <a
+                href={shown}
+                target="_blank"
+                rel="noreferrer"
+                className="underline underline-offset-4"
+              >
+                Open
+              </a>
+            ) : (
+              shown
+            )}
           </output>
           {message && <FieldError id={errorId}>{message}</FieldError>}
         </>

@@ -54,6 +54,11 @@ import {
 } from "./inherited"
 import { lockValues, unmetSubmitRules } from "./filled-on-lock"
 import { keepReadOnly } from "./read-only"
+import {
+  hasInternalFields,
+  readsAsClient,
+  withoutInternalValues,
+} from "./shown-fields"
 import { applySendBack } from "./send-back"
 import { submittedValues } from "./submitted-values"
 import {
@@ -310,12 +315,20 @@ async function asShownTo(
 
   const payload = await readPayload(database, record)
 
+  const shown = await withoutHiddenAnswers(database, actor, {
+    ...record,
+    payload,
+  })
+
+  // The client never gets the values of IMHOGEN's own fields, such as the
+  // hard limits kept in view before a negotiation.
   return {
     ...record,
-    payload: await withoutHiddenAnswers(database, actor, {
-      ...record,
-      payload,
-    }),
+    payload:
+      hasInternalFields(record.toolId) &&
+      (await readsAsClient(database, actor, record.projectId))
+        ? withoutInternalValues(record.toolId, shown)
+        : shown,
   }
 }
 
@@ -1254,7 +1267,9 @@ export async function lockSentDraft(
 // caller's transaction, with an audit line for each change. On a locked record
 // (the default) the record stays locked: these fields are never typed, so
 // locking does not freeze them. On a draft, such as D1.5 while the client
-// chooses a time, a read-only table may be written too. Any other field is
+// chooses a time, a read-only table may be written too, and so may the
+// fields named in `sentText`: text the person wrote that a send fills in, such
+// as the date in D2.8's script once its invite goes. Any other field is
 // refused. A null value removes the field.
 export async function setSystemValues(
   transaction: Transaction,
@@ -1262,14 +1277,18 @@ export async function setSystemValues(
   recordId: string,
   systemValues: Record<string, JsonObject[string] | null>,
   reason: string,
-  state: "locked" | "draft" = "locked"
+  state: "locked" | "draft" = "locked",
+  sentText: readonly string[] = []
 ): Promise<ToolRecord> {
   const current = await lockRecord(transaction, recordId)
 
   const systemFilled = new Set(
     (tools.getTool(current.toolId)?.fields ?? []).flatMap((field) =>
       field.systemFilled ||
-      (state === "draft" && field.type === "table" && field.readOnly)
+      (state === "draft" && field.type === "table" && field.readOnly) ||
+      (state === "draft" &&
+        sentText.includes(field.key) &&
+        (field.type === "text" || field.type === "longText"))
         ? [field.key]
         : []
     )

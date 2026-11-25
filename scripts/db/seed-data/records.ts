@@ -44,10 +44,17 @@ import {
 } from "@/lib/project-brief"
 import { qualityGateQuestions } from "@/workbooks/wb01/tools/t3-d1-3a"
 
+import {
+  ACCEPTED_AS_IS,
+  REQUESTED_NEGOTIATION,
+  scriptFor,
+  subjectFor,
+} from "@/lib/transmittal"
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 
 import { loginFor, staffWith } from "./people"
 import {
+  ACCEPTED_AS_IS_PROJECT,
   approverOf,
   client,
   currentToolFor,
@@ -977,6 +984,23 @@ function stageD26(value: string, floor: string) {
   })
 }
 
+// The CA's email of the draft contract to the client, sent without a
+// follow-up, with the client's reply recorded and submitted, which locked it.
+// Requested Negotiation opens D2.8 for the CA; Accepted as-is does not.
+function stageD27(projectName: string, reply = REQUESTED_NEGOTIATION) {
+  return payloadOf({
+    sentTo: client.email,
+    sentBy: staffWith("CA").name,
+    dateSent: "2026-11-10",
+    timeSent: "10:00",
+    subject: subjectFor(projectName),
+    quoteExpiry: "2026-12-10",
+    script: scriptFor(client.organisation, projectName),
+    followUpScheduled: "No",
+    initialResponse: reply,
+  })
+}
+
 function tier1Records(name: string): SeedRecord[] {
   const stage = stageOf(name)
   const files = stageFiles(stage)
@@ -1018,6 +1042,15 @@ function tier1Records(name: string): SeedRecord[] {
       state: "locked",
       day: 39,
       payload: stageD26("GHS 94,400.00", "GHS 90,000.00"),
+    },
+    {
+      toolId: "D2.7",
+      state: "locked",
+      day: 41,
+      payload: stageD27(
+        name,
+        name === ACCEPTED_AS_IS_PROJECT ? ACCEPTED_AS_IS : REQUESTED_NEGOTIATION
+      ),
     },
   ]
 }
@@ -1066,6 +1099,7 @@ function tier3Records(name: string): SeedRecord[] {
       day: 36,
       payload: stageD26("GHS 60,000.00", "GHS 57,000.00"),
     },
+    { toolId: "D2.7", state: "locked", day: 38, payload: stageD27(name) },
   ]
 }
 
@@ -1149,6 +1183,7 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   ),
   [NEEDS_TEAM, [{ ...unlocked(NEEDS_TEAM)[0]!, state: "locked" }]],
   [`${DEV_LOCKED} (Tier 1)`, tier1Records(`${DEV_LOCKED} (Tier 1)`)],
+  [ACCEPTED_AS_IS_PROJECT, tier1Records(ACCEPTED_AS_IS_PROJECT)],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
   [`${DEV_LOCKED} (Tier 3)`, tier3Records(`${DEV_LOCKED} (Tier 3)`)],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],

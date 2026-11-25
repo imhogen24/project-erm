@@ -9,7 +9,9 @@ import type { WorkbookMap } from "./map"
 // Approved. Sending the draft back is each review's own (its `sendsBackTo`).
 // D2.5 locked with Rejected closes the project, and with Approved for Client
 // Transmission opens D2.6, the baseline, and D2.6 locked opens D2.7, the
-// email to the client. The tools after it are added as each is built.
+// email to the client. D2.7 locked with the client's reply Requested
+// Negotiation opens D2.8, the negotiation meeting invite. The tools after it
+// are added as each is built.
 export const wb02: WorkbookMap = {
   workbook: "wb02",
   opens: { after: { all: ["D1.16"] } },
@@ -38,6 +40,15 @@ export const wb02: WorkbookMap = {
       },
     },
     { tool: "D2.7", after: { all: ["D2.6"] } },
+    {
+      tool: "D2.8",
+      after: { all: ["D2.7"] },
+      when: {
+        tool: "D2.7",
+        field: "initialResponse",
+        oneOf: ["Requested Negotiation"],
+      },
+    },
   ],
   stops: [
     {

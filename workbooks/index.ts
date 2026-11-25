@@ -28,6 +28,7 @@ import { d24 } from "./wb02/tools/d2-4"
 import { d25 } from "./wb02/tools/d2-5"
 import { d26 } from "./wb02/tools/d2-6"
 import { d27 } from "./wb02/tools/d2-7"
+import { d28 } from "./wb02/tools/d2-8"
 import { t3d22a } from "./wb02/tools/t3-d2-2a"
 
 // The one file that lists every tool definition from every workbook.
@@ -59,6 +60,7 @@ export const allTools = [
   d25,
   d26,
   d27,
+  d28,
 ]
 
 // Fails when a workflow rule names a tool, field or option that is not

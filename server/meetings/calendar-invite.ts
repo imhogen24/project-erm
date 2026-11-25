@@ -1,5 +1,3 @@
-import { createHash } from "node:crypto"
-
 import { and, asc, eq, ne } from "drizzle-orm"
 import { z } from "zod"
 
@@ -15,7 +13,6 @@ import {
 import {
   agendaItems,
   agendaOf,
-  calendarFile,
   meetingMinutes,
   missingToBeReady,
   missingToInvite,
@@ -24,8 +21,7 @@ import {
 } from "@/lib/calendar-agenda"
 import { formatMeeting, meetingInstant, zoneLabel } from "@/lib/meeting-time"
 import type { Transaction } from "@/server/audit/audit"
-import { requireEnv } from "@/server/database"
-import { getTransport, sendEmail, type Transport } from "@/server/email/email"
+import type { Transport } from "@/server/email/email"
 import { assertCan } from "@/server/permissions/permissions"
 import { inheritedValues } from "@/server/records/inherited"
 import {
@@ -38,7 +34,15 @@ import {
   type ToolRecord,
 } from "@/server/records/records"
 
+import {
+  InviteRefusedError,
+  emailInvite,
+  inviteDigest,
+  inviteSequence,
+} from "./invite-email"
 import { MEETING_PROPOSAL, proposalOf } from "./meeting-proposal"
+
+export { InviteRefusedError }
 
 export const CALENDAR_AGENDA = "D1.6"
 
@@ -52,9 +56,6 @@ export class AgendaNotReadyError extends Error {
     this.missing = missing
   }
 }
-
-// The email service did not take the invite.
-export class InviteRefusedError extends Error {}
 
 type Reader = Pick<Database, "select">
 
@@ -250,11 +251,6 @@ async function lockedDraft(
   return { current, saved: agendaOf(current.payload) }
 }
 
-// "IMHOGEN <noreply@imhogen.com>" is sent as "noreply@imhogen.com".
-function addressOf(from: string): string {
-  return /<([^>]+)>/.exec(from)?.[1] ?? from.trim()
-}
-
 // The email that carries the invite: when and where, who attends and the
 // agenda.
 export function inviteText(input: {
@@ -340,22 +336,16 @@ export async function sendCalendarInvite(
     const imhogen = chosen as TeamMember[]
     const agenda = agendaItems(saved)
 
-    const digest = createHash("sha256")
-      .update(
-        JSON.stringify({
-          meeting,
-          agenda,
-          imhogen: imhogen.map((member) => member.email),
-          client: client.map((each) => each.email),
-        })
-      )
-      .digest("hex")
-      .slice(0, 16)
+    const digest = inviteDigest(
+      JSON.stringify({
+        meeting,
+        agenda,
+        imhogen: imhogen.map((member) => member.email),
+        client: client.map((each) => each.email),
+      })
+    )
 
-    const sequence =
-      saved.inviteDigest === digest && saved.inviteSequence !== undefined
-        ? saved.inviteSequence
-        : (saved.inviteSequence ?? -1) + 1
+    const sequence = inviteSequence(saved, digest)
 
     // A new version of the invite is reserved before it goes, so a retry
     // sends the same one. It counts as sent only once the email has gone.
@@ -374,8 +364,7 @@ export async function sendCalendarInvite(
   })
 
   // SAFETY: the transaction refused a D1.6 with no meeting or no client.
-  const [main, ...others] = client
-  const from = requireEnv("EMAIL_FROM")
+  const main = client[0]!
 
   const [project] = await database
     .select({ name: projects.name, requestId: projects.requestId })
@@ -396,8 +385,10 @@ export async function sendCalendarInvite(
   const title = answers.project_title?.trim() || project!.name
   const when = `${formatMeeting(at!, meeting!.timeZone)} ${zoneLabel(meeting!.timeZone)}`
 
-  const ics = calendarFile({
-    uid: `${recordId}@erm.imhogen`,
+  await emailInvite(database, {
+    projectId: record.projectId,
+    recordId,
+    keyPrefix: "calendar_invite",
     sequence: prepared.sequence,
     start: at!,
     minutes: meetingMinutes(prepared.agenda),
@@ -412,7 +403,6 @@ export async function sendCalendarInvite(
       .join("\n"),
     location: meeting!.link || meeting!.platform,
     link: meeting!.link || undefined,
-    organizer: addressOf(from),
     attendees: [
       ...client,
       ...prepared.imhogen.map((member) => ({
@@ -420,49 +410,19 @@ export async function sendCalendarInvite(
         email: member.email,
       })),
     ],
+    subject: `Discovery meeting: ${title} [${project!.requestId}]`,
+    body: inviteText({
+      contact: main.name,
+      title,
+      when,
+      meeting: meeting!,
+      imhogen: prepared.imhogen.map((member) => member.name),
+      client: client.map((each) => each.name),
+      agenda: prepared.agenda,
+    }),
     now,
+    transport: options.transport,
   })
-
-  const sent = await sendEmail(
-    database,
-    {
-      to: main!.email,
-      cc: [
-        ...others.map((each) => each.email),
-        ...prepared.imhogen.map((member) => member.email),
-      ],
-      kind: "calendar_invite",
-      data: {
-        subject: `Discovery meeting: ${title} [${project!.requestId}]`,
-        body: inviteText({
-          contact: main!.name,
-          title,
-          when,
-          meeting: meeting!,
-          imhogen: prepared.imhogen.map((member) => member.name),
-          client: client.map((each) => each.name),
-          agenda: prepared.agenda,
-        }),
-        ics,
-      },
-      projectId: record.projectId,
-      recordId,
-      key: `calendar_invite:${recordId}:${prepared.sequence}`,
-    },
-    options.transport ?? getTransport()
-  )
-
-  if (sent.status === "failed") {
-    throw new InviteRefusedError(
-      `The invite did not go: ${sent.error ?? "no reason given"}. Press Send calendar invite to try again.`
-    )
-  }
-
-  if (sent.status === "queued") {
-    throw new InviteRefusedError(
-      "This invite is already being sent. Reload the page in a moment."
-    )
-  }
 
   return database.transaction(async (transaction) => {
     const { current, saved } = await lockedDraft(transaction, recordId)

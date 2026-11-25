@@ -34,6 +34,8 @@ export const notificationKinds = [
   "client_changed",
   // A record signed in turn waits for this person's signature.
   "signature_needed",
+  // The client was reminded about a contract they have not answered yet.
+  "follow_up_sent",
 ] as const
 
 export type NotificationKind = (typeof notificationKinds)[number]

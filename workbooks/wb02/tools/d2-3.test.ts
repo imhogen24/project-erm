@@ -46,6 +46,7 @@ import { d23 } from "./d2-3"
 import { d24 } from "./d2-4"
 import { d25 } from "./d2-5"
 import { d26 } from "./d2-6"
+import { d27 } from "./d2-7"
 import { t3d22a } from "./t3-d2-2a"
 
 const database = createTestDatabase()
@@ -53,7 +54,7 @@ const database = createTestDatabase()
 registerTestTools({ wb01: ["D1.15", "D1.16"] })
 
 // WB02's map names D2.4 after D2.3, and D2.5 after D2.4.
-for (const tool of [d21, d22, t3d22a, d23, d24, d25, d26]) {
+for (const tool of [d21, d22, t3d22a, d23, d24, d25, d26, d27]) {
   tools.registerTool(tool)
 }
 

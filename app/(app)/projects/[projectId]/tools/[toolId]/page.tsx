@@ -98,6 +98,11 @@ import { EXECUTIVE_REVIEW } from "@/lib/executive-review"
 import { executiveReviewStart } from "@/server/contract/executive-review"
 import { BASELINE } from "@/lib/baseline"
 import { baselineStart } from "@/server/contract/baseline"
+import { TRANSMITTAL } from "@/lib/transmittal"
+import {
+  missingToSend as transmittalMissing,
+  transmittalStart,
+} from "@/server/contract/transmittal"
 import { systemFillsOf } from "@/server/records/fills"
 import { previewStates } from "@/server/pdf/previews"
 import { getRecordScreen } from "@/server/records/screen"
@@ -121,6 +126,7 @@ import {
   withdrawRecordAction,
   resubmitClientRequestAction,
   sendAcknowledgementAction,
+  sendTransmittalAction,
   retryAcknowledgementAction,
 } from "./actions"
 import { requestChangeAction } from "../../actions"
@@ -259,6 +265,11 @@ async function startOf(toolId: string, projectId: string): Promise<FormValues> {
       return (await baselineStart(getDatabase(), projectId)) as FormValues
     }
 
+    case TRANSMITTAL: {
+      // SAFETY: the start is built for this tool's own fields.
+      return (await transmittalStart(getDatabase(), projectId)) as FormValues
+    }
+
     default: {
       return {}
     }
@@ -390,7 +401,11 @@ export default async function Page({
   let formValues = values
 
   let send:
-    { missing: string[]; run: typeof sendAcknowledgementAction } | undefined
+    | {
+        missing: string[]
+        run: typeof sendAcknowledgementAction | typeof sendTransmittalAction
+      }
+    | undefined
 
   // Once sent, D1.4 shows whether the client got it. After a bounce, or no
   // answer in time, the PM corrects the address and retries; everyone else
@@ -469,6 +484,25 @@ export default async function Page({
     }
   }
 
+  // D2.7: the CA sends the draft contract while D2.7 is a draft not yet
+  // sent. Once sent, D2.7 waits for the client's reply.
+  if (
+    toolId === TRANSMITTAL &&
+    view.project.status === "active" &&
+    view.can.write &&
+    (view.state === "draft" || view.state === "notStarted") &&
+    !view.record?.payload.sentBy
+  ) {
+    const { sentTo } = await acknowledgementDraft(getDatabase(), projectId)
+
+    send = {
+      missing: view.record
+        ? transmittalMissing(sentTo, view.record.payload)
+        : ["choose whether to follow up after 3 days"],
+      run: sendTransmittalAction,
+    }
+  }
+
   // D1.7 starts from D1.6's agenda and invited attendees. Nothing is saved
   // until the OM saves.
   if (toolId === MEETING_NOTES && !view.record && view.can.write) {
@@ -478,6 +512,21 @@ export default async function Page({
   // D1.8: 1.0 and 4.0 come from who submitted and when, and each 2.0 row
   // shows the client's own technical answer beneath its category.
   let sheetTool: ToolDefinition = tool
+
+  // Once what a tool sends has gone, such as D2.7's email, the fields it
+  // sent read as text, as the system's do.
+  const frozen = tool.freezesOnceSet
+
+  if (frozen && view.record?.payload[frozen.field] !== undefined) {
+    sheetTool = {
+      ...tool,
+      fields: tool.fields.map((field) =>
+        frozen.fields.includes(field.key) && field.type !== "table"
+          ? { ...field, systemFilled: true }
+          : field
+      ),
+    }
+  }
 
   if (toolId === NEEDS_ASSESSMENT) {
     const answers = await clientTechnicalAnswers(getDatabase(), projectId)

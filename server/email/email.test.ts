@@ -60,6 +60,16 @@ const sampleData: EmailDataByKind = {
     body: "Dear Ama,\n\nYour meeting is confirmed.",
     ics: "BEGIN:VCALENDAR\r\nEND:VCALENDAR\r\n",
   },
+  contract_transmittal: {
+    subject: "IMHO GEN Engineering Services Agreement - Boiler",
+    body: "Dear Ama\n\nPlease find the draft attached.",
+    attachment: { filename: "draft.pdf", content: "JVBERi0=" },
+  },
+  transmittal_follow_up: {
+    subject: "IMHO GEN Engineering Services Agreement - Boiler",
+    clientName: "Ama",
+  },
+  follow_up_sent: { projectName: "Boiler", link: "https://erm.example.com/f" },
 }
 
 function failingTransport(): Transport {
@@ -308,14 +318,17 @@ describe("sendEmail", () => {
 })
 
 describe("templates", () => {
-  it("covers the three staff kinds and the four client kinds", () => {
+  it("covers the four staff kinds and the six client kinds", () => {
     expect([...emailKinds].sort()).toEqual([
       "acknowledgement",
       "approval_needed",
       "assigned",
       "calendar_invite",
+      "contract_transmittal",
+      "follow_up_sent",
       "meeting_times",
       "new_request",
+      "transmittal_follow_up",
       "verify_email",
     ])
   })
@@ -326,7 +339,9 @@ describe("templates", () => {
         each !== "acknowledgement" &&
         each !== "verify_email" &&
         each !== "meeting_times" &&
-        each !== "calendar_invite"
+        each !== "calendar_invite" &&
+        each !== "contract_transmittal" &&
+        each !== "transmittal_follow_up"
     )) {
       const email = renderEmail(kind, sampleData[kind])
 
@@ -334,6 +349,39 @@ describe("templates", () => {
       expect(email.text).toContain("PLACEHOLDER")
       expect(email.html).toContain("PLACEHOLDER")
     }
+  })
+})
+
+describe("the draft contract to the client", () => {
+  it("sends the CA's own subject and text, with the PDF attached as bytes", () => {
+    const email = renderEmail(
+      "contract_transmittal",
+      sampleData.contract_transmittal
+    )
+
+    expect(email.subject).toBe(sampleData.contract_transmittal.subject)
+    expect(email.text).toBe(sampleData.contract_transmittal.body)
+    expect(email.attachments).toEqual([
+      {
+        filename: "draft.pdf",
+        content: "JVBERi0=",
+        contentType: "application/pdf",
+        encoding: "base64",
+      },
+    ])
+  })
+
+  it("follows up with a reminder whose wording is still a placeholder", () => {
+    const email = renderEmail(
+      "transmittal_follow_up",
+      sampleData.transmittal_follow_up
+    )
+
+    expect(email.subject).toBe(
+      "Re: IMHO GEN Engineering Services Agreement - Boiler"
+    )
+    expect(email.text).toContain("Dear Ama")
+    expect(email.text).toContain("PLACEHOLDER")
   })
 })
 

@@ -635,18 +635,34 @@ const toolDefinition = z
       .optional(),
     // Select fields that must hold one option before the record can be
     // submitted, each with what to say until then, such as "Yes" to Ready
-    // for PM Review. With `column`, `field` is a table and every one of its
-    // rows must hold the option in that select column, such as each task
-    // Done.
+    // for PM Review, or, with `isNot`, an answer other than that option,
+    // such as a reply that is no longer Pending. With `column`, `field` is a
+    // table and every one of its rows must hold the option in that select
+    // column, such as each task Done.
     submitWhen: z
       .array(
-        z.strictObject({
-          field: fieldKey,
-          column: fieldKey.optional(),
-          is: z.string().min(1),
-          message: z.string().min(1),
-        })
+        z.union([
+          z.strictObject({
+            field: fieldKey,
+            column: fieldKey.optional(),
+            is: z.string().min(1),
+            message: z.string().min(1),
+          }),
+          z.strictObject({
+            field: fieldKey,
+            isNot: z.string().min(1),
+            message: z.string().min(1),
+          }),
+        ])
       )
+      .optional(),
+    // Once the system fills `field`, such as the day an email went out, the
+    // `fields` named here keep what they held: what was sent cannot change.
+    freezesOnceSet: z
+      .strictObject({
+        field: fieldKey,
+        fields: z.array(fieldKey).min(1),
+      })
       .optional(),
     // Once locked the record can never change: no change request can be
     // raised on it, such as a baseline that negotiation holds to.
@@ -755,6 +771,18 @@ const toolDefinition = z
     value.submitWhen?.forEach((rule, index) => {
       const named = value.fields.find((entry) => entry.key === rule.field)
 
+      if ("isNot" in rule) {
+        if (named?.type !== "select" || !named.options.includes(rule.isNot)) {
+          context.addIssue({
+            code: "custom",
+            path: ["submitWhen", index],
+            message: `${rule.field} is not a select with the option "${rule.isNot}"`,
+          })
+        }
+
+        return
+      }
+
       const select = rule.column
         ? named?.type === "table"
           ? named.columns.find((entry) => entry.key === rule.column)
@@ -771,6 +799,30 @@ const toolDefinition = z
         })
       }
     })
+
+    const freeze = value.freezesOnceSet
+
+    if (freeze) {
+      const trigger = value.fields.find((entry) => entry.key === freeze.field)
+
+      if (!trigger?.systemFilled) {
+        context.addIssue({
+          code: "custom",
+          path: ["freezesOnceSet", "field"],
+          message: `${freeze.field} is not a system-filled field of this tool`,
+        })
+      }
+
+      for (const key of freeze.fields) {
+        if (!value.fields.some((entry) => entry.key === key)) {
+          context.addIssue({
+            code: "custom",
+            path: ["freezesOnceSet", "fields"],
+            message: `${key} is not a field of this tool`,
+          })
+        }
+      }
+    }
 
     value.fields.forEach((entry, index) => {
       if (entry.type !== "select" || !entry.blockedWhile) {

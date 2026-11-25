@@ -14,6 +14,7 @@ import {
   RetryNotAllowedError,
   retryAcknowledgement,
 } from "@/server/acknowledgement/delivery"
+import { sendTransmittal } from "@/server/contract/transmittal"
 import { getDatabase } from "@/server/database"
 import { resubmitClientRequest } from "@/server/intake/client-requests"
 import {
@@ -324,6 +325,35 @@ export async function sendAcknowledgementAction(values: {
       return done(
         await sendAcknowledgement(getDatabase(), actor, input.recordId)
       )
+    } catch (error) {
+      if (
+        error instanceof SendNotReadyError ||
+        error instanceof EmailRefusedError
+      ) {
+        return { status: "error", message: error.message }
+      }
+
+      throw error
+    }
+  })
+}
+
+// The CA's Send on D2.7: the draft contract to the client. What stops it
+// comes back in words for the button.
+export async function sendTransmittalAction(values: {
+  recordId: string
+}): Promise<RecordResult> {
+  const parsed = recordInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Check the form and try again." }
+  }
+
+  const input = parsed.data
+
+  return attempt(async (actor) => {
+    try {
+      return done(await sendTransmittal(getDatabase(), actor, input.recordId))
     } catch (error) {
       if (
         error instanceof SendNotReadyError ||

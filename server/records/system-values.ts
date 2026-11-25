@@ -30,6 +30,8 @@ import { EXECUTIVE_REVIEW } from "@/lib/executive-review"
 import { executiveReviewValues } from "@/server/contract/executive-review"
 import { BASELINE } from "@/lib/baseline"
 import { baselineValues } from "@/server/contract/baseline"
+import { TRANSMITTAL } from "@/lib/transmittal"
+import { transmittalValues } from "@/server/contract/transmittal"
 import { t3ContractValues } from "@/server/contract/t3-contract"
 import { tools } from "@/server/tools/registry"
 
@@ -146,6 +148,10 @@ async function workedOut(
 
     case BASELINE: {
       return await baselineValues(database, projectId)
+    }
+
+    case TRANSMITTAL: {
+      return await transmittalValues(database, projectId, payload)
     }
 
     default: {

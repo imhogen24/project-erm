@@ -7,6 +7,8 @@ import { ValidationError, type FieldError } from "./validate"
 
 const refused = "Read-only, so the form cannot change it"
 
+const sentAlready = "Already sent, so this cannot change"
+
 // The tables the form shows without letting it change them, and the fields the
 // system fills in. The system and the screens built for them write these, so a
 // save from the form must hand back what is stored, or leave it out.
@@ -41,6 +43,31 @@ export function keepReadOnly(
 
   if (errors.length > 0) {
     throw new ValidationError(errors)
+  }
+
+  // Once what a tool sends has gone, such as D2.7's email, the fields it
+  // sent keep what they held.
+  const freeze = tools.getTool(toolId)?.freezesOnceSet
+
+  if (freeze && stored?.[freeze.field] !== undefined) {
+    const changed = freeze.fields.filter(
+      (key) =>
+        kept[key] !== undefined && !isDeepStrictEqual(kept[key], stored[key])
+    )
+
+    if (changed.length > 0) {
+      throw new ValidationError(
+        changed.map((field) => ({ field, message: sentAlready }))
+      )
+    }
+
+    for (const key of freeze.fields) {
+      if (stored[key] === undefined) {
+        delete kept[key]
+      } else {
+        kept[key] = stored[key]
+      }
+    }
   }
 
   // A system-filled value, such as the client's choice on D1.5, is written

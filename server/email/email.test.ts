@@ -70,6 +70,11 @@ const sampleData: EmailDataByKind = {
     clientName: "Ama",
   },
   follow_up_sent: { projectName: "Boiler", link: "https://erm.example.com/f" },
+  sent_back: {
+    recordTitle: "D2.8 Negotiation Meeting Invite on Boiler",
+    reason: "D2.9 sent it back: Deadlock - Escalate",
+    link: "https://erm.example.com/s",
+  },
 }
 
 function failingTransport(): Transport {
@@ -318,7 +323,7 @@ describe("sendEmail", () => {
 })
 
 describe("templates", () => {
-  it("covers the four staff kinds and the six client kinds", () => {
+  it("covers the five staff kinds and the six client kinds", () => {
     expect([...emailKinds].sort()).toEqual([
       "acknowledgement",
       "approval_needed",
@@ -328,6 +333,7 @@ describe("templates", () => {
       "follow_up_sent",
       "meeting_times",
       "new_request",
+      "sent_back",
       "transmittal_follow_up",
       "verify_email",
     ])

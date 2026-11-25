@@ -35,6 +35,7 @@ import {
   notifySignatureNeeded,
   notifyToolsOpened,
   sendNotificationEmails,
+  type PendingEmail,
 } from "@/server/notifications/raise"
 import { assertProjectActive } from "@/server/projects/projects"
 import { systemActor } from "@/server/system/system"
@@ -421,12 +422,14 @@ function withoutSystemValues(toolId: string, payload: JsonObject): JsonObject {
 
 // Moves a record the caller has locked one step, and records who moved it and
 // when. Approving needs every signature field signed. Locking notifies the
-// people who write each tool the lock opens.
+// people who write each tool the lock opens. Emails it raises go into
+// `outbox`, for the caller to send once the transaction commits.
 async function move(
   transaction: Transaction,
   actor: string,
   current: ToolRecord,
-  to: Exclude<RecordState, "void">
+  to: Exclude<RecordState, "void">,
+  outbox: PendingEmail[]
 ): Promise<ToolRecord> {
   if (!allowedTransitions[current.state].includes(to)) {
     throw new InvalidTransitionError(
@@ -550,7 +553,7 @@ async function move(
 
   if (to === "locked") {
     await applyApprovedChange(transaction, actor, current)
-    await applySendBack(transaction, actor, moved!)
+    await applySendBack(transaction, actor, moved!, outbox)
     await applyHardStop(transaction, actor, current)
 
     await notifyToolsOpened(
@@ -595,16 +598,23 @@ export async function transitionRecord(
     await assertProjectActive(transaction, record.projectId)
 
     const current = await lockRecord(transaction, recordId)
-    const result = await move(transaction, actor, current, to)
+    const outbox: PendingEmail[] = []
+    const result = await move(transaction, actor, current, to, outbox)
 
     // A tool with no approver locks as it is submitted, in the same
     // transaction, so the tools after it open and nobody is asked to approve.
     if (to === "submitted" && tools.getTool(record.toolId)?.locksOnSubmit) {
-      const approved = await move(transaction, actor, result, "approved")
+      const approved = await move(
+        transaction,
+        actor,
+        result,
+        "approved",
+        outbox
+      )
 
       return {
-        moved: await move(transaction, actor, approved, "locked"),
-        emails: [],
+        moved: await move(transaction, actor, approved, "locked", outbox),
+        emails: outbox,
       }
     }
 
@@ -613,15 +623,17 @@ export async function transitionRecord(
     if (to === "submitted" && turnsOf(record.toolId)) {
       await askNextSignature(transaction, actor, result)
 
-      return { moved: result, emails: [] }
+      return { moved: result, emails: outbox }
     }
 
     return {
       moved: result,
-      emails:
-        to === "submitted"
+      emails: [
+        ...outbox,
+        ...(to === "submitted"
           ? await notifyApprovalNeeded(transaction, actor, result)
-          : [],
+          : []),
+      ],
     }
   })
 
@@ -901,13 +913,14 @@ async function afterTurn(
   transaction: Transaction,
   actor: string,
   record: ToolRecord,
-  fieldKey: string
+  fieldKey: string,
+  outbox: PendingEmail[]
 ): Promise<ToolRecord> {
   await clearSignatureNeeded(transaction, record.id)
 
   const approved =
     fieldKey === turnsOf(record.toolId)!.approves
-      ? await move(transaction, actor, record, "approved")
+      ? await move(transaction, actor, record, "approved", outbox)
       : record
 
   if (nextTurn(approved.toolId, approved.payload)) {
@@ -916,7 +929,7 @@ async function afterTurn(
     return approved
   }
 
-  return move(transaction, actor, approved, "locked")
+  return move(transaction, actor, approved, "locked", outbox)
 }
 
 // Writes who signed and when into a signature field of a draft or submitted
@@ -927,7 +940,8 @@ export async function signField(
   database: Database,
   actor: string,
   recordId: string,
-  fieldKey: string
+  fieldKey: string,
+  transport?: Transport
 ): Promise<ToolRecord> {
   const record = await loadRecord(database, recordId)
   const field = signatureField(record.toolId, fieldKey)
@@ -955,7 +969,9 @@ export async function signField(
     await assertMay(database, actor, record.projectId, record.toolId, "approve")
   }
 
-  return database.transaction(async (transaction) => {
+  const outbox: PendingEmail[] = []
+
+  const signed = await database.transaction(async (transaction) => {
     await assertProjectActive(transaction, record.projectId)
 
     const current = await lockRecord(transaction, recordId)
@@ -991,8 +1007,14 @@ export async function signField(
       payloadChanges(current.payload, payload)
     )
 
-    return inTurn ? afterTurn(transaction, actor, updated!, fieldKey) : updated!
+    return inTurn
+      ? afterTurn(transaction, actor, updated!, fieldKey, outbox)
+      : updated!
   })
+
+  await sendNotificationEmails(database, outbox, transport)
+
+  return signed
 }
 
 // Approves a submitted record and locks it in one transaction, since the next
@@ -1002,7 +1024,8 @@ export async function signField(
 export async function approveRecord(
   database: Database,
   actor: string,
-  recordId: string
+  recordId: string,
+  transport?: Transport
 ): Promise<ToolRecord> {
   const record = await loadRecord(database, recordId)
 
@@ -1018,7 +1041,9 @@ export async function approveRecord(
     )
   }
 
-  return database.transaction(async (transaction) => {
+  const outbox: PendingEmail[] = []
+
+  const locked = await database.transaction(async (transaction) => {
     await assertProjectActive(transaction, record.projectId)
 
     const current = await lockRecord(transaction, recordId)
@@ -1035,10 +1060,14 @@ export async function approveRecord(
       )
     }
 
-    const approved = await move(transaction, actor, current, "approved")
+    const approved = await move(transaction, actor, current, "approved", outbox)
 
-    return move(transaction, actor, approved, "locked")
+    return move(transaction, actor, approved, "locked", outbox)
   })
+
+  await sendNotificationEmails(database, outbox, transport)
+
+  return locked
 }
 
 export class SendBackReasonError extends Error {}
@@ -1248,7 +1277,8 @@ export async function lockDraftIn(
     [stateChange("draft", "approved")]
   )
 
-  return move(transaction, actor, approved!, "locked")
+  // The tools locked this way send no work back, so no email waits on it.
+  return move(transaction, actor, approved!, "locked", [])
 }
 
 // D1.4's Send, after the email has gone. The caller checks the permission.

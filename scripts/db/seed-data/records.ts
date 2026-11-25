@@ -50,6 +50,7 @@ import {
   scriptFor,
   subjectFor,
 } from "@/lib/transmittal"
+import { YES, inviteScriptFor } from "@/lib/negotiation-invite"
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 
 import { loginFor, staffWith } from "./people"
@@ -1001,6 +1002,43 @@ function stageD27(projectName: string, reply = REQUESTED_NEGOTIATION) {
   })
 }
 
+// The CA's negotiation meeting invite, sent to the client for 1 December at
+// 10:00 and submitted with every 4.0 answer Yes, which locked it and opened
+// D2.9 for the meeting's notes.
+function stageD28(projectName: string) {
+  const when = "Tue, 1 Dec 2026, 10:00 GMT"
+
+  return payloadOf({
+    proposedDate: "2026-12-01",
+    meetingTime: "10:00",
+    platform: "Google Meet",
+    meetingLink: "https://meet.google.com/abc-defg-hij",
+    imhogenReps: "Lead PM & Head of R&D",
+    clientReps: client.name,
+    clientConcerns: "Wants a 10% discount and the timeline cut to 6 weeks.",
+    hardLimits: "Advance Payment %: Absolute minimum 35% to cover initial BOM",
+    script: inviteScriptFor(client.organisation, projectName)
+      .replace(
+        "[Insert 1-2 words on their concern,e.g.,the delivery timeline]",
+        "the total value and timeline"
+      )
+      .replace("[Proposed Date & Time]", when),
+    clientConfirmed: YES,
+    preMeetHeld: YES,
+    readyForMeeting: YES,
+    inviteSentAt: "2026-11-12T10:00:00.000Z",
+    inviteSequence: 0,
+    inviteWhen: when,
+  })
+}
+
+// D2.8 follows D2.7 only where the client asked to negotiate.
+function negotiated(name: string, day: number): SeedRecord[] {
+  return name === ACCEPTED_AS_IS_PROJECT
+    ? []
+    : [{ toolId: "D2.8", state: "locked", day, payload: stageD28(name) }]
+}
+
 function tier1Records(name: string): SeedRecord[] {
   const stage = stageOf(name)
   const files = stageFiles(stage)
@@ -1052,6 +1090,7 @@ function tier1Records(name: string): SeedRecord[] {
         name === ACCEPTED_AS_IS_PROJECT ? ACCEPTED_AS_IS : REQUESTED_NEGOTIATION
       ),
     },
+    ...negotiated(name, 43),
   ]
 }
 
@@ -1100,6 +1139,7 @@ function tier3Records(name: string): SeedRecord[] {
       payload: stageD26("GHS 60,000.00", "GHS 57,000.00"),
     },
     { toolId: "D2.7", state: "locked", day: 38, payload: stageD27(name) },
+    ...negotiated(name, 40),
   ]
 }
 

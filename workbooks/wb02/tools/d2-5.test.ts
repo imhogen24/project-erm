@@ -53,13 +53,14 @@ import { d25 } from "./d2-5"
 import { d26 } from "./d2-6"
 import { d27 } from "./d2-7"
 import { d28 } from "./d2-8"
+import { d29 } from "./d2-9"
 import { t3d22a } from "./t3-d2-2a"
 
 const database = createTestDatabase()
 
 registerTestTools({ wb01: ["D1.14", "D1.15", "T3.D1.15a", "D1.16"] })
 
-for (const tool of [d21, d22, t3d22a, d23, d24, d25, d26, d27, d28]) {
+for (const tool of [d21, d22, t3d22a, d23, d24, d25, d26, d27, d28, d29]) {
   tools.registerTool(tool)
 }
 

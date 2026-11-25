@@ -33,6 +33,7 @@ import { d25 } from "./d2-5"
 import { d26 } from "./d2-6"
 import { d27 } from "./d2-7"
 import { d28 } from "./d2-8"
+import { d29 } from "./d2-9"
 import { t3d22a } from "./t3-d2-2a"
 
 const database = createTestDatabase()
@@ -58,6 +59,8 @@ tools.registerTool(d26)
 tools.registerTool(d27)
 
 tools.registerTool(d28)
+
+tools.registerTool(d29)
 
 // WB02 keeps its real order: T3.D2.2a waits for D2.1.
 loadUnorderedWorkflow({ wb01: ["D1.16"] })

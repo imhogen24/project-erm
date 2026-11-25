@@ -104,6 +104,8 @@ import {
   transmittalStart,
 } from "@/server/contract/transmittal"
 import { NEGOTIATION_INVITE } from "@/lib/negotiation-invite"
+import { NEGOTIATION_NOTES } from "@/lib/negotiation-notes"
+import { negotiationNotesStart } from "@/server/contract/negotiation-notes"
 import {
   missingToInvite as negotiationMissing,
   negotiationInviteStart,
@@ -284,6 +286,13 @@ async function startOf(toolId: string, projectId: string): Promise<FormValues> {
 
     case NEGOTIATION_INVITE: {
       const start = await negotiationInviteStart(getDatabase(), projectId)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
+    case NEGOTIATION_NOTES: {
+      const start = await negotiationNotesStart(getDatabase(), projectId)
 
       // SAFETY: the start is built for this tool's own fields.
       return start as FormValues

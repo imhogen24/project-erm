@@ -46,7 +46,8 @@ const cellBase = {
   section: z.string().min(1).optional(),
   // IMHOGEN's own: the client never gets the field's value, from the server,
   // the form or the PDF, such as the hard limits kept in view before a
-  // negotiation. A table cell ignores it.
+  // negotiation. On a table column, the client gets the table without that
+  // column, such as D2.9's Baseline Limit.
   internalOnly: z.boolean().optional(),
   // Kept by the system for its own steps, such as which version of an invite
   // went, and never shown in the form or the PDF. Only a system-filled field
@@ -692,12 +693,15 @@ const toolDefinition = z
     // select `field` holds `is` reopens the project's record of each of
     // `tools` (on a Tier 3 project, the tool that takes its place) as a new
     // iteration, for whoever wrote it. When that record is locked again, this
-    // tool reopens as a new iteration too, so it is reviewed again.
+    // tool reopens as a new iteration too, so it is reviewed again. The
+    // people holding the `notifies` roles on the project are told too, in
+    // the app and by email, such as the HE and PM when D2.9 deadlocks.
     sendsBackTo: z
       .strictObject({
         field: fieldKey,
         is: z.string().min(1),
         tools: z.array(z.string().min(1)).min(1),
+        notifies: z.array(z.enum(roles)).min(1).optional(),
       })
       .optional(),
     fields: z.array(field).min(1),

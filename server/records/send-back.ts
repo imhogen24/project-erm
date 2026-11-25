@@ -13,7 +13,12 @@ import {
   writeAudit,
   type Transaction,
 } from "@/server/audit/audit"
-import { notifyReviewAgain, notifySentBack } from "@/server/notifications/raise"
+import {
+  notifyReviewAgain,
+  notifyRolesSentBack,
+  notifySentBack,
+  type PendingEmail,
+} from "@/server/notifications/raise"
 import { systemActor } from "@/server/system/system"
 import { tools } from "@/server/tools/registry"
 import { catalogOf } from "@/server/workflow/tracks"
@@ -165,11 +170,14 @@ async function reopen(
 // wait their turn, and each reopens, for its reviewer, once the work is
 // locked again, every review it waits for has run again since, and the rule
 // that opens it holds again: after D2.5 sent the draft back, D2.3 runs again,
-// then D2.4 once D2.3 is locked with Approved, then D2.5 once D2.4 is.
+// then D2.4 once D2.3 is locked with Approved, then D2.5 once D2.4 is. The
+// emails to the roles a review `notifies` go into `outbox`, to send once the
+// transaction commits.
 export async function applySendBack(
   transaction: Transaction,
   actor: string,
-  record: LockedRecord
+  record: LockedRecord,
+  outbox: PendingEmail[]
 ): Promise<void> {
   const [project] = await transaction
     .select({ track: projects.serviceTrack })
@@ -200,6 +208,18 @@ export async function applySendBack(
 
       await reopen(transaction, actor, held, reason)
       await notifySentBack(transaction, actor, held, reason)
+
+      if (review.notifies) {
+        outbox.push(
+          ...(await notifyRolesSentBack(
+            transaction,
+            actor,
+            held,
+            review.notifies,
+            reason
+          ))
+        )
+      }
     }
   }
 

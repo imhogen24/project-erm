@@ -44,6 +44,16 @@ export type PendingEmail =
       path: string
       recordTitle: string
     }
+  | {
+      kind: "sent_back"
+      key: string
+      to: string
+      projectId: string
+      recordId: string
+      path: string
+      recordTitle: string
+      reason: string
+    }
 
 type RecordRef = { id: string; projectId: string; toolId: string }
 
@@ -295,6 +305,49 @@ export async function notifySentBack(
   })
 }
 
+// The people holding these roles on the project, when a review sent work
+// back and they asked to hear of it, such as the HE and PM when D2.9
+// deadlocks and D2.8 opens again. In the app and by email.
+export async function notifyRolesSentBack(
+  transaction: Transaction,
+  actor: string,
+  record: RecordRef,
+  told: readonly Role[],
+  reason: string
+): Promise<PendingEmail[]> {
+  const holders = await holdersOf(
+    transaction,
+    record.projectId,
+    told.filter((role) => role !== "Client")
+  )
+
+  const name = await projectName(transaction, record.projectId)
+  const path = toolPath(record.projectId, record.toolId)
+
+  const written = await notify(transaction, {
+    personIds: others(actor, holders),
+    kind: "sent_back",
+    title: `${record.toolId} is open again`,
+    text: `${toolName(record.toolId)} on ${name}: ${reason}`,
+    projectId: record.projectId,
+    recordId: record.id,
+    path,
+  })
+
+  const addresses = await addressesOf(transaction, written)
+
+  return written.map((row) => ({
+    kind: "sent_back",
+    key: row.id,
+    to: addresses.get(row.personId)!,
+    projectId: record.projectId,
+    recordId: record.id,
+    path,
+    recordTitle: `${record.toolId} ${toolName(record.toolId)} on ${name}`,
+    reason,
+  }))
+}
+
 // Where a comment sits on its tool's page.
 function commentPath(record: RecordRef, commentId: string): string {
   return `${toolPath(record.projectId, record.toolId)}#comment-${commentId}`
@@ -524,6 +577,27 @@ export async function sendNotificationEmails(
             kind: email.kind,
             data: { projectName: email.projectName, link },
             projectId: email.projectId,
+            key: email.key,
+          },
+          transport
+        )
+
+        continue
+      }
+
+      if (email.kind === "sent_back") {
+        await sendEmail(
+          database,
+          {
+            to: email.to,
+            kind: email.kind,
+            data: {
+              recordTitle: email.recordTitle,
+              reason: email.reason,
+              link,
+            },
+            projectId: email.projectId,
+            recordId: email.recordId,
             key: email.key,
           },
           transport

@@ -10,8 +10,10 @@ import type { WorkbookMap } from "./map"
 // D2.5 locked with Rejected closes the project, and with Approved for Client
 // Transmission opens D2.6, the baseline, and D2.6 locked opens D2.7, the
 // email to the client. D2.7 locked with the client's reply Requested
-// Negotiation opens D2.8, the negotiation meeting invite. The tools after it
-// are added as each is built.
+// Negotiation opens D2.8, the negotiation meeting invite, and D2.8 locked
+// opens D2.9, the meeting notes. D2.9 locked with Client Withdrawn closes the
+// project, and with Deadlock sends D2.8 back for another meeting (its
+// `sendsBackTo`). The tools after it are added as each is built.
 export const wb02: WorkbookMap = {
   workbook: "wb02",
   opens: { after: { all: ["D1.16"] } },
@@ -49,12 +51,19 @@ export const wb02: WorkbookMap = {
         oneOf: ["Requested Negotiation"],
       },
     },
+    { tool: "D2.9", after: { all: ["D2.8"] } },
   ],
   stops: [
     {
       tool: "D2.5",
       field: "executiveDecision",
       oneOf: ["Rejected"],
+      status: "closed",
+    },
+    {
+      tool: "D2.9",
+      field: "meetingOutcome",
+      oneOf: ["Client Withdrawn"],
       status: "closed",
     },
   ],

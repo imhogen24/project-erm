@@ -1,4 +1,4 @@
-import { fileNamePart } from "@/lib/archive"
+import { numberedFileName } from "@/lib/sequences"
 
 // D3.5, the approved invoice: once a milestone's draft invoice (D3.4) locks,
 // the PM, acting as Head of Finance, checks it against D3.1. Every check
@@ -58,15 +58,12 @@ export const conversionTasks = [
 ]
 
 // The approved invoice's file name, such as IMHO_INV26_002_AcmeFoods.pdf for
-// invoice IMHO-INV26-002 to Acme Foods. The client's name keeps only the
-// letters and digits a file name can hold.
+// invoice IMHO-INV26-002 to Acme Foods.
 export function invoiceFileName(
   invoiceNumber: string,
   clientName: string
 ): string {
-  const number = invoiceNumber.trim().replaceAll(/[^A-Za-z0-9]+/g, "_")
-
-  return `${number || "IMHO_INV"}_${fileNamePart(clientName) || "Client"}.pdf`
+  return numberedFileName(invoiceNumber, clientName, "IMHO_INV")
 }
 
 // Where the approved invoice of one milestone cycle is read, shown in the

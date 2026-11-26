@@ -23,6 +23,7 @@ import {
 
 import {
   seededInvoice,
+  seededReceipt,
   projectChangeRequests,
   projectComments,
   projectRecords,
@@ -666,19 +667,24 @@ export async function seed(url: string): Promise<SeedUser[]> {
       }
     }
 
-    // The running invoice count goes past the seeded invoice, so the next
-    // one drafted takes the number after it. Done before any record goes in,
-    // so a seed that fails part way never leaves a seeded invoice whose
+    // The running invoice and receipt counts go past the seeded invoice and
+    // receipt, so the next one takes the number after it. Done before any
+    // record goes in, so a seed that fails part way never leaves a seeded
     // number the count could give again.
-    await database
-      .insert(counters)
-      .values({ name: "invoice", ...seededInvoice })
-      .onConflictDoUpdate({
-        target: [counters.name, counters.period],
-        set: {
-          value: sql`greatest(${counters.value}, ${seededInvoice.value})`,
-        },
-      })
+    for (const [name, seeded] of [
+      ["invoice", seededInvoice],
+      ["receipt", seededReceipt],
+    ] as const) {
+      await database
+        .insert(counters)
+        .values({ name, ...seeded })
+        .onConflictDoUpdate({
+          target: [counters.name, counters.period],
+          set: {
+            value: sql`greatest(${counters.value}, ${seeded.value})`,
+          },
+        })
+    }
 
     for (const project of seedProjects) {
       const projectId = await findOrCreateProject(database, project)

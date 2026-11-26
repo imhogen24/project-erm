@@ -87,6 +87,14 @@ import {
 } from "@/lib/bank-statement-log"
 import { companyBank } from "@/lib/company"
 import { scriptFor as transmittedScript } from "@/lib/transmitted-invoice"
+import {
+  DONE as ACCOUNTING_DONE,
+  YES as RECONCILED_YES,
+  accountingTasks,
+  matchingOf,
+} from "@/lib/reconciled-payment"
+import { BANK_TRANSFER, receiptScriptFor } from "@/lib/payment-receipt"
+import { ghs } from "@/lib/cost-estimation"
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 
 import { loginFor, staffWith } from "./people"
@@ -99,6 +107,7 @@ import {
   BANK_WAITING_PROJECT,
   BANK_FEE_PROJECT,
   HALF_PAID_PROJECT,
+  RECEIPT_SENT_PROJECT,
   PAPER_SIGNED_PROJECT,
   TRIGGER_APPROVED_PROJECT,
   TRIGGER_WAITING_PROJECT,
@@ -1517,6 +1526,61 @@ const SEEDED_INVOICE = formatNumber(
   seededInvoice.value
 )
 
+// The running count the seeded D3.9's receipt number takes, kept past it the
+// same way, so the next receipt takes the number after.
+export const seededReceipt = { period: "26", value: 1 }
+
+const SEEDED_RECEIPT = formatNumber(
+  sequences.receipt,
+  seededReceipt.period,
+  seededReceipt.value
+)
+
+// The FO reconciled 2.2's payment at D3.8 on 31 Dec 2026, the funds fully
+// accounted for, and the PM approved it: `cleared` against the invoice's
+// `expected` total, as the 30 Dec deposit logged it.
+function stageD38(cleared: number, expected: number) {
+  return payloadOf({
+    ...matchingOf(expected, [
+      {
+        fundsDeposited: FUNDS_YES,
+        amountDeposited: cleared,
+        valueDate: "2026-12-30",
+      },
+    ]),
+    fundsAccounted: RECONCILED_YES,
+    accounting: accountingTasks.map((task) => ({
+      ...task,
+      status: ACCOUNTING_DONE,
+    })),
+    readyForReceipt: RECONCILED_YES,
+    foSignature: {
+      signedBy: "role:FO",
+      signedAt: "2026-12-31T09:00:00.000Z",
+    },
+    signedDate: "2026-12-31",
+  })
+}
+
+// The FO sent 2.2's receipt to the client at D3.9 on 2 Jan 2027, paid by
+// bank transfer.
+function stageD39() {
+  return payloadOf({
+    receiptNumber: SEEDED_RECEIPT,
+    dateIssued: "2027-01-02",
+    timeSent: "10:00",
+    receivedFrom: client.organisation,
+    paymentMethod: BANK_TRANSFER,
+    amountReceived: 43424,
+    script: receiptScriptFor({
+      clientName: client.organisation,
+      amount: ghs(43424),
+      invoiceNumber: SEEDED_INVOICE,
+    }),
+    receiptAttached: "Yes",
+  })
+}
+
 // The first payment milestone cycle: D3.3 for 2.2 waiting for the FO, or
 // approved by them, which opens D3.4 for 2.2, as on the D3.4 test
 // projects; on the invoiced project, D3.4 for 2.2 locked and D3.3 for 2.3
@@ -1615,6 +1679,55 @@ function billingCycle(name: string): SeedRecord[] {
     day: 67,
     payload: stageD37(deposited, expected),
   })
+
+  // The PM approved 2.2's reconciliation at D3.8, which opens D3.9 for 2.2.
+  const reconciled = (cleared = 43424, expected = 43424): SeedRecord => ({
+    toolId: "D3.8",
+    cycle: 1,
+    state: "locked",
+    day: 69,
+    payload: stageD38(cleared, expected),
+  })
+
+  if (name === testProjectName("Tier_1", "D3.9")) {
+    return [
+      approved,
+      invoice(),
+      passed(),
+      transmitted(),
+      proceeded(43424),
+      reconciled(),
+    ]
+  }
+
+  if (name === testProjectName("Tier_3", "D3.9")) {
+    return [
+      approved,
+      invoice(60000),
+      passed(),
+      transmitted("GHS 27,600.00"),
+      proceeded(27600, 27600),
+      reconciled(27600, 27600),
+    ]
+  }
+
+  if (name === RECEIPT_SENT_PROJECT) {
+    return [
+      approved,
+      invoice(),
+      passed(),
+      transmitted(),
+      proceeded(43424),
+      reconciled(),
+      {
+        toolId: "D3.9",
+        cycle: 1,
+        state: "locked",
+        day: 71,
+        payload: stageD39(),
+      },
+    ]
+  }
 
   if (name === testProjectName("Tier_1", "D3.8")) {
     return [approved, invoice(), passed(), transmitted(), proceeded(43424)]
@@ -1914,6 +2027,7 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   [BANK_WAITING_PROJECT, tier1Records(BANK_WAITING_PROJECT)],
   [BANK_FEE_PROJECT, tier1Records(BANK_FEE_PROJECT)],
   [HALF_PAID_PROJECT, tier1Records(HALF_PAID_PROJECT)],
+  [RECEIPT_SENT_PROJECT, tier1Records(RECEIPT_SENT_PROJECT)],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
   [`${DEV_LOCKED} (Tier 3)`, tier3Records(`${DEV_LOCKED} (Tier 3)`)],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],

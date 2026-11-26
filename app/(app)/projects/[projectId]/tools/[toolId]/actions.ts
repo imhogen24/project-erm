@@ -22,6 +22,7 @@ import { sendSignatureRequest } from "@/server/contract/signature-contract"
 import { sendTransmittal } from "@/server/contract/transmittal"
 import { getDatabase } from "@/server/database"
 import { sendTransmittedInvoice } from "@/server/payments/transmitted-invoice"
+import { sendPaymentReceipt } from "@/server/payments/payment-receipt"
 import { resubmitClientRequest } from "@/server/intake/client-requests"
 import {
   AgendaNotReadyError,
@@ -390,6 +391,37 @@ export async function sendTransmittedInvoiceAction(values: {
     try {
       return done(
         await sendTransmittedInvoice(getDatabase(), actor, input.recordId)
+      )
+    } catch (error) {
+      if (
+        error instanceof SendNotReadyError ||
+        error instanceof EmailRefusedError
+      ) {
+        return { status: "error", message: error.message }
+      }
+
+      throw error
+    }
+  })
+}
+
+// The FO's Send on D3.9: the payment receipt to the client, which locks
+// D3.9. What stops it comes back in words for the button.
+export async function sendPaymentReceiptAction(values: {
+  recordId: string
+}): Promise<RecordResult> {
+  const parsed = recordInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Check the form and try again." }
+  }
+
+  const input = parsed.data
+
+  return attempt(async (actor) => {
+    try {
+      return done(
+        await sendPaymentReceipt(getDatabase(), actor, input.recordId)
       )
     } catch (error) {
       if (

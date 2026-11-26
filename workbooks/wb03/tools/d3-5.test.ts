@@ -53,6 +53,7 @@ import { d35 } from "./d3-5"
 import { d36 } from "./d3-6"
 import { d37 } from "./d3-7"
 import { d38 } from "./d3-8"
+import { d39 } from "./d3-9"
 
 const database = createTestDatabase()
 
@@ -69,6 +70,8 @@ tools.registerTool(d36)
 tools.registerTool(d37)
 
 tools.registerTool(d38)
+
+tools.registerTool(d39)
 
 registerTestTools({
   wb01: ["D1.15", "T3.D1.15a", "D1.16"],

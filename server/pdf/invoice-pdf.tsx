@@ -12,7 +12,9 @@ import type { Invoice } from "@/server/payments/approved-invoice"
 
 import type { RecordPdf } from "./record-pdf"
 
-const styles = StyleSheet.create({
+// The look of every document IMHOGEN sends a client, such as the invoice
+// and the payment receipt (server/pdf/receipt-pdf).
+export const styles = StyleSheet.create({
   page: {
     paddingTop: 48,
     paddingBottom: 56,
@@ -53,7 +55,7 @@ function money(value: number | undefined) {
 // The invoice the client receives for one payment milestone, laid out as an
 // invoice rather than as the tool's form: IMHOGEN, INVOICE, its number and
 // date, who it is billed to, the lines and totals, then how and when to pay.
-// D3.6 attaches it, and D3.9's receipt can follow the same layout.
+// D3.6 attaches it, and D3.9's receipt follows the same layout.
 export function InvoiceDocument({ invoice }: { invoice: Invoice }) {
   return (
     <Document title={invoice.fileName.replace(/\.pdf$/, "")} author="IMHOGEN">

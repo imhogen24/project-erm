@@ -698,7 +698,9 @@ export async function seed(url: string): Promise<SeedUser[]> {
         created.push({ role: "Client", email: project.client.email })
       }
 
-      const team: Team = new Map()
+      // The client too, so a record the client signed ("role:Client")
+      // names them.
+      const team: Team = new Map([["Client", client.id]])
       const held = rolesOnProject(project)
 
       for (const { handle, role } of held) {

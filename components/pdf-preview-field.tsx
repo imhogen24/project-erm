@@ -43,19 +43,28 @@ type Props = {
   id: string
 }
 
+// One size for every View button, a table cell's or a field's: a small
+// button, so a row of them reads as a column of links rather than fields.
+const viewButton = "h-9 gap-2 px-3 text-sm"
+
 // View opens the PDF in a panel from the right, like the client request: half
 // the screen on a wide one, all of it on a phone. A phone's browser may show
 // only the first page of a PDF in a page, so Open shows it whole in a new tab.
 export function PdfPreviewField({ field, id }: Props) {
   const state = useContext(Previews)[field.key]
 
+  // Nothing to show: View stays where it always is, disabled, and says why
+  // only to a screen reader and on hover, so a column of View buttons lines up
+  // and the reason is not repeated down every row.
   if (state?.status !== "ready") {
+    const note = previewNotes[state?.status ?? "notStarted"]
+
     return (
-      <div className="flex min-h-12 flex-wrap items-center gap-3">
+      <div className="flex shrink-0 items-center" title={note}>
         <Button
           id={id}
           variant="outline"
-          className="h-12 gap-2 px-5"
+          className={viewButton}
           aria-label={`View ${field.label}`}
           aria-describedby={`${id}-note`}
           disabled
@@ -63,8 +72,8 @@ export function PdfPreviewField({ field, id }: Props) {
           <FileTextIcon aria-hidden className="size-4" />
           View
         </Button>
-        <span id={`${id}-note`} className="text-sm text-muted-foreground">
-          {previewNotes[state?.status ?? "notStarted"]}
+        <span id={`${id}-note`} className="sr-only">
+          {note}
         </span>
       </div>
     )
@@ -73,13 +82,13 @@ export function PdfPreviewField({ field, id }: Props) {
   const download = `${state.href}?download=1`
 
   return (
-    <div className="flex min-h-12 items-center">
+    <div className="flex shrink-0 items-center">
       <Sheet>
         <SheetTrigger asChild>
           <Button
             id={id}
             variant="outline"
-            className="h-12 gap-2 px-5"
+            className={viewButton}
             aria-label={`View ${field.label}`}
           >
             <FileTextIcon aria-hidden className="size-4" />

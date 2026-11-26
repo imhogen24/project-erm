@@ -135,11 +135,6 @@
   /* Every badge and chip is one size, whatever its colour, so badges in a
      row line up: the shadcn Badge, .state-badge, .status-chip, .result-chip. */
   --badge-height: 1.5rem;
-  /* Tables split the sheet's width into --page-columns equal parts, the
-     most columns any table on the page has (set on the sheet). The first
-     column of every table is one part, so first columns line up; the other
-     columns share the rest, so a table as wide as the widest is all equal. */
-  --page-columns: 3;
   --badge-padding: 0.5rem;
   --badge-text: 0.75rem;
   --surface-tile: color-mix(in oklab, var(--foreground) 5%, transparent);
@@ -926,6 +921,56 @@
 
 .page-sheet [data-final="true"] :is(textarea, input):disabled::placeholder {
   color: transparent;
+}
+
+/* A value the app works out or copies in, such as a row's total: it reads as
+   text, never as a box to type in. It stays an input so its label names it. */
+.system-input {
+  padding-inline: 0.25rem;
+}
+
+.system-input:not(:focus-visible) {
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+}
+
+/* A choice that can no longer be changed reads as its answer too: no box and
+   no caret, like the text fields above. */
+.page-sheet [data-final="true"] .select-trigger:disabled {
+  height: auto;
+  min-height: 0;
+  padding-inline: 0;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--foreground);
+  opacity: 1;
+  cursor: default;
+}
+
+.page-sheet [data-final="true"] .select-trigger:disabled .select-caret {
+  display: none;
+}
+
+/* A date that can no longer be changed reads as the date, with no box, icon
+   or "Pick a date". */
+.page-sheet [data-final="true"] .date-trigger:disabled {
+  height: auto;
+  padding-inline: 0;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: var(--foreground);
+  opacity: 1;
+  cursor: default;
+}
+
+.page-sheet
+  [data-final="true"]
+  .date-trigger:disabled
+  :is(svg, .date-placeholder) {
+  display: none;
 }
 
 /* A choice between a few short options, such as Pass | Fail: one rounded

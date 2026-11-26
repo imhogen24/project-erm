@@ -1188,12 +1188,6 @@ export default async function Page({
         />
         <main className="table-wide table-home">
           <ToolSheet
-            columns={Math.max(
-              2,
-              ...tool.fields.map((field) =>
-                field.type === "table" ? field.columns.length : 2
-              )
-            )}
             topBar={{
               title: `${view.toolId} ${view.toolName}`,
               iteration: view.control?.iteration,

@@ -79,13 +79,17 @@ export function DatePicker({
           aria-required={required ? true : undefined}
           aria-invalid={invalid ? true : undefined}
           aria-describedby={describedBy}
-          className={`h-12 w-full justify-start bg-background text-base font-normal ${date ? "" : "text-muted-foreground"} ${className}`}
+          className={`date-trigger h-12 w-full justify-start bg-background text-base font-normal ${date ? "" : "text-muted-foreground"} ${className}`}
         >
           <CalendarBlankIcon
             aria-hidden
             className="size-5 text-muted-foreground"
           />
-          {date ? shown.format(date) : "Pick a date"}
+          {date ? (
+            shown.format(date)
+          ) : (
+            <span className="date-placeholder">Pick a date</span>
+          )}
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">

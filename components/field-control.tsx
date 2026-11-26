@@ -106,7 +106,7 @@ function unpickWhen(chosen: boolean, unpick: () => void) {
   }
 }
 
-const readOnlyBlock = "bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
+const readOnlyBlock = "py-2 text-sm text-muted-foreground"
 
 const inputType = {
   text: "text",
@@ -166,7 +166,7 @@ export function FieldControl({
         readOnly
         value={text}
         placeholder={placeholder}
-        className={`${controlClass} bg-muted/50 ${inputClassName}`}
+        className={`${controlClass} system-input ${inputClassName}`}
       />
     )
   }
@@ -223,7 +223,7 @@ export function FieldControl({
       return (
         <Select value={text} onValueChange={onChange}>
           <SelectTrigger {...shared} className={inputClassName}>
-            <SelectValue placeholder="Choose an option" />
+            <SelectValue placeholder={placeholder ?? "Choose an option"} />
           </SelectTrigger>
           <SelectContent>
             {cell.options.map((option) => (

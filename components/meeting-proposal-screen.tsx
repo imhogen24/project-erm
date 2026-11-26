@@ -45,6 +45,7 @@ import {
   sheetDate,
   zoneLabel,
 } from "@/lib/meeting-time"
+import { widthsOf } from "@/lib/column-widths"
 import type { FieldError, FormValues } from "@/lib/tool-definition"
 import { useAutosave } from "@/lib/use-autosave"
 
@@ -88,13 +89,11 @@ type Details = {
   note: string
 }
 
-const editWidths =
-  "minmax(0,calc(100%/var(--page-columns,5))) minmax(0,1.4fr) minmax(0,1fr) minmax(0,1.4fr) 3.5rem"
+const editWidths = widthsOf(["serial", "text", "standard", "text", "action"])
 
-const sentWidths =
-  "minmax(0,calc(100%/var(--page-columns,5))) minmax(0,1fr) minmax(0,1fr) minmax(0,1fr) minmax(0,1.4fr)"
+const sentWidths = widthsOf(["serial", "standard", "text", "standard", "long"])
 
-const detailWidths = "minmax(0,calc(100%/var(--page-columns,5))) minmax(0,1fr)"
+const detailWidths = widthsOf(["text", "long"])
 
 const STALE = "Someone else saved this record. Reload to see their changes."
 

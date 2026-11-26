@@ -2,6 +2,7 @@ import { DrizzleQueryError, and, desc, eq, inArray } from "drizzle-orm"
 import { DatabaseError } from "pg"
 import { z } from "zod"
 
+import { isUuid } from "@/lib/is-uuid"
 import type { Database } from "@/db"
 import {
   files,
@@ -153,7 +154,7 @@ async function namesOfPeople(database: Reader, ids: string[]) {
       : await database
           .select({ id: people.id, name: people.name })
           .from(people)
-          .where(inArray(people.id, ids))
+          .where(inArray(people.id, ids.filter(isUuid)))
 
   return new Map(rows.map((row) => [row.id, row.name]))
 }

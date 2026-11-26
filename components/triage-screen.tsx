@@ -21,6 +21,7 @@ import {
 } from "@/components/sheet-table"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
+import { widthsOf } from "@/lib/column-widths"
 import type { ClientFile } from "@/lib/client-files"
 import type { FieldError, FormValues, TableRow } from "@/lib/tool-definition"
 import { PROCEED, REJECT, type TriageValues } from "@/lib/triage"
@@ -76,11 +77,9 @@ type Props = {
 }
 
 // How wide each column is when there is room. Narrow, the rows stack instead.
-const filesWidths =
-  "minmax(0,calc(100%/var(--page-columns,3))) minmax(0,1fr) minmax(0,1fr)"
+const filesWidths = widthsOf(["text", "short", "long"])
 
-const checksWidths =
-  "minmax(0,calc(100%/var(--page-columns,3))) minmax(0,1fr) minmax(0,1fr)"
+const checksWidths = widthsOf(["long", "standard", "long"])
 
 const STALE = "Someone else saved this record. Reload to see their changes."
 

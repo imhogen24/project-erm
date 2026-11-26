@@ -15,6 +15,7 @@ import { FileCell } from "@/components/file-cell"
 import { PdfPreviewField, usePreviews } from "@/components/pdf-preview-field"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { columnWidths } from "@/lib/column-widths"
 import { fixedValue, newRow, rowNumber } from "@/lib/fixed-rows"
 import { previewCellKey } from "@/lib/pdf-preview"
 import { fillText, placeholdersIn, type Fills } from "@/lib/placeholders"
@@ -46,8 +47,8 @@ const readOnlyTypes = ["instruction", "staticList", "signature"]
 // Short inputs share a line on a phone. Long ones take the whole line.
 const wideTypes = ["text", "longText", "email", "fileLink", "select"]
 
-function vars(values: Record<string, number>): CSSProperties {
-  // SAFETY: React hands custom properties such as --cols to the DOM untouched;
+function vars(values: Record<string, number | string>): CSSProperties {
+  // SAFETY: React hands custom properties such as --table-columns to the DOM untouched;
   // CSSProperties only leaves them out of its list of known names.
   return values as CSSProperties
 }
@@ -67,10 +68,10 @@ function sumOf(rows: RawRow[], key: string) {
   }, 0)
 }
 
-// Wide, the first column is the sheet-wide --first-column and the others
-// share the rest, so every table's first column lines up.
+// Wide, each column is as wide as what it holds (--table-columns, from
+// columnWidths): a serial number narrow, long text wide.
 const rowGrid =
-  "grid-cols-2 gap-3 @xl:grid-cols-[minmax(0,calc(100%/var(--page-columns,3)))_repeat(var(--rest),minmax(0,1fr))] @xl:gap-0"
+  "grid-cols-2 gap-3 @xl:grid-cols-[var(--table-columns)] @xl:gap-0"
 
 // A table is one set of inputs. Wide, it is a grid with shared borders. Narrow,
 // each row becomes a card, so nothing scrolls sideways.
@@ -123,7 +124,12 @@ export function TableEditor({
     )
 
   const canRemove = (rowIndex: number) =>
-    !fixed && !shownOnly && rowIndex >= lockedCount
+    !fixed && !shownOnly && !disabled && rowIndex >= lockedCount
+
+  // Some row can be removed: wide, the Remove buttons get a narrow column of
+  // their own at the right, so every row's fields line up. A table whose rows
+  // all stay has no such column.
+  const growable = !field.pickOne && rows.some((_, index) => canRemove(index))
 
   const total = field.subtotal
     ? { column: field.subtotal, amount: sumOf(rows, field.subtotal) }
@@ -195,8 +201,7 @@ export function TableEditor({
         role="table"
         aria-label={field.label}
         style={vars({
-          "--cols": columns.length,
-          "--rest": Math.max(columns.length - 1, 1),
+          "--table-columns": `${columnWidths(columns, field.fixedRows)}${growable ? " 3.5rem" : ""}`,
         })}
         className="flex flex-col"
       >
@@ -213,6 +218,11 @@ export function TableEditor({
               {column.label}
             </div>
           ))}
+          {growable && (
+            <div role="columnheader">
+              <span className="sr-only">Remove</span>
+            </div>
+          )}
         </div>
         {rows.length === 0 && (
           <div role="row">
@@ -247,15 +257,12 @@ export function TableEditor({
 
               const readOnly = readOnlyTypes.includes(column.type)
 
-              const removable =
-                columnIndex === columns.length - 1 && canRemove(rowIndex)
-
               if (locked) {
                 return (
                   <div
                     key={column.key}
                     role="cell"
-                    className="col-span-2 flex items-center gap-2 bg-muted/60 text-sm font-medium @xl:col-span-1 @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 @xl:last:border-r-0"
+                    className="col-span-2 flex items-center gap-2 text-base font-medium @xl:col-span-1 @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 @xl:last:border-r-0"
                   >
                     {/* A padlock only where fixed rows sit beside rows the
                         person adds; in a fully fixed table every row is. */}
@@ -293,19 +300,13 @@ export function TableEditor({
                       <span className="sr-only">, row {rowIndex + 1}</span>
                     </span>
                     {fixedText === undefined ? (
-                      // A row the person added: no source, and its Remove
-                      // button when this is the last cell.
-                      <span className="flex items-center justify-between gap-2 text-sm text-muted-foreground">
-                        —
-                        {removable && (
-                          <span className="hidden @xl:block">
-                            {removeButton(rowIndex)}
-                          </span>
-                        )}
-                      </span>
+                      // A row the person added: no source.
+                      <span className="text-base text-muted-foreground">-</span>
                     ) : (
-                      <span className="flex flex-wrap items-center gap-x-3 text-sm">
-                        <span>
+                      // The name at the left and View at the right, so the
+                      // buttons of every row line up in one column.
+                      <span className="flex items-center justify-between gap-3 text-base">
+                        <span className="min-w-0 break-words">
                           {previews[
                             previewCellKey(field.key, rowIndex, column.key)
                           ]?.name ?? fixedText}
@@ -337,17 +338,17 @@ export function TableEditor({
                     key={column.key}
                     role="cell"
                     data-fixed={fixedText !== undefined}
-                    className={`flex flex-col gap-1 data-[fixed=true]:bg-muted/60 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 @xl:last:border-r-0 ${wideTypes.includes(column.type) ? "col-span-2 @xl:col-span-1" : ""}`}
+                    className={`flex flex-col gap-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 @xl:last:border-r-0 ${wideTypes.includes(column.type) ? "col-span-2 @xl:col-span-1" : ""}`}
                   >
                     <span className="pt-2 text-xs text-muted-foreground @xl:sr-only @xl:pt-0">
                       {column.label}
                       <span className="sr-only">, row {rowIndex + 1}</span>
                     </span>
-                    <span className="flex items-start gap-2 text-sm break-words">
+                    <span className="flex items-start gap-2 text-base break-words">
                       {fixedText !== undefined && (
                         <LockSimpleIcon
                           aria-hidden
-                          className="mt-0.5 size-4 shrink-0 text-muted-foreground"
+                          className="mt-1 size-4 shrink-0 text-muted-foreground"
                         />
                       )}
                       <span className="flex min-w-0 flex-col">
@@ -392,7 +393,7 @@ export function TableEditor({
                       {column.label}
                       <span className="sr-only">, row {rowIndex + 1}</span>
                     </span>
-                    <span id={id} className="text-sm">
+                    <span id={id} className="text-base">
                       {String(row[column.key] ?? "")}
                     </span>
                   </div>
@@ -410,7 +411,7 @@ export function TableEditor({
                       {column.label}
                       <span className="sr-only">, row {rowIndex + 1}</span>
                     </span>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-base text-muted-foreground">
                       Not needed
                     </span>
                   </div>
@@ -503,7 +504,11 @@ export function TableEditor({
                           }
                           invalid={message !== undefined}
                           describedBy={message ? `${id}-error` : undefined}
-                          placeholder={column.placeholders?.[rowIndex]}
+                          placeholder={
+                            column.placeholders?.[rowIndex] ??
+                            // A choice in a narrow column asks briefly.
+                            (column.type === "select" ? "Choose" : undefined)
+                          }
                           // Every field in a row starts one line tall, so a
                           // row reads level; a long answer grows as it is
                           // typed.
@@ -515,11 +520,6 @@ export function TableEditor({
                         />
                       )}
                     </div>
-                    {removable && (
-                      <div className="hidden @xl:block">
-                        {removeButton(rowIndex)}
-                      </div>
-                    )}
                   </fieldset>
                   {message && (
                     <p
@@ -532,6 +532,14 @@ export function TableEditor({
                 </div>
               )
             })}
+            {growable && (
+              <div
+                role="cell"
+                className="hidden items-center justify-center @xl:flex"
+              >
+                {canRemove(rowIndex) && removeButton(rowIndex)}
+              </div>
+            )}
             {canRemove(rowIndex) && (
               <div className="col-span-2 flex justify-end @xl:hidden">
                 {removeButton(rowIndex)}
@@ -548,7 +556,7 @@ export function TableEditor({
           />
         )}
         {/* A table that picks one of its fixed rows holds no others. */}
-        {!fixed && !shownOnly && !field.pickOne && (
+        {!fixed && !shownOnly && !disabled && !field.pickOne && (
           <div role="row">
             <div role="cell" className="p-4 @xl:p-3">
               <Button
@@ -615,7 +623,7 @@ function ShownCell({
   }
 
   if (column.type !== "fileLink") {
-    return <span className="text-sm break-words">{text}</span>
+    return <span className="text-base break-words">{text}</span>
   }
 
   if (!text || !recordId) {
@@ -653,7 +661,7 @@ function Subtotal({
     <div
       role="row"
       style={vars({ "--at": position })}
-      className={`grid border-t border-foreground/20 bg-muted/60 text-sm font-medium ${rowGrid}`}
+      className={`grid border-t border-foreground/20 text-base font-medium ${rowGrid}`}
     >
       <div role="cell" className="px-4 py-3 @xl:col-start-1">
         {label}

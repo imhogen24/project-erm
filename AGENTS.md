@@ -29,7 +29,9 @@ Within one agent session, do not begin a second workstream's branch before the p
 - To colour-code a workbook's tabs in Google Sheets, follow `docs/SHEET_COLOUR_CODING/_.md`.
 
 ## UI Rules
-- Before building or changing a screen, read `docs/UI_CONTEXT/_.md` and load the `frontend-design` skill. Follow its patterns and run its checklist before saying the work is done.
+- `docs/UI_CONTEXT/_.md` is the single record of how screens look and behave. Read all of it before building or changing any screen or shared component, and load the `frontend-design` skill. Follow its rules exactly; when a rule there and anything else disagree, the file wins.
+- Every UI decision goes into `docs/UI_CONTEXT/_.md` in the same change that makes it: a choice the user makes, a correction they give, or a new shared pattern. Write the rule and the code it lives in, and change or remove any rule it replaces. A decision that is only in code or in chat is not made.
+- Before saying UI work is done, run the file's checklist (section 8) and check every screen the change touches against it.
 - Use stritcly shadcn ui components.
 - Use mobile first approach.
 - Never mark a page (`app/**/page.tsx`) as a Client Component. Pages stay Server Components; push `"use client"` down into the specific leaf component that actually needs interactivity.

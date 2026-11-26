@@ -92,8 +92,8 @@ export async function paymentTermsValues(
     ...names,
     requestId: project?.requestId ?? "",
     totalProjectValue: value === undefined ? "" : ghs(value),
+    ...(submitted?.name && { extractedBy: submitted.name }),
     ...(submitted?.submittedAt && {
-      extractedBy: submitted.name ?? "",
       extractionDate: submitted.submittedAt.toISOString().slice(0, 10),
     }),
     ...(signedAt && { signedDate: signedAt.slice(0, 10) }),
@@ -102,7 +102,8 @@ export async function paymentTermsValues(
 
 // What submitting D3.1 stores: each milestone's Amount Due, worked out again
 // from its percentage of the contract's total, so the later Workbook 3 tools
-// read the same amounts the FO saw. Refused while the total is unknown.
+// read the same amounts the FO saw. An amount stays empty while the total is
+// unknown.
 export async function paymentTermsOnSubmit(
   database: Reader,
   projectId: string,
@@ -111,22 +112,10 @@ export async function paymentTermsOnSubmit(
   const value = await contractValueOf(database, projectId)
   const fields = tools.getTool(PAYMENT_TERMS)?.fields ?? []
 
-  if (value === undefined) {
-    return {
-      values: {},
-      errors: [
-        {
-          field: "totalProjectValue",
-          message: "The executed contract has no total to work from",
-        },
-      ],
-    }
-  }
-
   return {
     values: computedCells(
       fields,
-      { ...payload, totalProjectValue: value },
+      { ...payload, totalProjectValue: value ?? null },
       "stored"
     ),
     errors: [],

@@ -295,6 +295,18 @@ function toValues(
   return values
 }
 
+// The values the system filled, such as D3.1's Total Project Value, which the
+// form holds no input for, so its worked-out cells read them as shown.
+function systemOf(tool: ToolDefinition, values: FormValues): FormValues {
+  return Object.fromEntries(
+    tool.fields.flatMap((field) =>
+      field.systemFilled && values[field.key] !== undefined
+        ? [[field.key, values[field.key]!]]
+        : []
+    )
+  )
+}
+
 export function ToolForm({
   tool,
   values,
@@ -340,7 +352,11 @@ export function ToolForm({
 
   const live = {
     ...liveValues(tool.id, typed),
-    ...computedCells(tool.fields, { ...values, ...typed }),
+    ...computedCells(tool.fields, {
+      ...values,
+      ...typed,
+      ...systemOf(tool, values),
+    }),
     ...shownFromValues(tool, typed),
   }
 

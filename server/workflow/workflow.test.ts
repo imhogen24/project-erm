@@ -695,13 +695,15 @@ describe("checking the map", () => {
   })
 
   it("accepts the real opening rules of WB02 to WB05", () => {
-    // Only the opening rules: WB02's tool order and hard stop name D2.1 and
-    // D2.5, which this file's short route leaves out, and are checked against
-    // the real tools in workbooks/index.test.ts.
+    // Only the opening rules: WB02's and WB03's tool order and WB02's hard
+    // stop name tools this file's short route leaves out, and are checked
+    // against the real tools in workbooks/index.test.ts.
     const later = workflowMaps
       .filter((map) => map.workbook !== "wb01")
       .map((map) =>
-        map.workbook === "wb02" ? { ...map, tools: [], stops: [] } : map
+        map.workbook === "wb02" || map.workbook === "wb03"
+          ? { ...map, tools: [], stops: [] }
+          : map
       )
 
     expect(brokenWorkflowRules(later, all())).toEqual([])

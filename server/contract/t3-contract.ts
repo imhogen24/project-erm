@@ -1,6 +1,7 @@
 import { inArray } from "drizzle-orm"
 import { z } from "zod"
 
+import { isUuid } from "@/lib/is-uuid"
 import { people, type JsonObject } from "@/db/schema"
 import { dateKey, nameKey, signOff, signatureKey } from "@/lib/t3-contract"
 import type { Transaction } from "@/server/audit/audit"
@@ -70,8 +71,4 @@ export async function t3ContractValues(
   )
 
   return Object.fromEntries(rows.flat())
-}
-
-function isUuid(text: string) {
-  return z.uuid().safeParse(text).success
 }

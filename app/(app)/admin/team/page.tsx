@@ -2,6 +2,7 @@ import { CheckCircleIcon, CircleDashedIcon } from "@phosphor-icons/react/ssr"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 
+import { EmptyState } from "@/components/empty-state"
 import { AppSidebar } from "@/components/app-sidebar"
 import { MobileBar } from "@/components/mobile-bar"
 import { PageSheet } from "@/components/page-sheet"
@@ -71,9 +72,11 @@ export default async function Page() {
         <main className="table-project table-home">
           <PageSheet title={"Projects that need a team"}>
             {needing.length === 0 ? (
-              <p className="relative text-muted-foreground">
-                Every running project has a PM and an OM.
-              </p>
+              <EmptyState
+                className="relative"
+                title="No project needs a team"
+                description="Every running project has a PM and an OM."
+              />
             ) : (
               <ul className="relative grid gap-3 lg:grid-cols-2 2xl:grid-cols-3">
                 {needing.map((project) => (

@@ -29,6 +29,7 @@ import {
   FieldLegend,
   FieldSet,
 } from "@/components/ui/field"
+import { widthsOf } from "@/lib/column-widths"
 import { fileIdOf } from "@/lib/file-reference"
 import {
   amountFollowersOf,
@@ -94,16 +95,26 @@ type Section =
   | { kind: "rows"; fields: ToolField[]; title?: string }
   | { kind: "group"; field: ToolField }
 
-const rowWidths = "minmax(0,calc(100%/var(--page-columns,3))) minmax(0,1fr)"
+// A question and its answer: the answer gets the room.
+const rowWidths = widthsOf(["text", "long"])
 
-// A PDF preview is a row of its box, as one appendix among others.
+// A PDF preview is a row of its box, as one appendix among others. A
+// signature in a section is a row of that section, so the section stays one
+// box; a signature on its own is a box of its own.
 function isGroup(field: ToolField) {
+  if (field.type === "signature") {
+    return !field.section
+  }
+
   return (
     field.type === "table" ||
     field.type === "checklist" ||
     (readOnlyTypes.includes(field.type) && field.type !== "pdfPreview")
   )
 }
+
+// Fields that act on a locked record: a PDF opens and a signature is given.
+const actsWhenLocked = ["pdfPreview", "signature"]
 
 function sectionsOf(fields: ToolField[]): Section[] {
   const sections: Section[] = []
@@ -547,7 +558,7 @@ export function ToolForm({
             className="system-value"
           >
             {shown === "" ? (
-              (field.systemNote ?? "Filled in by the system")
+              (field.systemNote ?? "-")
             ) : field.type === "fileLink" && fileIdOf(shown) ? (
               // A file uploaded in the ERM, such as D2.11's contract once
               // sent, opens through the record and cannot be removed.
@@ -642,6 +653,29 @@ export function ToolForm({
     )
   }
 
+  // Sign, for a signature this person may give now.
+  function signButton(field: ToolField) {
+    if (
+      field.type !== "signature" ||
+      !signable.includes(field.key) ||
+      !onSign
+    ) {
+      return null
+    }
+
+    return (
+      <ActionButton
+        variant="secondary"
+        aria-label={`Sign ${field.label}`}
+        className="bg-foreground/10 hover:bg-foreground/20"
+        disabled={pending}
+        onClick={() => onSign(field.key, held())}
+      >
+        Sign
+      </ActionButton>
+    )
+  }
+
   function group(field: ToolField) {
     const title = field.required ? `${field.label} *` : field.label
     const message = messages.get(field.key)
@@ -701,19 +735,7 @@ export function ToolForm({
           <FieldSet className="gap-3 p-4">
             <FieldLegend className="sr-only">{title}</FieldLegend>
             {input(field)}
-            {field.type === "signature" &&
-              signable.includes(field.key) &&
-              onSign && (
-                <ActionButton
-                  variant="secondary"
-                  aria-label={`Sign ${field.label}`}
-                  className="bg-foreground/10 hover:bg-foreground/20"
-                  disabled={pending}
-                  onClick={() => onSign(field.key, held())}
-                >
-                  Sign
-                </ActionButton>
-              )}
+            {signButton(field)}
           </FieldSet>
         </fieldset>
       </TableBox>
@@ -759,13 +781,21 @@ export function ToolForm({
                 </FieldLabel>
               </DataCell>
               <DataCell label="">
-                {/* A PDF preview opens on a locked record too. */}
+                {/* A PDF preview opens, and a signature is given, on a
+                    locked record too. */}
                 <fieldset
-                  disabled={readOnly && field.type !== "pdfPreview"}
+                  disabled={readOnly && !actsWhenLocked.includes(field.type)}
                   data-final={readOnly}
                   className="min-w-0 border-0 p-0"
                 >
-                  {input(field)}
+                  {field.type === "signature" ? (
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      {input(field)}
+                      {signButton(field)}
+                    </div>
+                  ) : (
+                    input(field)
+                  )}
                 </fieldset>
               </DataCell>
             </DataRow>

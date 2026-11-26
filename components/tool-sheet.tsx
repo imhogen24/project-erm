@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactNode } from "react"
+import type { ReactNode } from "react"
 
 import { Grain } from "@/components/grain"
 import { RecordTopBar } from "@/components/record-top-bar"
@@ -10,13 +10,9 @@ import { RecordTopBar } from "@/components/record-top-bar"
 // sheet's width, not the screen's.
 export function ToolSheet({
   topBar,
-  columns,
   children,
 }: {
   topBar: Parameters<typeof RecordTopBar>[0]
-  // The most columns any table on this sheet has; every table's columns are
-  // sized in these equal parts.
-  columns: number
   children: ReactNode
 }) {
   return (
@@ -25,12 +21,7 @@ export function ToolSheet({
       <div className="paper-mat">
         <RecordTopBar {...topBar} />
       </div>
-      <div
-        className="page-sheet grid-square @container relative isolate"
-        // SAFETY: React hands custom properties such as --page-columns to the
-        // DOM untouched; CSSProperties only leaves them out of its known names.
-        style={{ "--page-columns": columns } as CSSProperties}
-      >
+      <div className="page-sheet grid-square @container relative isolate">
         <Grain />
         <div className="relative flex flex-1 flex-col gap-8 px-6 py-8">
           {children}

@@ -1,9 +1,8 @@
-import Link from "next/link"
-
+import { SidebarProjectRows } from "@/components/sidebar-project-rows"
 import type { SidebarList } from "@/lib/sidebar-list"
 
-// Enough to fill the sidebar without scrolling on a laptop.
-const SHOWN = 8
+// More than the tallest screen holds; the rows that don't fit are left out.
+const MOST = 60
 
 export function SidebarProjects({ list }: { list: SidebarList }) {
   const { title, rows, more } = list
@@ -13,7 +12,7 @@ export function SidebarProjects({ list }: { list: SidebarList }) {
   }
 
   return (
-    <section aria-label={title} className="nav-section">
+    <section aria-label={title} className="nav-section min-h-0 flex-1">
       <p className="nav-group-title">
         {title}
         <span
@@ -23,19 +22,7 @@ export function SidebarProjects({ list }: { list: SidebarList }) {
           {rows.length}
         </span>
       </p>
-      <div className="flex flex-col">
-        {rows.slice(0, SHOWN).map((row) => (
-          <Link key={row.id} href={row.href} className="nav-project">
-            <span aria-hidden data-tone={row.tone} className="nav-dot" />
-            <span className="truncate">{row.name}</span>
-          </Link>
-        ))}
-      </div>
-      {rows.length > SHOWN && (
-        <Link href={more.href} className="nav-more">
-          {more.label}
-        </Link>
-      )}
+      <SidebarProjectRows rows={rows.slice(0, MOST)} more={more} />
     </section>
   )
 }

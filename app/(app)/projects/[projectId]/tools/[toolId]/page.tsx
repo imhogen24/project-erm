@@ -8,6 +8,7 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { CalendarAgendaScreen } from "@/components/calendar-agenda-screen"
 import { ClientRequestPanel } from "@/components/client-request-panel"
 import { DeliveryChip } from "@/components/delivery-chip"
+import { EmptyState } from "@/components/empty-state"
 import { MeetingChoice } from "@/components/meeting-choice"
 import { MeetingProposalScreen } from "@/components/meeting-proposal-screen"
 import { MobileBar } from "@/components/mobile-bar"
@@ -78,6 +79,8 @@ import {
 } from "@/server/records/records"
 import { SCOPE_OF_WORK, clientMeeting } from "@/server/scope/scope-of-work"
 import { AlignmentMeetingActions } from "@/components/alignment-meeting-actions"
+import { roleList } from "@/lib/role-titles"
+import { writingRoles } from "@/server/permissions/matrix"
 import {
   missingToConfirm,
   missingToSendTimes,
@@ -953,6 +956,9 @@ export default async function Page({
       state: "draft",
     }))
 
+  // Who fills the tool in, named on its empty state for those who only read it.
+  const startedBy = roleList(writingRoles(toolId))
+
   // Why the approver sent the draft back, for the person who writes it.
   const sentBack =
     view.record && view.can.write
@@ -1142,11 +1148,17 @@ export default async function Page({
       meetingName="feasibility & engineering alignment meeting"
     />
   ) : notSharedYet ? (
-    <p className="text-muted-foreground">
-      IMHOGEN shares this with you once it is approved.
-    </p>
+    <EmptyState
+      drawing="gear"
+      title="Not shared yet"
+      description="IMHOGEN shares this with you once it is approved."
+    />
   ) : !hasRecord && !view.can.write && !send ? (
-    <p>Nobody has started this tool yet.</p>
+    <EmptyState
+      drawing="gear"
+      title="Not started yet"
+      description={startedBy ? `The ${startedBy} starts it.` : undefined}
+    />
   ) : (
     <div className="flex flex-col gap-6">
       {deliveryBox}
@@ -1220,12 +1232,6 @@ export default async function Page({
         />
         <main className="table-wide table-home">
           <ToolSheet
-            columns={Math.max(
-              2,
-              ...tool.fields.map((field) =>
-                field.type === "table" ? field.columns.length : 2
-              )
-            )}
             topBar={{
               title: `${view.toolId} ${view.toolName}`,
               iteration: view.control?.iteration,

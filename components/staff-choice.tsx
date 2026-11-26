@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react"
 import { CheckCircleIcon, CircleDashedIcon, XIcon } from "@phosphor-icons/react"
 
+import { EmptyState } from "@/components/empty-state"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { OptionRow } from "@/components/option-row"
 import { Button } from "@/components/ui/button"
@@ -254,9 +255,11 @@ export function StaffChoice({
         </div>
       )}
       {hasChoice && !someoneFree && (
-        <p className="text-sm text-muted-foreground">
-          Nobody is free for this role.
-        </p>
+        <EmptyState
+          size="inline"
+          drawing="bracket"
+          title="Nobody is free for this role."
+        />
       )}
       {message && <FieldError role="alert">{message}</FieldError>}
     </section>

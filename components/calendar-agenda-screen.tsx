@@ -28,6 +28,7 @@ import {
   type CalendarAgenda,
   type MeetingDetails,
 } from "@/lib/calendar-agenda"
+import { widthsOf } from "@/lib/column-widths"
 import { meetingInstant, sheetDate, zoneLabel } from "@/lib/meeting-time"
 import type { FormValues } from "@/lib/tool-definition"
 import {
@@ -56,14 +57,19 @@ type Props = {
   ready: (values: { recordId: string }) => Promise<SaveResult>
 }
 
-const detailWidths = "minmax(0,calc(100%/var(--page-columns,5))) minmax(0,1fr)"
+const detailWidths = widthsOf(["text", "long"])
 
 // SN and the minutes are short, so the words get the room.
-const agendaWidths =
-  "3.5rem 6.5rem minmax(0,2fr) minmax(0,1.3fr) minmax(0,2fr) 3.5rem"
+const agendaWidths = widthsOf([
+  "serial",
+  "short",
+  "long",
+  "text",
+  "long",
+  "action",
+])
 
-const checkWidths =
-  "minmax(0,calc(100%/var(--page-columns,5)*2)) minmax(0,1fr) minmax(0,1fr)"
+const checkWidths = widthsOf(["long", "standard", "standard"])
 
 const STALE = "Someone else saved this record. Reload to see their changes."
 

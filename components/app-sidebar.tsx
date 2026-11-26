@@ -17,12 +17,16 @@ import { UserMenu } from "@/components/user-menu"
 import type { ProjectNav } from "@/lib/project-nav"
 import { isItAdmin } from "@/lib/roles"
 import { loadSidebarList } from "@/lib/sidebar-list"
+import { cn } from "@/lib/utils"
 import { requireSession } from "@/lib/session"
 
 type Props = {
   name: string
   // Set inside a project: its name and its workbooks and tools as a tree.
   project?: ProjectNav
+  // Inside a project, links or buttons under its card, such as the client
+  // request.
+  projectActions?: ReactNode
   // Which page the person is on, outside a project, and whether to offer the
   // IT/Admin pages: invite people and assign staff.
   current?: "projects" | "invites" | "team"
@@ -62,12 +66,14 @@ function NavLink({
 export async function AppSidebar({
   name,
   project,
+  projectActions,
   current = "projects",
   canInvite = false,
 }: Props) {
   const session = await requireSession()
   const admin = await isItAdmin(session.user.id)
   const list = project ? undefined : await loadSidebarList()
+  const hasProjects = (list?.rows.length ?? 0) > 0
 
   return (
     <Sheet className="sidebar-frame z-20 hidden flex-col shadow-xl shadow-foreground/10 xl:flex">
@@ -88,7 +94,9 @@ export async function AppSidebar({
         <nav aria-label="Main" className="flex min-h-0 flex-1 flex-col">
           {project ? (
             <div className="flex min-h-0 flex-1 flex-col">
-              <div className="nav-section">
+              {/* Three groups, each ruled off from the next: the way back,
+                  this project and what to do with it, then its workbooks. */}
+              <div className="nav-section border-b pb-3">
                 <NavLink
                   href="/"
                   icon={<ArrowLeftIcon aria-hidden className="nav-icon" />}
@@ -96,10 +104,12 @@ export async function AppSidebar({
                 >
                   Your projects
                 </NavLink>
+              </div>
+              <div className="nav-section gap-2 border-b pb-3">
                 <Link
                   href={`/projects/${project.id}`}
                   title={project.name}
-                  className="project-card"
+                  className="project-card mt-0"
                 >
                   <span aria-hidden className="option-mark">
                     {project.tier}
@@ -111,12 +121,22 @@ export async function AppSidebar({
                     </span>
                   </span>
                 </Link>
+                {projectActions}
+              </div>
+              <div className="nav-section pb-0">
+                <p className="nav-group-title">Workbooks</p>
               </div>
               <ProjectTree project={project} />
             </div>
           ) : (
             <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
-              <div className="nav-section">
+              {/* Each group is ruled off from the next, as inside a project. */}
+              <div
+                className={cn(
+                  "nav-section",
+                  (canInvite || hasProjects) && "border-b pb-3"
+                )}
+              >
                 <p className="nav-group-title">Work</p>
                 <NavLink
                   href="/"
@@ -127,7 +147,9 @@ export async function AppSidebar({
                 </NavLink>
               </div>
               {canInvite && (
-                <div className="nav-section">
+                <div
+                  className={cn("nav-section", hasProjects && "border-b pb-3")}
+                >
                   <p className="nav-group-title">Admin</p>
                   <NavLink
                     href="/admin/invites"

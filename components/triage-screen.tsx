@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useState, useTransition, type ReactNode } from "react"
 
+import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 import { SegmentedChoice } from "@/components/segmented-choice"
 import {
@@ -20,6 +21,7 @@ import {
 } from "@/components/sheet-table"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
+import { widthsOf } from "@/lib/column-widths"
 import type { ClientFile } from "@/lib/client-files"
 import type { FieldError, FormValues, TableRow } from "@/lib/tool-definition"
 import { PROCEED, REJECT, type TriageValues } from "@/lib/triage"
@@ -75,11 +77,9 @@ type Props = {
 }
 
 // How wide each column is when there is room. Narrow, the rows stack instead.
-const filesWidths =
-  "minmax(0,calc(100%/var(--page-columns,3))) minmax(0,1fr) minmax(0,1fr)"
+const filesWidths = widthsOf(["text", "short", "long"])
 
-const checksWidths =
-  "minmax(0,calc(100%/var(--page-columns,3))) minmax(0,1fr) minmax(0,1fr)"
+const checksWidths = widthsOf(["long", "standard", "long"])
 
 const STALE = "Someone else saved this record. Reload to see their changes."
 
@@ -284,9 +284,11 @@ export function TriageScreen({
       <SentBackNotice reason={sentBack} />
       <TableBox title="Files">
         {files.length === 0 ? (
-          <p className="px-4 py-4 text-sm text-muted-foreground">
-            No files were attached to this request.
-          </p>
+          <EmptyState
+            size="inline"
+            className="px-4 py-4"
+            title="No files were attached to this request."
+          />
         ) : (
           <DataTable
             label="Files"

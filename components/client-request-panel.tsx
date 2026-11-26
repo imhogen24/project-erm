@@ -17,16 +17,25 @@ import type { ClientRequest } from "@/lib/client-request"
 // What the client filled in on the website form, as tables grouped by what the
 // answers are about. It slides in from the right and covers half the screen on
 // a wide one, scrolls when it is long, and has nothing to edit.
+// In the sidebar it opens from a row like the sidebar's links.
 export function ClientRequestPanel({
   request,
-}: Readonly<{ request: ClientRequest }>) {
+  inSidebar = false,
+}: Readonly<{ request: ClientRequest; inSidebar?: boolean }>) {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline" className="h-10 gap-2 px-4">
-          <FileTextIcon aria-hidden className="size-4" />
-          View client request
-        </Button>
+        {inSidebar ? (
+          <button type="button" className="nav-link w-full text-left">
+            <FileTextIcon aria-hidden className="nav-icon" />
+            <span className="min-w-0 flex-1 truncate">View client request</span>
+          </button>
+        ) : (
+          <Button variant="outline" className="h-10 gap-2 px-4">
+            <FileTextIcon aria-hidden className="size-4" />
+            View client request
+          </Button>
+        )}
       </SheetTrigger>
       <SheetContent
         side="right"

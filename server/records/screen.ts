@@ -1,6 +1,7 @@
 import { and, desc, eq, inArray, ne } from "drizzle-orm"
 import { z } from "zod"
 
+import { isUuid } from "@/lib/is-uuid"
 import type { Database } from "@/db"
 import {
   changeRequests,
@@ -137,7 +138,7 @@ export async function withSignerNames(
         .where(
           inArray(
             people.id,
-            signatures.map((each) => each.signedBy)
+            signatures.map((each) => each.signedBy).filter(isUuid)
           )
         )
     ).map((person) => [person.id, person.name])

@@ -4,6 +4,7 @@ import Link from "next/link"
 import { Fragment } from "react"
 import { usePathname } from "next/navigation"
 
+import { EmptyState } from "@/components/empty-state"
 import { stateLabel } from "@/components/state-badge"
 import { ToolLock, ToolMark } from "@/components/tool-mark"
 import { Folder, Tree } from "@/components/ui/file-tree"
@@ -36,9 +37,11 @@ export function ProjectTree({ project }: { project: ProjectNav }) {
           className="nav-folder"
         >
           {workbook.tools.length === 0 && (
-            <p className="px-2 py-1.5 text-sm text-muted-foreground">
-              No tools yet
-            </p>
+            <EmptyState
+              size="inline"
+              className="px-2 py-1.5"
+              title="No tools yet"
+            />
           )}
           {workbook.tools.map((tool) =>
             tool.open ? (

@@ -475,6 +475,29 @@ const bankWaiting = tier1Stage(
   "Mill 1 tonne of paddy an hour with a destoner and polisher."
 )
 
+// Tier 1 projects whose 2.2 payment the FO logged at D3.7 and proceeded,
+// so D3.8 for 2.2 is open for the FO: on the first, the deposit is 15.00
+// short of the invoice (bank fees); on the second, only half came in.
+export const BANK_FEE_PROJECT = `${DEV_PROJECT}D3.8 2.2 Bank Fees (Tier 1)`
+
+export const HALF_PAID_PROJECT = `${DEV_PROJECT}D3.8 2.2 Half Paid (Tier 1)`
+
+const [bankFee, halfPaid] = [
+  [BANK_FEE_PROJECT, "2026-09-23T09:00:00Z"],
+  [HALF_PAID_PROJECT, "2026-09-24T09:00:00Z"],
+].map(([name, received]) =>
+  tier1Stage(
+    name!,
+    "active",
+    received!,
+    "Accra",
+    client,
+    "everyone",
+    "Small rice mill with destoner",
+    "Mill 1 tonne of paddy an hour with a destoner and polisher."
+  )
+)
+
 // A Tier 1 project whose 2.2 invoice the PM failed at D3.5 and sent back, so
 // D3.5 is locked with the failed check and D3.4 is a draft for the FO again.
 export const INVOICE_SENT_BACK_PROJECT = `${DEV_PROJECT}D3.5 2.2 Sent Back (Tier 1)`
@@ -515,6 +538,8 @@ export const projects: readonly SeedProject[] = [
   invoiceSentBack,
   invoiceSent,
   bankWaiting,
+  bankFee!,
+  halfPaid!,
 ]
 
 export function seedProjectNamed(name: string) {

@@ -79,7 +79,12 @@ import {
   SIGNED,
   signatureScriptFor,
 } from "@/lib/signature-contract"
-import { CONTINUE_WAITING } from "@/lib/bank-statement-log"
+import {
+  CONTINUE_WAITING,
+  PROCEED as BANK_PROCEED,
+  YES as FUNDS_YES,
+  accountChecked,
+} from "@/lib/bank-statement-log"
 import { companyBank } from "@/lib/company"
 import { scriptFor as transmittedScript } from "@/lib/transmitted-invoice"
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
@@ -92,6 +97,8 @@ import {
   INVOICE_SENT_BACK_PROJECT,
   INVOICE_SENT_PROJECT,
   BANK_WAITING_PROJECT,
+  BANK_FEE_PROJECT,
+  HALF_PAID_PROJECT,
   PAPER_SIGNED_PROJECT,
   TRIGGER_APPROVED_PROJECT,
   TRIGGER_WAITING_PROJECT,
@@ -1474,6 +1481,32 @@ function earlierBankChecks(): JsonObject[] {
   }))
 }
 
+// The FO's check on 30 Dec 2026 that found the client's deposit for 2.2 and
+// proceeded to D3.8: `deposited` against the invoice's `expected` total.
+function stageD37(deposited: number, expected: number) {
+  const variance = Math.round((deposited - expected) * 100) / 100
+
+  return payloadOf({
+    checkingOfficer: staffWith("FO").name,
+    dateOfCheck: "2026-12-30",
+    timeOfCheck: "09:15",
+    accountChecked: accountChecked(),
+    fundsDeposited: FUNDS_YES,
+    amountDeposited: deposited,
+    reference: `TRF FROM ${client.organisation.toUpperCase()} - ${SEEDED_INVOICE}`,
+    valueDate: "2026-12-30",
+    amountMatches: variance === 0 ? FUNDS_YES : NO,
+    expectedAmount: expected,
+    variance,
+    actionRequired: BANK_PROCEED,
+    foSignature: {
+      signedBy: "role:FO",
+      signedAt: "2026-12-30T09:15:00.000Z",
+    },
+    signedDate: "2026-12-30",
+  })
+}
+
 // The running count the seeded D3.4's invoice number takes. The seed keeps
 // the count past it, so the next invoice drafted takes the number after.
 export const seededInvoice = { period: "26", value: 1 }
@@ -1571,6 +1604,38 @@ function billingCycle(name: string): SeedRecord[] {
         payload: { earlierChecks: earlierBankChecks() },
       },
     ]
+  }
+
+  // The FO logged 2.2's payment at D3.7 and proceeded: in full on the D3.8
+  // test projects, 15.00 short (bank fees) or half of it on the others.
+  const proceeded = (deposited: number, expected = 43424): SeedRecord => ({
+    toolId: "D3.7",
+    cycle: 1,
+    state: "locked",
+    day: 67,
+    payload: stageD37(deposited, expected),
+  })
+
+  if (name === testProjectName("Tier_1", "D3.8")) {
+    return [approved, invoice(), passed(), transmitted(), proceeded(43424)]
+  }
+
+  if (name === testProjectName("Tier_3", "D3.8")) {
+    return [
+      approved,
+      invoice(60000),
+      passed(),
+      transmitted("GHS 27,600.00"),
+      proceeded(27600, 27600),
+    ]
+  }
+
+  if (name === BANK_FEE_PROJECT) {
+    return [approved, invoice(), passed(), transmitted(), proceeded(43409)]
+  }
+
+  if (name === HALF_PAID_PROJECT) {
+    return [approved, invoice(), passed(), transmitted(), proceeded(21712)]
   }
 
   if (name === testProjectName("Tier_1", "D3.7")) {
@@ -1847,6 +1912,8 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   [INVOICE_SENT_BACK_PROJECT, tier1Records(INVOICE_SENT_BACK_PROJECT)],
   [INVOICE_SENT_PROJECT, tier1Records(INVOICE_SENT_PROJECT)],
   [BANK_WAITING_PROJECT, tier1Records(BANK_WAITING_PROJECT)],
+  [BANK_FEE_PROJECT, tier1Records(BANK_FEE_PROJECT)],
+  [HALF_PAID_PROJECT, tier1Records(HALF_PAID_PROJECT)],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
   [`${DEV_LOCKED} (Tier 3)`, tier3Records(`${DEV_LOCKED} (Tier 3)`)],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],

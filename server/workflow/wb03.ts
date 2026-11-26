@@ -1,3 +1,5 @@
+import { PROCEED } from "@/lib/bank-statement-log"
+
 import type { WorkbookMap } from "./map"
 
 // Finance opens once the executed contract is locked, and stays open for the
@@ -13,8 +15,10 @@ import type { WorkbookMap } from "./map"
 // with Yes opens that cycle's transmitted invoice record, D3.6, for the
 // Finance Officer to send. Sending a cycle's D3.6 opens that cycle's daily
 // bank statement log, D3.7, which the FO submits once a day, each check
-// opening the next, until the money is in. D3.8 is not built yet, so
-// proceeding from D3.7 opens nothing more for now.
+// opening the next, until the money is in. A cycle's D3.7 submitted with
+// Proceed opens that cycle's reconciled payment log, D3.8, for the FO. A
+// shortfall sends the D3.7 back (D3.8's `sendsBackTo`) as a new check. D3.9
+// is not built yet, so approving D3.8 opens nothing more for now.
 export const wb03: WorkbookMap = {
   workbook: "wb03",
   opens: { after: { all: ["D2.12"] } },
@@ -35,6 +39,17 @@ export const wb03: WorkbookMap = {
       repeats: true,
     },
     { tool: "D3.7", after: { all: ["D3.6"] }, repeats: true },
+    {
+      tool: "D3.8",
+      after: { all: ["D3.7"] },
+      when: {
+        tool: "D3.7",
+        field: "actionRequired",
+        oneOf: [PROCEED],
+        note: "This tool opens once D3.7 is submitted with Proceed.",
+      },
+      repeats: true,
+    },
   ],
   cycles: {
     count: { tool: "D3.1", field: "paymentSchedule", less: 1 },

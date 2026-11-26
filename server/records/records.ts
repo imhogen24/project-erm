@@ -64,6 +64,7 @@ import {
   withoutInternalValues,
 } from "./shown-fields"
 import { applySendBack } from "./send-back"
+import { answersSendBack } from "@/lib/send-back"
 import { submittedValues } from "./submitted-values"
 import { decisionValues, heldDecision, withoutDecision } from "./decision"
 import { heldIssued, issuedValues } from "./issued"
@@ -447,13 +448,15 @@ function withoutSystemValues(toolId: string, payload: JsonObject): JsonObject {
 // Moves a record the caller has locked one step, and records who moved it and
 // when. Approving needs every signature field signed. Locking notifies the
 // people who write each tool the lock opens. Emails it raises go into
-// `outbox`, for the caller to send once the transaction commits.
+// `outbox`, for the caller to send once the transaction commits. `said` is
+// why a review locked with its send-back answer sent the work back.
 async function move(
   transaction: Transaction,
   actor: string,
   current: ToolRecord,
   to: Exclude<RecordState, "void">,
-  outbox: PendingEmail[]
+  outbox: PendingEmail[],
+  said?: string
 ): Promise<ToolRecord> {
   if (!allowedTransitions[current.state].includes(to)) {
     throw new InvalidTransitionError(
@@ -603,7 +606,7 @@ async function move(
 
   if (to === "locked") {
     await applyApprovedChange(transaction, actor, current)
-    await applySendBack(transaction, actor, moved!, outbox)
+    await applySendBack(transaction, actor, moved!, outbox, said)
     await applyHardStop(transaction, actor, current)
 
     await notifyToolsOpened(
@@ -1198,6 +1201,16 @@ export async function approveRecord(
       )
     }
 
+    // A review answered so that it sends the work back, such as D3.8 with
+    // the funds short, is sent back instead.
+    const tool = tools.getTool(current.toolId)
+
+    if (tool && answersSendBack(tool, current.payload)) {
+      throw new InvalidTransitionError(
+        `${current.toolId} cannot be approved with ${tool.sendsBackTo!.field} ${tool.sendsBackTo!.is}: send it back`
+      )
+    }
+
     if (current.submittedBy === actor) {
       throw new SelfApprovalError(
         "The person who submitted this record cannot approve it"
@@ -1219,12 +1232,15 @@ export class SendBackReasonError extends Error {}
 // The approver returns a submitted record to its writer as a draft, saying
 // why. The reason is kept on the audit line, and whoever submitted it is told
 // on their dashboard. The payload stays as submitted, so the writer carries on
-// from it.
+// from it. A review answered so that it sends earlier work back, such as
+// D3.8 with the funds short, is locked instead, as this iteration, which
+// reopens that work (`sendsBackTo`) with the reason.
 export async function sendBackRecord(
   database: Database,
   actor: string,
   recordId: string,
-  reason: string
+  reason: string,
+  transport?: Transport
 ): Promise<ToolRecord> {
   const said = reason.trim()
 
@@ -1236,7 +1252,9 @@ export async function sendBackRecord(
 
   await assertMay(database, actor, record.projectId, record.toolId, "approve")
 
-  return database.transaction(async (transaction) => {
+  const outbox: PendingEmail[] = []
+
+  const moved = await database.transaction(async (transaction) => {
     await assertProjectActive(transaction, record.projectId)
 
     const current = await lockRecord(transaction, recordId)
@@ -1245,6 +1263,20 @@ export async function sendBackRecord(
       throw new InvalidTransitionError(
         `A ${current.state} record cannot be sent back`
       )
+    }
+
+    const tool = tools.getTool(current.toolId)
+
+    if (tool && answersSendBack(tool, current.payload)) {
+      const approved = await move(
+        transaction,
+        actor,
+        current,
+        "approved",
+        outbox
+      )
+
+      return move(transaction, actor, approved, "locked", outbox, said)
     }
 
     // A tool that keeps the approver's decision records it was sent back.
@@ -1298,6 +1330,10 @@ export async function sendBackRecord(
 
     return returned!
   })
+
+  await sendNotificationEmails(database, outbox, transport)
+
+  return moved
 }
 
 // The person who submitted a record takes it back as a draft before anyone

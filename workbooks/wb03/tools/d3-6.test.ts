@@ -52,6 +52,7 @@ import { d34 } from "./d3-4"
 import { d35 } from "./d3-5"
 import { d36 } from "./d3-6"
 import { d37 } from "./d3-7"
+import { d38 } from "./d3-8"
 
 const database = createTestDatabase()
 
@@ -66,6 +67,8 @@ tools.registerTool(d35)
 tools.registerTool(d36)
 
 tools.registerTool(d37)
+
+tools.registerTool(d38)
 
 registerTestTools({
   wb01: ["D1.15", "T3.D1.15a", "D1.16"],
@@ -535,7 +538,7 @@ describe("the reminder", () => {
     await lockTerms()
     await approveInvoice()
     await send((await draft()).id)
-    await addRecord("D3.8", {}, 1)
+    await addRecord("D3.8", { fundsAccounted: "Yes" }, 1)
 
     expect(
       await sendInvoiceReminders(database, {

@@ -29,6 +29,7 @@ import {
   waitsOn,
 } from "@/server/workflow/workflow"
 
+import { nextEntryOf } from "./kept-entries"
 import { signaturesOf, withoutSignatures } from "./signatures"
 
 type LockedRecord = {
@@ -217,12 +218,15 @@ function sentBackReason(record: LockedRecord): string {
 // that opens it holds again: after D2.5 sent the draft back, D2.3 runs again,
 // then D2.4 once D2.3 is locked with Approved, then D2.5 once D2.4 is. The
 // emails to the roles a review `notifies` go into `outbox`, to send once the
-// transaction commits.
+// transaction commits. Work that repeats, such as D3.7's bank checks, keeps
+// the locked entry and reopens as its next one. `said` is what the reviewer
+// typed when sending it back, added to the reason.
 export async function applySendBack(
   transaction: Transaction,
   actor: string,
   record: LockedRecord,
-  outbox: PendingEmail[]
+  outbox: PendingEmail[],
+  said?: string
 ): Promise<void> {
   const [project] = await transaction
     .select({ track: projects.serviceTrack })
@@ -262,9 +266,19 @@ export async function applySendBack(
         continue
       }
 
-      const reason = sentBackReason(record)
+      const reason = said
+        ? `${sentBackReason(record)}. ${said}`
+        : sentBackReason(record)
 
-      await reopen(transaction, actor, held, reason)
+      const next = nextEntryOf(held.toolId, held.payload)
+
+      await reopen(
+        transaction,
+        actor,
+        held,
+        reason,
+        next && { payload: next, note: "Entry kept, next one started" }
+      )
       await notifySentBack(transaction, actor, held, reason)
 
       if (review.notifies) {

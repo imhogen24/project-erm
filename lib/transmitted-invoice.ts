@@ -9,11 +9,6 @@ import { addDays } from "@/lib/follow-dates"
 
 export const TRANSMITTED_INVOICE = "D3.6"
 
-// The reconciled payment log. Once a cycle's D3.8 locks, the milestone is
-// paid and its reminder is not sent. D3.8 is not built yet, so until then
-// the reminder always goes.
-export const RECONCILED_PAYMENT = "D3.8"
-
 export const YES = "Yes"
 
 export const NO = "No"

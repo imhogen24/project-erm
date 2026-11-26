@@ -19,6 +19,7 @@ import type {
   ToolDefinition,
 } from "@/lib/tool-definition"
 import type { Fills } from "@/lib/placeholders"
+import { answersSendBack } from "@/lib/send-back"
 import { useAutosave } from "@/lib/use-autosave"
 
 type Result =
@@ -271,8 +272,10 @@ export function RecordForm({
                     onToggle={() => setSendingBack((open) => !open)}
                   />
                 )}
-                {/* A tool signed in turn is approved by a signature. */}
-                {!tool.signInTurn && (
+                {/* A tool signed in turn is approved by a signature, and
+                    a review answered so that it sends the work back, such
+                    as D3.8 with the funds short, is only sent back. */}
+                {!tool.signInTurn && !answersSendBack(tool, values) && (
                   <ActionButton
                     disabled={pending}
                     onClick={() =>
@@ -326,7 +329,9 @@ export function RecordForm({
             onSend={(reason) =>
               run(
                 () => sendBack({ recordId, reason }),
-                "Sent back to the writer."
+                answersSendBack(tool, values)
+                  ? `Locked, and sent back to ${tool.sendsBackTo?.tools.join(" and ")}.`
+                  : "Sent back to the writer."
               )
             }
             onCancel={() => setSendingBack(false)}

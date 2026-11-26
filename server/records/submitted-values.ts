@@ -10,6 +10,8 @@ import { DRAFT_INVOICE } from "@/lib/draft-invoice"
 import { draftInvoiceOnSubmit } from "@/server/payments/draft-invoice"
 import { BANK_STATEMENT_LOG } from "@/lib/bank-statement-log"
 import { bankLogOnSubmit } from "@/server/payments/bank-check-submit"
+import { RECONCILED_PAYMENT } from "@/lib/reconciled-payment"
+import { reconciledOnSubmit } from "@/server/payments/reconciled-submit"
 
 import type { FieldError } from "./validate"
 
@@ -53,6 +55,10 @@ export async function submittedValues(
         record.cycle,
         record.payload
       )
+    }
+
+    case RECONCILED_PAYMENT: {
+      return reconciledOnSubmit(transaction, record.projectId, record.cycle)
     }
 
     default: {

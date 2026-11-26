@@ -22,7 +22,8 @@ import {
   rolesOn,
 } from "@/server/permissions/permissions"
 import { RecordNotFoundError } from "@/server/records/records"
-import { currentRecordId } from "@/server/records/screen"
+import { currentRecordId, cycleRecordId } from "@/server/records/screen"
+import { repeatsPerCycle } from "@/server/workflow/workflow"
 import {
   cellPreviewSource,
   storedPdfName,
@@ -38,8 +39,25 @@ import { recordPdf, type RecordPdf } from "./record-pdf"
 // only the routes below send them, to someone a tool shows them to.
 export const documentsDirectory = path.join(process.cwd(), "documents")
 
-export function toolPdfHref(projectId: string, toolId: string) {
-  return `/api/projects/${projectId}/tools/${encodeURIComponent(toolId)}/pdf`
+// `cycle` names one payment milestone cycle's record of a tool run once per
+// milestone, such as D3.3's for cycle 2; without it, the newest.
+export function toolPdfHref(projectId: string, toolId: string, cycle?: number) {
+  return `/api/projects/${projectId}/tools/${encodeURIComponent(toolId)}/pdf${cycle === undefined ? "" : `?cycle=${cycle}`}`
+}
+
+// The record a preview of a tool shows: in a cycle of a tool run once per
+// milestone, the same cycle's record of a tool that also runs once per
+// milestone, such as D3.4's preview of its own cycle's D3.3; otherwise the
+// newest.
+async function shownRecordId(
+  database: Pick<Database, "select">,
+  projectId: string,
+  toolId: string,
+  cycle: number | undefined
+) {
+  return cycle !== undefined && repeatsPerCycle(toolId)
+    ? await cycleRecordId(database, projectId, toolId, cycle)
+    : await currentRecordId(database, projectId, toolId)
 }
 
 export function uploadPdfHref(
@@ -135,12 +153,15 @@ async function uploadOf(
 // project. A preview names the Tier 1 tool, as the sheet does; on a Tier 3
 // project it shows the variant that takes that tool's place. A tool they
 // cannot read is "noAccess", and its PDF is never offered to them. A table
-// row the project does not need (`notNeeded`) is "notNeeded".
+// row the project does not need (`notNeeded`) is "notNeeded". In `cycle` of
+// a tool run once per milestone, a tool that also runs once per milestone
+// shows that cycle's record.
 export async function previewStates(
   database: Database,
   actor: string,
   projectId: string,
-  tool: ToolDefinition
+  tool: ToolDefinition,
+  cycle?: number
 ): Promise<PreviewStates> {
   const sources = previewSourcesOf(tool)
 
@@ -202,11 +223,18 @@ export async function previewStates(
       return { status: "noAccess", name }
     }
 
-    if (!shown || !(await currentRecordId(database, projectId, shown))) {
+    const inCycle =
+      cycle !== undefined && repeatsPerCycle(tool.id) && shown
+        ? repeatsPerCycle(shown)
+        : false
+
+    const at = inCycle ? cycle : undefined
+
+    if (!shown || !(await shownRecordId(database, projectId, shown, at))) {
       return { status: "notStarted", name }
     }
 
-    return { status: "ready", name, href: toolPdfHref(projectId, shown) }
+    return { status: "ready", name, href: toolPdfHref(projectId, shown, at) }
   }
 
   function once(source: PreviewSource) {
@@ -245,7 +273,8 @@ export async function toolPdf(
   database: Database,
   actor: string,
   projectId: string,
-  toolId: string
+  toolId: string,
+  cycle?: number
 ): Promise<RecordPdf> {
   const track = await trackOf(database, projectId)
   const shown = track ? shownTool(toolId, track) : undefined
@@ -254,7 +283,8 @@ export async function toolPdf(
     throw new PermissionDeniedError(`This person may not read ${toolId}`)
   }
 
-  const recordId = shown && (await currentRecordId(database, projectId, shown))
+  const recordId =
+    shown && (await shownRecordId(database, projectId, shown, cycle))
 
   if (!recordId) {
     throw new RecordNotFoundError(`${toolId} has no record on this project`)

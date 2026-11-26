@@ -45,6 +45,8 @@ import { PAYMENT_TERMS } from "@/lib/payment-terms"
 import { paymentTermsValues } from "@/server/payments/payment-terms"
 import { BILLING_TRIGGER } from "@/lib/billing-trigger"
 import { billingTriggerValues } from "@/server/payments/billing-trigger"
+import { DRAFT_INVOICE } from "@/lib/draft-invoice"
+import { draftInvoiceValues } from "@/server/payments/draft-invoice"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -217,6 +219,14 @@ async function workedOut(
         database,
         projectId,
         record ? { id: record.id, payload } : null
+      )
+    }
+
+    case DRAFT_INVOICE: {
+      return await draftInvoiceValues(
+        database,
+        projectId,
+        record ? { payload } : null
       )
     }
 

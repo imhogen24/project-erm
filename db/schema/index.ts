@@ -23,3 +23,5 @@ export * from "./rollbacks"
 export * from "./access_log"
 
 export * from "./files"
+
+export * from "./counters"

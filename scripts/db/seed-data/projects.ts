@@ -414,6 +414,21 @@ const triggerWaiting = tier1Stage(
   "Mill 1 tonne of paddy an hour with a destoner and polisher."
 )
 
+// A Tier 1 project two cycles in: the FO drafted and locked the invoice for
+// 2.2 (D3.4) and approved the trigger for 2.3, so D3.4 for 2.3 is open.
+export const INVOICE_DRAFTED_PROJECT = `${DEV_PROJECT}D3.4 2.2 Invoiced (Tier 1)`
+
+const invoiceDrafted = tier1Stage(
+  INVOICE_DRAFTED_PROJECT,
+  "active",
+  "2026-09-18T09:00:00Z",
+  "Accra",
+  client,
+  "everyone",
+  "Small rice mill with destoner",
+  "Mill 1 tonne of paddy an hour with a destoner and polisher."
+)
+
 const triggerApproved = tier1Stage(
   TRIGGER_APPROVED_PROJECT,
   "active",
@@ -434,6 +449,7 @@ export const projects: readonly SeedProject[] = [
   paperSigned,
   triggerWaiting,
   triggerApproved,
+  invoiceDrafted,
 ]
 
 export function seedProjectNamed(name: string) {

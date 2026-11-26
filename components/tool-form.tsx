@@ -30,9 +30,19 @@ import {
   FieldSet,
 } from "@/components/ui/field"
 import { fileIdOf } from "@/lib/file-reference"
-import { followedDate, followersOf, nextFollowed } from "@/lib/follow-dates"
+import {
+  amountFollowersOf,
+  followedAmount,
+  followedDate,
+  followersOf,
+  nextFollowed,
+} from "@/lib/follow-dates"
 import { startingFixedRows } from "@/lib/fixed-rows"
-import { computedCells, hasComputedColumns } from "@/lib/computed-columns"
+import {
+  amountOf,
+  computedCells,
+  hasComputedColumns,
+} from "@/lib/computed-columns"
 import { hasLiveValues, liveValues } from "@/lib/live-values"
 import { fieldFills, fillFields, type Fills } from "@/lib/placeholders"
 import { shownFromSources, shownFromValues } from "@/lib/shown-from"
@@ -445,6 +455,56 @@ export function ToolForm({
     // The dates move only when what they follow changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [followedKey])
+
+  // Amounts that follow another as it changes, such as D3.4's VAT following
+  // the subtotal at D3.1's tax rate, each until the person types an amount
+  // of their own. The amount followed may be one the sheet works out.
+  const amountFollowers = amountFollowersOf(tool.fields)
+  const heldNow = form.getValues()
+
+  const amountNow = (key: string) =>
+    amountOf(
+      z
+        .json()
+        .catch(null)
+        .parse(live[key] ?? heldNow[key] ?? values[key])
+    )
+
+  const followedAmounts = amountFollowers.map((follower) =>
+    followedAmount(follower, amountNow)
+  )
+
+  const lastAmounts = useRef<Record<string, string | undefined>>({})
+  const amountsKey = JSON.stringify(followedAmounts)
+
+  useEffect(() => {
+    if (readOnly || amountFollowers.length === 0) {
+      return
+    }
+
+    let moved = false
+
+    amountFollowers.forEach((follower, index) => {
+      const step = nextFollowed({
+        current: z.string().catch("").parse(form.getValues(follower.key)),
+        next: followedAmounts[index],
+        applied: lastAmounts.current[follower.key],
+      })
+
+      if (step.value !== undefined) {
+        form.setValue(follower.key, step.value)
+        moved = true
+      }
+
+      lastAmounts.current[follower.key] = step.applied
+    })
+
+    if (moved) {
+      save.current(toValues(tool, form.getValues()))
+    }
+    // The amounts move only when what they follow changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [amountsKey])
 
   useEffect(() => {
     if (readOnly) {

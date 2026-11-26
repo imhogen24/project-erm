@@ -18,6 +18,12 @@ const amount = z
   .optional()
   .catch(undefined)
 
+// An amount held as a number or as shown text, such as "GHS 94,400.00", as a
+// number. Undefined for anything else.
+export function amountOf(value: JsonValue | undefined): number | undefined {
+  return amount.parse(value)
+}
+
 // A table's rows: anything that is not a row is an empty one.
 const tableRows = z.array(z.record(z.string(), z.json()).catch({})).catch([])
 
@@ -33,6 +39,20 @@ export function computedAmount(
   return share === undefined || of === undefined
     ? undefined
     : Math.round(of * share) / 100
+}
+
+// Two amounts multiplied, to the pesewa, such as a quantity times a unit
+// price. Undefined while either is missing.
+export function computedProduct(
+  times: JsonValue | undefined,
+  by: JsonValue | undefined
+): number | undefined {
+  const left = amount.parse(times)
+  const right = amount.parse(by)
+
+  return left === undefined || right === undefined
+    ? undefined
+    : Math.round(left * right * 100) / 100
 }
 
 export function hasComputedColumns(fields: readonly Field[]) {
@@ -58,8 +78,26 @@ export function computedCells(
       continue
     }
 
+    // A percentage column is a share of `by`; any other is multiplied by it.
+    // `by` is a column of the same row when the table has one, such as
+    // D3.4's Unit Price, or else a field of the tool, such as D3.1's Total
+    // Project Value.
     const computed = field.columns.flatMap((column) =>
-      column.computed ? [{ key: column.key, ...column.computed }] : []
+      column.computed
+        ? [
+            {
+              key: column.key,
+              ...column.computed,
+              share:
+                field.columns.find(
+                  (each) => each.key === column.computed!.times
+                )?.type === "percentage",
+              inRow: field.columns.some(
+                (each) => each.key === column.computed!.by
+              ),
+            },
+          ]
+        : []
     )
 
     if (computed.length === 0) {
@@ -73,7 +111,11 @@ export function computedCells(
       const next: JsonObject = { ...row }
 
       for (const column of computed) {
-        const due = computedAmount(row[column.times], values[column.by])
+        const by = column.inRow ? row[column.by] : values[column.by]
+
+        const due = column.share
+          ? computedAmount(row[column.times], by)
+          : computedProduct(row[column.times], by)
 
         if (as === "stored") {
           next[column.key] = due ?? null

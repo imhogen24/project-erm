@@ -5,13 +5,17 @@ import type { WorkbookMap } from "./map"
 // D3.1 locks, the payment milestone cycles start: one per milestone of
 // D3.1's schedule, less the advance, which D2.12 already billed. Each cycle
 // starts with the PM's billing trigger, D3.3, and the next cycle's D3.3
-// opens as soon as the Finance Officer approves the one before.
+// opens as soon as the Finance Officer approves the one before. Approving a
+// cycle's D3.3 also opens that cycle's draft invoice, D3.4, so the invoice
+// and the next trigger run side by side. D3.5 is not built yet, so locking
+// D3.4 opens nothing more for now.
 export const wb03: WorkbookMap = {
   workbook: "wb03",
   opens: { after: { all: ["D2.12"] } },
   tools: [
     { tool: "D3.1" },
     { tool: "D3.3", after: { all: ["D3.1"] }, repeats: true },
+    { tool: "D3.4", after: { all: ["D3.3"] }, repeats: true },
   ],
   cycles: {
     count: { tool: "D3.1", field: "paymentSchedule", less: 1 },

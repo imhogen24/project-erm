@@ -65,6 +65,7 @@ import {
 import { applySendBack } from "./send-back"
 import { submittedValues } from "./submitted-values"
 import { decisionValues, heldDecision, withoutDecision } from "./decision"
+import { heldIssued, issuedValues } from "./issued"
 import { unmetOptionsFrom } from "./options-from"
 import {
   approvingTurn,
@@ -259,13 +260,18 @@ export async function createRecordIn(
     input.cycle
   )
 
+  // A number the record is given, such as D3.4's invoice number, is taken
+  // here, so a record that cannot be created never uses one up.
   const [record] = await transaction
     .insert(toolRecords)
     .values({
       projectId: input.projectId,
       toolId: input.toolId,
       cycle,
-      payload,
+      payload: {
+        ...payload,
+        ...(await issuedValues(transaction, input.toolId)),
+      },
     })
     .returning(columns)
 
@@ -736,6 +742,7 @@ async function writeDraft(
   const next = {
     ...keepReadOnly(current.toolId, current.payload, values),
     ...heldDecision(current.toolId, current.payload),
+    ...heldIssued(current.toolId, current.payload),
   }
 
   const edited = !isDeepStrictEqual(

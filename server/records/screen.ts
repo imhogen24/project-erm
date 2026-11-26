@@ -182,7 +182,7 @@ export async function currentRecordId(
 }
 
 // The id of the record of one cycle of the tool, never a voided one.
-async function cycleRecordId(
+export async function cycleRecordId(
   database: Pick<Database, "select">,
   projectId: string,
   toolId: string,

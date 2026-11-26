@@ -1,11 +1,12 @@
 import { hashPassword } from "better-auth/crypto"
-import { and, eq, inArray } from "drizzle-orm"
+import { and, eq, inArray, sql } from "drizzle-orm"
 import { z } from "zod"
 
 import { createDatabase, type Database } from "@/db"
 import {
   accounts,
   changeRequests,
+  counters,
   intakeSubmissions,
   people,
   personCompanyRoles,
@@ -20,6 +21,7 @@ import {
 } from "@/db/schema"
 
 import {
+  seededInvoice,
   projectChangeRequests,
   projectComments,
   projectRecords,
@@ -634,6 +636,20 @@ export async function seed(url: string): Promise<SeedUser[]> {
         created.push({ role: person.role, email })
       }
     }
+
+    // The running invoice count goes past the seeded invoice, so the next
+    // one drafted takes the number after it. Done before any record goes in,
+    // so a seed that fails part way never leaves a seeded invoice whose
+    // number the count could give again.
+    await database
+      .insert(counters)
+      .values({ name: "invoice", ...seededInvoice })
+      .onConflictDoUpdate({
+        target: [counters.name, counters.period],
+        set: {
+          value: sql`greatest(${counters.value}, ${seededInvoice.value})`,
+        },
+      })
 
     for (const project of seedProjects) {
       const projectId = await findOrCreateProject(database, project)

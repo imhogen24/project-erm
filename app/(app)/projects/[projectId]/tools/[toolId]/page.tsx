@@ -116,6 +116,8 @@ import { INITIATION } from "@/lib/initiation"
 import { initiationStart } from "@/server/contract/initiation"
 import { PAYMENT_TERMS } from "@/lib/payment-terms"
 import { paymentTermsStart } from "@/server/payments/payment-terms"
+import { DRAFT_INVOICE } from "@/lib/draft-invoice"
+import { draftInvoiceStart } from "@/server/payments/draft-invoice"
 import {
   executedStart,
   startExecutedRecord,
@@ -251,7 +253,8 @@ function changedFilesOf(
 async function startOf(
   toolId: string,
   projectId: string,
-  writer: { id: string; name: string }
+  writer: { id: string; name: string },
+  cycle: number
 ): Promise<FormValues> {
   switch (toolId) {
     case FEASIBILITY: {
@@ -358,6 +361,13 @@ async function startOf(
 
     case PAYMENT_TERMS: {
       const start = await paymentTermsStart(getDatabase(), projectId)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
+    case DRAFT_INVOICE: {
+      const start = await draftInvoiceStart(getDatabase(), projectId, cycle)
 
       // SAFETY: the start is built for this tool's own fields.
       return start as FormValues
@@ -819,10 +829,11 @@ export default async function Page({
   // concessions. D2.11: the client contact, the HE and the script. D2.12:
   // the platform D2.11 was signed on. D2.14: D2.12's invoice number and the
   // advance due. D3.1: the sheet's milestones and terms, with D2.1's
-  // advance % and currency.
+  // advance % and currency. D3.4: the cycle's milestone line from D3.1, the
+  // billing address and the VAT at D3.1's tax rate.
   if (!view.record && view.can.write) {
     formValues = {
-      ...(await startOf(toolId, projectId, session.user)),
+      ...(await startOf(toolId, projectId, session.user, view.cycle)),
       ...formValues,
     }
   }
@@ -1124,11 +1135,14 @@ export default async function Page({
     )
 
   // What each PDF preview field shows this person: the PDF, or why not.
+  // A tool run once per milestone shows its own cycle's records, such as
+  // D3.4's D3.3.
   const previews = await previewStates(
     getDatabase(),
     session.user.id,
     projectId,
-    sheetTool
+    sheetTool,
+    view.cycle
   )
 
   return (

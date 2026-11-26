@@ -94,3 +94,42 @@ export function nextFollowed(step: FollowStep): Followed {
     ? { applied: step.next }
     : { value: step.next, applied: step.next }
 }
+
+// An amount that follows another as it changes (`follows` with
+// `percentOf`), such as D3.4's VAT following the subtotal at D3.1's tax rate.
+export type AmountFollower = { key: string; field: string; percentOf: string }
+
+export function amountFollowersOf(
+  fields: readonly {
+    key: string
+    type: string
+    follows?: { field: string; percentOf?: string }
+  }[]
+): AmountFollower[] {
+  return fields.flatMap((field) =>
+    field.type === "currency" && field.follows?.percentOf
+      ? [
+          {
+            key: field.key,
+            field: field.follows.field,
+            percentOf: field.follows.percentOf,
+          },
+        ]
+      : []
+  )
+}
+
+// What a following amount would hold given the values now, each read as a
+// number by its key: the rate, in percent, of the amount it follows, to the
+// pesewa, as the input holds it. Undefined while either is missing.
+export function followedAmount(
+  follower: AmountFollower,
+  amountOf: (key: string) => number | undefined
+): string | undefined {
+  const of = amountOf(follower.field)
+  const rate = amountOf(follower.percentOf)
+
+  return of === undefined || rate === undefined
+    ? undefined
+    : String(Math.round(of * rate) / 100)
+}

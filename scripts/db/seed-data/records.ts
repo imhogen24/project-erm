@@ -60,6 +60,7 @@ import {
   paymentMilestones as termsMilestones,
 } from "@/lib/payment-terms"
 import { PROCEED } from "@/lib/billing-trigger"
+import { formatNumber, sequences } from "@/lib/sequences"
 import {
   CLIENT_ROLE,
   COURIER,
@@ -73,6 +74,7 @@ import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 import { loginFor, staffWith } from "./people"
 import {
   ACCEPTED_AS_IS_PROJECT,
+  INVOICE_DRAFTED_PROJECT,
   PAPER_SIGNED_PROJECT,
   TRIGGER_APPROVED_PROJECT,
   TRIGGER_WAITING_PROJECT,
@@ -83,6 +85,7 @@ import {
   requestIdOf,
   routeOf,
   seedProjectNamed,
+  testProjectName,
   testProjects,
   toolProjectName,
   toolProjects,
@@ -1323,11 +1326,15 @@ function stageD31(total: number) {
   })
 }
 
-// The PM's trigger for the design approval milestone, 2.2, signed and
-// submitted; once approved, the FO's decision is on it too.
-function stageD33(decided: boolean) {
+// The PM's trigger for a milestone, the design approval, 2.2, unless
+// another is named, signed and submitted; once approved, the FO's decision
+// is on it too.
+function stageD33(
+  decided: boolean,
+  milestone = "2.2 Fabrication Milestone (Design Approval)"
+) {
   return payloadOf({
-    milestone: "2.2 Fabrication Milestone (Design Approval)",
+    milestone,
     proofOfCompletion: "https://utfs.io/f/imho-design-approval-client-test-ltd",
     clientAccepted: "Yes",
     openDisputes: "No",
@@ -1343,9 +1350,85 @@ function stageD33(decided: boolean) {
   })
 }
 
+// The FO's invoice for 2.2, at D3.1's 40% of GHS 94,400.00 plus 15% VAT,
+// signed and submitted, which locked it with its sums stored.
+function stageD34() {
+  return payloadOf({
+    invoiceNumber: SEEDED_INVOICE,
+    billingAddress: `${client.organisation}
+Accra`,
+    lineItems: [
+      {
+        description: "Fabrication Milestone (Design Approval) (40% Milestone)",
+        quantity: 1,
+        unitPrice: 37760,
+        totalAmount: 37760,
+      },
+      {},
+    ],
+    subtotal: 37760,
+    vat: 5664,
+    totalAmountDue: 43424,
+    draftComplete: "Yes",
+    foSignature: {
+      signedBy: "role:FO",
+      signedAt: "2026-12-22T09:00:00.000Z",
+    },
+    generatedBy: staffWith("FO").name,
+    dateDrafted: "2026-12-22",
+  })
+}
+
+// The running count the seeded D3.4's invoice number takes. The seed keeps
+// the count past it, so the next invoice drafted takes the number after.
+export const seededInvoice = { period: "26", value: 1 }
+
+const SEEDED_INVOICE = formatNumber(
+  sequences.invoice,
+  seededInvoice.period,
+  seededInvoice.value
+)
+
 // The first payment milestone cycle: D3.3 for 2.2 waiting for the FO, or
-// approved by them.
+// approved by them, which opens D3.4 for 2.2, as on the D3.4 test
+// projects; on the invoiced project, D3.4 for 2.2 locked and D3.3 for 2.3
+// approved, which opens D3.4 for 2.3.
 function billingCycle(name: string): SeedRecord[] {
+  const approved: SeedRecord = {
+    toolId: "D3.3",
+    cycle: 1,
+    state: "locked",
+    day: 60,
+    payload: stageD33(true),
+  }
+
+  if (name === INVOICE_DRAFTED_PROJECT) {
+    return [
+      approved,
+      {
+        toolId: "D3.4",
+        cycle: 1,
+        state: "locked",
+        day: 62,
+        payload: stageD34(),
+      },
+      {
+        toolId: "D3.3",
+        cycle: 2,
+        state: "locked",
+        day: 64,
+        payload: stageD33(true, "2.3 Final Handover (System Delivery)"),
+      },
+    ]
+  }
+
+  if (
+    name === testProjectName("Tier_1", "D3.4") ||
+    name === testProjectName("Tier_3", "D3.4")
+  ) {
+    return [approved]
+  }
+
   if (name === TRIGGER_WAITING_PROJECT) {
     return [
       {
@@ -1475,6 +1558,7 @@ function tier3Records(name: string): SeedRecord[] {
     { toolId: "D2.7", state: "locked", day: 38, payload: stageD27(name) },
     ...negotiated(name, 40, "GHS 57,000.00"),
     { toolId: "D3.1", state: "locked", day: 52, payload: stageD31(60000) },
+    ...billingCycle(name),
   ]
 }
 
@@ -1562,6 +1646,7 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   [PAPER_SIGNED_PROJECT, tier1Records(PAPER_SIGNED_PROJECT)],
   [TRIGGER_WAITING_PROJECT, tier1Records(TRIGGER_WAITING_PROJECT)],
   [TRIGGER_APPROVED_PROJECT, tier1Records(TRIGGER_APPROVED_PROJECT)],
+  [INVOICE_DRAFTED_PROJECT, tier1Records(INVOICE_DRAFTED_PROJECT)],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
   [`${DEV_LOCKED} (Tier 3)`, tier3Records(`${DEV_LOCKED} (Tier 3)`)],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],

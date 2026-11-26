@@ -7,6 +7,8 @@ import {
   CURRENT_TOOL,
   PAPER_SIGNED_PROJECT,
   NEEDS_TEAM,
+  TRIGGER_APPROVED_PROJECT,
+  TRIGGER_WAITING_PROJECT,
   currentToolFor,
   approverOf,
   client,
@@ -164,6 +166,13 @@ export const previews: Preview[] = [
   },
   {
     screen:
+      "D3.3 milestone billing trigger, as the PM, then the FO to approve (RDP-197)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D3.3`,
+    expect: `On ${testProjectName("Tier_1", "D3.3")}, where D3.1 is locked with three milestones (40% / 40% / 20% of GHS 94,400.00), D3.3 is open for the PM under Payments, with D3.3 · Next milestone listed above the sheet. 1.0: Project Request ID, Project / Client Name (the project and ${client.organisation}) and Recipient (Finance Officer), ${staffWith("FO").name}, are the system's; Trigger Sent By and Date Sent say Filled in when D3.3 is submitted. 2.0: Milestone Achieved starts on 2.2 Fabrication Milestone (Design Approval); its list shows 2.1 Advance Payment (Contract Signing) greyed out (billed through D2.12) and 2.3 Final Handover (System Delivery). Contractual Milestone Value reads 40% / GHS 37,760.00, and 20% / GHS 18,880.00 when you pick 2.3. Proof of Completion Link takes a PDF or image upload. 3.0: answer No to the client's acceptance, or Yes to an open dispute, and press Submit: it is refused and says why; it is refused without the proof or the PM's signature too. Answer Yes and No, upload the proof, Sign on Project Manager Signature (Date fills in) and Submit: Trigger Sent By, Date Sent and Date Trigger Received fill in. Log in as the FO, ${loginFor("FO")}: the bell (and an email) says D3.3 is waiting for your approval. Send back with a reason: Action Taken reads Rejected back to PM and Finance Officer names you, and the PM can change it and submit again. Approve: Action Taken reads Proceed to D3.4 Draft Invoice, D3.3 locks, and a new D3.3 opens for the PM at once, starting on 2.3 with 2.2 greyed out; the sidebar and the list above the sheet show D3.3 · 2.2 Fabrication Milestone (Design Approval) and D3.3 · Next milestone, each opening its own record (?cycle=1, ?cycle=2). Once 2.3 is approved too, no new D3.3 opens. On ${TRIGGER_WAITING_PROJECT}, D3.3 for 2.2 waits for the FO's Approve or Send back; on ${TRIGGER_APPROVED_PROJECT}, 2.2 is approved (Proceed) and D3.3 for 2.3 is open for the PM. ${testProjectName("Tier_3", "D3.3")} works the same on Tier 3, with T3.D1.15a's GHS 60,000.00 (2.2 reads 40% / GHS 24,000.00). The HE and the CR read D3.3 without editing, the FO can only approve or send back, and the client and the OM do not see it.`,
+  },
+  {
+    screen:
       "D3.1 payment terms extract, as the FO, then the PM to approve (RDP-195)",
     loginAs: "FO",
     path: (id) => `/projects/${id}/tools/D3.1`,
@@ -179,7 +188,7 @@ export const previews: Preview[] = [
     screen: "Every tool built, locked or open",
     loginAs: "OM",
     path: () => "/",
-    expect: `${DEV_LOCKED} (Tier 1) and (Tier 3) have every tool built locked with sample answers, except D2.14, open on both for the CA to record the phase initiation, and D3.1, open on both for the FO to extract the payment terms: open any tool as any role to see what that role reads. ${DEV_UNLOCKED} (Tier 1) and (Tier 3) have every tool of their tier open at once, empty, without waiting for the one before (development only, never in production): the client's web form is a draft the client can change, and every other tool starts from nothing. A tool that reads an earlier one, such as D1.6 reading D1.5's agreed time, says what it is missing until that one is filled in. D1.4 is sent by the PM: the OM prepares the email, the PM presses Send, and the D1.4 tile shows a Sent chip that turns Delivered once the Inngest dev server runs the delivery check.`,
+    expect: `${DEV_LOCKED} (Tier 1) and (Tier 3) have every tool built locked with sample answers, except D2.14, open on both for the CA to record the phase initiation, and D3.3, open on both for the PM to trigger billing the first payment milestone (D3.1 is locked with three milestones): open any tool as any role to see what that role reads. ${DEV_UNLOCKED} (Tier 1) and (Tier 3) have every tool of their tier open at once, empty, without waiting for the one before (development only, never in production): the client's web form is a draft the client can change, and every other tool starts from nothing. A tool that reads an earlier one, such as D1.6 reading D1.5's agreed time, says what it is missing until that one is filled in. D1.4 is sent by the PM: the OM prepares the email, the PM presses Send, and the D1.4 tile shows a Sent chip that turns Delivered once the Inngest dev server runs the delivery check.`,
   },
   {
     screen: "Unpicking a chosen option (RDP-154)",

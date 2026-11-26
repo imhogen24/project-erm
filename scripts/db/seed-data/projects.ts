@@ -396,6 +396,35 @@ const paperSigned = tier1Stage(
   "Grate and press 500 kg of cassava an hour for gari."
 )
 
+// Two Tier 1 projects in Workbook 3's first payment milestone cycle: on the
+// first the PM's D3.3 for 2.2 waits for the FO; on the second the FO
+// approved it, so a new D3.3 is open for 2.3.
+export const TRIGGER_WAITING_PROJECT = `${DEV_PROJECT}D3.3 Waiting for the FO (Tier 1)`
+
+export const TRIGGER_APPROVED_PROJECT = `${DEV_PROJECT}D3.3 2.2 Approved (Tier 1)`
+
+const triggerWaiting = tier1Stage(
+  TRIGGER_WAITING_PROJECT,
+  "active",
+  "2026-09-16T09:00:00Z",
+  "Accra",
+  client,
+  "everyone",
+  "Small rice mill with destoner",
+  "Mill 1 tonne of paddy an hour with a destoner and polisher."
+)
+
+const triggerApproved = tier1Stage(
+  TRIGGER_APPROVED_PROJECT,
+  "active",
+  "2026-09-17T09:00:00Z",
+  "Accra",
+  client,
+  "everyone",
+  "Small rice mill with destoner",
+  "Mill 1 tonne of paddy an hour with a destoner and polisher."
+)
+
 export const projects: readonly SeedProject[] = [
   ...toolProjects.map((each) => each.project),
   ...testProjects.map((each) => each.project),
@@ -403,6 +432,8 @@ export const projects: readonly SeedProject[] = [
   ...stageProjects,
   acceptedAsIs,
   paperSigned,
+  triggerWaiting,
+  triggerApproved,
 ]
 
 export function seedProjectNamed(name: string) {

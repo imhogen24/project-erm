@@ -53,7 +53,7 @@ export function projectNav(overview: ProjectOverview): ProjectNav {
           name,
           state,
           open: waitingOn === null,
-          ...(cycles.length > 0 && { cycles }),
+          ...(cycles && cycles.length > 0 && { cycles }),
         })),
     })),
   }

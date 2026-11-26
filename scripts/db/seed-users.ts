@@ -255,18 +255,27 @@ async function addRecords(
   )
 
   // Records already there are kept, so running this again adds nothing. The
-  // rest go in with one insert: a project has a record for each tool.
+  // rest go in with one insert: a project has a record for each tool, and
+  // for each payment milestone cycle of a tool run once per milestone.
   const existing = await database
-    .select({ id: toolRecords.id, toolId: toolRecords.toolId })
+    .select({
+      id: toolRecords.id,
+      toolId: toolRecords.toolId,
+      cycle: toolRecords.cycle,
+    })
     .from(toolRecords)
     .where(eq(toolRecords.projectId, projectId))
+
+  const held = new Set(
+    existing.map((record) => `${record.toolId}@${record.cycle}`)
+  )
 
   for (const record of existing) {
     recordIds.set(record.toolId, record.id)
   }
 
   const missing = (projectRecords.get(project.name) ?? []).filter(
-    (record) => !recordIds.has(record.toolId)
+    (record) => !held.has(`${record.toolId}@${record.cycle ?? 1}`)
   )
 
   if (missing.length > 0) {
@@ -282,6 +291,7 @@ async function addRecords(
           return {
             projectId,
             toolId: record.toolId,
+            cycle: record.cycle ?? 1,
             state: record.state,
             payload: withTeamIds(record.payload, holders),
             createdAt: started,

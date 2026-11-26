@@ -82,8 +82,8 @@ export type ProjectOverview = Project & {
     // is delivered.", or null.
     note: string | null
     // A tool run once per payment milestone, such as D3.3: each cycle's
-    // record, and the next cycle while it is open. Empty for any other.
-    cycles: CycleEntry[]
+    // record, and the next cycle while it is open. Left out for any other.
+    cycles?: CycleEntry[]
   }[]
 }
 
@@ -411,7 +411,7 @@ export async function getProjectOverview(
       state: stateOf(tool.id),
       waitingOn: gates.get(tool.id) ?? null,
       note: notes.get(tool.id) ?? null,
-      cycles: cycles.get(tool.id) ?? [],
+      ...(cycles.has(tool.id) && { cycles: cycles.get(tool.id) }),
     })),
   }
 }

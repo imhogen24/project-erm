@@ -6,6 +6,8 @@ import { briefOnSubmit, quoteOnSubmit } from "@/server/brief/project-brief"
 import { costOnSubmit } from "@/server/cost/cost-estimation"
 import { PAYMENT_TERMS } from "@/lib/payment-terms"
 import { paymentTermsOnSubmit } from "@/server/payments/payment-terms"
+import { DRAFT_INVOICE } from "@/lib/draft-invoice"
+import { draftInvoiceOnSubmit } from "@/server/payments/draft-invoice"
 
 import type { FieldError } from "./validate"
 
@@ -31,6 +33,10 @@ export async function submittedValues(
 
     case PAYMENT_TERMS: {
       return paymentTermsOnSubmit(transaction, record.projectId, record.payload)
+    }
+
+    case DRAFT_INVOICE: {
+      return draftInvoiceOnSubmit(record.payload)
     }
 
     default: {

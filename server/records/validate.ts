@@ -301,13 +301,31 @@ function isMissing(
 
 const rowsOf = z.array(z.record(z.string(), z.unknown()))
 
+// Whether nothing is written in the row: every column the person writes is
+// empty.
+function blankRow(table: TableField, row: z.output<typeof rowsOf>[number]) {
+  return table.columns
+    .filter(
+      (column) => !column.systemFilled && !column.inherited && !column.numbered
+    )
+    .every((column) => blank.safeParse(row[column.key]).success)
+}
+
+// The rows that count at submit: every row, or, in a table that passes blank
+// rows by (`blankRowsIgnored`), those with something written in them.
+function countedRows(table: TableField, value: JsonObject[string]) {
+  return (rowsOf.safeParse(value).data ?? []).flatMap((row, index) =>
+    table.blankRowsIgnored && blankRow(table, row) ? [] : [{ row, index }]
+  )
+}
+
 // At submit, a required column must be answered in every row of its table.
 function unansweredCells(table: TableField, value: JsonObject[string]) {
   const required = table.columns.filter((column) => column.required)
   const first = table.columns[0]!.key
   const optional = table.optionalRows ?? []
 
-  return (rowsOf.safeParse(value).data ?? []).flatMap((row, index) =>
+  return countedRows(table, value).flatMap(({ row, index }) =>
     required
       .filter(() => !optional.includes(String(row[first])))
       .filter((column) => blank.safeParse(row[column.key]).success)
@@ -432,7 +450,13 @@ export function validateRecord(
       continue
     }
 
-    if (field.required && isMissing(field, payload[field.key])) {
+    if (
+      field.required &&
+      (isMissing(field, payload[field.key]) ||
+        (field.type === "table" &&
+          field.blankRowsIgnored &&
+          countedRows(field, payload[field.key]).length === 0))
+    ) {
       errors.push({ field: field.key, message: "Required" })
     } else if (field.type === "table") {
       errors.push(

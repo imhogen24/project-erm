@@ -2,6 +2,7 @@ import { z } from "zod"
 
 import { roles } from "@/db/schema"
 import { placeholdersIn } from "@/lib/placeholders"
+import { isSequenceName } from "@/lib/sequences"
 
 const fieldKey = z
   .string()
@@ -218,7 +219,9 @@ const columnRequired = {
   // A system cell the app works out in every row, the form as it is typed
   // and the server as it is submitted: the row's `times` column, a
   // percentage, of the tool's `by` field, an amount, such as D3.1's Amount
-  // Due as the row's percentage of the Total Project Value.
+  // Due as the row's percentage of the Total Project Value; or the row's
+  // `times` column, a number, times its `by` column, such as D3.4's Total
+  // Amount as the quantity times the unit price.
   computed: z.strictObject({ times: fieldKey, by: fieldKey }).optional(),
   // Hint text in the empty cell of each fixed row, in order, such as the
   // sheet's "Governs technical scope", or of each row a table with no fixed
@@ -283,6 +286,10 @@ const table = z
     // What the subtotal row is called, as the sheet names it.
     subtotalLabel: z.string().min(1).optional(),
     readOnly: z.boolean().optional(),
+    // A row with nothing written in it is passed by at submit, so only the
+    // rows with a value need their required columns; a required table then
+    // needs at least one such row, such as D3.4's invoice lines.
+    blankRowsIgnored: z.boolean().optional(),
     // A number column whose rows must add up to `value` before the record
     // can be submitted, such as D3.1's percentages to 100, with what to say
     // until they do.
@@ -513,18 +520,28 @@ const table = z
         })
       }
 
+      const times = value.columns.find(
+        (each) => each.key === entry.computed?.times
+      )?.type
+
+      const by = value.columns.find(
+        (each) => each.key === entry.computed?.by
+      )?.type
+
       if (
         entry.computed &&
         (entry.type !== "currency" ||
           !entry.systemFilled ||
-          value.columns.find((each) => each.key === entry.computed!.times)
-            ?.type !== "percentage")
+          !(
+            times === "percentage" ||
+            (times === "number" && (by === "currency" || by === "number"))
+          ))
       ) {
         context.addIssue({
           code: "custom",
           path: ["columns", index, "computed"],
           message:
-            "A computed column is a system currency column worked out from a percentage column of the table",
+            "A computed column is a system currency column worked out from a percentage column of the table, or a number column times another column",
         })
       }
 
@@ -676,12 +693,20 @@ const field = z
       // (`plusDurationOf`), until the person types a date of their own, such
       // as D2.14's start date following the day the payment cleared. Worked
       // out in the form; what is saved is what the field shows.
+      // An amount follows the same way: `percentOf` another field's rate,
+      // in percent, of the amount `field` holds, such as D3.4's VAT at
+      // D3.1's tax rate of the subtotal, until the person types their own.
       follows: z
         .strictObject({
           field: fieldKey,
           plusDurationOf: fieldKey.optional(),
+          percentOf: fieldKey.optional(),
         })
         .optional(),
+      // A system-filled text given the next number of a running sequence
+      // (lib/sequences) when the record is first saved, and kept on it for
+      // good, such as D3.4's invoice number. Never reused.
+      issuedFrom: z.string().min(1).optional(),
     }),
     signature.extend(required),
     select.extend({
@@ -754,6 +779,29 @@ const field = z
     {
       message:
         "A field shown from another field's answer is system-filled text",
+    }
+  )
+  .refine(
+    (value) =>
+      !("follows" in value && value.follows) ||
+      (value.type === "date" && !value.follows.percentOf) ||
+      (value.type === "currency" &&
+        value.follows.percentOf !== undefined &&
+        !value.follows.plusDurationOf),
+    {
+      message:
+        "A following date may add a duration; a following amount is a percentage (percentOf) of another amount",
+    }
+  )
+  .refine(
+    (value) =>
+      !("issuedFrom" in value && value.issuedFrom) ||
+      (value.systemFilled === true &&
+        value.type === "text" &&
+        isSequenceName(value.issuedFrom)),
+    {
+      message:
+        "A field issued from a sequence is system-filled text, and names a sequence of lib/sequences",
     }
   )
   .refine(

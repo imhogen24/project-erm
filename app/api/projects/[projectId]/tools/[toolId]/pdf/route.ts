@@ -11,7 +11,8 @@ import { PermissionDeniedError } from "@/server/permissions/permissions"
 import { RecordNotFoundError } from "@/server/records/records"
 
 // The project's record of a tool as it is now, as a PDF, for a PDF preview
-// field. It shows in the page; `?download=1` saves it as a file instead.
+// field. It shows in the page; `?download=1` saves it as a file instead, and
+// `?cycle=N` gives one payment milestone cycle's record.
 // Every refusal is the same not-found answer, so it never tells anyone
 // whether a record exists.
 export async function GET(
@@ -28,10 +29,26 @@ export async function GET(
     notFound()
   }
 
+  // A tool run once per payment milestone may name one cycle's record, such
+  // as ?cycle=2 for the second milestone's D3.3.
+  const cycle = z.coerce
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .catch(undefined)
+    .parse(request.nextUrl.searchParams.get("cycle") ?? undefined)
+
   let pdf
 
   try {
-    pdf = await toolPdf(getDatabase(), session.user.id, projectId, toolId)
+    pdf = await toolPdf(
+      getDatabase(),
+      session.user.id,
+      projectId,
+      toolId,
+      cycle
+    )
   } catch (error) {
     if (
       error instanceof PermissionDeniedError ||

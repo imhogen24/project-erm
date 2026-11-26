@@ -2,7 +2,8 @@ import { and, eq, ne } from "drizzle-orm"
 import { z } from "zod"
 
 import type { Database } from "@/db"
-import { toolRecords, type RecordState } from "@/db/schema"
+import { toolRecords, type JsonObject, type RecordState } from "@/db/schema"
+import { tools } from "@/server/tools/registry"
 import { repeatsPerCycle, type ToolStatus } from "@/server/workflow/workflow"
 
 import { selectsFromTables } from "./options-from"
@@ -17,10 +18,59 @@ export type CycleEntry = {
 
 const text = z.string().catch("")
 
+// The tool whose pick names a repeating tool's cycles, and the field that
+// holds it: the tool's own first select read from another tool's table,
+// such as D3.3's milestone, or else the first repeating tool of its
+// workbook that has one, such as D3.3's for D3.4.
+function namingOf(toolId: string) {
+  const own = selectsFromTables(toolId)[0]?.key
+
+  if (own) {
+    return { toolId, key: own }
+  }
+
+  const workbook = tools.getTool(toolId)?.workbook
+
+  for (const tool of tools.listTools()) {
+    const key = selectsFromTables(tool.id)[0]?.key
+
+    if (tool.workbook === workbook && repeatsPerCycle(tool.id) && key) {
+      return { toolId: tool.id, key }
+    }
+  }
+
+  return undefined
+}
+
+// The pick that names each cycle of the naming tool, by cycle.
+async function namesOf(
+  database: Pick<Database, "select">,
+  projectId: string,
+  naming: { toolId: string; key: string }
+): Promise<Map<number, string>> {
+  const records = await database
+    .select({ cycle: toolRecords.cycle, payload: toolRecords.payload })
+    .from(toolRecords)
+    .where(
+      and(
+        eq(toolRecords.projectId, projectId),
+        eq(toolRecords.toolId, naming.toolId),
+        ne(toolRecords.state, "void")
+      )
+    )
+
+  return new Map(
+    records.map((record) => [
+      record.cycle,
+      text.parse(record.payload[naming.key]),
+    ])
+  )
+}
+
 // Each cycle's record of a repeating tool, oldest first, named by the pick
-// of its first select read from another tool's table, such as D3.3's
-// milestone, or "Cycle 2" before one is picked; then the next cycle, while
-// the workflow has it open.
+// that names its cycle (namingOf), such as D3.3's milestone, or "Cycle 2"
+// before one is picked; then the next cycle, while the workflow has it
+// open.
 export async function cyclesOf(
   database: Pick<Database, "select">,
   projectId: string,
@@ -31,7 +81,7 @@ export async function cyclesOf(
     return []
   }
 
-  const naming = selectsFromTables(toolId)[0]?.key
+  const naming = namingOf(toolId)
 
   const records = await database
     .select({
@@ -49,11 +99,21 @@ export async function cyclesOf(
     )
     .orderBy(toolRecords.cycle)
 
+  const names =
+    naming && naming.toolId !== toolId
+      ? await namesOf(database, projectId, naming)
+      : undefined
+
+  const nameOf = (record: { cycle: number; payload: JsonObject }) =>
+    names
+      ? (names.get(record.cycle) ?? "")
+      : naming
+        ? text.parse(record.payload[naming.key])
+        : ""
+
   const entries: CycleEntry[] = records.map((record) => ({
     cycle: record.cycle,
-    label:
-      (naming ? text.parse(record.payload[naming]) : "") ||
-      `Cycle ${record.cycle}`,
+    label: nameOf(record) || `Cycle ${record.cycle}`,
     state: record.state === "void" ? "notStarted" : record.state,
   }))
 
@@ -64,7 +124,11 @@ export async function cyclesOf(
   return status.missing.length === 0 && !started
     ? [
         ...entries,
-        { cycle: status.cycle, label: "Next milestone", state: "notStarted" },
+        {
+          cycle: status.cycle,
+          label: names?.get(status.cycle) || "Next milestone",
+          state: "notStarted",
+        },
       ]
     : entries
 }

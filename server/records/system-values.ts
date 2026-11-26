@@ -55,6 +55,8 @@ import { BANK_STATEMENT_LOG } from "@/lib/bank-statement-log"
 import { bankLogValues } from "@/server/payments/bank-statement-log"
 import { RECONCILED_PAYMENT } from "@/lib/reconciled-payment"
 import { reconciledValues } from "@/server/payments/reconciled-payment"
+import { PAYMENT_RECORD } from "@/lib/payment-record"
+import { paymentRecordValues } from "@/server/payments/payment-record"
 import { PAYMENT_RECEIPT } from "@/lib/payment-receipt"
 import { paymentReceiptValues } from "@/server/payments/payment-receipt"
 import { UNBLOCK_NOTICE } from "@/lib/unblock-notice"
@@ -234,6 +236,14 @@ async function workedOut(
         database,
         projectId,
         record ? { id: record.id, payload } : null
+      )
+    }
+
+    case PAYMENT_RECORD: {
+      return await paymentRecordValues(
+        database,
+        projectId,
+        record ? { payload } : null
       )
     }
 

@@ -466,6 +466,14 @@ async function move(
     )
   }
 
+  // A living record, such as D3.2's ledger, is kept up to date for the life
+  // of the project, so it never leaves draft.
+  if (tools.getTool(current.toolId)?.living) {
+    throw new InvalidTransitionError(
+      `${current.toolId} is kept up to date for the life of the project, so it is never submitted or locked`
+    )
+  }
+
   const submitting = current.state === "draft" && to === "submitted"
 
   // Submitting is when a draft must be complete, and when its inherited

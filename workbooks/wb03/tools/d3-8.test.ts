@@ -36,6 +36,7 @@ import { loadUnorderedWorkflow } from "@/server/workflow/testing"
 import { availableTools } from "@/server/workflow/workflow"
 
 import { d31 } from "./d3-1"
+import { d32 } from "./d3-2"
 import { d33 } from "./d3-3"
 import { d34 } from "./d3-4"
 import { d35 } from "./d3-5"
@@ -47,7 +48,7 @@ import { d310 } from "./d3-10"
 
 const database = createTestDatabase()
 
-for (const tool of [d31, d33, d34, d35, d36, d37, d38, d39, d310]) {
+for (const tool of [d31, d32, d33, d34, d35, d36, d37, d38, d39, d310]) {
   tools.registerTool(tool)
 }
 

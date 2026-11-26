@@ -35,6 +35,7 @@ import { loadUnorderedWorkflow } from "@/server/workflow/testing"
 import { availableTools, toolStatus } from "@/server/workflow/workflow"
 
 import { d31 } from "./d3-1"
+import { d32 } from "./d3-2"
 import { d33 } from "./d3-3"
 import { d34 } from "./d3-4"
 import { d35 } from "./d3-5"
@@ -47,6 +48,8 @@ import { d310 } from "./d3-10"
 const database = createTestDatabase()
 
 tools.registerTool(d31)
+
+tools.registerTool(d32)
 
 tools.registerTool(d33)
 
@@ -306,6 +309,7 @@ describe("opening", () => {
         each.toolId.startsWith("D3.")
       )
     ).toEqual([
+      { toolId: "D3.2", cycle: 1 },
       { toolId: "D3.3", cycle: 2 },
       { toolId: "D3.5", cycle: 1 },
     ])

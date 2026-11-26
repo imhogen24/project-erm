@@ -102,6 +102,17 @@ function executedOn(values: Signed): string | undefined {
   return days.length === 0 ? undefined : days.sort().at(-1)
 }
 
+// D2.12's Date Fully Executed: the day both sides had signed the locked
+// contract, or undefined until they have.
+export async function dateExecutedOf(
+  database: Reader,
+  projectId: string
+): Promise<string | undefined> {
+  const contract = await signedContract(database, projectId)
+
+  return contract ? executedOn(contract.values) : undefined
+}
+
 // Sent To without its email address: the client signatory's name.
 function nameIn(sentTo: string | undefined) {
   const address = addressIn(sentTo)

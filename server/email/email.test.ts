@@ -69,6 +69,21 @@ const sampleData: EmailDataByKind = {
     subject: "IMHO GEN Engineering Services Agreement - Boiler",
     clientName: "Ama",
   },
+  invoice_transmittal: {
+    subject: "IMHO GEN Invoice IMHO-INV26-002 - Boiler",
+    body: "Dear Asante Mills\n\nPlease find attached Invoice IMHO-INV26-002.",
+    attachment: {
+      filename: "IMHO_INV26_002_AsanteMills.pdf",
+      content: "JVBERi0=",
+    },
+  },
+  invoice_reminder: {
+    subject: "IMHO GEN Invoice IMHO-INV26-002 - Boiler",
+    clientName: "Asante Mills",
+    invoiceNumber: "IMHO-INV26-002",
+    amount: "GHS 43,424.00",
+    dueDate: "09/12/2026",
+  },
   follow_up_sent: { projectName: "Boiler", link: "https://erm.example.com/f" },
   sent_back: {
     recordTitle: "D2.8 Negotiation Meeting Invite on Boiler",
@@ -337,7 +352,7 @@ describe("sendEmail", () => {
 })
 
 describe("templates", () => {
-  it("covers the seven staff kinds and the seven client kinds", () => {
+  it("covers the seven staff kinds and the nine client kinds", () => {
     expect([...emailKinds].sort()).toEqual([
       "acknowledgement",
       "approval_needed",
@@ -345,6 +360,8 @@ describe("templates", () => {
       "calendar_invite",
       "contract_transmittal",
       "follow_up_sent",
+      "invoice_reminder",
+      "invoice_transmittal",
       "meeting_times",
       "new_request",
       "sent_back",
@@ -365,7 +382,9 @@ describe("templates", () => {
         each !== "calendar_invite" &&
         each !== "contract_transmittal" &&
         each !== "transmittal_follow_up" &&
-        each !== "signature_reminder"
+        each !== "signature_reminder" &&
+        each !== "invoice_transmittal" &&
+        each !== "invoice_reminder"
     )) {
       const email = renderEmail(kind, sampleData[kind])
 
@@ -373,6 +392,31 @@ describe("templates", () => {
       expect(email.text).toContain("PLACEHOLDER")
       expect(email.html).toContain("PLACEHOLDER")
     }
+  })
+})
+
+describe("the invoice to the client", () => {
+  it("sends the FO's own message with the invoice PDF, and a reminder still a placeholder", () => {
+    const email = renderEmail(
+      "invoice_transmittal",
+      sampleData.invoice_transmittal
+    )
+
+    expect(email.text).toBe(sampleData.invoice_transmittal.body)
+    expect(email.attachments?.[0]?.filename).toBe(
+      "IMHO_INV26_002_AsanteMills.pdf"
+    )
+
+    const reminder = renderEmail(
+      "invoice_reminder",
+      sampleData.invoice_reminder
+    )
+
+    expect(reminder.subject).toBe(
+      "Reminder: IMHO GEN Invoice IMHO-INV26-002 - Boiler"
+    )
+    expect(reminder.text).toContain("PLACEHOLDER")
+    expect(reminder.text).toContain("09/12/2026")
   })
 })
 

@@ -18,6 +18,10 @@ export function sourceName(source: PreviewSource, track?: ServiceTrack) {
     return source.title
   }
 
+  if ("approvedInvoice" in source) {
+    return "Approved invoice"
+  }
+
   // An upload is named by its tool and its field, without the sheet's
   // "Link to", such as "D2.12 Executed PDF".
   if ("upload" in source) {

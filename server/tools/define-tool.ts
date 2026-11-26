@@ -182,6 +182,9 @@ const pdfPreview = z.object({
     z.strictObject({
       upload: z.strictObject({ tool: z.string().min(1), field: fieldKey }),
     }),
+    // The approved invoice of the same payment milestone cycle, as the
+    // client receives it, such as the PDF D3.6 emails.
+    z.strictObject({ approvedInvoice: z.literal(true) }),
   ]),
 })
 
@@ -1454,19 +1457,21 @@ function answerConditionProblems(fields: FieldOutput[]) {
   ])
 }
 
-// Every `[Name]` in fixed text must say where it is filled in from, and a fill
+// Every `[Name]` in fixed text, a table's fixed rows or a field's label, such
+// as D3.6's "(Day 1 of [N])", must say where it is filled in from, and a fill
 // from a field must name a field of the tool that holds one value.
 function fillProblems(fields: FieldOutput[], fills: Fills) {
-  const named = fields.flatMap((entry) =>
-    entry.type === "table"
+  const named = fields.flatMap((entry) => [
+    ...placeholdersIn(entry.label),
+    ...(entry.type === "table"
       ? [
           ...(entry.fixedRows ?? []).flatMap((row) =>
             Object.values(row).flatMap(placeholdersIn)
           ),
           ...(entry.fixedRowNotes ?? []).flatMap(placeholdersIn),
         ]
-      : []
-  )
+      : []),
+  ])
 
   const unnamed = [...new Set(named)].flatMap((name) =>
     name in fills ? [] : [`"[${name}]" is not listed in fills`]

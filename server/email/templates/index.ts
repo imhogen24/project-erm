@@ -7,6 +7,7 @@ import {
   type ContractTransmittalData,
 } from "./contract-transmittal"
 import { followUpSent, type FollowUpSentData } from "./follow-up-sent"
+import { invoiceReminder, type InvoiceReminderData } from "./invoice-reminder"
 import type { RenderedEmail } from "./html"
 import { meetingTimes, type MeetingTimesData } from "./meeting-times"
 import { newRequest, type NewRequestData } from "./new-request"
@@ -40,6 +41,9 @@ export type EmailDataByKind = {
   calendar_invite: CalendarInviteData
   contract_transmittal: ContractTransmittalData
   transmittal_follow_up: TransmittalFollowUpData
+  // D3.6's invoice to the client: the same shape as D2.7's contract email.
+  invoice_transmittal: ContractTransmittalData
+  invoice_reminder: InvoiceReminderData
   follow_up_sent: FollowUpSentData
   sent_back: SentBackData
   signature_needed: SignatureNeededData
@@ -64,6 +68,8 @@ const templates: Templates = {
   calendar_invite: calendarInvite,
   contract_transmittal: contractTransmittal,
   transmittal_follow_up: transmittalFollowUp,
+  invoice_transmittal: contractTransmittal,
+  invoice_reminder: invoiceReminder,
   follow_up_sent: followUpSent,
   sent_back: sentBack,
   signature_needed: signatureNeeded,

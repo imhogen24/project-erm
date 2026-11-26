@@ -215,6 +215,11 @@ const columnRequired = {
     .regex(/^\d+(\.\d+)*$/, "A numbered column counts from a number, such as 2")
     .optional(),
   startsAs: z.string().min(1).optional(),
+  // A system cell the app works out in every row, the form as it is typed
+  // and the server as it is submitted: the row's `times` column, a
+  // percentage, of the tool's `by` field, an amount, such as D3.1's Amount
+  // Due as the row's percentage of the Total Project Value.
+  computed: z.strictObject({ times: fieldKey, by: fieldKey }).optional(),
   // Hint text in the empty cell of each fixed row, in order, such as the
   // sheet's "Governs technical scope", or of each row a table with no fixed
   // rows starts with. An empty hint shows none. Only shown; never stored.
@@ -278,6 +283,16 @@ const table = z
     // What the subtotal row is called, as the sheet names it.
     subtotalLabel: z.string().min(1).optional(),
     readOnly: z.boolean().optional(),
+    // A number column whose rows must add up to `value` before the record
+    // can be submitted, such as D3.1's percentages to 100, with what to say
+    // until they do.
+    sumsTo: z
+      .strictObject({
+        column: fieldKey,
+        value: z.number(),
+        message: z.string().min(1),
+      })
+      .optional(),
     // Cells the app sets when a signature is given, in the same step, each
     // by its fixed row's place (0 for the first) and column, such as D2.14's
     // "Has the PM received this notice?" set to Done when the PM signs. The
@@ -401,6 +416,20 @@ const table = z
       }
     })
 
+    if (
+      value.sumsTo &&
+      !numericTypes.includes(
+        value.columns.find((entry) => entry.key === value.sumsTo!.column)
+          ?.type ?? ""
+      )
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["sumsTo", "column"],
+        message: "A table adds up a number column of its own",
+      })
+    }
+
     if (value.subtotal !== undefined) {
       const totalled = value.columns.find(
         (entry) => entry.key === value.subtotal
@@ -481,6 +510,21 @@ const table = z
           code: "custom",
           path: ["columns", index, "numbered"],
           message: "Only a text column is numbered",
+        })
+      }
+
+      if (
+        entry.computed &&
+        (entry.type !== "currency" ||
+          !entry.systemFilled ||
+          value.columns.find((each) => each.key === entry.computed!.times)
+            ?.type !== "percentage")
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["columns", index, "computed"],
+          message:
+            "A computed column is a system currency column worked out from a percentage column of the table",
         })
       }
 

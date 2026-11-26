@@ -37,6 +37,7 @@ import { availableTools, toolStatus } from "@/server/workflow/workflow"
 import { d31 } from "./d3-1"
 import { d33 } from "./d3-3"
 import { d34 } from "./d3-4"
+import { d35 } from "./d3-5"
 
 const database = createTestDatabase()
 
@@ -45,6 +46,8 @@ tools.registerTool(d31)
 tools.registerTool(d33)
 
 tools.registerTool(d34)
+
+tools.registerTool(d35)
 
 registerTestTools({
   wb01: ["D1.15", "T3.D1.15a", "D1.16"],
@@ -278,7 +281,7 @@ describe("opening", () => {
     ).toEqual([{ toolId: "D3.3", cycle: 2 }])
   })
 
-  it("opens nothing after it locks, since D3.5 is not built yet", async () => {
+  it("opens the same cycle's D3.5 once it locks", async () => {
     await lockTerms()
     await approveTrigger(1, fabrication)
     await addRecord("D3.4", invoice(), 1)
@@ -287,7 +290,10 @@ describe("opening", () => {
       (await availableTools(database, projectId)).filter((each) =>
         each.toolId.startsWith("D3.")
       )
-    ).toEqual([{ toolId: "D3.3", cycle: 2 }])
+    ).toEqual([
+      { toolId: "D3.3", cycle: 2 },
+      { toolId: "D3.5", cycle: 1 },
+    ])
   })
 })
 

@@ -429,6 +429,21 @@ const invoiceDrafted = tier1Stage(
   "Mill 1 tonne of paddy an hour with a destoner and polisher."
 )
 
+// A Tier 1 project whose 2.2 invoice the PM approved as Head of Finance, so
+// D3.5 for 2.2 is locked and the approved invoice PDF can be read.
+export const INVOICE_APPROVED_PROJECT = `${DEV_PROJECT}D3.5 2.2 Approved (Tier 1)`
+
+const invoiceApproved = tier1Stage(
+  INVOICE_APPROVED_PROJECT,
+  "active",
+  "2026-09-19T09:00:00Z",
+  "Accra",
+  client,
+  "everyone",
+  "Small rice mill with destoner",
+  "Mill 1 tonne of paddy an hour with a destoner and polisher."
+)
+
 const triggerApproved = tier1Stage(
   TRIGGER_APPROVED_PROJECT,
   "active",
@@ -450,6 +465,7 @@ export const projects: readonly SeedProject[] = [
   triggerWaiting,
   triggerApproved,
   invoiceDrafted,
+  invoiceApproved,
 ]
 
 export function seedProjectNamed(name: string) {

@@ -2,6 +2,13 @@ import { z } from "zod"
 
 import type { JsonObject } from "@/db/schema"
 
+import {
+  DONE as INVOICE_DONE,
+  PASS,
+  YES as INVOICE_YES,
+  conversionTasks,
+  qualityChecks,
+} from "@/lib/approved-invoice"
 import { DONE, defaultAgenda, preMeetingChecks } from "@/lib/calendar-agenda"
 import { schedulingEmail } from "@/lib/meeting-proposal"
 import { commercialCriteria, technicalCriteria } from "@/lib/capability"
@@ -74,6 +81,7 @@ import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 import { loginFor, staffWith } from "./people"
 import {
   ACCEPTED_AS_IS_PROJECT,
+  INVOICE_APPROVED_PROJECT,
   INVOICE_DRAFTED_PROJECT,
   PAPER_SIGNED_PROJECT,
   TRIGGER_APPROVED_PROJECT,
@@ -1350,9 +1358,12 @@ function stageD33(
   })
 }
 
-// The FO's invoice for 2.2, at D3.1's 40% of GHS 94,400.00 plus 15% VAT,
+// The FO's invoice for 2.2, at D3.1's 40% of the project total plus 15% VAT,
 // signed and submitted, which locked it with its sums stored.
-function stageD34() {
+function stageD34(total = 94400) {
+  const milestone = total * 0.4
+  const vat = milestone * 0.15
+
   return payloadOf({
     invoiceNumber: SEEDED_INVOICE,
     billingAddress: `${client.organisation}
@@ -1361,14 +1372,14 @@ Accra`,
       {
         description: "Fabrication Milestone (Design Approval) (40% Milestone)",
         quantity: 1,
-        unitPrice: 37760,
-        totalAmount: 37760,
+        unitPrice: milestone,
+        totalAmount: milestone,
       },
       {},
     ],
-    subtotal: 37760,
-    vat: 5664,
-    totalAmountDue: 43424,
+    subtotal: milestone,
+    vat,
+    totalAmountDue: milestone + vat,
     draftComplete: "Yes",
     foSignature: {
       signedBy: "role:FO",
@@ -1376,6 +1387,29 @@ Accra`,
     },
     generatedBy: staffWith("FO").name,
     dateDrafted: "2026-12-22",
+  })
+}
+
+// The PM, as Head of Finance, approved 2.2's invoice at D3.5: every check
+// Passed, both conversion tasks Done, and Yes with their signature, which
+// locks it and opens the approved invoice PDF for that milestone.
+function stageD35() {
+  return payloadOf({
+    checklist: qualityChecks.map(({ point }) => ({
+      point,
+      status: PASS,
+      comments: "",
+    })),
+    conversion: conversionTasks.map(({ task, assignee }) => ({
+      task,
+      assignee,
+      status: INVOICE_DONE,
+    })),
+    authorized: INVOICE_YES,
+    pmSignature: {
+      signedBy: "role:PM",
+      signedAt: "2026-12-24T09:00:00.000Z",
+    },
   })
 }
 
@@ -1392,7 +1426,9 @@ const SEEDED_INVOICE = formatNumber(
 // The first payment milestone cycle: D3.3 for 2.2 waiting for the FO, or
 // approved by them, which opens D3.4 for 2.2, as on the D3.4 test
 // projects; on the invoiced project, D3.4 for 2.2 locked and D3.3 for 2.3
-// approved, which opens D3.4 for 2.3.
+// approved, which opens D3.4 for 2.3; on the approved project, D3.5 for
+// 2.2 locked too, and on the D3.5 test projects, D3.4 locked for the
+// Head of Finance to approve.
 function billingCycle(name: string): SeedRecord[] {
   const approved: SeedRecord = {
     toolId: "D3.3",
@@ -1402,16 +1438,18 @@ function billingCycle(name: string): SeedRecord[] {
     payload: stageD33(true),
   }
 
+  const invoice = (total = 94400): SeedRecord => ({
+    toolId: "D3.4",
+    cycle: 1,
+    state: "locked",
+    day: 62,
+    payload: stageD34(total),
+  })
+
   if (name === INVOICE_DRAFTED_PROJECT) {
     return [
       approved,
-      {
-        toolId: "D3.4",
-        cycle: 1,
-        state: "locked",
-        day: 62,
-        payload: stageD34(),
-      },
+      invoice(),
       {
         toolId: "D3.3",
         cycle: 2,
@@ -1422,11 +1460,33 @@ function billingCycle(name: string): SeedRecord[] {
     ]
   }
 
+  if (name === INVOICE_APPROVED_PROJECT) {
+    return [
+      approved,
+      invoice(),
+      {
+        toolId: "D3.5",
+        cycle: 1,
+        state: "locked",
+        day: 64,
+        payload: stageD35(),
+      },
+    ]
+  }
+
   if (
     name === testProjectName("Tier_1", "D3.4") ||
     name === testProjectName("Tier_3", "D3.4")
   ) {
     return [approved]
+  }
+
+  if (name === testProjectName("Tier_1", "D3.5")) {
+    return [approved, invoice()]
+  }
+
+  if (name === testProjectName("Tier_3", "D3.5")) {
+    return [approved, invoice(60000)]
   }
 
   if (name === TRIGGER_WAITING_PROJECT) {
@@ -1647,6 +1707,7 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   [TRIGGER_WAITING_PROJECT, tier1Records(TRIGGER_WAITING_PROJECT)],
   [TRIGGER_APPROVED_PROJECT, tier1Records(TRIGGER_APPROVED_PROJECT)],
   [INVOICE_DRAFTED_PROJECT, tier1Records(INVOICE_DRAFTED_PROJECT)],
+  [INVOICE_APPROVED_PROJECT, tier1Records(INVOICE_APPROVED_PROJECT)],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
   [`${DEV_LOCKED} (Tier 3)`, tier3Records(`${DEV_LOCKED} (Tier 3)`)],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],

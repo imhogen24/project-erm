@@ -9,7 +9,7 @@ import { paymentTermsOnSubmit } from "@/server/payments/payment-terms"
 import { DRAFT_INVOICE } from "@/lib/draft-invoice"
 import { draftInvoiceOnSubmit } from "@/server/payments/draft-invoice"
 import { BANK_STATEMENT_LOG } from "@/lib/bank-statement-log"
-import { bankLogOnSubmit } from "@/server/payments/bank-statement-log"
+import { bankLogOnSubmit } from "@/server/payments/bank-check-submit"
 
 import type { FieldError } from "./validate"
 

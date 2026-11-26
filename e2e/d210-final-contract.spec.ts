@@ -210,9 +210,12 @@ test("D2.10 starts on D2.9's concessions, and the FO signs 3.0 before it locks",
   }
 
   await signAndSubmit(page, ca.name)
+
+  // The FO's signature is a row of 3.0's table, and says it is missing there.
   await expect(
     page
-      .getByRole("region", { name: "Finance Rep" })
+      .getByRole("row")
+      .filter({ hasText: "Finance Rep" })
       .getByText("Must be signed")
   ).toBeVisible()
 

@@ -94,6 +94,8 @@ import {
   matchingOf,
 } from "@/lib/reconciled-payment"
 import { BANK_TRANSFER, receiptScriptFor } from "@/lib/payment-receipt"
+import { financialStatuses } from "@/lib/payment-record"
+import { DONE as LAUNCH_DONE, launchTasks } from "@/lib/initiation"
 import { ghs } from "@/lib/cost-estimation"
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 
@@ -108,6 +110,7 @@ import {
   BANK_FEE_PROJECT,
   HALF_PAID_PROJECT,
   RECEIPT_SENT_PROJECT,
+  ADVANCE_OVERDUE_PROJECT,
   PAPER_SIGNED_PROJECT,
   TRIGGER_APPROVED_PROJECT,
   TRIGGER_WAITING_PROJECT,
@@ -1284,7 +1287,10 @@ function negotiated(
       toolId: "D2.12",
       state: "locked",
       day: day + 9,
-      payload: stageD212(method),
+      payload: stageD212(
+        method,
+        name === ADVANCE_OVERDUE_PROJECT ? "2026-10-20" : undefined
+      ),
     },
     {
       toolId: "D2.13",
@@ -1293,6 +1299,49 @@ function negotiated(
       payload: stageD213(),
     },
   ]
+}
+
+// The advance cleared on 20 Dec 2026: the CA recorded it, the FO signed that
+// the money cleared and the PM gave the green light, which locked D2.14.
+function stageD214() {
+  return payloadOf({
+    invoiceNumber: "IMHO-INV26-ADV-010",
+    amountExpected: 37760,
+    paymentDate: "2026-12-20",
+    financeSignature: {
+      signedBy: "role:FO",
+      signedAt: "2026-12-20T15:00:00.000Z",
+    },
+    startDate: "2026-12-21",
+    targetDate: "2027-06-21",
+    launchTasks: launchTasks.map((row) => ({ ...row, status: LAUNCH_DONE })),
+    authorized: "Yes",
+    greenLightSignature: {
+      signedBy: "role:PM",
+      signedAt: "2026-12-21T09:00:00.000Z",
+    },
+  })
+}
+
+// D2.14 locked where the advance has cleared: on the project whose 2.2
+// receipt is sent, so D3.2 shows both milestones cleared.
+function advanceCleared(name: string): SeedRecord[] {
+  return name === RECEIPT_SENT_PROJECT
+    ? [{ toolId: "D2.14", state: "locked", day: 54, payload: stageD214() }]
+    : []
+}
+
+// D3.2 as the FO keeps it on the project whose 2.2 receipt is sent: each
+// milestone's expected trigger date, and the project Healthy.
+function stageD32() {
+  return payloadOf({
+    paymentSchedule: [
+      { sn: "2.1", expectedTriggerDate: "2026-12-06" },
+      { sn: "2.2", expectedTriggerDate: "2026-12-20" },
+      { sn: "2.3", expectedTriggerDate: "2027-03-15" },
+    ],
+    financialStatus: financialStatuses[0]!,
+  })
 }
 
 // Every contract document found in the vault and signed off, which locked
@@ -1312,9 +1361,10 @@ function stageD213() {
 }
 
 // The executed contract filed and the advance invoice issued, which the PM
-// approved, locking D2.12 and opening D2.13 and Workbook 3. The seed's files
-// are web links, as its contract is; a paper signing has no certificate.
-function stageD212(method: string) {
+// approved, locking D2.12 and opening D2.13 and Workbook 3, on 9 Dec 2026,
+// or `invoiceDate`. The seed's files are web links, as its contract is; a
+// paper signing has no certificate.
+function stageD212(method: string, invoiceDate = "2026-12-09") {
   const digital = method === DIGITAL
 
   return payloadOf({
@@ -1325,7 +1375,7 @@ function stageD212(method: string) {
     }),
     financeTrigger: financeTasks.map((row) => ({ ...row, status: TASK_DONE })),
     invoiceNumber: "IMHO-INV26-ADV-010",
-    invoiceDate: "2026-12-09",
+    invoiceDate,
     fullyExecuted: "Yes",
     caSignature: {
       signedBy: "role:CA",
@@ -1726,6 +1776,7 @@ function billingCycle(name: string): SeedRecord[] {
         day: 71,
         payload: stageD39(),
       },
+      { toolId: "D3.2", state: "draft", day: 72, payload: stageD32() },
     ]
   }
 
@@ -1880,6 +1931,7 @@ function tier1Records(name: string): SeedRecord[] {
       ),
     },
     ...negotiated(name, 43, "GHS 90,000.00"),
+    ...advanceCleared(name),
     { toolId: "D3.1", state: "locked", day: 55, payload: stageD31(94400) },
     ...billingCycle(name),
   ]
@@ -2028,6 +2080,7 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   [BANK_FEE_PROJECT, tier1Records(BANK_FEE_PROJECT)],
   [HALF_PAID_PROJECT, tier1Records(HALF_PAID_PROJECT)],
   [RECEIPT_SENT_PROJECT, tier1Records(RECEIPT_SENT_PROJECT)],
+  [ADVANCE_OVERDUE_PROJECT, tier1Records(ADVANCE_OVERDUE_PROJECT)],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
   [`${DEV_LOCKED} (Tier 3)`, tier3Records(`${DEV_LOCKED} (Tier 3)`)],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],

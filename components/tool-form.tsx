@@ -268,11 +268,18 @@ function toCell(
   return text !== undefined && numeric.includes(cell.type) ? Number(text) : raw
 }
 
+// A table whose rows come from another tool's also sends each row's key,
+// such as D3.2's SN, so the server keeps what is typed with its row.
 function toRows(field: TableField, rows: RawRow[]) {
+  const keyedBy = field.rowsFrom?.keyedBy
+
   return rows.map((row) =>
     Object.fromEntries(
       field.columns.flatMap((column) => {
-        const value = toCell(column, row[column.key])
+        const value =
+          column.key === keyedBy
+            ? textOf(row[column.key]) || undefined
+            : toCell(column, row[column.key])
 
         return value === undefined ? [] : [[column.key, value]]
       })

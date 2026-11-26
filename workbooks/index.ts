@@ -37,6 +37,7 @@ import { d213 } from "./wb02/tools/d2-13"
 import { d214 } from "./wb02/tools/d2-14"
 import { t3d22a } from "./wb02/tools/t3-d2-2a"
 import { d31 } from "./wb03/tools/d3-1"
+import { d32 } from "./wb03/tools/d3-2"
 import { d33 } from "./wb03/tools/d3-3"
 import { d34 } from "./wb03/tools/d3-4"
 import { d35 } from "./wb03/tools/d3-5"
@@ -82,6 +83,7 @@ export const allTools = [
   d213,
   d214,
   d31,
+  d32,
   d33,
   d34,
   d35,

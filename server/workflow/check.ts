@@ -30,6 +30,8 @@ function checkRequirement(
       broken.push(`${who} waits for itself`)
     } else if (!catalog.get(name)) {
       broken.push(`${who} waits for ${name}, which does not exist`)
+    } else if (catalog.get(name)?.living) {
+      broken.push(`${who} waits for ${name}, a living record that never locks`)
     } else {
       for (const track of tracks) {
         if (!catalog.onTrack(name, track)) {
@@ -65,6 +67,10 @@ function checkCondition(
     broken.push(`${who} reads ${at}, which ${tool.id} does not have`)
 
     return
+  }
+
+  if (tool.living) {
+    broken.push(`${who} reads ${tool.id}, a living record that never locks`)
   }
 
   for (const track of tracks) {

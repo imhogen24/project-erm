@@ -110,6 +110,10 @@ export function TableEditor({
   // A row the person added can be removed. Its Remove button sits inside the
   // last cell, so the table has no empty column at the right.
   const shownOnly = field.readOnly === true
+
+  // Rows read from another tool's table, such as D3.2's schedule from
+  // D3.1's: the person writes their cells, but adds and removes none.
+  const sourced = field.rowsFrom !== undefined
   const previews = usePreviews()
 
   // A row whose document the project does not need, such as D2.13's
@@ -124,7 +128,7 @@ export function TableEditor({
     )
 
   const canRemove = (rowIndex: number) =>
-    !fixed && !shownOnly && !disabled && rowIndex >= lockedCount
+    !fixed && !sourced && !shownOnly && !disabled && rowIndex >= lockedCount
 
   // Some row can be removed: wide, the Remove buttons get a narrow column of
   // their own at the right, so every row's fields line up. A table whose rows
@@ -227,7 +231,7 @@ export function TableEditor({
         {rows.length === 0 && (
           <div role="row">
             <div role="cell" className="px-4 py-4">
-              {shownOnly ? (
+              {shownOnly || sourced ? (
                 <EmptyState size="inline" title="None" />
               ) : (
                 <EmptyState
@@ -374,7 +378,9 @@ export function TableEditor({
               }
 
               // A cell a signature or the lock sets, such as D2.14's "PM
-              // received this notice", reads as what it holds.
+              // received this notice", or the app fills in a row read from
+              // another tool, such as D3.2's status, reads as what it holds,
+              // wrapping so nothing is cut off.
               const setBySigning = [
                 ...(field.setOnSign ?? []),
                 ...(field.setOnLock ?? []),
@@ -382,18 +388,21 @@ export function TableEditor({
                 (rule) => rule.row === rowIndex && rule.column === column.key
               )
 
-              if (setBySigning) {
+              if (setBySigning || (sourced && column.systemFilled)) {
                 return (
                   <div
                     key={column.key}
                     role="cell"
-                    className="flex flex-col gap-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 @xl:last:border-r-0"
+                    className={`flex flex-col gap-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 @xl:last:border-r-0 ${wideTypes.includes(column.type) ? "col-span-2 @xl:col-span-1" : ""}`}
                   >
                     <span className="pt-2 text-xs text-muted-foreground @xl:sr-only @xl:pt-0">
                       {column.label}
                       <span className="sr-only">, row {rowIndex + 1}</span>
                     </span>
-                    <span id={id} className="text-base">
+                    <span
+                      id={id}
+                      className="text-base break-words text-foreground"
+                    >
                       {String(row[column.key] ?? "")}
                     </span>
                   </div>
@@ -556,7 +565,7 @@ export function TableEditor({
           />
         )}
         {/* A table that picks one of its fixed rows holds no others. */}
-        {!fixed && !shownOnly && !disabled && !field.pickOne && (
+        {!fixed && !sourced && !shownOnly && !disabled && !field.pickOne && (
           <div role="row">
             <div role="cell" className="p-4 @xl:p-3">
               <Button

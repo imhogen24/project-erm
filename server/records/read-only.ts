@@ -128,6 +128,37 @@ export function keepReadOnly(
     kept[field.key] = copy as JsonObject[]
   }
 
+  // A table whose rows come from another tool's (`rowsFrom`), such as D3.2's
+  // schedule, keeps only what the person writes, each row by its key.
+  for (const field of tools.getTool(toolId)?.fields ?? []) {
+    if (field.type !== "table" || !field.rowsFrom) {
+      continue
+    }
+
+    const rows = z
+      .array(z.record(z.string(), z.json()))
+      .safeParse(kept[field.key])
+
+    if (!rows.success) {
+      continue
+    }
+
+    const { keyedBy } = field.rowsFrom
+
+    const written = field.columns.filter(
+      (column) => !column.systemFilled && !column.inherited && !column.numbered
+    )
+
+    kept[field.key] = rows.data.map((row) => ({
+      [keyedBy]: row[keyedBy] ?? null,
+      ...Object.fromEntries(
+        written.flatMap((column) =>
+          row[column.key] === undefined ? [] : [[column.key, row[column.key]]]
+        )
+      ),
+    }))
+  }
+
   // A system-filled value, such as the client's choice on D1.5, is written
   // only by the system, so a save from the form keeps what is stored. The
   // form cannot send one: validation refuses it.

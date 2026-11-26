@@ -363,6 +363,19 @@ const table = z
         })
       )
       .optional(),
+    // Rows read from another tool's table each time the record is shown,
+    // one per row of the `tool`'s locked `field`, in its order, such as
+    // D3.2's schedule from D3.1's. There is no Add row or Remove. Only the
+    // columns the person writes are stored, each row by its `keyedBy`
+    // column, such as the SN, so a typed cell stays with its row when the
+    // source changes. The app fills every other column.
+    rowsFrom: z
+      .strictObject({
+        tool: z.string().min(1),
+        field: fieldKey,
+        keyedBy: fieldKey,
+      })
+      .optional(),
     // Read only, as `readOnly`, while the record's select `field` holds
     // `is`, such as D2.11's signature tracker, which signing in the app
     // fills; otherwise the form writes it.
@@ -943,6 +956,11 @@ const toolDefinition = z
     // The tool has no Submit for approval: a step of its own locks it, such
     // as D1.4's Send. Every tool saves by itself as it is typed.
     withoutSubmit: z.boolean().optional(),
+    // A living record, such as D3.2's payment ledger: it has no Submit,
+    // never locks, and its writers keep it up to date for the life of the
+    // project. Its readers see it before anyone saves it, and no tool may
+    // wait for it.
+    living: z.boolean().optional(),
     // The client reads the record only once it is locked: before, it holds
     // IMHOGEN's working notes.
     clientReadsOnceLocked: z.boolean().optional(),
@@ -1121,6 +1139,19 @@ const toolDefinition = z
   .refine((value) => !(value.locksOnSubmit && value.withoutSubmit), {
     message: "A tool without Submit cannot lock on submit",
   })
+  .refine(
+    (value) =>
+      !value.living ||
+      (value.withoutSubmit &&
+        !value.locksOnSubmit &&
+        !value.decision &&
+        !value.signInTurn &&
+        !value.repeatsWhile),
+    {
+      message:
+        "A living record has no Submit, no approval and no signing that locks it",
+    }
+  )
   .superRefine((value, context) => {
     for (const problem of signInTurnProblems(value)) {
       context.addIssue({

@@ -47,6 +47,7 @@ import { loadUnorderedWorkflow } from "@/server/workflow/testing"
 import { availableTools } from "@/server/workflow/workflow"
 
 import { d31 } from "./d3-1"
+import { d32 } from "./d3-2"
 import { d33 } from "./d3-3"
 import { d34 } from "./d3-4"
 import { d35 } from "./d3-5"
@@ -58,6 +59,8 @@ import { d39 } from "./d3-9"
 const database = createTestDatabase()
 
 tools.registerTool(d31)
+
+tools.registerTool(d32)
 
 tools.registerTool(d33)
 

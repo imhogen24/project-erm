@@ -11,6 +11,7 @@ import { and, eq, inArray } from "drizzle-orm"
 
 import type { Database } from "@/db"
 import { files, projects, type RecordState } from "@/db/schema"
+import { computedCells } from "@/lib/computed-columns"
 import { liveValues } from "@/lib/live-values"
 import {
   getDocumentControl,
@@ -380,7 +381,10 @@ export async function recordContent(
     })),
   }
 
-  const values = withLive(shown, liveValues(tool.id, shown))
+  const values = withLive(shown, {
+    ...liveValues(tool.id, shown),
+    ...computedCells(tool.fields, shown),
+  })
 
   const ids = uploadIdsOf(tool, values)
 

@@ -2,6 +2,7 @@ import { eq } from "drizzle-orm"
 import { z } from "zod"
 
 import { people, type JsonObject } from "@/db/schema"
+import { columnSum } from "@/lib/computed-columns"
 import type { Transaction } from "@/server/audit/audit"
 import { tools } from "@/server/tools/registry"
 
@@ -102,7 +103,17 @@ export function unmetSubmitRules(
       : []
   }
 
-  return (tool?.submitWhen ?? []).flatMap((rule) => {
+  // A table's column that must add up to a number, such as D3.1's
+  // percentages to 100.
+  const sums = (tool?.fields ?? []).flatMap((field) =>
+    field.type === "table" &&
+    field.sumsTo &&
+    columnSum(payload[field.key], field.sumsTo.column) !== field.sumsTo.value
+      ? [{ field: field.key, message: field.sumsTo.message }]
+      : []
+  )
+
+  const rules = (tool?.submitWhen ?? []).flatMap((rule) => {
     const column = "column" in rule ? rule.column : undefined
 
     const skipped = new Set([
@@ -114,4 +125,6 @@ export function unmetSubmitRules(
       ? []
       : [{ field: rule.field, message: rule.message }]
   })
+
+  return [...rules, ...sums]
 }

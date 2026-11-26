@@ -4,6 +4,8 @@ import type { Transaction } from "@/server/audit/audit"
 import { PROJECT_BRIEF, T3_QUOTE } from "@/lib/project-brief"
 import { briefOnSubmit, quoteOnSubmit } from "@/server/brief/project-brief"
 import { costOnSubmit } from "@/server/cost/cost-estimation"
+import { PAYMENT_TERMS } from "@/lib/payment-terms"
+import { paymentTermsOnSubmit } from "@/server/payments/payment-terms"
 
 import type { FieldError } from "./validate"
 
@@ -25,6 +27,10 @@ export async function submittedValues(
 
     case T3_QUOTE: {
       return quoteOnSubmit(record.payload)
+    }
+
+    case PAYMENT_TERMS: {
+      return paymentTermsOnSubmit(transaction, record.projectId, record.payload)
     }
 
     default: {

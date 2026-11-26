@@ -32,6 +32,7 @@ import {
 import { fileIdOf } from "@/lib/file-reference"
 import { followedDate, followersOf, nextFollowed } from "@/lib/follow-dates"
 import { startingFixedRows } from "@/lib/fixed-rows"
+import { computedCells, hasComputedColumns } from "@/lib/computed-columns"
 import { hasLiveValues, liveValues } from "@/lib/live-values"
 import { fieldFills, fillFields, type Fills } from "@/lib/placeholders"
 import { shownFromSources, shownFromValues } from "@/lib/shown-from"
@@ -294,6 +295,18 @@ function toValues(
   return values
 }
 
+// The values the system filled, such as D3.1's Total Project Value, which the
+// form holds no input for, so its worked-out cells read them as shown.
+function systemOf(tool: ToolDefinition, values: FormValues): FormValues {
+  return Object.fromEntries(
+    tool.fields.flatMap((field) =>
+      field.systemFilled && values[field.key] !== undefined
+        ? [[field.key, values[field.key]!]]
+        : []
+    )
+  )
+}
+
 export function ToolForm({
   tool,
   values,
@@ -318,9 +331,12 @@ export function ToolForm({
     ),
   })
 
-  // Sums the sheet works out as it is typed, such as D1.14's totals.
-  // Only a tool with sums re-renders on each keystroke.
-  useWatch({ control: form.control, disabled: !hasLiveValues(tool.id) })
+  // Sums the sheet works out as it is typed, such as D1.14's totals or
+  // D3.1's Amount Due. Only a tool with sums re-renders on each keystroke.
+  useWatch({
+    control: form.control,
+    disabled: !hasLiveValues(tool.id) && !hasComputedColumns(tool.fields),
+  })
 
   // The answers a field is shown from, such as D2.3's status, so what it
   // says follows them as they change.
@@ -336,6 +352,11 @@ export function ToolForm({
 
   const live = {
     ...liveValues(tool.id, typed),
+    ...computedCells(tool.fields, {
+      ...values,
+      ...typed,
+      ...systemOf(tool, values),
+    }),
     ...shownFromValues(tool, typed),
   }
 

@@ -41,6 +41,8 @@ import { EXECUTED_CONTRACT } from "@/lib/executed-contract"
 import { ARCHIVE } from "@/lib/archive"
 import { INITIATION } from "@/lib/initiation"
 import { initiationValues } from "@/server/contract/initiation"
+import { PAYMENT_TERMS } from "@/lib/payment-terms"
+import { paymentTermsValues } from "@/server/payments/payment-terms"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -194,6 +196,14 @@ async function workedOut(
 
     case INITIATION: {
       return await initiationValues(
+        database,
+        projectId,
+        record ? { id: record.id, payload } : null
+      )
+    }
+
+    case PAYMENT_TERMS: {
+      return await paymentTermsValues(
         database,
         projectId,
         record ? { id: record.id, payload } : null

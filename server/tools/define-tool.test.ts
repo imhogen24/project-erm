@@ -1154,6 +1154,38 @@ describe("defineTool, signing from a field and answers that decide", () => {
     ).toThrow(/tracker waits for sentAt to be .*In app/)
   })
 
+  const table = (when: {
+    field: string
+    is: string
+  }): ToolInput["fields"][number] => ({
+    key: "tasks",
+    label: "Tasks",
+    type: "table",
+    fixedRows: [{ task: "Export the PDF" }],
+    columns: [
+      { key: "task", label: "Task", type: "text" },
+      {
+        key: "status",
+        label: "Status",
+        type: "select",
+        options: ["Pending", "Done"],
+      },
+    ],
+    setOnLock: [{ row: 0, column: "status", is: "Done", when }],
+  })
+
+  it("refuses a cell set on lock whose condition is not a select's option", () => {
+    expect(() => tool([table({ field: "route", is: "In ap" })])).toThrow(
+      /route is not a select with the option.*In ap/
+    )
+    expect(() => tool([table({ field: "sentAt", is: "In app" })])).toThrow(
+      /sentAt is not a select with the option/
+    )
+    expect(tool([table({ field: "route", is: "In app" })]).fields).toHaveLength(
+      3
+    )
+  })
+
   it("keeps a first view only in a field the system fills", () => {
     expect(() => tool([signature({ viewedAs: "route" })])).toThrow(
       "clientSignature keeps its first view in route, which is not a field the system fills"

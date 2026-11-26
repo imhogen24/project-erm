@@ -1099,6 +1099,30 @@ const toolDefinition = z
       context.addIssue({ code: "custom", path: ["fields"], message: problem })
     }
 
+    value.fields.forEach((field, fieldIndex) => {
+      if (field.type !== "table") {
+        return
+      }
+
+      field.setOnLock?.forEach((rule, ruleIndex) => {
+        const when = rule.when
+
+        if (!when) {
+          return
+        }
+
+        const select = value.fields.find((entry) => entry.key === when.field)
+
+        if (!(select?.type === "select" && select.options.includes(when.is))) {
+          context.addIssue({
+            code: "custom",
+            path: ["fields", fieldIndex, "setOnLock", ruleIndex, "when"],
+            message: `${when.field} is not a select with the option "${when.is}"`,
+          })
+        }
+      })
+    })
+
     value.submitNeeds?.forEach((need, index) => {
       const unless = need.unless
 

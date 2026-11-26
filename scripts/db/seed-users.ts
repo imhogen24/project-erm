@@ -1,11 +1,12 @@
 import { hashPassword } from "better-auth/crypto"
-import { and, eq, inArray } from "drizzle-orm"
+import { and, eq, inArray, sql } from "drizzle-orm"
 import { z } from "zod"
 
 import { createDatabase, type Database } from "@/db"
 import {
   accounts,
   changeRequests,
+  counters,
   intakeSubmissions,
   people,
   personCompanyRoles,
@@ -20,6 +21,7 @@ import {
 } from "@/db/schema"
 
 import {
+  seededInvoice,
   projectChangeRequests,
   projectComments,
   projectRecords,
@@ -684,6 +686,18 @@ export async function seed(url: string): Promise<SeedUser[]> {
 
     // After every project, because the notifications point at their records.
     await addNotifications(database, teams)
+
+    // The running invoice count goes past the seeded invoice, so the next
+    // one drafted takes the number after it.
+    await database
+      .insert(counters)
+      .values({ name: "invoice", ...seededInvoice })
+      .onConflictDoUpdate({
+        target: [counters.name, counters.period],
+        set: {
+          value: sql`greatest(${counters.value}, ${seededInvoice.value})`,
+        },
+      })
 
     return created
   } finally {

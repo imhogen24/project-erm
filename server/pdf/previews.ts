@@ -2,10 +2,14 @@ import { existsSync } from "node:fs"
 import { readFile } from "node:fs/promises"
 import path from "node:path"
 
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
+import { z } from "zod"
 
 import type { Database } from "@/db"
-import { projects } from "@/db/schema"
+import { files, projects, toolRecords } from "@/db/schema"
+import { fileIdOf } from "@/lib/file-reference"
+import { storages, type Storages } from "@/server/files/storage"
+import { rowsNotNeeded } from "@/server/records/not-needed"
 import {
   previewCellKey,
   type PreviewState,
@@ -20,6 +24,7 @@ import {
 import { RecordNotFoundError } from "@/server/records/records"
 import { currentRecordId } from "@/server/records/screen"
 import {
+  cellPreviewSource,
   storedPdfName,
   type PreviewSource,
   type ToolDefinition,
@@ -35,6 +40,14 @@ export const documentsDirectory = path.join(process.cwd(), "documents")
 
 export function toolPdfHref(projectId: string, toolId: string) {
   return `/api/projects/${projectId}/tools/${encodeURIComponent(toolId)}/pdf`
+}
+
+export function uploadPdfHref(
+  projectId: string,
+  toolId: string,
+  field: string
+) {
+  return `/api/projects/${projectId}/tools/${encodeURIComponent(toolId)}/uploads/${field}`
 }
 
 export function storedPdfHref(projectId: string, file: string) {
@@ -70,20 +83,59 @@ export function previewSourcesOf(
 
     return (field.fixedRows ?? []).flatMap((row, index) =>
       previewColumns.flatMap((column): [string, PreviewSource][] => {
-        const toolId = row[column.key]
+        const named = row[column.key]
 
-        return toolId
-          ? [[previewCellKey(field.key, index, column.key), { tool: toolId }]]
+        return named
+          ? [
+              [
+                previewCellKey(field.key, index, column.key),
+                cellPreviewSource(named),
+              ],
+            ]
           : []
       })
     )
   })
 }
 
+// The file a preview of an upload points to on the project: the newest
+// record of the tool (as the track shows it) and the uploaded file's ID.
+async function uploadOf(
+  database: Database,
+  projectId: string,
+  toolId: string,
+  field: string
+) {
+  const recordId = await currentRecordId(database, projectId, toolId)
+
+  if (!recordId) {
+    return undefined
+  }
+
+  const [record] = await database
+    .select({ payload: toolRecords.payload })
+    .from(toolRecords)
+    .where(eq(toolRecords.id, recordId))
+
+  const fileId = fileIdOf(z.string().catch("").parse(record?.payload[field]))
+
+  if (!fileId) {
+    return undefined
+  }
+
+  const [file] = await database
+    .select({ key: files.key, name: files.name, storage: files.storage })
+    .from(files)
+    .where(and(eq(files.id, fileId), eq(files.projectId, projectId)))
+
+  return file
+}
+
 // Each PDF preview of the tool, by its key, as this person sees it on the
 // project. A preview names the Tier 1 tool, as the sheet does; on a Tier 3
 // project it shows the variant that takes that tool's place. A tool they
-// cannot read is "noAccess", and its PDF is never offered to them.
+// cannot read is "noAccess", and its PDF is never offered to them. A table
+// row the project does not need (`notNeeded`) is "notNeeded".
 export async function previewStates(
   database: Database,
   actor: string,
@@ -96,10 +148,17 @@ export async function previewStates(
     return {}
   }
 
-  const [held, track] = await Promise.all([
+  const [held, track, skipped] = await Promise.all([
     rolesOn(database, actor, projectId),
     trackOf(database, projectId),
+    rowsNotNeeded(database, projectId, tool.id),
   ])
+
+  const notNeeded = (key: string) => {
+    const [table, row] = key.split(".")
+
+    return skipped.get(table!)?.has(Number(row)) ?? false
+  }
 
   // Several cells often show the same tool, so each is looked up once.
   const looked = new Map<string, Promise<PreviewState>>()
@@ -112,6 +171,27 @@ export async function previewStates(
         status: "ready",
         name,
         href: storedPdfHref(projectId, source.file),
+      }
+    }
+
+    if ("upload" in source) {
+      const shown = track ? shownTool(source.upload.tool, track) : undefined
+
+      if (!roleAllows(held, shown ?? source.upload.tool, "read")) {
+        return { status: "noAccess", name }
+      }
+
+      if (
+        !shown ||
+        !(await uploadOf(database, projectId, shown, source.upload.field))
+      ) {
+        return { status: "notStarted", name }
+      }
+
+      return {
+        status: "ready",
+        name,
+        href: uploadPdfHref(projectId, shown, source.upload.field),
       }
     }
 
@@ -130,7 +210,13 @@ export async function previewStates(
   }
 
   function once(source: PreviewSource) {
-    const key = "file" in source ? `file:${source.file}` : source.tool
+    const key =
+      "file" in source
+        ? `file:${source.file}`
+        : "upload" in source
+          ? `upload:${source.upload.tool}:${source.upload.field}`
+          : source.tool
+
     const known = looked.get(key) ?? stateOf(source)
 
     looked.set(key, known)
@@ -141,7 +227,9 @@ export async function previewStates(
   const states = await Promise.all(
     sources.map(async ([key, source]): Promise<[string, PreviewState]> => [
       key,
-      await once(source),
+      notNeeded(key)
+        ? { status: "notNeeded", name: sourceName(source, track) }
+        : await once(source),
     ])
   )
 
@@ -173,6 +261,37 @@ export async function toolPdf(
   }
 
   return await recordPdf(database, actor, recordId)
+}
+
+// A PDF uploaded to a file field of the project's record of a tool, such as
+// D2.12's executed contract, for someone who may read that tool. On a Tier 3
+// project the Tier 1 tool's ID gives the variant. Someone who may not read
+// it is refused before anything is looked up.
+export async function uploadPdf(
+  database: Database,
+  actor: string,
+  projectId: string,
+  toolId: string,
+  field: string,
+  storage: Storages = storages
+): Promise<RecordPdf> {
+  const track = await trackOf(database, projectId)
+  const shown = track ? shownTool(toolId, track) : undefined
+
+  if (!(await can(database, actor, projectId, shown ?? toolId, "read"))) {
+    throw new PermissionDeniedError(`This person may not read ${toolId}`)
+  }
+
+  const file = shown && (await uploadOf(database, projectId, shown, field))
+
+  if (!file) {
+    throw new RecordNotFoundError(`${toolId} holds no file in ${field}`)
+  }
+
+  return {
+    fileName: file.name,
+    content: await storage[file.storage].read(file.key),
+  }
 }
 
 // A PDF kept with the app, for someone who may read a tool that shows it on
@@ -228,6 +347,19 @@ export function brokenPreviewSources(all: ToolDefinition[]) {
 
       if ("tool" in source) {
         return ids.has(source.tool) ? [] : [`${where}: no tool ${source.tool}`]
+      }
+
+      if ("upload" in source) {
+        const named = all.find((each) => each.id === source.upload.tool)
+
+        return named?.fields.some(
+          (field) =>
+            field.key === source.upload.field && field.type === "fileLink"
+        )
+          ? []
+          : [
+              `${where}: no file field ${source.upload.tool}.${source.upload.field}`,
+            ]
       }
 
       return existsSync(path.join(documentsDirectory, source.file))

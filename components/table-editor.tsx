@@ -11,7 +11,7 @@ import {
   type RawRow,
 } from "@/components/field-control"
 import { FileCell } from "@/components/file-cell"
-import { PdfPreviewField } from "@/components/pdf-preview-field"
+import { PdfPreviewField, usePreviews } from "@/components/pdf-preview-field"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { fixedValue, newRow, rowNumber } from "@/lib/fixed-rows"
@@ -108,6 +108,18 @@ export function TableEditor({
   // A row the person added can be removed. Its Remove button sits inside the
   // last cell, so the table has no empty column at the right.
   const shownOnly = field.readOnly === true
+  const previews = usePreviews()
+
+  // A row whose document the project does not need, such as D2.13's
+  // negotiation notes after the draft was accepted as it was: its choices
+  // read Not needed, and submitting passes it by.
+  const notNeeded = (rowIndex: number) =>
+    field.columns.some(
+      (column) =>
+        column.type === "pdfPreview" &&
+        previews[previewCellKey(field.key, rowIndex, column.key)]?.status ===
+          "notNeeded"
+    )
 
   const canRemove = (rowIndex: number) =>
     !fixed && !shownOnly && rowIndex >= lockedCount
@@ -289,7 +301,11 @@ export function TableEditor({
                       </span>
                     ) : (
                       <span className="flex flex-wrap items-center gap-x-3 text-sm">
-                        <span>{fixedText}</span>
+                        <span>
+                          {previews[
+                            previewCellKey(field.key, rowIndex, column.key)
+                          ]?.name ?? fixedText}
+                        </span>
                         <PdfPreviewField
                           id={id}
                           field={{
@@ -335,6 +351,24 @@ export function TableEditor({
                           ? numbered
                           : fillText(fixedText, fills)}
                       </span>
+                    </span>
+                  </div>
+                )
+              }
+
+              if (column.type === "select" && notNeeded(rowIndex)) {
+                return (
+                  <div
+                    key={column.key}
+                    role="cell"
+                    className="flex flex-col gap-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 @xl:last:border-r-0"
+                  >
+                    <span className="pt-2 text-xs text-muted-foreground @xl:sr-only @xl:pt-0">
+                      {column.label}
+                      <span className="sr-only">, row {rowIndex + 1}</span>
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      Not needed
                     </span>
                   </div>
                 )

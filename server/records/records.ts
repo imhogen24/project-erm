@@ -54,6 +54,7 @@ import {
   withoutInherited,
 } from "./inherited"
 import { lockValues, unmetSubmitRules } from "./filled-on-lock"
+import { rowsNotNeeded } from "./not-needed"
 import { fieldsOff } from "./only-when"
 import { keepReadOnly } from "./read-only"
 import {
@@ -480,7 +481,11 @@ async function move(
             need.unless && current.payload[need.unless.field] === need.unless.is
           )
       ),
-      ...unmetSubmitRules(current.toolId, current.payload),
+      ...unmetSubmitRules(
+        current.toolId,
+        current.payload,
+        await rowsNotNeeded(transaction, current.projectId, current.toolId)
+      ),
     ]
 
     if (unmet.length > 0) {

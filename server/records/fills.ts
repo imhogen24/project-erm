@@ -3,6 +3,8 @@ import type { JsonObject } from "@/db/schema"
 import { fieldFills, type Fills } from "@/lib/placeholders"
 import { FINANCE_REVIEW } from "@/lib/finance-review"
 import { INITIAL_DRAFT } from "@/lib/initial-draft"
+import { ARCHIVE } from "@/lib/archive"
+import { archiveFills } from "@/server/contract/archive"
 import { SIGNATURE_CONTRACT } from "@/lib/signature-contract"
 import { STANDARD_CONTRACT } from "@/lib/standard-contract"
 import { signatureFills } from "@/server/contract/signature-contract"
@@ -33,6 +35,10 @@ export async function systemFillsOf(
 
     case SIGNATURE_CONTRACT: {
       return await signatureFills(database, projectId)
+    }
+
+    case ARCHIVE: {
+      return await archiveFills(database, projectId)
     }
 
     default: {

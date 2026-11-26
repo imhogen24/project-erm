@@ -176,13 +176,28 @@ const pdfPreview = z.object({
   source: z.union([
     z.strictObject({ tool: z.string().min(1) }),
     z.strictObject({ file: storedPdfName, title: z.string().min(1) }),
+    // A PDF uploaded to a file field of the project's record of another
+    // tool, such as D2.12's executed contract.
+    z.strictObject({
+      upload: z.strictObject({ tool: z.string().min(1), field: fieldKey }),
+    }),
   ]),
 })
 
 export type PreviewSource = z.output<typeof pdfPreview>["source"]
 
+// What a fixed row's preview cell names: a tool's ID, such as "D1.15", or a
+// file uploaded to one of its fields, as "<tool>:<field>", such as
+// "D2.12:executedPdf".
+export function cellPreviewSource(text: string): PreviewSource {
+  const [tool, field] = text.split(":")
+
+  return field ? { upload: { tool: tool!, field } } : { tool: text }
+}
+
 // A PDF preview as a table column: which tool each row shows is fixed by the
-// table's `fixedRows`, as the tool's ID, such as { source: "D1.15" }. A row
+// table's `fixedRows`, as the tool's ID, such as { source: "D1.15" }, or an
+// upload, such as { document: "D2.12:executedPdf" }. A row
 // the person adds shows none.
 const previewColumn = z.object({
   ...cellBase,
@@ -263,6 +278,23 @@ const table = z
     // What the subtotal row is called, as the sheet names it.
     subtotalLabel: z.string().min(1).optional(),
     readOnly: z.boolean().optional(),
+    // Fixed rows not needed on a project, each by its place among the fixed
+    // rows (0 for the first): when the project's locked record of `tool`
+    // holds `is` in `field`, such as D2.13's negotiation notes when the
+    // client accepted the draft as it was. Such a row shows Not needed, and
+    // the submit rules on the table pass it by.
+    notNeeded: z
+      .array(
+        z.strictObject({
+          row: z.number().int().min(0),
+          when: z.strictObject({
+            tool: z.string().min(1),
+            field: fieldKey,
+            is: z.string().min(1),
+          }),
+        })
+      )
+      .optional(),
     // Read only, as `readOnly`, while the record's select `field` holds
     // `is`, such as D2.11's signature tracker, which signing in the app
     // fills; otherwise the form writes it.
@@ -376,6 +408,16 @@ const table = z
         message: "A table has fixed rows or locked rows, not both",
       })
     }
+
+    value.notNeeded?.forEach((rule, index) => {
+      if (rule.row >= (value.fixedRows?.length ?? 0)) {
+        context.addIssue({
+          code: "custom",
+          path: ["notNeeded", index, "row"],
+          message: "A row not needed is one of the table's fixed rows",
+        })
+      }
+    })
 
     if (value.fixedRows && (value.prefilledRows || value.lockedRows)) {
       context.addIssue({

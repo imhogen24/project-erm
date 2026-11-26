@@ -278,11 +278,12 @@ class Route {
     const { count } = map.cycles!
     const value = this.locked(count.tool, 1)?.payload[count.field]
 
-    return (
+    const total =
       z.number().safeParse(value).data ??
       z.array(z.unknown()).safeParse(value).data?.length ??
       0
-    )
+
+    return Math.max(0, total - (count.less ?? 0))
   }
 
   private unmetCycle(map: WorkbookMap, cycle: number): string[] {
@@ -295,7 +296,7 @@ class Route {
       const total = this.cycleCount(map)
 
       missing.push(
-        `${count.tool} sets ${total} payment milestone${total === 1 ? "" : "s"}, so there is no cycle ${cycle}`
+        `${count.tool} leaves ${total} payment milestone${total === 1 ? "" : "s"} to bill, so there is no cycle ${cycle}`
       )
     }
 

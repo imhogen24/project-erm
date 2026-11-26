@@ -668,6 +668,9 @@ const field = z
       placeholder: z.string().min(1).optional(),
       // A file field that takes only a PDF, such as D2.11's final contract.
       pdfOnly: z.boolean().optional(),
+      // A file field that takes an uploaded PDF or image, such as D3.3's
+      // proof of completion: a signed approval or a CAD sign-off.
+      pdfOrImage: z.boolean().optional(),
       // A date that follows another date `field` as it is typed, plus the
       // days a duration field such as "40 Working Days" holds
       // (`plusDurationOf`), until the person types a date of their own, such
@@ -681,7 +684,26 @@ const field = z
         .optional(),
     }),
     signature.extend(required),
-    select.extend({ ...required, blockedWhile: blockedWhile.optional() }),
+    select.extend({
+      ...required,
+      blockedWhile: blockedWhile.optional(),
+      // The options are the rows of another tool's table, read from the
+      // project's locked record of `tool` each time the record is shown,
+      // instead of `options`, which stays empty. Each row is named by its
+      // numbered SN and its `column`, such as "2.2 Fabrication Milestone
+      // (Design Approval)". A row another record of this tool on the project
+      // already holds, or one of the first `takenBefore` rows, is shown but
+      // cannot be picked, such as D3.3's milestones already billed.
+      options: z.array(z.string().min(1)),
+      optionsFrom: z
+        .strictObject({
+          tool: z.string().min(1),
+          field: fieldKey,
+          column: fieldKey,
+          takenBefore: z.number().int().min(0).optional(),
+        })
+        .optional(),
+    }),
     checklist.extend(required),
     instruction.extend(required),
     staticList.extend(required),
@@ -689,6 +711,17 @@ const field = z
     table,
   ])
   .refine(holdsSystemOptions, { message: strangerSystemOption })
+  .refine(
+    (value) =>
+      value.type !== "select" ||
+      (value.optionsFrom
+        ? value.options.length === 0
+        : value.options.length > 0),
+    {
+      message:
+        "A select has its own options, or takes them from another tool's table, not both",
+    }
+  )
   .refine((value) => !(value.inherited && value.required), {
     message:
       "An inherited field is filled in by the system, so it is never required",
@@ -871,6 +904,21 @@ const toolDefinition = z
         notifies: z.array(z.enum(roles)).min(1).optional(),
       })
       .optional(),
+    // The approver's decision, written on the record in the same step:
+    // approving sets the select `field` to `approve`, sending back to
+    // `sendBack`, and `by` to the approver's name and `receivedOn` to the day
+    // the record was submitted, such as D3.3's Action Taken, Finance Officer
+    // and Date Trigger Received. Submitting again clears the decision. Each
+    // is a field the system fills.
+    decision: z
+      .strictObject({
+        field: fieldKey,
+        approve: z.string().min(1),
+        sendBack: z.string().min(1),
+        by: fieldKey.optional(),
+        receivedOn: fieldKey.optional(),
+      })
+      .optional(),
     fields: z.array(field).min(1),
   })
   .refine(
@@ -1005,6 +1053,40 @@ const toolDefinition = z
         })
       }
     })
+
+    const decision = value.decision
+
+    if (decision) {
+      const select = value.fields.find((entry) => entry.key === decision.field)
+
+      if (
+        select?.type !== "select" ||
+        !select.systemFilled ||
+        !select.options.includes(decision.approve) ||
+        !select.options.includes(decision.sendBack)
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["decision", "field"],
+          message: `${decision.field} is not a system-filled select with the options "${decision.approve}" and "${decision.sendBack}"`,
+        })
+      }
+
+      for (const [key, type] of [
+        [decision.by, "text"],
+        [decision.receivedOn, "date"],
+      ] as const) {
+        const named = value.fields.find((entry) => entry.key === key)
+
+        if (key && !(named?.type === type && named.systemFilled)) {
+          context.addIssue({
+            code: "custom",
+            path: ["decision"],
+            message: `${key} is not a system-filled ${type} field of this tool`,
+          })
+        }
+      }
+    }
 
     const freeze = value.freezesOnceSet
 

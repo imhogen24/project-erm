@@ -12,6 +12,14 @@ export type ProjectNav = {
     id: string
     label: string
     // Whether the tool can be opened: false until the tool before it is locked.
-    tools: { toolId: string; name: string; state: ToolState; open: boolean }[]
+    // A tool run once per payment milestone, such as D3.3, lists each
+    // milestone's record under it.
+    tools: {
+      toolId: string
+      name: string
+      state: ToolState
+      open: boolean
+      cycles?: { cycle: number; label: string; state: ToolState }[]
+    }[]
   }[]
 }

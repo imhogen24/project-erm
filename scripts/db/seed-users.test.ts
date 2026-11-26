@@ -1,4 +1,4 @@
-import { afterAll, beforeEach, describe, expect, it } from "vitest"
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { createAuth } from "@/server/auth/auth"
@@ -26,6 +26,11 @@ import { projectRecords } from "./seed-data/records"
 import { seed } from "./seed-users"
 
 registerAllTools(tools)
+
+// Each test seeds the whole database, a Test project for every tool built
+// and more with every tool, which takes about 5 seconds on its own and
+// longer while other suites run, so these tests get more than the default.
+vi.setConfig({ testTimeout: 30_000 })
 
 const database = createTestDatabase()
 
@@ -348,7 +353,7 @@ describe("the records", () => {
 })
 
 describe("what the PMs see", () => {
-  it("gives each PM a record to approve or a change to decide, with an unread note for it", async () => {
+  it("gives each PM a record to approve or a change to decide, and the FO the D3.3 waiting for them, with an unread note for it", async () => {
     await seed(url)
 
     const { rows } = await database.pool.query<{
@@ -363,6 +368,7 @@ describe("what the PMs see", () => {
     )
 
     expect(rows).toEqual([
+      { email: loginFor("FO"), kind: "approval_needed" },
       { email: loginFor("PM"), kind: "approval_needed" },
       { email: loginFor("PM"), kind: "approval_needed" },
       { email: loginFor("PM"), kind: "change_waiting" },

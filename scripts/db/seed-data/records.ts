@@ -56,6 +56,11 @@ import { UPDATED, finalTasks } from "@/lib/final-contract"
 import { APP_PLATFORM, SCAN, financeTasks } from "@/lib/executed-contract"
 import { vaultDocuments } from "@/lib/archive"
 import {
+  complianceRules,
+  paymentMilestones as termsMilestones,
+} from "@/lib/payment-terms"
+import { PROCEED } from "@/lib/billing-trigger"
+import {
   CLIENT_ROLE,
   COURIER,
   DIGITAL,
@@ -69,6 +74,8 @@ import { loginFor, staffWith } from "./people"
 import {
   ACCEPTED_AS_IS_PROJECT,
   PAPER_SIGNED_PROJECT,
+  TRIGGER_APPROVED_PROJECT,
+  TRIGGER_WAITING_PROJECT,
   approverOf,
   client,
   currentToolFor,
@@ -96,6 +103,9 @@ export type SeedState = "draft" | "submitted" | "locked"
 
 export type SeedRecord = {
   toolId: string
+  // The payment milestone cycle of a tool run once per milestone, such as
+  // D3.3. Left out, cycle 1.
+  cycle?: number
   state: SeedState
   // Days after the request arrived that the record was started.
   day: number
@@ -1286,6 +1296,81 @@ function stageD212(method: string) {
   })
 }
 
+// The executed contract's payment terms, which the PM approved, locking D3.1
+// and opening D3.3: 40% on signing (the advance, billed through D2.12), 40%
+// on design approval and 20% on handover, each Amount Due stored as D3.1's
+// submit stores it.
+function stageD31(total: number) {
+  const shares = [40, 40, 20]
+
+  return payloadOf({
+    paymentSchedule: termsMilestones.map((milestone, index) => ({
+      milestone,
+      percentage: shares[index]!,
+      amountDue: (total * shares[index]!) / 100,
+      clauseRef: `Section 3.3.${index + 1}`,
+    })),
+    complianceRules: complianceRules.map(({ category, term }, index) => ({
+      category,
+      term,
+      clauseRef: `Section 4.${index + 1}`,
+    })),
+    accepted: "Yes",
+    foSignature: {
+      signedBy: "role:FO",
+      signedAt: "2026-12-12T09:00:00.000Z",
+    },
+  })
+}
+
+// The PM's trigger for the design approval milestone, 2.2, signed and
+// submitted; once approved, the FO's decision is on it too.
+function stageD33(decided: boolean) {
+  return payloadOf({
+    milestone: "2.2 Fabrication Milestone (Design Approval)",
+    proofOfCompletion: "https://utfs.io/f/imho-design-approval-client-test-ltd",
+    clientAccepted: "Yes",
+    openDisputes: "No",
+    pmSignature: {
+      signedBy: "role:PM",
+      signedAt: "2026-12-20T09:00:00.000Z",
+    },
+    ...(decided && {
+      actionTaken: PROCEED,
+      financeOfficer: staffWith("FO").name,
+      dateReceived: "2026-12-20",
+    }),
+  })
+}
+
+// The first payment milestone cycle: D3.3 for 2.2 waiting for the FO, or
+// approved by them.
+function billingCycle(name: string): SeedRecord[] {
+  if (name === TRIGGER_WAITING_PROJECT) {
+    return [
+      {
+        toolId: "D3.3",
+        cycle: 1,
+        state: "submitted",
+        day: 60,
+        payload: stageD33(false),
+      },
+    ]
+  }
+
+  return name === TRIGGER_APPROVED_PROJECT
+    ? [
+        {
+          toolId: "D3.3",
+          cycle: 1,
+          state: "locked",
+          day: 60,
+          payload: stageD33(true),
+        },
+      ]
+    : []
+}
+
 function tier1Records(name: string): SeedRecord[] {
   const stage = stageOf(name)
   const files = stageFiles(stage)
@@ -1338,6 +1423,8 @@ function tier1Records(name: string): SeedRecord[] {
       ),
     },
     ...negotiated(name, 43, "GHS 90,000.00"),
+    { toolId: "D3.1", state: "locked", day: 55, payload: stageD31(94400) },
+    ...billingCycle(name),
   ]
 }
 
@@ -1387,6 +1474,7 @@ function tier3Records(name: string): SeedRecord[] {
     },
     { toolId: "D2.7", state: "locked", day: 38, payload: stageD27(name) },
     ...negotiated(name, 40, "GHS 57,000.00"),
+    { toolId: "D3.1", state: "locked", day: 52, payload: stageD31(60000) },
   ]
 }
 
@@ -1472,6 +1560,8 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   [`${DEV_LOCKED} (Tier 1)`, tier1Records(`${DEV_LOCKED} (Tier 1)`)],
   [ACCEPTED_AS_IS_PROJECT, tier1Records(ACCEPTED_AS_IS_PROJECT)],
   [PAPER_SIGNED_PROJECT, tier1Records(PAPER_SIGNED_PROJECT)],
+  [TRIGGER_WAITING_PROJECT, tier1Records(TRIGGER_WAITING_PROJECT)],
+  [TRIGGER_APPROVED_PROJECT, tier1Records(TRIGGER_APPROVED_PROJECT)],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
   [`${DEV_LOCKED} (Tier 3)`, tier3Records(`${DEV_LOCKED} (Tier 3)`)],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],

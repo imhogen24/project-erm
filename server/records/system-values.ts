@@ -43,6 +43,8 @@ import { INITIATION } from "@/lib/initiation"
 import { initiationValues } from "@/server/contract/initiation"
 import { PAYMENT_TERMS } from "@/lib/payment-terms"
 import { paymentTermsValues } from "@/server/payments/payment-terms"
+import { BILLING_TRIGGER } from "@/lib/billing-trigger"
+import { billingTriggerValues } from "@/server/payments/billing-trigger"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -204,6 +206,14 @@ async function workedOut(
 
     case PAYMENT_TERMS: {
       return await paymentTermsValues(
+        database,
+        projectId,
+        record ? { id: record.id, payload } : null
+      )
+    }
+
+    case BILLING_TRIGGER: {
+      return await billingTriggerValues(
         database,
         projectId,
         record ? { id: record.id, payload } : null

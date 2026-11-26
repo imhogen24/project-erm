@@ -119,6 +119,13 @@ function cellSchema(cell: Field | Column): z.ZodType {
 // A system option is a valid value, but only the system may set it, so the
 // form is refused it.
 function selectSchema(cell: Extract<Field | Column, { type: "select" }>) {
+  // Options read from another tool's table change from project to project,
+  // so a save takes any of them; submitting checks the pick against the
+  // project's rows (server/records/options-from.ts).
+  if ("optionsFrom" in cell && cell.optionsFrom) {
+    return z.string({ error: "Must be text" })
+  }
+
   const system = cell.systemOptions ?? []
   const choosable = cell.options.filter((option) => !system.includes(option))
 

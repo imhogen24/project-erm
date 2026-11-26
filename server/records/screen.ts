@@ -23,8 +23,9 @@ import {
   rolesOn,
 } from "@/server/permissions/permissions"
 import { tools } from "@/server/tools/registry"
-import { toolStatus } from "@/server/workflow/workflow"
+import { repeatsPerCycle, toolStatus } from "@/server/workflow/workflow"
 
+import { cyclesOf, type CycleEntry } from "./cycles"
 import { getRecord } from "./records"
 import {
   approvingTurn,
@@ -36,6 +37,8 @@ import {
 import { UnknownToolError } from "./validate"
 
 export type ScreenState = Exclude<RecordState, "void"> | "notStarted"
+
+export type { CycleEntry }
 
 // What the record screen shows one person for one tool of a project. It holds
 // the answers the server gives, so the page never works out permissions.
@@ -62,6 +65,10 @@ export type RecordScreen = {
   control: DocumentControl | null
   // A change request on the locked record still waiting for the PM.
   changeRequested: boolean
+  // A tool that runs once per payment milestone lists each cycle's record,
+  // and the next cycle once it is open, each named by what it is for, such
+  // as "2.2 Fabrication Milestone (Design Approval)". Empty for any other.
+  cycles: CycleEntry[]
 }
 
 const signed = z.object({ signedBy: z.string(), signedAt: z.string() })
@@ -174,15 +181,40 @@ export async function currentRecordId(
   return newest?.id
 }
 
+// The id of the record of one cycle of the tool, never a voided one.
+async function cycleRecordId(
+  database: Pick<Database, "select">,
+  projectId: string,
+  toolId: string,
+  cycle: number
+): Promise<string | undefined> {
+  const [record] = await database
+    .select({ id: toolRecords.id })
+    .from(toolRecords)
+    .where(
+      and(
+        eq(toolRecords.projectId, projectId),
+        eq(toolRecords.toolId, toolId),
+        eq(toolRecords.cycle, cycle),
+        ne(toolRecords.state, "void")
+      )
+    )
+
+  return record?.id
+}
+
 // Everything the record screen needs for one tool: the newest record that is
 // not void, or why the tool cannot be started, and what this person may do.
-// Reading needs read access to the tool; anyone else gets the same refusal as a
-// project they are not on.
+// A tool that runs once per payment milestone shows the `cycle` asked for,
+// or, without one, its next cycle while that is open, and otherwise its
+// newest record. Reading needs read access to the tool; anyone else gets the
+// same refusal as a project they are not on.
 export async function getRecordScreen(
   database: Database,
   actor: string,
   projectId: string,
-  toolId: string
+  toolId: string,
+  cycle?: number
 ): Promise<RecordScreen> {
   const held = await rolesOn(database, actor, projectId)
 
@@ -211,10 +243,25 @@ export async function getRecordScreen(
 
   const active = project!.status === "active"
 
-  const newest = await currentRecordId(database, projectId, toolId)
+  const repeating = repeatsPerCycle(toolId)
+
+  // A repeating tool's next cycle, open or not, says what the list of
+  // cycles ends on.
+  const next = repeating
+    ? await toolStatus(database, projectId, toolId)
+    : undefined
+
+  const cycles = next ? await cyclesOf(database, projectId, toolId, next) : []
+
+  const newest =
+    repeating && cycle !== undefined
+      ? await cycleRecordId(database, projectId, toolId, cycle)
+      : next?.missing.length === 0
+        ? undefined
+        : await currentRecordId(database, projectId, toolId)
 
   if (!newest) {
-    const status = await toolStatus(database, projectId, toolId)
+    const status = next ?? (await toolStatus(database, projectId, toolId))
     const open = status.missing.length === 0
 
     return {
@@ -246,6 +293,7 @@ export async function getRecordScreen(
       },
       control: null,
       changeRequested: false,
+      cycles,
     }
   }
 
@@ -299,5 +347,6 @@ export async function getRecordScreen(
     },
     control: await getDocumentControl(database, actor, record.id),
     changeRequested: openRequest?.status === "requested",
+    cycles,
   }
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { Fragment } from "react"
 import { usePathname } from "next/navigation"
 
 import { stateLabel } from "@/components/state-badge"
@@ -41,19 +42,39 @@ export function ProjectTree({ project }: { project: ProjectNav }) {
           )}
           {workbook.tools.map((tool) =>
             tool.open ? (
-              <Link
-                key={tool.toolId}
-                href={`/projects/${project.id}/tools/${tool.toolId}`}
-                aria-current={tool.toolId === current ? "page" : undefined}
-                className="nav-tool"
-              >
-                <ToolMark state={tool.state} />
-                <span className="sr-only">{stateLabel(tool.state)}: </span>
-                <span className="min-w-0 flex-1 truncate" title={tool.name}>
-                  {tool.name}
-                </span>
-                <ToolLock state={tool.state} />
-              </Link>
+              <Fragment key={tool.toolId}>
+                <Link
+                  href={`/projects/${project.id}/tools/${tool.toolId}`}
+                  aria-current={tool.toolId === current ? "page" : undefined}
+                  className="nav-tool"
+                >
+                  <ToolMark state={tool.state} />
+                  <span className="sr-only">{stateLabel(tool.state)}: </span>
+                  <span className="min-w-0 flex-1 truncate" title={tool.name}>
+                    {tool.name}
+                  </span>
+                  <ToolLock state={tool.state} />
+                </Link>
+                {tool.cycles?.map((entry) => (
+                  // Each payment milestone's record of the tool, such as
+                  // "D3.3 · 2.2 Fabrication Milestone".
+                  <Link
+                    key={entry.cycle}
+                    href={`/projects/${project.id}/tools/${tool.toolId}?cycle=${entry.cycle}`}
+                    className="nav-tool ps-6"
+                  >
+                    <ToolMark state={entry.state} />
+                    <span className="sr-only">{stateLabel(entry.state)}: </span>
+                    <span
+                      className="min-w-0 flex-1 truncate"
+                      title={`${tool.toolId} · ${entry.label}`}
+                    >
+                      {tool.toolId} · {entry.label}
+                    </span>
+                    <ToolLock state={entry.state} />
+                  </Link>
+                ))}
+              </Fragment>
             ) : (
               // Not open until the tool before it is locked, so not a link.
               <span

@@ -64,6 +64,8 @@ import {
 } from "./shown-fields"
 import { applySendBack } from "./send-back"
 import { submittedValues } from "./submitted-values"
+import { decisionValues, heldDecision, withoutDecision } from "./decision"
+import { unmetOptionsFrom } from "./options-from"
 import {
   approvingTurn,
   nextTurn,
@@ -494,12 +496,19 @@ async function move(
 
     const worked = await submittedValues(transaction, current)
 
-    if (worked.errors.length > 0) {
-      throw new ValidationError(worked.errors)
+    // A pick from another tool's table must still be one of its rows, and
+    // not one another record already holds.
+    const errors = [
+      ...worked.errors,
+      ...(await unmetOptionsFrom(transaction, current)),
+    ]
+
+    if (errors.length > 0) {
+      throw new ValidationError(errors)
     }
 
     payload = {
-      ...written,
+      ...withoutDecision(current.toolId, written),
       ...(await inheritedValues(transaction, current)),
       ...worked.values,
     }
@@ -538,6 +547,7 @@ async function move(
     payload = {
       ...payload,
       ...(await lockValues(transaction, current, actor, now)),
+      ...(await decisionValues(transaction, current, actor, "approve")),
     }
   }
 
@@ -722,7 +732,11 @@ async function writeDraft(
 
   const before = withoutSignatures(current.toolId, current.payload)
   const signatures = signaturesOf(current.toolId, current.payload)
-  const next = keepReadOnly(current.toolId, current.payload, values)
+
+  const next = {
+    ...keepReadOnly(current.toolId, current.payload, values),
+    ...heldDecision(current.toolId, current.payload),
+  }
 
   const edited = !isDeepStrictEqual(
     withoutInherited(current.toolId, before),
@@ -1217,11 +1231,39 @@ export async function sendBackRecord(
       )
     }
 
+    // A tool that keeps the approver's decision records it was sent back.
+    const decided = await decisionValues(
+      transaction,
+      current,
+      actor,
+      "sendBack"
+    )
+
+    const payload = { ...current.payload, ...decided }
+
     const [returned] = await transaction
       .update(toolRecords)
-      .set({ state: "draft", updatedAt: nextUpdatedAt(current) })
+      .set({
+        state: "draft",
+        updatedAt: nextUpdatedAt(current),
+        ...(Object.keys(decided).length > 0 && { payload }),
+      })
       .where(eq(toolRecords.id, recordId))
       .returning(columns)
+
+    if (Object.keys(decided).length > 0) {
+      await writeAudit(
+        transaction,
+        {
+          recordId,
+          projectId: current.projectId,
+          actor,
+          action: "updated",
+          reason: "The approver's decision",
+        },
+        payloadChanges(current.payload, payload)
+      )
+    }
 
     await writeAudit(
       transaction,

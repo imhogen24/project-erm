@@ -108,7 +108,7 @@ export const permissionMatrix = {
   D2: { PM: "RO", FO: "RO", CA: "RW", CR: "RO" },
   "D3.1": { Client: "RO", PM: "RA", FO: "RW", CA: "RO", CR: "RO" },
   "D3.2": { PM: "RO", FO: "RW", CR: "RO" },
-  "D3.3": { PM: "RW", FO: "RO", HE: "RO", CR: "RO" },
+  "D3.3": { PM: "RW", FO: "RA", HE: "RO", CR: "RO" },
   "D3.4": { PM: "RO", FO: "RW", CR: "RO" },
   "D3.5": { PM: "RA", FO: "RW", HE: "RO", CR: "RO" },
   "D3.6": { Client: "RO", PM: "RO", FO: "RW", CR: "RO" },

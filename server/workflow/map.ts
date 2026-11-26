@@ -51,9 +51,11 @@ export type HardStop = Condition & {
 // The repeating tools of a map run in cycles 1, 2, 3 and so on. `count` is the
 // field of a locked record that holds the number of cycles: a number, or a
 // table with one row per cycle. A cycle after the first starts only once
-// `closedBy` is locked in the cycle before it.
+// `closedBy` is locked in the cycle before it. `less` is how many of those
+// were billed before the cycles start, such as D3.1's advance, billed
+// through D2.12, so a schedule of three milestones runs two cycles.
 export type Cycles = {
-  count: { tool: string; field: string }
+  count: { tool: string; field: string; less?: number }
   closedBy: string
 }
 

@@ -31,7 +31,13 @@ import { systemActor } from "@/server/system/system"
 
 import type { ToolDefinition } from "@/server/tools/define-tool"
 import { servesTrack } from "@/server/workflow/tracks"
-import { toolGates, toolNotes } from "@/server/workflow/workflow"
+import {
+  repeatsPerCycle,
+  toolGates,
+  toolNotes,
+  toolStatus,
+} from "@/server/workflow/workflow"
+import { cyclesOf, type CycleEntry } from "@/server/records/cycles"
 
 export { projectStatuses, serviceTracks }
 
@@ -75,6 +81,9 @@ export type ProjectOverview = Project & {
     // What a closed tool says about why, such as "This tool opens after D1.4
     // is delivered.", or null.
     note: string | null
+    // A tool run once per payment milestone, such as D3.3: each cycle's
+    // record, and the next cycle while it is open. Left out for any other.
+    cycles?: CycleEntry[]
   }[]
 }
 
@@ -377,15 +386,32 @@ export async function getProjectOverview(
       ? new Map<string, string>()
       : await toolNotes(database, projectId, unstarted)
 
+  // A tool run once per payment milestone lists its cycles, and reads as not
+  // started while its next cycle is open, such as D3.3 once the one before
+  // was approved.
+  const cycles = new Map<string, CycleEntry[]>()
+
+  for (const tool of readable) {
+    if (repeatsPerCycle(tool.id) && newest.has(tool.id)) {
+      const status = await toolStatus(database, projectId, tool.id)
+
+      cycles.set(tool.id, await cyclesOf(database, projectId, tool.id, status))
+    }
+  }
+
+  const stateOf = (toolId: string) =>
+    cycles.get(toolId)?.at(-1)?.state ?? newest.get(toolId) ?? "notStarted"
+
   return {
     ...project!,
     tools: readable.map((tool) => ({
       toolId: tool.id,
       name: tool.name,
       workbook: tool.workbook,
-      state: newest.get(tool.id) ?? "notStarted",
+      state: stateOf(tool.id),
       waitingOn: gates.get(tool.id) ?? null,
       note: notes.get(tool.id) ?? null,
+      ...(cycles.has(tool.id) && { cycles: cycles.get(tool.id) }),
     })),
   }
 }

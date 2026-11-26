@@ -547,7 +547,9 @@ describe("payment milestone cycles", () => {
     expect(await open("D3.")).toEqual(["D3.4@1"])
     await expect(
       createRecord(database, actor, { projectId, toolId: "D3.5" })
-    ).rejects.toThrow(/D3\.1 sets 1 payment milestone, so there is no cycle 2/)
+    ).rejects.toThrow(
+      /D3\.1 leaves 1 payment milestone to bill, so there is no cycle 2/
+    )
   })
 
   it("counts the milestones from the rows of a table", async () => {
@@ -695,14 +697,14 @@ describe("checking the map", () => {
   })
 
   it("accepts the real opening rules of WB02 to WB05", () => {
-    // Only the opening rules: WB02's and WB03's tool order and WB02's hard
-    // stop name tools this file's short route leaves out, and are checked
-    // against the real tools in workbooks/index.test.ts.
+    // Only the opening rules: WB02's and WB03's tool order, WB02's hard
+    // stop and WB03's cycles name tools this file's short route leaves out,
+    // and are checked against the real tools in workbooks/index.test.ts.
     const later = workflowMaps
       .filter((map) => map.workbook !== "wb01")
       .map((map) =>
         map.workbook === "wb02" || map.workbook === "wb03"
-          ? { ...map, tools: [], stops: [] }
+          ? { ...map, tools: [], stops: [], cycles: undefined }
           : map
       )
 

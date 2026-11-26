@@ -159,7 +159,13 @@ export async function addRecord(
   projectId: string,
   toolId: string,
   state: RecordState,
-  extra: { payload?: JsonObject; submittedBy?: string } = {}
+  extra: {
+    payload?: JsonObject
+    submittedBy?: string
+    submittedAt?: Date
+    // The payment milestone cycle of a tool run once per milestone.
+    cycle?: number
+  } = {}
 ) {
   const [record] = await withDatabase((database) =>
     database

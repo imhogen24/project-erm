@@ -140,6 +140,10 @@ import { fieldsOff, withoutFieldsOff } from "@/server/records/only-when"
 import { systemFillsOf } from "@/server/records/fills"
 import { previewStates } from "@/server/pdf/previews"
 import { getRecordScreen } from "@/server/records/screen"
+import { firstFree, liveOptionsOf } from "@/server/records/options-from"
+import { BILLING_TRIGGER } from "@/lib/billing-trigger"
+import { milestoneValueOptions } from "@/server/payments/billing-trigger"
+import { CycleList } from "@/components/cycle-list"
 import { systemValuesOf } from "@/server/records/system-values"
 import { listComments, type Comment } from "@/server/comments/comments"
 import { UnknownToolError } from "@/server/records/validate"
@@ -378,11 +382,23 @@ function shownComment(comment: Comment) {
 
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ projectId: string; toolId: string }>
+  searchParams: Promise<{ cycle?: string | string[] }>
 }) {
   const { projectId, toolId } = await params
   const session = await requireSession()
+
+  // A tool run once per payment milestone names the milestone's cycle in the
+  // address, such as ?cycle=2. Anything else shows the cycle in progress.
+  const cycle = z.coerce
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .catch(undefined)
+    .parse((await searchParams).cycle)
 
   // An id that cannot be a project looks the same as one that is not found.
   if (!z.uuid().safeParse(projectId).success) {
@@ -396,7 +412,8 @@ export default async function Page({
       getDatabase(),
       session.user.id,
       projectId,
-      toolId
+      toolId,
+      cycle
     )
   } catch (error) {
     if (
@@ -426,7 +443,8 @@ export default async function Page({
       getDatabase(),
       session.user.id,
       projectId,
-      toolId
+      toolId,
+      cycle
     )
   }
 
@@ -441,7 +459,8 @@ export default async function Page({
       getDatabase(),
       session.user.id,
       projectId,
-      toolId
+      toolId,
+      cycle
     )
   }
 
@@ -738,6 +757,54 @@ export default async function Page({
           sendInvite={sendAlignmentInviteAction}
         />
       )
+    }
+  }
+
+  // A select whose options are another tool's rows, such as D3.3's
+  // milestones from D3.1, offers the project's rows, with those already
+  // taken shown but not pickable; a new record starts on the first free one.
+  // D3.3's Contractual Milestone Value follows the milestone picked.
+  const live = await liveOptionsOf(
+    getDatabase(),
+    projectId,
+    toolId,
+    view.record?.id ?? null
+  )
+
+  if (live.size > 0) {
+    const valueOf =
+      toolId === BILLING_TRIGGER
+        ? await milestoneValueOptions(
+            getDatabase(),
+            projectId,
+            live.get("milestone")?.options ?? []
+          )
+        : undefined
+
+    sheetTool = {
+      ...sheetTool,
+      fields: sheetTool.fields.map((field) => {
+        const options = live.get(field.key)
+
+        if (field.type === "select" && options) {
+          return {
+            ...field,
+            options: options.options,
+            systemOptions: options.taken.length > 0 ? options.taken : undefined,
+          }
+        }
+
+        return valueOf &&
+          field.key === "milestoneValue" &&
+          field.type === "text"
+          ? { ...field, shownFrom: { field: "milestone", values: valueOf } }
+          : field
+      }),
+    }
+
+    if (!view.record && view.can.write) {
+      // SAFETY: each value is one of its select's options, a string.
+      formValues = { ...(firstFree(live) as FormValues), ...formValues }
     }
   }
 
@@ -1148,6 +1215,12 @@ export default async function Page({
                   ].map((label) => ({ label, value: "-" })),
             }}
           >
+            <CycleList
+              toolId={view.toolId}
+              href={`/projects/${projectId}/tools/${toolId}`}
+              cycles={view.cycles}
+              current={view.cycle}
+            />
             <PdfPreviews states={previews}>{sheet}</PdfPreviews>
             {view.record && comments && (
               <RecordComments

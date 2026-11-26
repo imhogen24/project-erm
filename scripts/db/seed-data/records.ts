@@ -79,6 +79,8 @@ import {
   SIGNED,
   signatureScriptFor,
 } from "@/lib/signature-contract"
+import { companyBank } from "@/lib/company"
+import { scriptFor as transmittedScript } from "@/lib/transmitted-invoice"
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 
 import { loginFor, staffWith } from "./people"
@@ -87,6 +89,7 @@ import {
   INVOICE_APPROVED_PROJECT,
   INVOICE_DRAFTED_PROJECT,
   INVOICE_SENT_BACK_PROJECT,
+  INVOICE_SENT_PROJECT,
   PAPER_SIGNED_PROJECT,
   TRIGGER_APPROVED_PROJECT,
   TRIGGER_WAITING_PROJECT,
@@ -1432,6 +1435,31 @@ function stageD35(failed?: number) {
   })
 }
 
+// The FO sent 2.2's approved invoice to the client at D3.6 on 24 Dec 2026,
+// which started the 21-day payment clock and scheduled the reminder for
+// 7 days before the due date.
+function stageD36(name: string) {
+  return payloadOf({
+    sentTo: client.email,
+    ccBcc: loginFor("PM"),
+    subject: `IMHO GEN Invoice ${SEEDED_INVOICE} - ${name}`,
+    dateSent: "2026-12-24",
+    timeSent: "10:00",
+    paymentDueDate: "2027-01-14",
+    script: transmittedScript({
+      clientName: client.organisation,
+      milestone: "Fabrication Milestone (Design Approval)",
+      invoiceNumber: SEEDED_INVOICE,
+      amount: "GHS 43,424.00",
+      dueDate: "2027-01-14",
+      windowDays: 21,
+      bankName: companyBank.bankName,
+    }),
+    paymentClockStarted: "Yes",
+    reminderScheduled: "Yes",
+  })
+}
+
 // The running count the seeded D3.4's invoice number takes. The seed keeps
 // the count past it, so the next invoice drafted takes the number after.
 export const seededInvoice = { period: "26", value: 1 }
@@ -1480,18 +1508,39 @@ function billingCycle(name: string): SeedRecord[] {
     ]
   }
 
+  const passed = (): SeedRecord => ({
+    toolId: "D3.5",
+    cycle: 1,
+    state: "locked",
+    day: 64,
+    payload: stageD35(),
+  })
+
   if (name === INVOICE_APPROVED_PROJECT) {
+    return [approved, invoice(), passed()]
+  }
+
+  if (name === INVOICE_SENT_PROJECT) {
     return [
       approved,
       invoice(),
+      passed(),
       {
-        toolId: "D3.5",
+        toolId: "D3.6",
         cycle: 1,
         state: "locked",
-        day: 64,
-        payload: stageD35(),
+        day: 65,
+        payload: stageD36(name),
       },
     ]
+  }
+
+  if (name === testProjectName("Tier_1", "D3.6")) {
+    return [approved, invoice(), passed()]
+  }
+
+  if (name === testProjectName("Tier_3", "D3.6")) {
+    return [approved, invoice(60000), passed()]
   }
 
   if (name === INVOICE_SENT_BACK_PROJECT) {
@@ -1750,6 +1799,7 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   [INVOICE_DRAFTED_PROJECT, tier1Records(INVOICE_DRAFTED_PROJECT)],
   [INVOICE_APPROVED_PROJECT, tier1Records(INVOICE_APPROVED_PROJECT)],
   [INVOICE_SENT_BACK_PROJECT, tier1Records(INVOICE_SENT_BACK_PROJECT)],
+  [INVOICE_SENT_PROJECT, tier1Records(INVOICE_SENT_PROJECT)],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
   [`${DEV_LOCKED} (Tier 3)`, tier3Records(`${DEV_LOCKED} (Tier 3)`)],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],

@@ -444,6 +444,21 @@ const invoiceApproved = tier1Stage(
   "Mill 1 tonne of paddy an hour with a destoner and polisher."
 )
 
+// A Tier 1 project whose approved 2.2 invoice the FO sent to the client, so
+// D3.6 for 2.2 is locked with the payment clock started.
+export const INVOICE_SENT_PROJECT = `${DEV_PROJECT}D3.6 2.2 Sent (Tier 1)`
+
+const invoiceSent = tier1Stage(
+  INVOICE_SENT_PROJECT,
+  "active",
+  "2026-09-21T09:00:00Z",
+  "Accra",
+  client,
+  "everyone",
+  "Small rice mill with destoner",
+  "Mill 1 tonne of paddy an hour with a destoner and polisher."
+)
+
 // A Tier 1 project whose 2.2 invoice the PM failed at D3.5 and sent back, so
 // D3.5 is locked with the failed check and D3.4 is a draft for the FO again.
 export const INVOICE_SENT_BACK_PROJECT = `${DEV_PROJECT}D3.5 2.2 Sent Back (Tier 1)`
@@ -482,6 +497,7 @@ export const projects: readonly SeedProject[] = [
   invoiceDrafted,
   invoiceApproved,
   invoiceSentBack,
+  invoiceSent,
 ]
 
 export function seedProjectNamed(name: string) {

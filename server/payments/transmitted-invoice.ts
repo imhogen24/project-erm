@@ -313,6 +313,7 @@ function scriptWithDue(
 // it has gone, 3.0 is filled in and D3.6 locks. The record's ID is the
 // email's key, so pressing twice sends one email; when the email service
 // refuses it, what was filled in is cleared again and the FO can send again.
+// A send cut short after it was prepared is finished by pressing Send again.
 export async function sendTransmittedInvoice(
   database: Database,
   actor: string,
@@ -342,7 +343,24 @@ export async function sendTransmittedInvoice(
   const prepared = await database.transaction(async (transaction) => {
     await assertProjectActive(transaction, projectId)
 
-    const current = await unsentDraft(transaction, recordId)
+    const current = await draftToSend(transaction, recordId)
+    const values = savedOf(current.payload)
+
+    // A send already prepared, whose email went or was cut short before it
+    // was recorded, is finished with what was saved: the email's key finds
+    // the email already sent, so it never goes twice.
+    if (values.dateSent && invoice) {
+      return {
+        to: values.sentTo?.trim() ?? "",
+        cc: values.ccBcc ? [values.ccBcc] : [],
+        subject: values.subject ?? "",
+        script: values.script ?? "",
+        dateSent: values.dateSent,
+        due: values.paymentDueDate,
+        invoice,
+      }
+    }
+
     const missing = missingToSend(current.payload)
 
     if (!invoice) {
@@ -353,7 +371,6 @@ export async function sendTransmittedInvoice(
       throw new SendNotReadyError(missing)
     }
 
-    const values = savedOf(current.payload)
     const dateSent = dayOf(now)
     const due = dueDateOf(dateSent, days)
 
@@ -397,7 +414,7 @@ export async function sendTransmittedInvoice(
     recordId,
     invoice: prepared.invoice,
     prepared,
-    transport: options.transport ?? getTransport(),
+    transport: options.transport,
   })
 
   if (sent.status !== "sent" && sent.status !== "delivered") {
@@ -440,8 +457,8 @@ function timeOf(at: Date) {
   return { dateSent: iso.slice(0, 10), timeSent: iso.slice(11, 16) }
 }
 
-// A draft D3.6 not yet sent, held for this transaction.
-async function unsentDraft(
+// A draft D3.6, not yet locked by a send, held for this transaction.
+async function draftToSend(
   transaction: Transaction,
   recordId: string
 ): Promise<ToolRecord> {
@@ -453,10 +470,6 @@ async function unsentDraft(
         ? "This invoice has already been sent"
         : `A ${current.state} record cannot be sent`
     )
-  }
-
-  if (savedOf(current.payload).dateSent) {
-    throw new InvalidTransitionError("This invoice is already being sent")
   }
 
   return current
@@ -471,7 +484,7 @@ async function deliver(
     recordId: string
     invoice: Invoice
     prepared: { to: string; cc: string[]; subject: string; script: string }
-    transport: Transport
+    transport: Transport | undefined
   }
 ) {
   try {
@@ -496,7 +509,7 @@ async function deliver(
         key: `invoice_transmittal:${input.recordId}`,
         keepCopy: true,
       },
-      input.transport
+      input.transport ?? getTransport()
     )
   } catch (error) {
     return {

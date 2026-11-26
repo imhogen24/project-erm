@@ -738,9 +738,16 @@ function holdsLabels(first: Column | undefined, labels: string[]) {
 }
 
 // Filled in by the system as the record locks, in the same step: the name of
-// the person who submitted it, or the day it locked (YYYY-MM-DD). The field
-// is system-filled, so the form never writes it.
-const filledOnLock = z.enum(["submittedBy", "lockedAt"])
+// the person who submitted it, the day it locked (YYYY-MM-DD), or the time it
+// locked in Ghana time (HH:MM). The field is system-filled, so the form never
+// writes it.
+const filledOnLock = z.enum(["submittedBy", "lockedAt", "lockedTime"])
+
+const filledOnLockType = {
+  submittedBy: "text",
+  lockedAt: "date",
+  lockedTime: "time",
+} as const
 
 export type FilledOnLock = z.output<typeof filledOnLock>
 
@@ -889,10 +896,10 @@ const field = z
     (value) =>
       !("filledOnLock" in value && value.filledOnLock) ||
       (value.systemFilled === true &&
-        value.type === (value.filledOnLock === "lockedAt" ? "date" : "text")),
+        value.type === filledOnLockType[value.filledOnLock]),
     {
       message:
-        "A field filled on lock is system-filled: text for who submitted, a date for when it locked",
+        "A field filled on lock is system-filled: text for who submitted, a date for when it locked, or its time",
     }
   )
 
@@ -1000,6 +1007,18 @@ const toolDefinition = z
             when: submitWhenAnswer.optional(),
             message: z.string().min(1),
           }),
+          // The select may hold the option only while a number the record
+          // works out on submit `equals` a value, or is `otherThan` it, such
+          // as D3.7's "amount matches" Yes only with a variance of 0.00.
+          z.strictObject({
+            field: fieldKey,
+            is: z.string().min(1),
+            matches: z.union([
+              z.strictObject({ field: fieldKey, equals: z.number() }),
+              z.strictObject({ field: fieldKey, otherThan: z.number() }),
+            ]),
+            message: z.string().min(1),
+          }),
         ])
       )
       .optional(),
@@ -1009,6 +1028,19 @@ const toolDefinition = z
       .strictObject({
         field: fieldKey,
         fields: z.array(fieldKey).min(1),
+      })
+      .optional(),
+    // Submitting while the select `field` holds `is` locks the record, then
+    // reopens it straight away as the next iteration, empty but for the
+    // read-only table `keepsIn`, which gains the locked entry as its first
+    // row: each of its columns is the field of the same key. Any other
+    // answer leaves it locked. Such as D3.7's daily checks, kept until the
+    // FO picks Proceed instead of Continue waiting.
+    repeatsWhile: z
+      .strictObject({
+        field: fieldKey,
+        is: z.string().min(1),
+        keepsIn: fieldKey,
       })
       .optional(),
     // Once locked the record can never change: no change request can be
@@ -1251,6 +1283,20 @@ const toolDefinition = z
         return
       }
 
+      if ("matches" in rule) {
+        const number = value.fields.find(
+          (entry) => entry.key === rule.matches.field
+        )
+
+        if (!number || !numericTypes.includes(number.type)) {
+          context.addIssue({
+            code: "custom",
+            path: ["submitWhen", index, "matches"],
+            message: `${rule.matches.field} is not a number field of this tool`,
+          })
+        }
+      }
+
       if ("isNot" in rule) {
         if (named?.type !== "select" || !named.options.includes(rule.isNot)) {
           context.addIssue({
@@ -1263,9 +1309,11 @@ const toolDefinition = z
         return
       }
 
-      const select = rule.column
+      const column = "column" in rule ? rule.column : undefined
+
+      const select = column
         ? named?.type === "table"
-          ? named.columns.find((entry) => entry.key === rule.column)
+          ? named.columns.find((entry) => entry.key === column)
           : undefined
         : named
 
@@ -1273,8 +1321,8 @@ const toolDefinition = z
         context.addIssue({
           code: "custom",
           path: ["submitWhen", index],
-          message: rule.column
-            ? `${rule.field} is not a table with a select column ${rule.column} holding "${rule.is}"`
+          message: column
+            ? `${rule.field} is not a table with a select column ${column} holding "${rule.is}"`
             : `${rule.field} is not a select with the option "${rule.is}"`,
         })
       }
@@ -1311,6 +1359,18 @@ const toolDefinition = z
             message: `${key} is not a system-filled ${type} field of this tool`,
           })
         }
+      }
+    }
+
+    const repeat = value.repeatsWhile
+
+    if (repeat) {
+      for (const problem of repeatProblems(value, repeat)) {
+        context.addIssue({
+          code: "custom",
+          path: ["repeatsWhile"],
+          message: problem,
+        })
       }
     }
 
@@ -1360,6 +1420,36 @@ const toolDefinition = z
   })
 
 type FieldOutput = z.output<typeof field>
+
+// A tool that repeats locks on submit, on an option of one of its selects,
+// and keeps each entry in a read-only table whose columns are its fields.
+function repeatProblems(
+  value: { locksOnSubmit?: boolean; fields: FieldOutput[] },
+  repeat: { field: string; is: string; keepsIn: string }
+): string[] {
+  const select = value.fields.find((entry) => entry.key === repeat.field)
+  const table = value.fields.find((entry) => entry.key === repeat.keepsIn)
+
+  return [
+    ...(value.locksOnSubmit
+      ? []
+      : ["A tool that repeats locks on submit, so each entry is kept"]),
+    ...(select?.type === "select" && select.options.includes(repeat.is)
+      ? []
+      : [`${repeat.field} is not a select with the option "${repeat.is}"`]),
+    ...(table?.type === "table" && table.readOnly
+      ? table.columns.flatMap((column) =>
+          value.fields.some(
+            (entry) => entry.key === column.key && entry.type !== "table"
+          )
+            ? []
+            : [
+                `${repeat.keepsIn}'s column ${column.key} is not a field of this tool`,
+              ]
+        )
+      : [`${repeat.keepsIn} is not a read-only table of this tool`]),
+  ]
+}
 
 type Fills = Record<string, "system" | { field: string }>
 

@@ -11,8 +11,10 @@ import type { WorkbookMap } from "./map"
 // cycle's approved invoice, D3.5, for the PM as Head of Finance. A Fail
 // sends the D3.4 back (D3.5's `sendsBackTo`). Approving a cycle's D3.5
 // with Yes opens that cycle's transmitted invoice record, D3.6, for the
-// Finance Officer to send. D3.7 is not built yet, so sending D3.6 opens
-// nothing more for now.
+// Finance Officer to send. Sending a cycle's D3.6 opens that cycle's daily
+// bank statement log, D3.7, which the FO submits once a day, each check
+// opening the next, until the money is in. D3.8 is not built yet, so
+// proceeding from D3.7 opens nothing more for now.
 export const wb03: WorkbookMap = {
   workbook: "wb03",
   opens: { after: { all: ["D2.12"] } },
@@ -32,6 +34,7 @@ export const wb03: WorkbookMap = {
       },
       repeats: true,
     },
+    { tool: "D3.7", after: { all: ["D3.6"] }, repeats: true },
   ],
   cycles: {
     count: { tool: "D3.1", field: "paymentSchedule", less: 1 },

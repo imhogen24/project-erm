@@ -83,12 +83,15 @@ type Held = NonNullable<Awaited<ReturnType<typeof newestRecord>>>
 // already approved, with the reason the record went back; a request the
 // writer had already made is approved instead. Its signatures vouched for
 // what is being revised, so they are cleared, and the reason is kept on the
-// move back to draft, so the writer sees why.
-async function reopen(
+// move back to draft, so the writer sees why. With `next`, the draft holds
+// only that payload instead, such as D3.7's next check, which starts empty
+// (server/records/repeat).
+export async function reopen(
   transaction: Transaction,
   requester: string,
-  record: Held,
-  reason: string
+  record: Pick<Held, "id" | "projectId" | "toolId" | "payload" | "updatedAt">,
+  reason: string,
+  next?: { payload: JsonObject; note: string }
 ): Promise<void> {
   const now = new Date()
   const entry = { recordId: record.id, projectId: record.projectId }
@@ -140,7 +143,8 @@ async function reopen(
     [changeRequestChange(requestId, "requested", "approved")]
   )
 
-  const payload = withoutSignatures(record.toolId, record.payload)
+  const payload =
+    next?.payload ?? withoutSignatures(record.toolId, record.payload)
 
   await transaction
     .update(toolRecords)
@@ -159,9 +163,11 @@ async function reopen(
       ...entry,
       actor: requester,
       action: "updated",
-      reason: "Signatures cleared: sent back for revisions",
+      reason: next?.note ?? "Signatures cleared: sent back for revisions",
     },
-    payloadChanges(signaturesOf(record.toolId, record.payload), {})
+    next
+      ? payloadChanges(record.payload, next.payload)
+      : payloadChanges(signaturesOf(record.toolId, record.payload), {})
   )
 
   await writeAudit(

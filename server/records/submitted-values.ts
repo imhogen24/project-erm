@@ -8,6 +8,8 @@ import { PAYMENT_TERMS } from "@/lib/payment-terms"
 import { paymentTermsOnSubmit } from "@/server/payments/payment-terms"
 import { DRAFT_INVOICE } from "@/lib/draft-invoice"
 import { draftInvoiceOnSubmit } from "@/server/payments/draft-invoice"
+import { BANK_STATEMENT_LOG } from "@/lib/bank-statement-log"
+import { bankLogOnSubmit } from "@/server/payments/bank-statement-log"
 
 import type { FieldError } from "./validate"
 
@@ -16,7 +18,12 @@ import type { FieldError } from "./validate"
 // them; and what stops the submit while those sums are wrong.
 export async function submittedValues(
   transaction: Pick<Transaction, "select">,
-  record: { toolId: string; projectId: string; payload: JsonObject }
+  record: {
+    toolId: string
+    projectId: string
+    cycle: number
+    payload: JsonObject
+  }
 ): Promise<{ values: JsonObject; errors: FieldError[] }> {
   switch (record.toolId) {
     case COST_ESTIMATION: {
@@ -37,6 +44,15 @@ export async function submittedValues(
 
     case DRAFT_INVOICE: {
       return draftInvoiceOnSubmit(record.payload)
+    }
+
+    case BANK_STATEMENT_LOG: {
+      return bankLogOnSubmit(
+        transaction,
+        record.projectId,
+        record.cycle,
+        record.payload
+      )
     }
 
     default: {

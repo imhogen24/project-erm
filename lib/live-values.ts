@@ -1,4 +1,5 @@
 import type { JsonObject } from "@/db/schema"
+import { BANK_STATEMENT_LOG, bankLogCells } from "@/lib/bank-statement-log"
 import { COST_ESTIMATION, costCells } from "@/lib/cost-estimation"
 import { DRAFT_INVOICE, invoiceCells } from "@/lib/draft-invoice"
 import { T3_QUOTE, quoteCells } from "@/lib/project-brief"
@@ -7,7 +8,8 @@ export function hasLiveValues(toolId: string) {
   return (
     toolId === COST_ESTIMATION ||
     toolId === T3_QUOTE ||
-    toolId === DRAFT_INVOICE
+    toolId === DRAFT_INVOICE ||
+    toolId === BANK_STATEMENT_LOG
   )
 }
 
@@ -29,6 +31,10 @@ export function liveValues(
 
     case DRAFT_INVOICE: {
       return invoiceCells(values)
+    }
+
+    case BANK_STATEMENT_LOG: {
+      return bankLogCells(values)
     }
 
     default: {

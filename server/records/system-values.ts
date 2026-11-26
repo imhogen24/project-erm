@@ -51,6 +51,8 @@ import { APPROVED_INVOICE } from "@/lib/approved-invoice"
 import { approvedInvoiceValues } from "@/server/payments/approved-invoice"
 import { TRANSMITTED_INVOICE } from "@/lib/transmitted-invoice"
 import { transmittedInvoiceValues } from "@/server/payments/transmitted-invoice"
+import { BANK_STATEMENT_LOG } from "@/lib/bank-statement-log"
+import { bankLogValues } from "@/server/payments/bank-statement-log"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -256,6 +258,10 @@ async function workedOut(
 
     case TRANSMITTED_INVOICE: {
       return await transmittedInvoiceValues(database, projectId, payload, cycle)
+    }
+
+    case BANK_STATEMENT_LOG: {
+      return await bankLogValues(database, projectId, { state, payload }, cycle)
     }
 
     default: {

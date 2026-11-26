@@ -79,6 +79,7 @@ import {
   SIGNED,
   signatureScriptFor,
 } from "@/lib/signature-contract"
+import { CONTINUE_WAITING } from "@/lib/bank-statement-log"
 import { companyBank } from "@/lib/company"
 import { scriptFor as transmittedScript } from "@/lib/transmitted-invoice"
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
@@ -90,6 +91,7 @@ import {
   INVOICE_DRAFTED_PROJECT,
   INVOICE_SENT_BACK_PROJECT,
   INVOICE_SENT_PROJECT,
+  BANK_WAITING_PROJECT,
   PAPER_SIGNED_PROJECT,
   TRIGGER_APPROVED_PROJECT,
   TRIGGER_WAITING_PROJECT,
@@ -1438,7 +1440,7 @@ function stageD35(failed?: number) {
 // The FO sent 2.2's approved invoice to the client at D3.6 on 24 Dec 2026,
 // which started the 21-day payment clock and scheduled the reminder for
 // 7 days before the due date.
-function stageD36(name: string) {
+function stageD36(name: string, amount = "GHS 43,424.00") {
   return payloadOf({
     sentTo: client.email,
     ccBcc: loginFor("PM"),
@@ -1450,7 +1452,7 @@ function stageD36(name: string) {
       clientName: client.organisation,
       milestone: "Fabrication Milestone (Design Approval)",
       invoiceNumber: SEEDED_INVOICE,
-      amount: "GHS 43,424.00",
+      amount,
       dueDate: "2027-01-14",
       windowDays: 21,
       bankName: companyBank.bankName,
@@ -1458,6 +1460,18 @@ function stageD36(name: string) {
     paymentClockStarted: "Yes",
     reminderScheduled: "Yes",
   })
+}
+
+// Two days the FO checked the bank after sending 2.2's invoice and found no
+// payment, newest first, as D3.7 keeps them under Earlier Checks.
+function earlierBankChecks(): JsonObject[] {
+  return ["2026-12-29", "2026-12-28"].map((day) => ({
+    dateOfCheck: day,
+    timeOfCheck: "09:15",
+    checkingOfficer: staffWith("FO").name,
+    fundsDeposited: NO,
+    actionRequired: CONTINUE_WAITING,
+  }))
 }
 
 // The running count the seeded D3.4's invoice number takes. The seed keeps
@@ -1533,6 +1547,38 @@ function billingCycle(name: string): SeedRecord[] {
         payload: stageD36(name),
       },
     ]
+  }
+
+  const transmitted = (amount?: string): SeedRecord => ({
+    toolId: "D3.6",
+    cycle: 1,
+    state: "locked",
+    day: 65,
+    payload: stageD36(name, amount),
+  })
+
+  if (name === BANK_WAITING_PROJECT) {
+    return [
+      approved,
+      invoice(),
+      passed(),
+      transmitted(),
+      {
+        toolId: "D3.7",
+        cycle: 1,
+        state: "draft",
+        day: 67,
+        payload: { earlierChecks: earlierBankChecks() },
+      },
+    ]
+  }
+
+  if (name === testProjectName("Tier_1", "D3.7")) {
+    return [approved, invoice(), passed(), transmitted()]
+  }
+
+  if (name === testProjectName("Tier_3", "D3.7")) {
+    return [approved, invoice(60000), passed(), transmitted("GHS 27,600.00")]
   }
 
   if (name === testProjectName("Tier_1", "D3.6")) {
@@ -1800,6 +1846,7 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   [INVOICE_APPROVED_PROJECT, tier1Records(INVOICE_APPROVED_PROJECT)],
   [INVOICE_SENT_BACK_PROJECT, tier1Records(INVOICE_SENT_BACK_PROJECT)],
   [INVOICE_SENT_PROJECT, tier1Records(INVOICE_SENT_PROJECT)],
+  [BANK_WAITING_PROJECT, tier1Records(BANK_WAITING_PROJECT)],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
   [`${DEV_LOCKED} (Tier 3)`, tier3Records(`${DEV_LOCKED} (Tier 3)`)],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],

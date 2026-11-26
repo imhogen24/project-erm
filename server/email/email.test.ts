@@ -84,6 +84,11 @@ const sampleData: EmailDataByKind = {
     amount: "GHS 43,424.00",
     dueDate: "09/12/2026",
   },
+  bank_check_reminder: {
+    projectName: "Boiler",
+    milestone: "2.2 Fabrication Milestone (Design Approval)",
+    link: "https://erm.example.com/b",
+  },
   follow_up_sent: { projectName: "Boiler", link: "https://erm.example.com/f" },
   sent_back: {
     recordTitle: "D2.8 Negotiation Meeting Invite on Boiler",
@@ -352,11 +357,12 @@ describe("sendEmail", () => {
 })
 
 describe("templates", () => {
-  it("covers the seven staff kinds and the nine client kinds", () => {
+  it("covers the eight staff kinds and the nine client kinds", () => {
     expect([...emailKinds].sort()).toEqual([
       "acknowledgement",
       "approval_needed",
       "assigned",
+      "bank_check_reminder",
       "calendar_invite",
       "contract_transmittal",
       "follow_up_sent",

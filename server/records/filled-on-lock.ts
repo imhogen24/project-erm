@@ -6,6 +6,7 @@ import { columnSum } from "@/lib/computed-columns"
 import type { Transaction } from "@/server/audit/audit"
 import { tools } from "@/server/tools/registry"
 
+import { shownFor } from "./signatures"
 import type { FieldError } from "./validate"
 
 // The day in Ghana, which keeps UTC, as YYYY-MM-DD.
@@ -13,8 +14,14 @@ function dayOf(when: Date) {
   return when.toISOString().slice(0, 10)
 }
 
+// The time in Ghana, which keeps UTC, as HH:MM.
+function timeOf(when: Date) {
+  return when.toISOString().slice(11, 16)
+}
+
 // What the tool's fields filled on lock hold as the record locks now: the
-// name of the person who submitted it, or the day. Empty for a tool with none.
+// name of the person who submitted it, the day, or the time. Empty for a tool
+// with none.
 export async function lockValues(
   transaction: Pick<Transaction, "select">,
   record: { toolId: string; submittedBy: string | null },
@@ -42,7 +49,11 @@ export async function lockValues(
   return Object.fromEntries(
     fields.map(({ key, fill }) => [
       key,
-      fill === "lockedAt" ? dayOf(now) : (person?.name ?? ""),
+      fill === "lockedAt"
+        ? dayOf(now)
+        : fill === "lockedTime"
+          ? timeOf(now)
+          : (person?.name ?? ""),
     ])
   )
 }
@@ -51,19 +62,46 @@ export async function lockValues(
 // rows, which never meets the rule.
 const tableRows = z.array(z.record(z.string(), z.unknown())).catch([])
 
+type Matches =
+  { field: string; equals: number } | { field: string; otherThan: number }
+
+// Whether the number the record holds in `matches.field` agrees with the
+// rule: equal to `equals`, or a number other than `otherThan`.
+function agrees(payload: JsonObject, matches: Matches) {
+  const value = z
+    .number()
+    .optional()
+    .catch(undefined)
+    .parse(payload[matches.field])
+
+  if (value === undefined) {
+    return false
+  }
+
+  return "equals" in matches
+    ? value === matches.equals
+    : value !== matches.otherThan
+}
+
 // Whether the record holds the option a submit rule needs: in the select
 // field itself, or, for a table, in that column of every one of its rows; or,
 // with `isNot`, any answer other than that option; or, with `some`, that
-// option in at least one row.
+// option in at least one row; or, with `matches`, anything but that option
+// unless the worked-out number agrees.
 function meets(
   payload: JsonObject,
   rule:
     | { field: string; column?: string; is: string; orNoRows?: true }
     | { field: string; isNot: string }
-    | { field: string; column: string; some: string },
+    | { field: string; column: string; some: string }
+    | { field: string; is: string; matches: Matches },
   skipped: ReadonlySet<number> = new Set()
 ) {
   const value = payload[rule.field]
+
+  if ("matches" in rule) {
+    return value !== rule.is || agrees(payload, rule.matches)
+  }
 
   if ("some" in rule) {
     return tableRows
@@ -124,9 +162,22 @@ export function unmetSubmitRules(
       : []
   )
 
+  // A field shown only while another answer holds, and not shown now, such
+  // as D3.7's amount check when no funds came in, is not asked for, so a rule
+  // on it does not apply.
+  const hidden = (key: string | undefined) => {
+    const field = tool?.fields.find((entry) => entry.key === key)
+
+    return field !== undefined && !shownFor(field, payload)
+  }
+
   const rules = (tool?.submitWhen ?? []).flatMap((rule) => {
     const column = "column" in rule ? rule.column : undefined
     const when = "when" in rule ? rule.when : undefined
+
+    if (hidden(rule.field) || hidden(when?.field)) {
+      return []
+    }
 
     // A rule that applies only under another answer, such as every check
     // Pass when D3.5 answers Yes, says so on that answer.

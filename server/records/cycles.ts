@@ -57,7 +57,11 @@ export async function cyclesOf(
     state: record.state === "void" ? "notStarted" : record.state,
   }))
 
-  return status.missing.length === 0
+  // The next cycle may have been started since the status was read, so it
+  // is added only while nothing holds it yet.
+  const started = entries.some((entry) => entry.cycle >= status.cycle)
+
+  return status.missing.length === 0 && !started
     ? [
         ...entries,
         { cycle: status.cycle, label: "Next milestone", state: "notStarted" },

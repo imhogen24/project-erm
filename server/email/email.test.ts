@@ -98,6 +98,11 @@ const sampleData: EmailDataByKind = {
     link: "https://erm.example.com/b",
   },
   follow_up_sent: { projectName: "Boiler", link: "https://erm.example.com/f" },
+  lock_announced: {
+    recordTitle: "D3.10 Phase Unblock Notice on Boiler",
+    message: "Phase 3: Prototype Fabrication may start",
+    link: "https://erm.example.com/l",
+  },
   sent_back: {
     recordTitle: "D2.8 Negotiation Meeting Invite on Boiler",
     reason: "D2.9 sent it back: Deadlock - Escalate",
@@ -365,7 +370,7 @@ describe("sendEmail", () => {
 })
 
 describe("templates", () => {
-  it("covers the eight staff kinds and the ten client kinds", () => {
+  it("covers the nine staff kinds and the ten client kinds", () => {
     expect([...emailKinds].sort()).toEqual([
       "acknowledgement",
       "approval_needed",
@@ -376,6 +381,7 @@ describe("templates", () => {
       "follow_up_sent",
       "invoice_reminder",
       "invoice_transmittal",
+      "lock_announced",
       "meeting_times",
       "new_request",
       "receipt_transmittal",

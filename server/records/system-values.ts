@@ -57,6 +57,8 @@ import { RECONCILED_PAYMENT } from "@/lib/reconciled-payment"
 import { reconciledValues } from "@/server/payments/reconciled-payment"
 import { PAYMENT_RECEIPT } from "@/lib/payment-receipt"
 import { paymentReceiptValues } from "@/server/payments/payment-receipt"
+import { UNBLOCK_NOTICE } from "@/lib/unblock-notice"
+import { unblockValues } from "@/server/payments/unblock-notice"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -279,6 +281,15 @@ async function workedOut(
 
     case PAYMENT_RECEIPT: {
       return await paymentReceiptValues(database, projectId, payload, cycle)
+    }
+
+    case UNBLOCK_NOTICE: {
+      return await unblockValues(
+        database,
+        projectId,
+        record ? { id: record.id, payload } : null,
+        cycle
+      )
     }
 
     default: {

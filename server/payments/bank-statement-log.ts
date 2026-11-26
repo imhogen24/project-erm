@@ -16,10 +16,8 @@ import {
   REMINDER_HOUR,
   accountChecked,
   isWorkingDay,
-  varianceOf,
 } from "@/lib/bank-statement-log"
 import { BILLING_TRIGGER } from "@/lib/billing-trigger"
-import { DRAFT_INVOICE } from "@/lib/draft-invoice"
 import type { Fills } from "@/lib/placeholders"
 import { TRANSMITTED_INVOICE } from "@/lib/transmitted-invoice"
 import type { Transaction } from "@/server/audit/audit"
@@ -29,15 +27,13 @@ import { getTransport, sendEmail, type Transport } from "@/server/email/email"
 import { toolPath } from "@/server/notifications/raise"
 import { notify } from "@/server/notifications/notifications"
 import { cycleRecord } from "@/server/payments/approved-invoice"
+import { expectedOf } from "@/server/payments/bank-check-submit"
 import { cyclePayload } from "@/server/payments/draft-invoice"
 import type { RecordState } from "@/db/schema"
-import type { FieldError } from "@/server/records/validate"
 
 type Reader = Pick<Transaction, "select">
 
 const text = z.string().catch("")
-
-const amount = z.number().optional().catch(undefined)
 
 const signed = z
   .object({
@@ -48,15 +44,6 @@ const signed = z
 // The day in Ghana, which keeps UTC, as YYYY-MM-DD.
 function dayOf(at: Date) {
   return at.toISOString().slice(0, 10)
-}
-
-// The cycle's TOTAL AMOUNT DUE, from its locked D3.4: the amount D3.6 sent.
-async function expectedOf(database: Reader, projectId: string, cycle: number) {
-  const draft = await cycleRecord(database, projectId, DRAFT_INVOICE, cycle)
-
-  return draft?.state === "locked"
-    ? amount.parse(draft.payload.totalAmountDue)
-    : undefined
 }
 
 // What the system fills into D3.7, read live: the request ID always; while
@@ -99,32 +86,6 @@ export async function bankLogFills(
   const { clientName } = await namesOf(database, projectId)
 
   return { "Client Name": clientName }
-}
-
-// What submitting a check stores: the account checked, the invoice's total
-// and the variance, so the locked check keeps what the FO saw, and the
-// submit rules read the variance (3.0 Yes only at 0.00).
-export async function bankLogOnSubmit(
-  database: Reader,
-  projectId: string,
-  cycle: number,
-  payload: JsonObject
-): Promise<{ values: JsonObject; errors: FieldError[] }> {
-  const expected = await expectedOf(database, projectId, cycle)
-
-  const variance = varianceOf({
-    ...payload,
-    ...(expected !== undefined && { expectedAmount: expected }),
-  })
-
-  return {
-    values: {
-      accountChecked: accountChecked(),
-      ...(expected !== undefined && { expectedAmount: expected }),
-      ...(variance !== undefined && { variance }),
-    },
-    errors: [],
-  }
 }
 
 function linkOf(path: string) {

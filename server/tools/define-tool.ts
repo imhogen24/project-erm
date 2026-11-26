@@ -671,10 +671,20 @@ const toolDefinition = z
         z.union([z.literal("system"), z.strictObject({ field: fieldKey })])
       )
       .optional(),
-    // System-filled fields that must hold a value before the record can be
-    // submitted, each with what to say until then, such as an invite sent.
+    // Fields that must hold a value before the record can be submitted, each
+    // with what to say until then, such as an invite sent or a signature
+    // given; `unless` a select holds an option, such as D2.12's audit
+    // certificate, which a contract signed on paper has none of.
     submitNeeds: z
-      .array(z.strictObject({ field: fieldKey, message: z.string().min(1) }))
+      .array(
+        z.strictObject({
+          field: fieldKey,
+          message: z.string().min(1),
+          unless: z
+            .strictObject({ field: fieldKey, is: z.string().min(1) })
+            .optional(),
+        })
+      )
       .optional(),
     // Select fields that must hold one option before the record can be
     // submitted, each with what to say until then, such as "Yes" to Ready
@@ -779,6 +789,25 @@ const toolDefinition = z
     for (const problem of answerConditionProblems(value.fields)) {
       context.addIssue({ code: "custom", path: ["fields"], message: problem })
     }
+
+    value.submitNeeds?.forEach((need, index) => {
+      const unless = need.unless
+
+      const select = unless
+        ? value.fields.find((entry) => entry.key === unless.field)
+        : undefined
+
+      if (
+        unless &&
+        !(select?.type === "select" && select.options.includes(unless.is))
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["submitNeeds", index, "unless"],
+          message: `${unless.field} is not a select with the option "${unless.is}"`,
+        })
+      }
+    })
 
     for (const problem of fillProblems(value.fields, value.fills ?? {})) {
       context.addIssue({ code: "custom", path: ["fills"], message: problem })

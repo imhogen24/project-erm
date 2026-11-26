@@ -474,7 +474,11 @@ async function move(
 
     const unmet = [
       ...(tools.getTool(current.toolId)?.submitNeeds ?? []).filter(
-        (need) => !current.payload[need.field]
+        (need) =>
+          !current.payload[need.field] &&
+          !(
+            need.unless && current.payload[need.unless.field] === need.unless.is
+          )
       ),
       ...unmetSubmitRules(current.toolId, current.payload),
     ]

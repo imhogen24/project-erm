@@ -215,6 +215,8 @@ describe("opening a file uploaded in the ERM", () => {
     uploadthing: {
       signedLink: async (key) => `https://signed.example/${key}?expires=300`,
       read: async (key) => Buffer.from(key),
+      write: async (name) => `made-${name}`,
+      remove: async () => undefined,
     },
   }
 

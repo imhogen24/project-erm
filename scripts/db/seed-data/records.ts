@@ -53,11 +53,20 @@ import {
 import { YES, inviteScriptFor } from "@/lib/negotiation-invite"
 import { TERMS_AGREED } from "@/lib/negotiation-notes"
 import { UPDATED, finalTasks } from "@/lib/final-contract"
+import {
+  CLIENT_ROLE,
+  COURIER,
+  DIGITAL,
+  IMHOGEN_ROLE,
+  SIGNED,
+  signatureScriptFor,
+} from "@/lib/signature-contract"
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 
 import { loginFor, staffWith } from "./people"
 import {
   ACCEPTED_AS_IS_PROJECT,
+  PAPER_SIGNED_PROJECT,
   approverOf,
   client,
   currentToolFor,
@@ -1111,8 +1120,65 @@ function stageD210(finalValue: string) {
   })
 }
 
+// The final contract sent and signed, which locked D2.11 and opened D2.12:
+// in the app, the client then the HE; on paper, both dates recorded by the
+// CA. The seed's contract is a web link, not a PDF uploaded in the ERM, so
+// D2.12 starts without the files the app makes from one.
+function stageD211(method: string) {
+  const sent = {
+    routingMethod: method,
+    sentTo: `${client.name} ${client.email}`,
+    imhogenSignatory: `${staffWith("HE").name}, Head of Engineering`,
+    autoReminder: "Yes",
+    finalContract: "https://utfs.io/f/imho-final-contract-client-test-ltd",
+    script: signatureScriptFor(
+      client.organisation,
+      staffWith("CA").name,
+      method
+    ),
+    dateDispatched: "2026-12-04",
+    dispatchedAt: "2026-12-04T09:00:00.000Z",
+    dispatchConfirmed: "2026-12-04T09:00:05.000Z",
+  }
+
+  if (method === COURIER) {
+    return payloadOf({
+      ...sent,
+      signatories: [
+        {
+          signatory: "[Client Name]",
+          role: CLIENT_ROLE,
+          dateSigned: "2026-12-07",
+          status: SIGNED,
+        },
+        {
+          signatory: "[IMHOGEN Rep]",
+          role: IMHOGEN_ROLE,
+          dateSigned: "2026-12-08",
+          status: SIGNED,
+        },
+      ],
+    })
+  }
+
+  return payloadOf({
+    ...sent,
+    clientViewedAt: "2026-12-04T15:00:00.000Z",
+    clientSignature: {
+      signedBy: "role:Client",
+      signedAt: "2026-12-05T10:00:00.000Z",
+    },
+    heViewedAt: "2026-12-05T12:00:00.000Z",
+    heSignature: {
+      signedBy: "role:HE",
+      signedAt: "2026-12-06T09:00:00.000Z",
+    },
+  })
+}
+
 // D2.8 and D2.9 follow D2.7 only where the client asked to negotiate, and
-// D2.10 there after D2.9.
+// D2.10 there after D2.9, then D2.11: on paper on the project signed that
+// way, in the app on the others.
 function negotiated(
   name: string,
   day: number,
@@ -1128,6 +1194,12 @@ function negotiated(
           state: "locked",
           day: day + 4,
           payload: stageD210(finalValue),
+        },
+        {
+          toolId: "D2.11",
+          state: "locked",
+          day: day + 7,
+          payload: stageD211(name === PAPER_SIGNED_PROJECT ? COURIER : DIGITAL),
         },
       ]
 }
@@ -1317,6 +1389,7 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   [NEEDS_TEAM, [{ ...unlocked(NEEDS_TEAM)[0]!, state: "locked" }]],
   [`${DEV_LOCKED} (Tier 1)`, tier1Records(`${DEV_LOCKED} (Tier 1)`)],
   [ACCEPTED_AS_IS_PROJECT, tier1Records(ACCEPTED_AS_IS_PROJECT)],
+  [PAPER_SIGNED_PROJECT, tier1Records(PAPER_SIGNED_PROJECT)],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
   [`${DEV_LOCKED} (Tier 3)`, tier3Records(`${DEV_LOCKED} (Tier 3)`)],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],

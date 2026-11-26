@@ -29,6 +29,8 @@ const fakeStorage: Storages = {
   uploadthing: {
     signedLink: async (key) => `https://signed.example/${key}`,
     read: async (key) => Buffer.from(key),
+    write: async (name) => `made-${name}`,
+    remove: async () => undefined,
   },
 }
 

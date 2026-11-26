@@ -444,6 +444,21 @@ const invoiceApproved = tier1Stage(
   "Mill 1 tonne of paddy an hour with a destoner and polisher."
 )
 
+// A Tier 1 project whose 2.2 invoice the PM failed at D3.5 and sent back, so
+// D3.5 is locked with the failed check and D3.4 is a draft for the FO again.
+export const INVOICE_SENT_BACK_PROJECT = `${DEV_PROJECT}D3.5 2.2 Sent Back (Tier 1)`
+
+const invoiceSentBack = tier1Stage(
+  INVOICE_SENT_BACK_PROJECT,
+  "active",
+  "2026-09-20T09:00:00Z",
+  "Accra",
+  client,
+  "everyone",
+  "Small rice mill with destoner",
+  "Mill 1 tonne of paddy an hour with a destoner and polisher."
+)
+
 const triggerApproved = tier1Stage(
   TRIGGER_APPROVED_PROJECT,
   "active",
@@ -466,6 +481,7 @@ export const projects: readonly SeedProject[] = [
   triggerApproved,
   invoiceDrafted,
   invoiceApproved,
+  invoiceSentBack,
 ]
 
 export function seedProjectNamed(name: string) {

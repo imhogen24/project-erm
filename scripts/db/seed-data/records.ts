@@ -4,7 +4,10 @@ import type { JsonObject } from "@/db/schema"
 
 import {
   DONE as INVOICE_DONE,
+  FAIL,
+  NO,
   PASS,
+  PENDING,
   YES as INVOICE_YES,
   conversionTasks,
   qualityChecks,
@@ -83,6 +86,7 @@ import {
   ACCEPTED_AS_IS_PROJECT,
   INVOICE_APPROVED_PROJECT,
   INVOICE_DRAFTED_PROJECT,
+  INVOICE_SENT_BACK_PROJECT,
   PAPER_SIGNED_PROJECT,
   TRIGGER_APPROVED_PROJECT,
   TRIGGER_WAITING_PROJECT,
@@ -121,6 +125,8 @@ export type SeedRecord = {
   // Days after the request arrived that the record was started.
   day: number
   payload: JsonObject
+  // Why an approver sent a draft back, shown to the writer on the tool page.
+  sentBackReason?: string
 }
 
 export type SeedChangeRequest = {
@@ -1359,12 +1365,13 @@ function stageD33(
 }
 
 // The FO's invoice for 2.2, at D3.1's 40% of the project total plus 15% VAT,
-// signed and submitted, which locked it with its sums stored.
-function stageD34(total = 94400) {
+// signed and submitted, which locked it with its sums stored. Once the PM
+// sends it back, the same draft is open again with the FO's signature cleared.
+function stageD34(total = 94400, reopened = false) {
   const milestone = total * 0.4
   const vat = milestone * 0.15
 
-  return payloadOf({
+  const payload: JsonObject = {
     invoiceNumber: SEEDED_INVOICE,
     billingAddress: `${client.organisation}
 Accra`,
@@ -1381,31 +1388,43 @@ Accra`,
     vat,
     totalAmountDue: milestone + vat,
     draftComplete: "Yes",
-    foSignature: {
-      signedBy: "role:FO",
-      signedAt: "2026-12-22T09:00:00.000Z",
-    },
     generatedBy: staffWith("FO").name,
     dateDrafted: "2026-12-22",
-  })
+  }
+
+  if (!reopened) {
+    payload.foSignature = {
+      signedBy: "role:FO",
+      signedAt: "2026-12-22T09:00:00.000Z",
+    }
+  }
+
+  return payloadOf(payload)
 }
 
-// The PM, as Head of Finance, approved 2.2's invoice at D3.5: every check
-// Passed, both conversion tasks Done, and Yes with their signature, which
-// locks it and opens the approved invoice PDF for that milestone.
-function stageD35() {
+// The check the PM failed on the sent-back project, and the reason the app
+// writes on the draft when a review sends work back (server/records/send-back).
+const SENT_BACK_NOTE = "VAT should be 15% of the subtotal"
+
+const SENT_BACK_REASON = `D3.5 sent it back: ${NO}. 2.2: ${SENT_BACK_NOTE}`
+
+// The PM, as Head of Finance, checked 2.2's invoice at D3.5. With every check
+// Passed, Yes and their signature lock it and open the approved invoice PDF.
+// With one check Failed, No and their signature lock the review and send D3.4
+// back to the FO; the conversion tasks stay Pending until an invoice is passed.
+function stageD35(failed?: number) {
   return payloadOf({
-    checklist: qualityChecks.map(({ point }) => ({
+    checklist: qualityChecks.map(({ point }, index) => ({
       point,
-      status: PASS,
-      comments: "",
+      status: index === failed ? FAIL : PASS,
+      comments: index === failed ? SENT_BACK_NOTE : "",
     })),
     conversion: conversionTasks.map(({ task, assignee }) => ({
       task,
       assignee,
-      status: INVOICE_DONE,
+      status: failed === undefined ? INVOICE_DONE : PENDING,
     })),
-    authorized: INVOICE_YES,
+    authorized: failed === undefined ? INVOICE_YES : NO,
     pmSignature: {
       signedBy: "role:PM",
       signedAt: "2026-12-24T09:00:00.000Z",
@@ -1427,8 +1446,9 @@ const SEEDED_INVOICE = formatNumber(
 // approved by them, which opens D3.4 for 2.2, as on the D3.4 test
 // projects; on the invoiced project, D3.4 for 2.2 locked and D3.3 for 2.3
 // approved, which opens D3.4 for 2.3; on the approved project, D3.5 for
-// 2.2 locked too, and on the D3.5 test projects, D3.4 locked for the
-// Head of Finance to approve.
+// 2.2 locked too, on the sent-back project that D3.5 failed and D3.4 is a
+// draft for the FO again, and on the D3.5 test projects, D3.4 locked for
+// the Head of Finance to approve.
 function billingCycle(name: string): SeedRecord[] {
   const approved: SeedRecord = {
     toolId: "D3.3",
@@ -1470,6 +1490,27 @@ function billingCycle(name: string): SeedRecord[] {
         state: "locked",
         day: 64,
         payload: stageD35(),
+      },
+    ]
+  }
+
+  if (name === INVOICE_SENT_BACK_PROJECT) {
+    return [
+      approved,
+      {
+        toolId: "D3.5",
+        cycle: 1,
+        state: "locked",
+        day: 64,
+        payload: stageD35(1),
+      },
+      {
+        toolId: "D3.4",
+        cycle: 1,
+        state: "draft",
+        day: 62,
+        payload: stageD34(94400, true),
+        sentBackReason: SENT_BACK_REASON,
       },
     ]
   }
@@ -1708,6 +1749,7 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   [TRIGGER_APPROVED_PROJECT, tier1Records(TRIGGER_APPROVED_PROJECT)],
   [INVOICE_DRAFTED_PROJECT, tier1Records(INVOICE_DRAFTED_PROJECT)],
   [INVOICE_APPROVED_PROJECT, tier1Records(INVOICE_APPROVED_PROJECT)],
+  [INVOICE_SENT_BACK_PROJECT, tier1Records(INVOICE_SENT_BACK_PROJECT)],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
   [`${DEV_LOCKED} (Tier 3)`, tier3Records(`${DEV_LOCKED} (Tier 3)`)],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],

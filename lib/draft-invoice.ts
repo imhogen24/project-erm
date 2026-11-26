@@ -21,7 +21,7 @@ export const INVOICE_SEQUENCE = "invoice"
 // The first percentage a term names, such as 15 in "All prices are exclusive
 // of 15% VAT". Undefined for a term with none.
 export function percentIn(term: string): number | undefined {
-  const match = /(\d+(?:\.\d+)?)\s*%/.exec(term)
+  const match = /(\d*\.?\d+)\s*%/.exec(term)
 
   return match ? Number(match[1]) : undefined
 }

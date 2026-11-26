@@ -231,6 +231,7 @@ describe("sums", () => {
   it("reads the first percentage and the payment window from D3.1's terms", () => {
     expect(percentIn("All prices are exclusive of 15% VAT")).toBe(15)
     expect(percentIn("VAT 12.5% applies")).toBe(12.5)
+    expect(percentIn("A levy of .5% applies")).toBe(0.5)
     expect(percentIn("No VAT applies")).toBeUndefined()
     expect(paymentDueText("Net 21 Days from Invoice Issuance")).toBe(
       "21 Days from Issuance"

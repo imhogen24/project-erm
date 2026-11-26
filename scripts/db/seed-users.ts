@@ -637,6 +637,20 @@ export async function seed(url: string): Promise<SeedUser[]> {
       }
     }
 
+    // The running invoice count goes past the seeded invoice, so the next
+    // one drafted takes the number after it. Done before any record goes in,
+    // so a seed that fails part way never leaves a seeded invoice whose
+    // number the count could give again.
+    await database
+      .insert(counters)
+      .values({ name: "invoice", ...seededInvoice })
+      .onConflictDoUpdate({
+        target: [counters.name, counters.period],
+        set: {
+          value: sql`greatest(${counters.value}, ${seededInvoice.value})`,
+        },
+      })
+
     for (const project of seedProjects) {
       const projectId = await findOrCreateProject(database, project)
 
@@ -686,18 +700,6 @@ export async function seed(url: string): Promise<SeedUser[]> {
 
     // After every project, because the notifications point at their records.
     await addNotifications(database, teams)
-
-    // The running invoice count goes past the seeded invoice, so the next
-    // one drafted takes the number after it.
-    await database
-      .insert(counters)
-      .values({ name: "invoice", ...seededInvoice })
-      .onConflictDoUpdate({
-        target: [counters.name, counters.period],
-        set: {
-          value: sql`greatest(${counters.value}, ${seededInvoice.value})`,
-        },
-      })
 
     return created
   } finally {

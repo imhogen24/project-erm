@@ -513,6 +513,21 @@ const invoiceSentBack = tier1Stage(
   "Mill 1 tonne of paddy an hour with a destoner and polisher."
 )
 
+// A Tier 1 project whose 2.2 payment the PM approved at D3.8 and whose
+// receipt the FO sent at D3.9, so D3.9 for 2.2 is locked as IMHO-REC26-001.
+export const RECEIPT_SENT_PROJECT = `${DEV_PROJECT}D3.9 2.2 Sent (Tier 1)`
+
+const receiptSent = tier1Stage(
+  RECEIPT_SENT_PROJECT,
+  "active",
+  "2026-09-25T09:00:00Z",
+  "Accra",
+  client,
+  "everyone",
+  "Small rice mill with destoner",
+  "Mill 1 tonne of paddy an hour with a destoner and polisher."
+)
+
 const triggerApproved = tier1Stage(
   TRIGGER_APPROVED_PROJECT,
   "active",
@@ -540,6 +555,7 @@ export const projects: readonly SeedProject[] = [
   bankWaiting,
   bankFee!,
   halfPaid!,
+  receiptSent,
 ]
 
 export function seedProjectNamed(name: string) {

@@ -1,4 +1,5 @@
 import { PROCEED } from "@/lib/bank-statement-log"
+import { YES } from "@/lib/reconciled-payment"
 
 import type { WorkbookMap } from "./map"
 
@@ -17,8 +18,10 @@ import type { WorkbookMap } from "./map"
 // bank statement log, D3.7, which the FO submits once a day, each check
 // opening the next, until the money is in. A cycle's D3.7 submitted with
 // Proceed opens that cycle's reconciled payment log, D3.8, for the FO. A
-// shortfall sends the D3.7 back (D3.8's `sendsBackTo`) as a new check. D3.9
-// is not built yet, so approving D3.8 opens nothing more for now.
+// shortfall sends the D3.7 back (D3.8's `sendsBackTo`) as a new check.
+// Approving a cycle's D3.8 with the funds fully accounted for opens that
+// cycle's payment receipt, D3.9, for the FO to send. D3.10 is not built
+// yet, so sending D3.9 opens nothing more for now.
 export const wb03: WorkbookMap = {
   workbook: "wb03",
   opens: { after: { all: ["D2.12"] } },
@@ -47,6 +50,17 @@ export const wb03: WorkbookMap = {
         field: "actionRequired",
         oneOf: [PROCEED],
         note: "This tool opens once D3.7 is submitted with Proceed.",
+      },
+      repeats: true,
+    },
+    {
+      tool: "D3.9",
+      after: { all: ["D3.8"] },
+      when: {
+        tool: "D3.8",
+        field: "fundsAccounted",
+        oneOf: [YES],
+        note: "This tool opens once D3.8 reconciles the payment.",
       },
       repeats: true,
     },

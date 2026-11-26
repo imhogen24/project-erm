@@ -47,6 +47,8 @@ export type EmailDataByKind = {
   transmittal_follow_up: TransmittalFollowUpData
   // D3.6's invoice to the client: the same shape as D2.7's contract email.
   invoice_transmittal: ContractTransmittalData
+  // D3.9's receipt to the client: the same shape again.
+  receipt_transmittal: ContractTransmittalData
   invoice_reminder: InvoiceReminderData
   bank_check_reminder: BankCheckReminderData
   follow_up_sent: FollowUpSentData
@@ -74,6 +76,7 @@ const templates: Templates = {
   contract_transmittal: contractTransmittal,
   transmittal_follow_up: transmittalFollowUp,
   invoice_transmittal: contractTransmittal,
+  receipt_transmittal: contractTransmittal,
   invoice_reminder: invoiceReminder,
   bank_check_reminder: bankCheckReminder,
   follow_up_sent: followUpSent,

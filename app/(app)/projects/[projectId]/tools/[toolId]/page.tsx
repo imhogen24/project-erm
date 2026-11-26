@@ -157,6 +157,11 @@ import { shownInvoice } from "@/server/payments/approved-invoice"
 import { TRANSMITTED_INVOICE } from "@/lib/transmitted-invoice"
 import { fillText } from "@/lib/placeholders"
 import { transmittedInvoiceStart } from "@/server/payments/transmitted-invoice"
+import { PAYMENT_RECEIPT, receiptPath } from "@/lib/payment-receipt"
+import {
+  paymentReceiptStart,
+  shownReceipt,
+} from "@/server/payments/payment-receipt"
 import { systemValuesOf } from "@/server/records/system-values"
 import { listComments, type Comment } from "@/server/comments/comments"
 import { UnknownToolError } from "@/server/records/validate"
@@ -180,6 +185,7 @@ import {
   sendSignatureRequestAction,
   sendTransmittalAction,
   sendTransmittedInvoiceAction,
+  sendPaymentReceiptAction,
   sendNegotiationInviteAction,
   retryAcknowledgementAction,
 } from "./actions"
@@ -396,6 +402,13 @@ async function startOf(
       return start as FormValues
     }
 
+    case PAYMENT_RECEIPT: {
+      const start = await paymentReceiptStart(getDatabase(), projectId, cycle)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
     default: {
       return {}
     }
@@ -580,6 +593,7 @@ export default async function Page({
           | typeof sendNegotiationInviteAction
           | typeof sendSignatureRequestAction
           | typeof sendTransmittedInvoiceAction
+          | typeof sendPaymentReceiptAction
         label?: string
         done?: string
       }
@@ -716,6 +730,23 @@ export default async function Page({
       run: sendTransmittedInvoiceAction,
       label: "Send invoice",
       done: "Invoice sent.",
+    }
+  }
+
+  // D3.9: the FO sends the payment receipt while D3.9 is a draft, which
+  // locks it. With no record yet, Send saves the starting values first,
+  // which gives the receipt its number.
+  if (
+    toolId === PAYMENT_RECEIPT &&
+    view.project.status === "active" &&
+    view.can.write &&
+    (view.state === "draft" || view.state === "notStarted")
+  ) {
+    send = {
+      missing: [],
+      run: sendPaymentReceiptAction,
+      label: "Send receipt",
+      done: "Receipt sent.",
     }
   }
 
@@ -1217,6 +1248,17 @@ export default async function Page({
         )
       : null
 
+  // D3.9, once sent: the receipt the client received, to view or save.
+  const receipt =
+    toolId === PAYMENT_RECEIPT && view.state === "locked"
+      ? await shownReceipt(
+          getDatabase(),
+          session.user.id,
+          projectId,
+          view.cycle
+        )
+      : null
+
   // What each PDF preview field shows this person: the PDF, or why not.
   // A tool run once per milestone shows its own cycle's records, such as
   // D3.4's D3.3.
@@ -1318,6 +1360,14 @@ export default async function Page({
                 fileName={invoice.fileName}
                 href={invoicePath(projectId, view.cycle)}
                 downloadHref={invoicePath(projectId, view.cycle, true)}
+              />
+            )}
+            {receipt && (
+              <InvoiceFile
+                label="Payment receipt"
+                fileName={receipt.fileName}
+                href={receiptPath(projectId, view.cycle)}
+                downloadHref={receiptPath(projectId, view.cycle, true)}
               />
             )}
             <PdfPreviews states={previews}>{sheet}</PdfPreviews>

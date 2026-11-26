@@ -77,6 +77,14 @@ const sampleData: EmailDataByKind = {
       content: "JVBERi0=",
     },
   },
+  receipt_transmittal: {
+    subject: "IMHO GEN Receipt IMHO-REC26-002 - Boiler",
+    body: "Dear Asante Mills\n\nPlease find your official payment receipt attached.",
+    attachment: {
+      filename: "IMHO_REC26_002_AsanteMills.pdf",
+      content: "JVBERi0=",
+    },
+  },
   invoice_reminder: {
     subject: "IMHO GEN Invoice IMHO-INV26-002 - Boiler",
     clientName: "Asante Mills",
@@ -357,7 +365,7 @@ describe("sendEmail", () => {
 })
 
 describe("templates", () => {
-  it("covers the eight staff kinds and the nine client kinds", () => {
+  it("covers the eight staff kinds and the ten client kinds", () => {
     expect([...emailKinds].sort()).toEqual([
       "acknowledgement",
       "approval_needed",
@@ -370,6 +378,7 @@ describe("templates", () => {
       "invoice_transmittal",
       "meeting_times",
       "new_request",
+      "receipt_transmittal",
       "sent_back",
       "signature_needed",
       "signature_overdue",
@@ -390,6 +399,7 @@ describe("templates", () => {
         each !== "transmittal_follow_up" &&
         each !== "signature_reminder" &&
         each !== "invoice_transmittal" &&
+        each !== "receipt_transmittal" &&
         each !== "invoice_reminder"
     )) {
       const email = renderEmail(kind, sampleData[kind])
@@ -423,6 +433,21 @@ describe("the invoice to the client", () => {
     )
     expect(reminder.text).toContain("PLACEHOLDER")
     expect(reminder.text).toContain("09/12/2026")
+  })
+})
+
+describe("the receipt to the client", () => {
+  it("sends the FO's own message with the receipt PDF", () => {
+    const email = renderEmail(
+      "receipt_transmittal",
+      sampleData.receipt_transmittal
+    )
+
+    expect(email.subject).toBe(sampleData.receipt_transmittal.subject)
+    expect(email.text).toBe(sampleData.receipt_transmittal.body)
+    expect(email.attachments?.[0]?.filename).toBe(
+      "IMHO_REC26_002_AsanteMills.pdf"
+    )
   })
 })
 

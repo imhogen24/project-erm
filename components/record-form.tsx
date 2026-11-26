@@ -233,11 +233,25 @@ export function RecordForm({
             send ? (
               <div className="flex flex-col gap-2 @md:items-end">
                 <ActionButton
-                  disabled={pending || send.missing.length > 0 || !recordId}
+                  disabled={
+                    pending ||
+                    send.missing.length > 0 ||
+                    (!recordId && !canWrite)
+                  }
                   onClick={() => {
-                    if (recordId) {
-                      run(() => send.run({ recordId }), send.done ?? "Sent.")
-                    }
+                    // A writer's tool with no record yet, such as D3.6, is
+                    // saved as it is on screen first, which makes the draft.
+                    typed.current ??= sendable(tool, values)
+                    run(
+                      async (record) =>
+                        record.recordId
+                          ? send.run({ recordId: record.recordId })
+                          : {
+                              status: "error",
+                              message: "Reload and try again.",
+                            },
+                      send.done ?? "Sent."
+                    )
                   }}
                 >
                   {send.label ?? "Send"}

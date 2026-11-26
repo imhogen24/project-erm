@@ -7,8 +7,13 @@ import { z } from "zod"
 
 import type { Database } from "@/db"
 import { files, projects, toolRecords } from "@/db/schema"
+import { invoicePath } from "@/lib/approved-invoice"
 import { fileIdOf } from "@/lib/file-reference"
 import { storages, type Storages } from "@/server/files/storage"
+import {
+  InvoiceNotFoundError,
+  approvedInvoice,
+} from "@/server/payments/approved-invoice"
 import { rowsNotNeeded } from "@/server/records/not-needed"
 import {
   previewCellKey,
@@ -195,6 +200,10 @@ export async function previewStates(
       }
     }
 
+    if ("approvedInvoice" in source) {
+      return await invoiceState(name)
+    }
+
     if ("upload" in source) {
       const shown = track ? shownTool(source.upload.tool, track) : undefined
 
@@ -237,13 +246,43 @@ export async function previewStates(
     return { status: "ready", name, href: toolPdfHref(projectId, shown, at) }
   }
 
+  // The approved invoice of the cycle shown, named by its file name, for
+  // someone who may read it.
+  async function invoiceState(name: string): Promise<PreviewState> {
+    if (cycle === undefined) {
+      return { status: "notStarted", name }
+    }
+
+    try {
+      const invoice = await approvedInvoice(database, actor, projectId, cycle)
+
+      return {
+        status: "ready",
+        name: invoice.fileName,
+        href: invoicePath(projectId, cycle),
+      }
+    } catch (error) {
+      if (error instanceof PermissionDeniedError) {
+        return { status: "noAccess", name }
+      }
+
+      if (error instanceof InvoiceNotFoundError) {
+        return { status: "notStarted", name }
+      }
+
+      throw error
+    }
+  }
+
   function once(source: PreviewSource) {
     const key =
       "file" in source
         ? `file:${source.file}`
         : "upload" in source
           ? `upload:${source.upload.tool}:${source.upload.field}`
-          : source.tool
+          : "approvedInvoice" in source
+            ? "approvedInvoice"
+            : source.tool
 
     const known = looked.get(key) ?? stateOf(source)
 
@@ -377,6 +416,10 @@ export function brokenPreviewSources(all: ToolDefinition[]) {
 
       if ("tool" in source) {
         return ids.has(source.tool) ? [] : [`${where}: no tool ${source.tool}`]
+      }
+
+      if ("approvedInvoice" in source) {
+        return []
       }
 
       if ("upload" in source) {

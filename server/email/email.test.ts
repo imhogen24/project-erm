@@ -69,6 +69,21 @@ const sampleData: EmailDataByKind = {
     subject: "IMHO GEN Engineering Services Agreement - Boiler",
     clientName: "Ama",
   },
+  invoice_transmittal: {
+    subject: "IMHO GEN Invoice IMHO-INV26-002 - Boiler",
+    body: "Dear Asante Mills\n\nPlease find attached Invoice IMHO-INV26-002.",
+    attachment: {
+      filename: "IMHO_INV26_002_AsanteMills.pdf",
+      content: "JVBERi0=",
+    },
+  },
+  invoice_reminder: {
+    subject: "IMHO GEN Invoice IMHO-INV26-002 - Boiler",
+    clientName: "Asante Mills",
+    invoiceNumber: "IMHO-INV26-002",
+    amount: "GHS 43,424.00",
+    dueDate: "09/12/2026",
+  },
   follow_up_sent: { projectName: "Boiler", link: "https://erm.example.com/f" },
   sent_back: {
     recordTitle: "D2.8 Negotiation Meeting Invite on Boiler",

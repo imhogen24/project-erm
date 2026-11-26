@@ -350,7 +350,7 @@ export function sectionsOf(
       kind: "rows",
       title: part.title ?? (index === firstRun ? "Details" : "More details"),
       rows: part.fields.map((field) => ({
-        label: field.label,
+        label: fillText(field.label, fills),
         value: textOf(field, values[field.key], names, track),
       })),
     }

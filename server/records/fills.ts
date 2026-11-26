@@ -14,6 +14,8 @@ import { contractFills } from "@/server/contract/standard-contract"
 import { tools } from "@/server/tools/registry"
 import { APPROVED_INVOICE } from "@/lib/approved-invoice"
 import { approvedInvoiceFills } from "@/server/payments/approved-invoice"
+import { TRANSMITTED_INVOICE } from "@/lib/transmitted-invoice"
+import { transmittedInvoiceFills } from "@/server/payments/transmitted-invoice"
 
 // What the system fills into the [bracketed] names of a tool's fixed text,
 // read live from the project, in the payment milestone `cycle` shown for a
@@ -27,6 +29,10 @@ export async function systemFillsOf(
   switch (toolId) {
     case APPROVED_INVOICE: {
       return await approvedInvoiceFills(database, projectId, cycle)
+    }
+
+    case TRANSMITTED_INVOICE: {
+      return await transmittedInvoiceFills(database, projectId)
     }
 
     case STANDARD_CONTRACT: {

@@ -149,6 +149,9 @@ import { CycleList } from "@/components/cycle-list"
 import { InvoiceFile } from "@/components/invoice-file"
 import { APPROVED_INVOICE, invoicePath } from "@/lib/approved-invoice"
 import { shownInvoice } from "@/server/payments/approved-invoice"
+import { TRANSMITTED_INVOICE } from "@/lib/transmitted-invoice"
+import { fillText } from "@/lib/placeholders"
+import { transmittedInvoiceStart } from "@/server/payments/transmitted-invoice"
 import { systemValuesOf } from "@/server/records/system-values"
 import { listComments, type Comment } from "@/server/comments/comments"
 import { UnknownToolError } from "@/server/records/validate"
@@ -171,6 +174,7 @@ import {
   sendAcknowledgementAction,
   sendSignatureRequestAction,
   sendTransmittalAction,
+  sendTransmittedInvoiceAction,
   sendNegotiationInviteAction,
   retryAcknowledgementAction,
 } from "./actions"
@@ -376,6 +380,17 @@ async function startOf(
       return start as FormValues
     }
 
+    case TRANSMITTED_INVOICE: {
+      const start = await transmittedInvoiceStart(
+        getDatabase(),
+        projectId,
+        cycle
+      )
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
     default: {
       return {}
     }
@@ -559,6 +574,7 @@ export default async function Page({
           | typeof sendTransmittalAction
           | typeof sendNegotiationInviteAction
           | typeof sendSignatureRequestAction
+          | typeof sendTransmittedInvoiceAction
         label?: string
         done?: string
       }
@@ -677,6 +693,24 @@ export default async function Page({
       ),
       run: sendSignatureRequestAction,
       done: "Sent for signature.",
+    }
+  }
+
+  // D3.6: the FO sends the approved invoice while D3.6 is a draft, which
+  // locks it. With no record yet, Send saves the starting values first.
+  // Sent To and the message change as the FO types, so the server says
+  // what still stops it when Send is pressed.
+  if (
+    toolId === TRANSMITTED_INVOICE &&
+    view.project.status === "active" &&
+    view.can.write &&
+    (view.state === "draft" || view.state === "notStarted")
+  ) {
+    send = {
+      missing: [],
+      run: sendTransmittedInvoiceAction,
+      label: "Send invoice",
+      done: "Invoice sent.",
     }
   }
 
@@ -898,6 +932,16 @@ export default async function Page({
     toolId,
     view.cycle
   )
+
+  // A label the system fills in, such as D3.6's "(Day 1 of [N])".
+  sheetTool = {
+    ...sheetTool,
+    fields: sheetTool.fields.map((field) =>
+      field.label.includes("[")
+        ? { ...field, label: fillText(field.label, fills) }
+        : field
+    ),
+  }
 
   // A tool the client reads only once locked tells them so until then.
   const notSharedYet =

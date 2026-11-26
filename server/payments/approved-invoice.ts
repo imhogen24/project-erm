@@ -8,6 +8,7 @@ import { ghs } from "@/lib/cost-estimation"
 import { DRAFT_INVOICE, paymentDueText } from "@/lib/draft-invoice"
 import { daysIn } from "@/lib/follow-dates"
 import type { Fills } from "@/lib/placeholders"
+import { TRANSMITTED_INVOICE } from "@/lib/transmitted-invoice"
 import type { Transaction } from "@/server/audit/audit"
 import { baselineValues } from "@/server/contract/baseline"
 import { clientAndValue, holderOf } from "@/server/handoff/handoff"
@@ -36,7 +37,7 @@ function dayOf(when: Date) {
 }
 
 // A tool's record in one payment milestone cycle, never a voided one.
-async function cycleRecord(
+export async function cycleRecord(
   database: Reader,
   projectId: string,
   toolId: string,
@@ -171,7 +172,36 @@ export type Invoice = {
 
 export class InvoiceNotFoundError extends Error {}
 
-// The approved invoice of a milestone cycle, for someone who may read D3.5:
+// Whether this person may read the cycle's approved invoice: anyone who may
+// read D3.5, and, once the cycle's D3.6 has sent it, anyone who may read
+// D3.6, such as the client.
+async function mayReadInvoice(
+  database: Reader,
+  personId: string,
+  projectId: string,
+  cycle: number
+) {
+  if (await can(database, personId, projectId, APPROVED_INVOICE, "read")) {
+    return true
+  }
+
+  if (
+    !(await can(database, personId, projectId, TRANSMITTED_INVOICE, "read"))
+  ) {
+    return false
+  }
+
+  const sent = await cycleRecord(
+    database,
+    projectId,
+    TRANSMITTED_INVOICE,
+    cycle
+  )
+
+  return sent?.state === "locked"
+}
+
+// The approved invoice of a milestone cycle, for someone who may read it:
 // made from the cycle's locked D3.4 once its D3.5 is locked with Yes, each
 // time it is asked for, so it can never differ from what was approved. The
 // invoice date is the day D3.5 was approved.
@@ -181,7 +211,7 @@ export async function approvedInvoice(
   projectId: string,
   cycle: number
 ): Promise<Invoice> {
-  if (!(await can(database, personId, projectId, APPROVED_INVOICE, "read"))) {
+  if (!(await mayReadInvoice(database, personId, projectId, cycle))) {
     throw new PermissionDeniedError(
       `Not allowed to read ${APPROVED_INVOICE} on this project`
     )

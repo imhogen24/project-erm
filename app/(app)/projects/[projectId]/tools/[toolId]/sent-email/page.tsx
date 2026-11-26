@@ -28,14 +28,26 @@ const sentOn = new Intl.DateTimeFormat("en-GB", {
 })
 
 // The copy of the email a tool sent, such as D2.7's draft contract to the
-// client, exactly as it went out. Whoever may read the tool may read it.
+// client, exactly as it went out. Whoever may read the tool may read it. A
+// tool run once per payment milestone, such as D3.6, names the cycle, as
+// ?cycle=2; otherwise the newest record's email shows.
 export default async function Page({
   params,
+  searchParams,
 }: {
   params: Promise<{ projectId: string; toolId: string }>
+  searchParams: Promise<{ cycle?: string | string[] }>
 }) {
   const { projectId, toolId } = await params
   const session = await requireSession()
+
+  const cycle = z.coerce
+    .number()
+    .int()
+    .min(1)
+    .optional()
+    .catch(undefined)
+    .parse((await searchParams).cycle)
 
   if (!z.uuid().safeParse(projectId).success) {
     notFound()
@@ -50,7 +62,8 @@ export default async function Page({
       and(
         eq(toolRecords.projectId, projectId),
         eq(toolRecords.toolId, toolId),
-        ne(toolRecords.state, "void")
+        ne(toolRecords.state, "void"),
+        ...(cycle === undefined ? [] : [eq(toolRecords.cycle, cycle)])
       )
     )
     .orderBy(desc(toolRecords.cycle))
@@ -88,7 +101,7 @@ export default async function Page({
   }
 
   const canInvite = await isItAdmin(session.user.id)
-  const back = `/projects/${projectId}/tools/${toolId}`
+  const back = `/projects/${projectId}/tools/${toolId}${cycle === undefined ? "" : `?cycle=${cycle}`}`
 
   const facts = [
     { label: "To", value: email.to },

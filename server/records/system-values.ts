@@ -49,6 +49,8 @@ import { DRAFT_INVOICE } from "@/lib/draft-invoice"
 import { draftInvoiceValues } from "@/server/payments/draft-invoice"
 import { APPROVED_INVOICE } from "@/lib/approved-invoice"
 import { approvedInvoiceValues } from "@/server/payments/approved-invoice"
+import { TRANSMITTED_INVOICE } from "@/lib/transmitted-invoice"
+import { transmittedInvoiceValues } from "@/server/payments/transmitted-invoice"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -250,6 +252,10 @@ async function workedOut(
         record ? { payload } : null,
         cycle
       )
+    }
+
+    case TRANSMITTED_INVOICE: {
+      return await transmittedInvoiceValues(database, projectId, payload, cycle)
     }
 
     default: {

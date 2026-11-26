@@ -547,7 +547,9 @@ describe("payment milestone cycles", () => {
     expect(await open("D3.")).toEqual(["D3.4@1"])
     await expect(
       createRecord(database, actor, { projectId, toolId: "D3.5" })
-    ).rejects.toThrow(/D3\.1 sets 1 payment milestone, so there is no cycle 2/)
+    ).rejects.toThrow(
+      /D3\.1 leaves 1 payment milestone to bill, so there is no cycle 2/
+    )
   })
 
   it("counts the milestones from the rows of a table", async () => {

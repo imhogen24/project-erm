@@ -522,9 +522,10 @@ export function ToolForm({
     const isBox =
       field.type === "boolean" && !field.inherited && !field.systemFilled
 
-    // A field for an uploaded PDF, such as D2.11's final contract, takes an
-    // upload, as a file cell in a table does. Any other link is typed.
-    if (field.type === "fileLink" && field.pdfOnly) {
+    // A field for an uploaded PDF, such as D2.11's final contract, or a PDF
+    // or image, such as D3.3's proof of completion, takes an upload, as a
+    // file cell in a table does. Any other link is typed.
+    if (field.type === "fileLink" && (field.pdfOnly || field.pdfOrImage)) {
       return (
         <Controller
           name={field.key}
@@ -535,7 +536,9 @@ export function ToolForm({
                 id={field.key}
                 value={z.string().catch("").parse(control.value)}
                 recordId={recordId}
-                accept="application/pdf"
+                accept={
+                  field.pdfOnly ? "application/pdf" : "application/pdf,image/*"
+                }
                 invalid={Boolean(message)}
                 describedBy={message ? errorId : undefined}
                 onChange={control.onChange}

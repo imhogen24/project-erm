@@ -48,11 +48,12 @@ export function projectNav(overview: ProjectOverview): ProjectNav {
       label: treeLabel(id),
       tools: overview.tools
         .filter((tool) => tool.workbook === id)
-        .map(({ toolId, name, state, waitingOn }) => ({
+        .map(({ toolId, name, state, waitingOn, cycles }) => ({
           toolId,
           name,
           state,
           open: waitingOn === null,
+          ...(cycles.length > 0 && { cycles }),
         })),
     })),
   }

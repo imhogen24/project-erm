@@ -59,7 +59,7 @@ Agents: **Client · OM** (Onboarding Manager) **· PM** (Project Manager) **· L
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | D3.1 | Payment Terms Extract | RO | - | RA | - | - | - | RW | RO | - | - | - | - | - | - | - | - | RO | - | |
 | D3.2 | System Payment Record | - | - | RO | - | - | - | RW | - | - | - | - | - | - | - | - | - | RO | - | |
-| D3.3 | Milestone Billing Trigger | - | - | RW | - | - | - | RO | - | RO | - | - | - | - | - | - | - | RO | - | |
+| D3.3 | Milestone Billing Trigger | - | - | RW | - | - | - | RA | - | RO | - | - | - | - | - | - | - | RO | - | |
 | D3.4 | Draft Invoice | - | - | RO | - | - | - | RW | - | - | - | - | - | - | - | - | - | RO | - | |
 | D3.5 | Approved Invoice | - | - | RA | - | - | - | RW | - | RO | - | - | - | - | - | - | - | RO | - | |
 | D3.6 | Transmitted Invoice Record | RO | - | RO | - | - | - | RW | - | - | - | - | - | - | - | - | - | RO | - | |

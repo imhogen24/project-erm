@@ -218,6 +218,13 @@
       "when": 1795699966402,
       "tag": "0030_bank_check_due",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1795717178383,
+      "tag": "0031_lock_announced",
+      "breakpoints": true
     }
   ]
 }

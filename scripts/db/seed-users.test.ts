@@ -415,6 +415,8 @@ describe("what the PMs see", () => {
       { email: loginFor("FO"), kind: "approval_needed" },
       { email: loginFor("PM"), kind: "approval_needed" },
       { email: loginFor("PM"), kind: "approval_needed" },
+      // D3.10 for 2.2, submitted and waiting for the PM's signature.
+      { email: loginFor("PM"), kind: "approval_needed" },
       { email: loginFor("PM"), kind: "change_waiting" },
     ])
   })

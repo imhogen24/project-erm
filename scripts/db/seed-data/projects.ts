@@ -528,6 +528,29 @@ const receiptSent = tier1Stage(
   "Mill 1 tonne of paddy an hour with a destoner and polisher."
 )
 
+// Tier 1 projects past 2.2's receipt: on the first the FO submitted D3.10
+// for 2.2, waiting for the PM's signature; on the second the PM signed it,
+// which approved and locked it.
+export const UNBLOCK_SUBMITTED_PROJECT = `${DEV_PROJECT}D3.10 2.2 Submitted (Tier 1)`
+
+export const UNBLOCK_APPROVED_PROJECT = `${DEV_PROJECT}D3.10 2.2 Approved (Tier 1)`
+
+const [unblockSubmitted, unblockApproved] = [
+  UNBLOCK_SUBMITTED_PROJECT,
+  UNBLOCK_APPROVED_PROJECT,
+].map((name, index) =>
+  tier1Stage(
+    name,
+    "active",
+    `2026-09-2${6 + index}T09:00:00Z`,
+    "Accra",
+    client,
+    "everyone",
+    "Small rice mill with destoner",
+    "Mill 1 tonne of paddy an hour with a destoner and polisher."
+  )
+)
+
 const triggerApproved = tier1Stage(
   TRIGGER_APPROVED_PROJECT,
   "active",
@@ -556,6 +579,8 @@ export const projects: readonly SeedProject[] = [
   bankFee!,
   halfPaid!,
   receiptSent,
+  unblockSubmitted!,
+  unblockApproved!,
 ]
 
 export function seedProjectNamed(name: string) {

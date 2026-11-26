@@ -162,6 +162,8 @@ import {
   paymentReceiptStart,
   shownReceipt,
 } from "@/server/payments/payment-receipt"
+import { UNBLOCK_NOTICE } from "@/lib/unblock-notice"
+import { unblockStart } from "@/server/payments/unblock-notice"
 import { systemValuesOf } from "@/server/records/system-values"
 import { listComments, type Comment } from "@/server/comments/comments"
 import { UnknownToolError } from "@/server/records/validate"
@@ -404,6 +406,13 @@ async function startOf(
 
     case PAYMENT_RECEIPT: {
       const start = await paymentReceiptStart(getDatabase(), projectId, cycle)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
+    case UNBLOCK_NOTICE: {
+      const start = await unblockStart(getDatabase(), projectId, cycle)
 
       // SAFETY: the start is built for this tool's own fields.
       return start as FormValues

@@ -39,9 +39,12 @@ function bell(page: Page) {
   return page.locator('[data-testid="notification-bell"]:visible')
 }
 
+// The box empties only once the comment is saved; until then its own text
+// would pass for the comment.
 async function writeComment(page: Page, body: string) {
   await comments(page).getByLabel("Add a comment").fill(body)
   await comments(page).getByRole("button", { name: "Comment" }).click()
+  await expect(comments(page).getByLabel("Add a comment")).toHaveValue("")
   await expect(comments(page).getByText(body)).toBeVisible()
 }
 
@@ -83,6 +86,12 @@ test("the PM comments on a submitted D1.2, the OM is told and replies, and the P
     .getByRole("textbox", { name: /^Reply to / })
     .fill("Yes, the client confirmed it.")
   await comments(omPage).getByRole("button", { name: "Send reply" }).click()
+
+  // The reply box closes only once the reply is saved, so the page is not
+  // closed while it is still being sent.
+  await expect(
+    comments(omPage).getByRole("textbox", { name: /^Reply to / })
+  ).toHaveCount(0)
   await expect(
     comments(omPage).getByText("Yes, the client confirmed it.")
   ).toBeVisible()

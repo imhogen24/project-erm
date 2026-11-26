@@ -10,6 +10,7 @@ import {
   type RawCell,
   type RawRow,
 } from "@/components/field-control"
+import { EmptyState } from "@/components/empty-state"
 import { FileCell } from "@/components/file-cell"
 import { PdfPreviewField, usePreviews } from "@/components/pdf-preview-field"
 import { Button } from "@/components/ui/button"
@@ -215,13 +216,16 @@ export function TableEditor({
         </div>
         {rows.length === 0 && (
           <div role="row">
-            <div
-              role="cell"
-              className="px-4 py-4 text-sm text-muted-foreground"
-            >
-              {shownOnly
-                ? "None."
-                : "Nothing here yet. Press Add row to start the list."}
+            <div role="cell" className="px-4 py-4">
+              {shownOnly ? (
+                <EmptyState size="inline" title="None" />
+              ) : (
+                <EmptyState
+                  size="inline"
+                  title="Nothing here yet"
+                  description="Press Add row to start the list."
+                />
+              )}
             </div>
           </div>
         )}

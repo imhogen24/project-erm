@@ -24,3 +24,17 @@ export const roleInfo = new Map<string, { title: string; group: string }>([
   ],
   ["MKT", { title: "Marketing Hub", group: "Finance, IT and marketing" }],
 ])
+
+// Roles named in a sentence, such as "Finance Officer" or "Project Manager or
+// Finance Officer". The client is "client", as the screens call them.
+export function roleList(roles: readonly string[]) {
+  const titles = roles.map((role) =>
+    role === "Client" ? "client" : (roleInfo.get(role)?.title ?? role)
+  )
+
+  if (titles.length < 2) {
+    return titles.join("")
+  }
+
+  return `${titles.slice(0, -1).join(", ")} or ${titles.at(-1)}`
+}

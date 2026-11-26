@@ -1,5 +1,6 @@
 import { LockSimpleIcon } from "@phosphor-icons/react/ssr"
 import Link from "next/link"
+import { Fragment } from "react"
 import { notFound } from "next/navigation"
 import { z } from "zod"
 
@@ -31,6 +32,27 @@ import { projectNav, workbookNumber, workbookTitle } from "./sidebar"
 
 // Every box is a whole number of grid squares and shares its lines.
 const square = "grid-square relative isolate bg-background"
+
+// The most tile columns the overview can have: one per 384px of width.
+const MOST_COLUMNS = 10
+
+// The empty squares that fill a workbook's last row, so the next workbook
+// starts on a fresh row with no gap. How many are needed depends on how many
+// columns fit, which only the browser knows, so each filler lists the column
+// counts it shows at (see .filler-square in app/globals.css).
+function fillers(tiles: number) {
+  const shown: number[][] = []
+
+  for (let columns = 2; columns <= MOST_COLUMNS; columns++) {
+    const empty = (columns - (tiles % columns)) % columns
+
+    for (let index = 0; index < empty; index++) {
+      shown[index] = [...(shown[index] ?? []), columns]
+    }
+  }
+
+  return shown
+}
 
 export default async function Page({
   params,
@@ -102,7 +124,15 @@ export default async function Page({
     <>
       <MobileBar className="xl:hidden" canInvite={canInvite} />
       <div className="drafting-grid min-h-svh py-[var(--inset)]">
-        <AppSidebar name={session.user.name} project={projectNav(overview)} />
+        <AppSidebar
+          name={session.user.name}
+          project={projectNav(overview)}
+          projectActions={
+            clientRequest && (
+              <ClientRequestPanel request={clientRequest} inSidebar />
+            )
+          }
+        />
         <main className="table-wide table-home">
           <BackLink href="/" className="mb-3 border-y bg-background xl:hidden">
             Your projects
@@ -121,6 +151,7 @@ export default async function Page({
               clientRequest && <ClientRequestPanel request={clientRequest} />
             }
             flush
+            namedBySidebar
           >
             {controls.waiting.length > 0 && (
               <div className={`${square} mt-[var(--cell)] px-6 py-6`}>
@@ -153,100 +184,127 @@ export default async function Page({
                 </TableBox>
               </div>
             )}
-            {[...workbooks].map(([workbook, tools]) => (
-              <section
-                key={workbook}
-                id={workbook}
-                className="mt-[var(--cell)] scroll-mt-[var(--cell)] first-of-type:mt-0"
-              >
-                <div className="grid grid-cols-[repeat(auto-fit,minmax(calc(var(--cell)*4),1fr))]">
+            {[...workbooks].map(([workbook, tools], position) => (
+              <Fragment key={workbook}>
+                {position > 0 && (
+                  // A hatched strip, half a square tall, sets one workbook
+                  // apart from the next.
                   <div
-                    className={`${square} flex h-[calc(var(--cell)*2)] items-end justify-between px-6 py-6 md:flex-col md:items-start`}
+                    aria-hidden
+                    className={`${square} workbook-break h-[calc(var(--cell)/2)]`}
                   >
                     <Grain />
-                    <h2 className="text-lg font-medium">
-                      {workbookTitle(workbook)}
-                    </h2>
-                    <span
-                      aria-hidden
-                      className="outline-numeral font-mono text-6xl leading-none font-bold md:text-8xl"
-                    >
-                      {workbookNumber(workbook)}
-                    </span>
                   </div>
-                  <ul className="contents">
-                    {tools.map((tool) =>
-                      tool.waitingOn !== null ? (
-                        // Not open until the tool before it is locked: no
-                        // link, and it says what it waits on.
-                        <li
-                          key={tool.toolId}
-                          data-shut="true"
-                          className="tool-square grid-square relative isolate flex h-[calc(var(--cell)*2)] min-w-0 flex-col justify-between gap-4 p-6"
-                        >
-                          <Grain />
-                          <div className="flex min-w-0 flex-col gap-1 px-1">
-                            <span className="text-sm font-semibold tabular-nums">
-                              {tool.toolId}
-                            </span>
-                            <span className="text-sm leading-snug break-words">
-                              {tool.name}
-                            </span>
-                          </div>
-                          <p className="shut-note px-1">
-                            <LockSimpleIcon aria-hidden className="size-3.5" />
-                            {tool.note ??
-                              (tool.waitingOn.length > 0
-                                ? `Opens after ${tool.waitingOn.join(", ")}`
-                                : "Not open yet")}
-                          </p>
-                        </li>
-                      ) : (
-                        <li
-                          key={tool.toolId}
-                          data-state={tool.state}
-                          className="tool-square link-tile grid-square relative isolate flex h-[calc(var(--cell)*2)] min-w-0 flex-col justify-between gap-4 p-6"
-                        >
-                          <Grain />
-                          <Link
-                            href={`/projects/${projectId}/tools/${tool.toolId}`}
-                            className="stretched-link flex min-w-0 flex-col gap-1 px-1"
+                )}
+                <section
+                  id={workbook}
+                  className="workbook-grid scroll-mt-[var(--cell)]"
+                >
+                  <div className="grid grid-cols-[repeat(auto-fill,minmax(calc(var(--cell)*4),1fr))]">
+                    <div
+                      className={`${square} flex h-[calc(var(--cell)*2)] items-end justify-between px-6 py-6 md:flex-col md:items-start`}
+                    >
+                      <Grain />
+                      <h2 className="text-lg font-medium">
+                        {workbookTitle(workbook)}
+                      </h2>
+                      <span
+                        aria-hidden
+                        className="outline-numeral font-mono text-6xl leading-none font-bold md:text-8xl"
+                      >
+                        {workbookNumber(workbook)}
+                      </span>
+                    </div>
+                    <ul className="contents">
+                      {tools.map((tool) =>
+                        tool.waitingOn !== null ? (
+                          // Not open until the tool before it is locked: no
+                          // link, and it says what it waits on.
+                          <li
+                            key={tool.toolId}
+                            data-shut="true"
+                            className="tool-square grid-square relative isolate flex h-[calc(var(--cell)*2)] min-w-0 flex-col justify-between gap-4 p-6"
                           >
-                            <span className="text-sm font-semibold tabular-nums">
-                              {tool.toolId}
-                            </span>
-                            <span className="text-sm leading-snug break-words">
-                              {tool.name}
-                            </span>
-                          </Link>
-                          <div className="above-stretch-row flex flex-wrap items-center justify-between gap-2 px-1">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <StateBadge state={tool.state} />
-                              {tool.toolId === ACKNOWLEDGEMENT && delivery && (
-                                <DeliveryChip status={delivery} />
+                            <Grain />
+                            <div className="flex min-w-0 flex-col gap-1 px-1">
+                              <span className="text-sm font-semibold tabular-nums">
+                                {tool.toolId}
+                              </span>
+                              <span className="text-sm leading-snug break-words">
+                                {tool.name}
+                              </span>
+                            </div>
+                            <p className="shut-note px-1">
+                              <LockSimpleIcon
+                                aria-hidden
+                                className="size-3.5"
+                              />
+                              {tool.note ??
+                                (tool.waitingOn.length > 0
+                                  ? `Opens after ${tool.waitingOn.join(", ")}`
+                                  : "Not open yet")}
+                            </p>
+                          </li>
+                        ) : (
+                          <li
+                            key={tool.toolId}
+                            data-state={tool.state}
+                            className="tool-square link-tile grid-square relative isolate flex h-[calc(var(--cell)*2)] min-w-0 flex-col justify-between gap-4 p-6"
+                          >
+                            <Grain />
+                            <Link
+                              href={`/projects/${projectId}/tools/${tool.toolId}`}
+                              className="stretched-link flex min-w-0 flex-col gap-1 px-1"
+                            >
+                              <span className="text-sm font-semibold tabular-nums">
+                                {tool.toolId}
+                              </span>
+                              <span className="text-sm leading-snug break-words">
+                                {tool.name}
+                              </span>
+                            </Link>
+                            <div className="above-stretch-row flex flex-wrap items-center justify-between gap-2 px-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <StateBadge state={tool.state} />
+                                {tool.toolId === ACKNOWLEDGEMENT &&
+                                  delivery && (
+                                    <DeliveryChip status={delivery} />
+                                  )}
+                              </div>
+                              {controlOf.get(tool.toolId)?.request && (
+                                <span data-open="true" className="status-chip">
+                                  {controlOf.get(tool.toolId)?.request
+                                    ?.status === "approved"
+                                    ? "Change approved"
+                                    : "Change requested"}
+                                </span>
+                              )}
+                              {controlOf.get(tool.toolId)?.canRequest && (
+                                <RequestChange
+                                  recordId={
+                                    controlOf.get(tool.toolId)!.recordId
+                                  }
+                                  request={requestChangeAction}
+                                />
                               )}
                             </div>
-                            {controlOf.get(tool.toolId)?.request && (
-                              <span data-open="true" className="status-chip">
-                                {controlOf.get(tool.toolId)?.request?.status ===
-                                "approved"
-                                  ? "Change approved"
-                                  : "Change requested"}
-                              </span>
-                            )}
-                            {controlOf.get(tool.toolId)?.canRequest && (
-                              <RequestChange
-                                recordId={controlOf.get(tool.toolId)!.recordId}
-                                request={requestChangeAction}
-                              />
-                            )}
-                          </div>
+                          </li>
+                        )
+                      )}
+                      {fillers(tools.length + 1).map((columns, index) => (
+                        <li
+                          key={`filler-${index}`}
+                          aria-hidden
+                          data-cols={columns.join(" ")}
+                          className={`${square} filler-square h-[calc(var(--cell)*2)]`}
+                        >
+                          <Grain />
                         </li>
-                      )
-                    )}
-                  </ul>
-                </div>
-              </section>
+                      ))}
+                    </ul>
+                  </div>
+                </section>
+              </Fragment>
             ))}
           </PageSheet>
         </main>

@@ -4,6 +4,7 @@ import { useEffect, useState, useSyncExternalStore, useTransition } from "react"
 import { CaretRightIcon, CheckIcon } from "@phosphor-icons/react"
 import { useRouter } from "next/navigation"
 
+import { EmptyState } from "@/components/empty-state"
 import { TableBox } from "@/components/sheet-table"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -145,9 +146,11 @@ export function RecordComments({ recordId, threads, add, resolve }: Props) {
     <TableBox title="Comments">
       <div className="flex flex-col gap-6 px-4 py-4">
         {threads.length === 0 && (
-          <p className="text-sm text-muted-foreground">
-            No comments yet. Write the first one below.
-          </p>
+          <EmptyState
+            size="inline"
+            title="No comments yet"
+            description="Write the first one below."
+          />
         )}
         {open.length > 0 && (
           <ul className="flex flex-col gap-6">

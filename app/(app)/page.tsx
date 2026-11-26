@@ -2,31 +2,61 @@ import { ArrowUpRightIcon, PlusIcon } from "@phosphor-icons/react/ssr"
 import Link from "next/link"
 
 import { AppSidebar } from "@/components/app-sidebar"
+import { EmptyState } from "@/components/empty-state"
 import { Grain } from "@/components/grain"
 import { MobileBar } from "@/components/mobile-bar"
 import { PageSheet } from "@/components/page-sheet"
+import { ProjectFilters } from "@/components/project-filters"
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle } from "@/components/ui/card"
+import {
+  filterProjects,
+  filtersQuery,
+  readFilters,
+} from "@/lib/project-filters"
 import { isItAdmin } from "@/lib/roles"
 import { requireSession } from "@/lib/session"
 import { getDatabase } from "@/server/database"
 import { isClientAccount } from "@/server/intake/client-requests"
 import { listProjectsFor } from "@/server/projects/projects"
+import { projectsWaitingFor } from "@/server/projects/waiting-for-me"
 import { signaturesWaitingFor } from "@/server/records/waiting-signatures"
 
 // Every box is a whole number of grid squares: the title is 2 squares tall and
 // each project is 4 wide and 2 tall, sharing its lines with its neighbours.
 const square = "grid-square relative isolate bg-background"
 
-export default async function Page() {
+export default async function Page({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const session = await requireSession()
+  const filters = readFilters(await searchParams)
 
-  const [projects, canInvite, client, waiting] = await Promise.all([
+  const [all, canInvite, client, waiting] = await Promise.all([
     listProjectsFor(getDatabase(), session.user.id),
     isItAdmin(session.user.id),
     isClientAccount(getDatabase(), session.user.id),
     signaturesWaitingFor(getDatabase(), session.user.id),
   ])
+
+  const waitingForMe = await projectsWaitingFor(
+    getDatabase(),
+    session.user.id,
+    waiting
+  )
+
+  const projects = filterProjects(all, filters, waitingForMe)
+
+  // The projects waiting for this person among those the other filters leave,
+  // for the count on the "Needs me" switch.
+  const waitingCount = filterProjects(
+    all,
+    { ...filters, mine: false },
+    waitingForMe
+  ).filter((project) => waitingForMe.has(project.id)).length
 
   // A client starts their own projects from the last square of the grid.
   const start = client ? (
@@ -44,7 +74,9 @@ export default async function Page() {
     </li>
   ) : null
 
-  const empty = projects.length === 0 && !client
+  // Not on any project at all, as opposed to none passing the filters.
+  const empty = all.length === 0 && !client
+  const noMatch = !empty && projects.length === 0 && !client
 
   return (
     <>
@@ -61,12 +93,44 @@ export default async function Page() {
                   : `${projects.length} projects`}
               </p>
             }
-            flush={!empty}
+            flush={!empty && !noMatch}
+            namedBySidebar
+            toolbar={
+              empty ? undefined : (
+                <ProjectFilters filters={filters} waitingCount={waitingCount} />
+              )
+            }
           >
             {empty ? (
-              <p className="text-muted-foreground">
-                You are not on any project yet.
-              </p>
+              <EmptyState
+                title="No projects yet"
+                description="You are not on any project yet."
+              />
+            ) : noMatch ? (
+              <EmptyState
+                drawing="bracket"
+                title={
+                  filters.mine
+                    ? "Nothing waiting for you matches these filters."
+                    : "No projects match these filters."
+                }
+                action={
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {filters.mine && (
+                      <Button asChild variant="outline">
+                        <Link
+                          href={`/?${filtersQuery({ ...filters, mine: false })}`}
+                        >
+                          Show all projects
+                        </Link>
+                      </Button>
+                    )}
+                    <Button asChild variant="outline">
+                      <Link href="/">Clear filters</Link>
+                    </Button>
+                  </div>
+                }
+              />
             ) : (
               <ul className="grid flex-1 auto-rows-[minmax(calc(var(--cell)*2),1fr)] grid-cols-[repeat(auto-fill,minmax(calc(var(--cell)*4),1fr))]">
                 {projects.map((project) => (

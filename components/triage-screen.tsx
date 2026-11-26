@@ -3,6 +3,7 @@
 import { useRouter } from "next/navigation"
 import { useState, useTransition, type ReactNode } from "react"
 
+import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 import { SegmentedChoice } from "@/components/segmented-choice"
 import {
@@ -284,9 +285,11 @@ export function TriageScreen({
       <SentBackNotice reason={sentBack} />
       <TableBox title="Files">
         {files.length === 0 ? (
-          <p className="px-4 py-4 text-sm text-muted-foreground">
-            No files were attached to this request.
-          </p>
+          <EmptyState
+            size="inline"
+            className="px-4 py-4"
+            title="No files were attached to this request."
+          />
         ) : (
           <DataTable
             label="Files"

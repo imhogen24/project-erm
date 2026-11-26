@@ -4,6 +4,7 @@ import { CheckIcon, PlusIcon, XIcon } from "@phosphor-icons/react"
 import { useRouter } from "next/navigation"
 import { useState, useTransition } from "react"
 
+import { EmptyState } from "@/components/empty-state"
 import { DatePicker } from "@/components/date-picker"
 import { TimeInput } from "@/components/time-input"
 import { SegmentedChoice } from "@/components/segmented-choice"
@@ -382,9 +383,12 @@ export function MeetingProposalScreen({
             </div>
           </>
         ) : saved.offeredSlots.length === 0 ? (
-          <p className="px-4 py-4 text-sm text-muted-foreground">
-            No times proposed yet.
-          </p>
+          <EmptyState
+            size="inline"
+            drawing="gear"
+            className="px-4 py-4"
+            title="No times proposed yet."
+          />
         ) : (
           <DataTable
             label="Proposed meeting times"

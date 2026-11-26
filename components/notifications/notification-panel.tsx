@@ -4,6 +4,7 @@ import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useTransition, type MouseEvent, type ReactNode } from "react"
 
+import { EmptyState } from "@/components/empty-state"
 import { Button } from "@/components/ui/button"
 import {
   markAllNotificationsReadAction,
@@ -95,9 +96,7 @@ export function NotificationPanel({
       </div>
 
       {notifications.length === 0 ? (
-        <p className="px-4 py-10 text-center text-sm text-muted-foreground">
-          You have no notifications.
-        </p>
+        <EmptyState title="You have no notifications." />
       ) : (
         <ul className="min-h-0 flex-1 divide-y overflow-x-hidden overflow-y-auto">
           {notifications.map((notification) => (

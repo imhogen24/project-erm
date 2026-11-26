@@ -441,6 +441,22 @@
     background: var(--meter-off);
   }
 
+  /* The sidebar's projects fill the room left and wrap into a second
+     column that is cut off, so no row is ever cut in half. */
+  .nav-fit {
+    display: flex;
+    min-height: 0;
+    flex: 1;
+    flex-direction: column;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    overflow: hidden;
+  }
+
+  .nav-fit > * {
+    width: 100%;
+  }
+
   .nav-more {
     padding: 0.5rem;
     font-size: 0.75rem;
@@ -653,6 +669,16 @@
     font-size: 0.875rem;
     line-height: 1.25rem;
     font-weight: 600;
+  }
+
+  /* The strip between two workbooks on the project overview: empty, with the
+     table header's diagonal hatch. */
+  .workbook-break {
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--hatch-line) 0 1px,
+      transparent 1px 7px
+    );
   }
 
   /* A message that confirms something, such as a new invite link. */
@@ -969,6 +995,20 @@
   color: var(--destructive);
 }
 
+/* A slimmer track for a toolbar, such as the home page's All projects |
+   Needs me, so it is as tall as the search box beside it. */
+.segmented-compact {
+  gap: 0.125rem;
+  padding: 0.125rem;
+  /* Solid, so the hatched strip under it doesn't show through. */
+  background:
+    linear-gradient(var(--surface-tile), var(--surface-tile)), var(--background);
+}
+
+.segmented-compact .segmented-item {
+  height: 2rem;
+}
+
 /* Locked: the answer stays bright, the options not taken fade. */
 .segmented-item:disabled {
   opacity: 1;
@@ -1252,10 +1292,108 @@
   border-bottom: 1px solid var(--rule);
 }
 
+/* On a wide screen the sidebar names the page and holds its actions, so the
+   sheet drops the header's title: the header is a hatched strip, half a
+   square tall, and its heading is only read out. A page's search and filters
+   sit inside the strip, which grows to hold them when they wrap. */
+@media (min-width: 1280px) {
+  .page-sheet-head[data-named-by-sidebar="true"] {
+    min-height: calc(var(--cell) / 2);
+    justify-content: center;
+    padding: 0;
+    background-image: repeating-linear-gradient(
+      -45deg,
+      var(--hatch-line) 0 1px,
+      transparent 1px 7px
+    );
+  }
+  .page-sheet-head[data-named-by-sidebar="true"][data-toolbar="true"] {
+    padding: 0.375rem 0.375rem;
+  }
+  .page-sheet-head[data-named-by-sidebar="true"] .page-sheet-actions {
+    display: none;
+  }
+  .page-sheet-head[data-named-by-sidebar="true"] .page-sheet-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
 .page-sheet-body {
   position: relative;
   flex: 1;
   padding: 2rem 1.5rem;
+}
+
+/* The project overview runs its workbooks on without a gap: each workbook's
+   last row is made up with empty squares. The grid has one column per four
+   squares (384px) of its width, and a filler shows only at the column counts
+   it lists in data-cols. Below 768px there is one column and no filler. */
+.workbook-grid {
+  container-type: inline-size;
+}
+
+.filler-square {
+  display: none;
+}
+
+@container (min-width: 768px) and (max-width: 1151.98px) {
+  .filler-square[data-cols~="2"] {
+    display: block;
+  }
+}
+
+@container (min-width: 1152px) and (max-width: 1535.98px) {
+  .filler-square[data-cols~="3"] {
+    display: block;
+  }
+}
+
+@container (min-width: 1536px) and (max-width: 1919.98px) {
+  .filler-square[data-cols~="4"] {
+    display: block;
+  }
+}
+
+@container (min-width: 1920px) and (max-width: 2303.98px) {
+  .filler-square[data-cols~="5"] {
+    display: block;
+  }
+}
+
+@container (min-width: 2304px) and (max-width: 2687.98px) {
+  .filler-square[data-cols~="6"] {
+    display: block;
+  }
+}
+
+@container (min-width: 2688px) and (max-width: 3071.98px) {
+  .filler-square[data-cols~="7"] {
+    display: block;
+  }
+}
+
+@container (min-width: 3072px) and (max-width: 3455.98px) {
+  .filler-square[data-cols~="8"] {
+    display: block;
+  }
+}
+
+@container (min-width: 3456px) and (max-width: 3839.98px) {
+  .filler-square[data-cols~="9"] {
+    display: block;
+  }
+}
+
+@container (min-width: 3840px) {
+  .filler-square[data-cols~="10"] {
+    display: block;
+  }
 }
 
 /* A flush body is a column, so a grid of tiles inside it can take the full
@@ -1295,9 +1433,14 @@
       no-repeat;
 }
 
-/* Drafting lettering: a figure drawn as an outline, not filled. */
+/* Drafting lettering: a figure drawn as an outline, not filled. A glyph can
+   be built from overlapping shapes, such as the foot of a 1, so the figure is
+   filled with the paper's colour over its stroke: the fill hides the lines
+   where the shapes overlap and the inner half of the stroke, leaving only
+   the outer edge, which is why the stroke is twice the width shown. */
 .outline-numeral {
-  color: transparent;
-  -webkit-text-stroke: 1.5px
+  color: var(--background);
+  -webkit-text-stroke: 3px
     color-mix(in oklab, var(--foreground) 55%, transparent);
+  paint-order: stroke fill;
 }

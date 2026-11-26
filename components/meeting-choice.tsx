@@ -4,6 +4,7 @@ import { CheckIcon } from "@phosphor-icons/react"
 import { useRouter } from "next/navigation"
 import { useState, useSyncExternalStore, useTransition } from "react"
 
+import { EmptyState } from "@/components/empty-state"
 import { DatePicker } from "@/components/date-picker"
 import { TimeInput } from "@/components/time-input"
 import { ActionButton, SheetActions } from "@/components/sheet-actions"
@@ -196,7 +197,12 @@ export function MeetingChoice({
   if (!recordId || saved.offeredSlots.length === 0) {
     return (
       <TableBox title="Meeting times">
-        <p className="px-4 py-4 text-sm text-muted-foreground">No times yet.</p>
+        <EmptyState
+          size="inline"
+          drawing="gear"
+          className="px-4 py-4"
+          title="No times yet."
+        />
       </TableBox>
     )
   }

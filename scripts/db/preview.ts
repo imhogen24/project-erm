@@ -168,6 +168,12 @@ export const previews: Preview[] = [
     expect: `On ${testProjectName("Tier_1", "D2.14")}, where D2.13 is locked, D2.14 is open for the CA. 1.0: Project Request ID, Notice Date says Filled in when D2.14 is submitted, Project / Client Name names the project and ${client.organisation}, Assigned Project Manager is ${staffWith("PM").name}, and Total Project Timeline is D2.6's 8 weeks. 2.0: Advance Invoice Number starts on D2.12's IMHO-INV26-ADV-010 and Amount Expected on D2.1's 40% of the contract total, GHS 37,760.00; both can be changed. Finance Clearance Signature has no Sign button for the CA. Pick the day the payment cleared: Official Project Start Date (Day 1) follows it, and Target Delivery Date is 8 weeks (56 days) on; change either by hand and it stops following. Link to Executed Contract has View (the seed's contract is a web link, so it opens nothing real). 4.0 starts on the two tasks, each Pending; the Project Manager's reads as text and cannot be chosen. Press Submit with a field empty, the first task Pending or 5.0 No: it is refused. Fill everything, mark the first task Done, answer Yes and press Submit for approval. Log in as the FO, ${loginFor("FO")}: the bell and an email say D2.14 is waiting for their signature; Sign on Finance Clearance Signature. Then the PM, ${loginFor("PM")}, is told and signs Head of Operations / R&D Signature: D2.14 locks, the PM's task reads Done, and Date is today. The PM cannot sign before the FO. ${testProjectName("Tier_3", "D2.14")} works the same on Tier 3, with T3.D1.15a's total. The FO, the PM and the CR read D2.14 without editing; the client and the OM do not see it.`,
   },
   {
+    screen: "Empty states, on a tool nobody has started and on empty lists",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D3.1`,
+    expect: `On ${testProjectName("Tier_1", "D2.14")}, D3.1 is open but nobody has started it. The PM only reads it, so the sheet shows a line drawing of a gear, which draws itself in once, with Not started yet and The Finance Officer starts it. The same drawings mark every empty result: open the bell as the OM, ${loginFor("OM")}, for You have no notifications.; Comments on a tool nobody has commented on reads No comments yet with a small drawing beside it; so does an empty table, a meeting with no times, a request with no files, and a role nobody is free for. Check light, dark and 375px wide.`,
+  },
+  {
     screen:
       "D3.3 milestone billing trigger, as the PM, then the FO to approve (RDP-197)",
     loginAs: "PM",

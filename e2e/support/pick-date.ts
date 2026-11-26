@@ -4,7 +4,16 @@ import { expect, type Page } from "@playwright/test"
 export async function pickDate(page: Page, label: string, day: string) {
   const [year, month] = day.split("-").map(Number)
 
-  await page.getByLabel(label, { exact: true }).click()
+  // A required field's label carries its * mark, so its picker is found by
+  // the button's own name instead.
+  const labelled = page.getByLabel(label, { exact: true })
+
+  const picker =
+    (await labelled.count()) > 0
+      ? labelled
+      : page.getByRole("button", { name: label, exact: true })
+
+  await picker.click()
 
   const calendar = page.getByRole("dialog")
 

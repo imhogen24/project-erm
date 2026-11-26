@@ -30,6 +30,7 @@ import {
   FieldSet,
 } from "@/components/ui/field"
 import { fileIdOf } from "@/lib/file-reference"
+import { followedDate, followersOf, nextFollowed } from "@/lib/follow-dates"
 import { startingFixedRows } from "@/lib/fixed-rows"
 import { hasLiveValues, liveValues } from "@/lib/live-values"
 import { fieldFills, fillFields, type Fills } from "@/lib/placeholders"
@@ -372,6 +373,57 @@ export function ToolForm({
   useEffect(() => {
     save.current = onSave
   })
+
+  // Dates that follow another as it is typed, such as D2.14's start date
+  // following the day the payment cleared, each until the person types a
+  // date of their own (nextFollowed). What moves is saved like a change.
+  const followers = followersOf(tool.fields)
+
+  // Each date it follows, and the duration added to it.
+  const followed = useWatch({
+    control: form.control,
+    name: followers.flatMap((follower) => [
+      follower.field,
+      ...(follower.plusDurationOf ? [follower.plusDurationOf] : []),
+    ]),
+    disabled: followers.length === 0,
+  })
+
+  const lastFollowed = useRef<Record<string, string | undefined>>({})
+  const followedKey = JSON.stringify(followed ?? [])
+
+  useEffect(() => {
+    if (readOnly || followers.length === 0) {
+      return
+    }
+
+    let moved = false
+
+    // In order, so a date that follows one that just moved follows on.
+    for (const follower of followers) {
+      const values = form.getValues()
+      const read = (key: string) => z.string().catch("").parse(values[key])
+
+      const step = nextFollowed({
+        current: read(follower.key),
+        next: followedDate(follower, read),
+        applied: lastFollowed.current[follower.key],
+      })
+
+      if (step.value !== undefined) {
+        form.setValue(follower.key, step.value)
+        moved = true
+      }
+
+      lastFollowed.current[follower.key] = step.applied
+    }
+
+    if (moved) {
+      save.current(toValues(tool, form.getValues()))
+    }
+    // The dates move only when what they follow changes.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [followedKey])
 
   useEffect(() => {
     if (readOnly) {

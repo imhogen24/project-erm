@@ -112,6 +112,8 @@ import { NEGOTIATION_NOTES } from "@/lib/negotiation-notes"
 import { FINAL_CONTRACT } from "@/lib/final-contract"
 import { SIGNATURE_CONTRACT } from "@/lib/signature-contract"
 import { EXECUTED_CONTRACT } from "@/lib/executed-contract"
+import { INITIATION } from "@/lib/initiation"
+import { initiationStart } from "@/server/contract/initiation"
 import {
   executedStart,
   startExecutedRecord,
@@ -336,6 +338,13 @@ async function startOf(
 
     case EXECUTED_CONTRACT: {
       const start = await executedStart(getDatabase(), projectId)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
+    case INITIATION: {
+      const start = await initiationStart(getDatabase(), projectId)
 
       // SAFETY: the start is built for this tool's own fields.
       return start as FormValues
@@ -732,7 +741,8 @@ export default async function Page({
   // D1.15's client dependencies on Tier 1. D2.4 and D2.5: the sheet's rows.
   // D2.6: the draft's contract value and duration. D2.10: D2.9's agreed
   // concessions. D2.11: the client contact, the HE and the script. D2.12:
-  // the platform D2.11 was signed on.
+  // the platform D2.11 was signed on. D2.14: D2.12's invoice number and the
+  // advance due.
   if (!view.record && view.can.write) {
     formValues = {
       ...(await startOf(toolId, projectId, session.user)),

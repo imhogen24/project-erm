@@ -1,5 +1,7 @@
 import { isDeepStrictEqual } from "node:util"
 
+import { z } from "zod"
+
 import type { JsonObject } from "@/db/schema"
 import { tools } from "@/server/tools/registry"
 
@@ -74,6 +76,52 @@ export function keepReadOnly(
         kept[key] = stored[key]
       }
     }
+  }
+
+  // A cell a signature sets (`setOnSign`), such as D2.14's "PM received this
+  // notice", keeps what is stored, or its column's starting option.
+  for (const field of tools.getTool(toolId)?.fields ?? []) {
+    if (field.type !== "table" || !field.setOnSign) {
+      continue
+    }
+
+    const rows = z
+      .array(z.record(z.string(), z.unknown()))
+      .safeParse(kept[field.key])
+
+    if (!rows.success) {
+      continue
+    }
+
+    const held = z
+      .array(z.record(z.string(), z.unknown()))
+      .catch([])
+      .parse(stored?.[field.key])
+
+    const copy = rows.data.map((row) => ({ ...row }))
+
+    for (const rule of field.setOnSign) {
+      const row = copy[rule.row]
+
+      if (!row) {
+        continue
+      }
+
+      const start = field.columns.find(
+        (column) => column.key === rule.column
+      )?.startsAs
+
+      const value = held[rule.row]?.[rule.column] ?? start
+
+      if (value === undefined) {
+        delete row[rule.column]
+      } else {
+        row[rule.column] = value
+      }
+    }
+
+    // SAFETY: rows of cells read from the values, one cell kept as stored.
+    kept[field.key] = copy as JsonObject[]
   }
 
   // A system-filled value, such as the client's choice on D1.5, is written

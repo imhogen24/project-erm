@@ -16,6 +16,8 @@ import { APPROVED_INVOICE } from "@/lib/approved-invoice"
 import { approvedInvoiceFills } from "@/server/payments/approved-invoice"
 import { TRANSMITTED_INVOICE } from "@/lib/transmitted-invoice"
 import { transmittedInvoiceFills } from "@/server/payments/transmitted-invoice"
+import { BANK_STATEMENT_LOG } from "@/lib/bank-statement-log"
+import { bankLogFills } from "@/server/payments/bank-statement-log"
 
 // What the system fills into the [bracketed] names of a tool's fixed text,
 // read live from the project, in the payment milestone `cycle` shown for a
@@ -33,6 +35,10 @@ export async function systemFillsOf(
 
     case TRANSMITTED_INVOICE: {
       return await transmittedInvoiceFills(database, projectId)
+    }
+
+    case BANK_STATEMENT_LOG: {
+      return await bankLogFills(database, projectId)
     }
 
     case STANDARD_CONTRACT: {

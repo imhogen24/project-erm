@@ -38,6 +38,8 @@ export const notificationKinds = [
   "follow_up_sent",
   // A contract sent for signature is still not fully signed after 7 days.
   "signature_overdue",
+  // A milestone's D3.7 check is open: the FO is reminded to check the bank.
+  "bank_check_due",
 ] as const
 
 export type NotificationKind = (typeof notificationKinds)[number]

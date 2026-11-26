@@ -56,6 +56,7 @@ import {
 import { lockValues, setOnLockValues, unmetSubmitRules } from "./filled-on-lock"
 import { rowsNotNeeded } from "./not-needed"
 import { fieldsOff } from "./only-when"
+import { repeatIfAsked } from "./repeat"
 import { keepReadOnly } from "./read-only"
 import {
   hasInternalFields,
@@ -481,6 +482,10 @@ async function move(
       { forSubmit: true }
     )
 
+    // What submitting works out, such as D3.7's variance, is what the
+    // submit rules read beside the answers.
+    const worked = await submittedValues(transaction, current)
+
     const unmet = [
       ...(tools.getTool(current.toolId)?.submitNeeds ?? []).filter(
         (need) =>
@@ -491,7 +496,7 @@ async function move(
       ),
       ...unmetSubmitRules(
         current.toolId,
-        current.payload,
+        { ...current.payload, ...worked.values },
         await rowsNotNeeded(transaction, current.projectId, current.toolId)
       ),
     ]
@@ -499,8 +504,6 @@ async function move(
     if (unmet.length > 0) {
       throw new ValidationError(unmet)
     }
-
-    const worked = await submittedValues(transaction, current)
 
     // A pick from another tool's table must still be one of its rows, and
     // not one another record already holds.
@@ -659,8 +662,12 @@ export async function transitionRecord(
         outbox
       )
 
+      const locked = await move(transaction, actor, approved, "locked", outbox)
+
+      // A tool that repeats on this answer, such as D3.7 with Continue
+      // waiting, opens its next entry at once.
       return {
-        moved: await move(transaction, actor, approved, "locked", outbox),
+        moved: (await repeatIfAsked(transaction, locked)) ?? locked,
         emails: outbox,
       }
     }

@@ -1,6 +1,10 @@
 import { acknowledgement, type AcknowledgementData } from "./acknowledgement"
 import { approvalNeeded, type ApprovalNeededData } from "./approval-needed"
 import { assigned, type AssignedData } from "./assigned"
+import {
+  bankCheckReminder,
+  type BankCheckReminderData,
+} from "./bank-check-reminder"
 import { calendarInvite, type CalendarInviteData } from "./calendar-invite"
 import {
   contractTransmittal,
@@ -44,6 +48,7 @@ export type EmailDataByKind = {
   // D3.6's invoice to the client: the same shape as D2.7's contract email.
   invoice_transmittal: ContractTransmittalData
   invoice_reminder: InvoiceReminderData
+  bank_check_reminder: BankCheckReminderData
   follow_up_sent: FollowUpSentData
   sent_back: SentBackData
   signature_needed: SignatureNeededData
@@ -70,6 +75,7 @@ const templates: Templates = {
   transmittal_follow_up: transmittalFollowUp,
   invoice_transmittal: contractTransmittal,
   invoice_reminder: invoiceReminder,
+  bank_check_reminder: bankCheckReminder,
   follow_up_sent: followUpSent,
   sent_back: sentBack,
   signature_needed: signatureNeeded,

@@ -361,7 +361,7 @@ export function ToolForm({
   const typed = toValues(tool, form.getValues())
 
   const live = {
-    ...liveValues(tool.id, typed),
+    ...liveValues(tool.id, { ...values, ...typed }),
     ...computedCells(tool.fields, {
       ...values,
       ...typed,

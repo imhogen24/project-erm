@@ -459,6 +459,22 @@ const invoiceSent = tier1Stage(
   "Mill 1 tonne of paddy an hour with a destoner and polisher."
 )
 
+// A Tier 1 project whose 2.2 invoice the FO sent, and whose bank the FO
+// checked twice since with no payment, so D3.7 for 2.2 holds two earlier
+// checks (Continue waiting) and the third is open.
+export const BANK_WAITING_PROJECT = `${DEV_PROJECT}D3.7 2.2 Waiting (Tier 1)`
+
+const bankWaiting = tier1Stage(
+  BANK_WAITING_PROJECT,
+  "active",
+  "2026-09-22T09:00:00Z",
+  "Accra",
+  client,
+  "everyone",
+  "Small rice mill with destoner",
+  "Mill 1 tonne of paddy an hour with a destoner and polisher."
+)
+
 // A Tier 1 project whose 2.2 invoice the PM failed at D3.5 and sent back, so
 // D3.5 is locked with the failed check and D3.4 is a draft for the FO again.
 export const INVOICE_SENT_BACK_PROJECT = `${DEV_PROJECT}D3.5 2.2 Sent Back (Tier 1)`
@@ -498,6 +514,7 @@ export const projects: readonly SeedProject[] = [
   invoiceApproved,
   invoiceSentBack,
   invoiceSent,
+  bankWaiting,
 ]
 
 export function seedProjectNamed(name: string) {

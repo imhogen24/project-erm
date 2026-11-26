@@ -611,15 +611,17 @@ export async function openToolsIn(
 
 // Whether the rule that opens a tool holds again on the project now, read
 // inside the caller's transaction, for a tool that already has a record,
-// such as a review that runs again once the work it sent back is revised.
+// such as a review that runs again once the work it sent back is revised;
+// for a tool run once per payment milestone, in that milestone's `cycle`.
 export async function opensAgainIn(
   transaction: Transaction,
   projectId: string,
-  toolId: string
+  toolId: string,
+  cycle = 1
 ): Promise<boolean> {
   const route = await routeOf(transaction, projectId)
 
-  return route.verdict(toolId, 1, true).missing.length === 0
+  return route.verdict(toolId, cycle, true).missing.length === 0
 }
 
 // Every tool a tool's rule waits for, and those they wait for in turn, as the

@@ -146,6 +146,9 @@ import { firstFree, liveOptionsOf } from "@/server/records/options-from"
 import { BILLING_TRIGGER } from "@/lib/billing-trigger"
 import { milestoneValueOptions } from "@/server/payments/billing-trigger"
 import { CycleList } from "@/components/cycle-list"
+import { InvoiceFile } from "@/components/invoice-file"
+import { APPROVED_INVOICE, invoicePath } from "@/lib/approved-invoice"
+import { shownInvoice } from "@/server/payments/approved-invoice"
 import { systemValuesOf } from "@/server/records/system-values"
 import { listComments, type Comment } from "@/server/comments/comments"
 import { UnknownToolError } from "@/server/records/validate"
@@ -846,7 +849,8 @@ export default async function Page({
     projectId,
     toolId,
     view.record ? { ...view.record, state: toState(view.state) } : null,
-    view.can.write ? session.user.name : undefined
+    view.can.write ? session.user.name : undefined,
+    view.cycle
   )) as FormValues
 
   formValues = { ...formValues, ...system }
@@ -888,7 +892,12 @@ export default async function Page({
 
   // The [bracketed] names in fixed text the system fills, such as D2.1's
   // client name and total, read live and never stored.
-  const fills = await systemFillsOf(getDatabase(), projectId, toolId)
+  const fills = await systemFillsOf(
+    getDatabase(),
+    projectId,
+    toolId,
+    view.cycle
+  )
 
   // A tool the client reads only once locked tells them so until then.
   const notSharedYet =
@@ -1134,6 +1143,17 @@ export default async function Page({
       body
     )
 
+  // D3.5, once approved: the invoice the client receives, to view or save.
+  const invoice =
+    toolId === APPROVED_INVOICE && view.state === "locked"
+      ? await shownInvoice(
+          getDatabase(),
+          session.user.id,
+          projectId,
+          view.cycle
+        )
+      : null
+
   // What each PDF preview field shows this person: the PDF, or why not.
   // A tool run once per milestone shows its own cycle's records, such as
   // D3.4's D3.3.
@@ -1235,6 +1255,13 @@ export default async function Page({
               cycles={view.cycles}
               current={view.cycle}
             />
+            {invoice && (
+              <InvoiceFile
+                fileName={invoice.fileName}
+                href={invoicePath(projectId, view.cycle)}
+                downloadHref={invoicePath(projectId, view.cycle, true)}
+              />
+            )}
             <PdfPreviews states={previews}>{sheet}</PdfPreviews>
             {view.record && comments && (
               <RecordComments

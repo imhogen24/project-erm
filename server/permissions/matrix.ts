@@ -280,11 +280,13 @@ export const extraApprovers = new Map<string, readonly Role[]>([
 // Who writes a tool is decided with the tool too. A review that the matrix
 // gives no writer is filled in by the role that reviews it: the PM writes,
 // signs and submits D2.3 (RA), the FO D2.4 and the HE D2.5, which locks it,
-// since nobody else approves it.
+// since nobody else approves it. The PM, as Head of Finance, writes D3.5
+// (RA), and its `writers` leaves the FO only reading it.
 export const extraWriters = new Map<string, readonly Role[]>([
   ["D2.3", ["PM"]],
   ["D2.4", ["FO"]],
   ["D2.5", ["HE"]],
+  ["D3.5", ["PM"]],
 ])
 
 // The roles that fill a tool in: those the matrix gives RW, and those named

@@ -374,11 +374,14 @@ export async function recordContent(
 
   const shown = {
     ...payload,
-    ...(await systemValuesOf(database, record.projectId, tool.id, {
-      id: record.id,
-      state: record.state,
-      payload: record.payload,
-    })),
+    ...(await systemValuesOf(
+      database,
+      record.projectId,
+      tool.id,
+      { id: record.id, state: record.state, payload: record.payload },
+      undefined,
+      record.cycle
+    )),
   }
 
   const values = withLive(shown, {
@@ -417,7 +420,7 @@ export async function recordContent(
         values,
         names,
         project!.track,
-        await fillsOf(database, record.projectId, tool.id, values)
+        await fillsOf(database, record.projectId, tool.id, values, record.cycle)
       ),
     },
   }

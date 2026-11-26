@@ -14,6 +14,7 @@ import { workloadOf } from "@/server/staff/staff"
 import { emailOf, loginFor, staff } from "./seed-data/people"
 import {
   CURRENT_TOOL,
+  INVOICE_SENT_BACK_PROJECT,
   NEEDS_TEAM,
   currentToolFor,
   client,
@@ -349,6 +350,49 @@ describe("the records", () => {
         true
       )
     }
+  })
+})
+
+describe("the invoice the PM sent back", () => {
+  it("seeds a failed D3.5, a D3.4 draft for the FO and the reason for it", async () => {
+    await seed(url)
+
+    const projectId = await projectIdOf(INVOICE_SENT_BACK_PROJECT)
+
+    const { rows } = await database.pool.query<{
+      tool_id: string
+      state: string
+      authorized: string | null
+      fo_signature: string | null
+      reason: string | null
+    }>(
+      `SELECT r.tool_id, r.state, r.payload->>'authorized' AS authorized,
+              r.payload->>'foSignature' AS fo_signature, a.reason
+         FROM tool_records r
+         LEFT JOIN audit_log a ON a.record_id = r.id
+                              AND a.action = 'transitioned'
+                              AND a.field = 'state'
+        WHERE r.project_id = $1 AND r.tool_id IN ('D3.4', 'D3.5')
+        ORDER BY r.tool_id`,
+      [projectId]
+    )
+
+    expect(rows).toEqual([
+      {
+        tool_id: "D3.4",
+        state: "draft",
+        authorized: null,
+        fo_signature: null,
+        reason: "D3.5 sent it back: No. 2.2: VAT should be 15% of the subtotal",
+      },
+      {
+        tool_id: "D3.5",
+        state: "locked",
+        authorized: "No",
+        fo_signature: null,
+        reason: null,
+      },
+    ])
   })
 })
 

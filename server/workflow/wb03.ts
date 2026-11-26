@@ -7,8 +7,10 @@ import type { WorkbookMap } from "./map"
 // starts with the PM's billing trigger, D3.3, and the next cycle's D3.3
 // opens as soon as the Finance Officer approves the one before. Approving a
 // cycle's D3.3 also opens that cycle's draft invoice, D3.4, so the invoice
-// and the next trigger run side by side. D3.5 is not built yet, so locking
-// D3.4 opens nothing more for now.
+// and the next trigger run side by side. Locking a cycle's D3.4 opens that
+// cycle's approved invoice, D3.5, for the PM as Head of Finance. A Fail
+// sends the D3.4 back (D3.5's `sendsBackTo`). D3.6 is not built yet, so
+// approving D3.5 opens nothing more for now.
 export const wb03: WorkbookMap = {
   workbook: "wb03",
   opens: { after: { all: ["D2.12"] } },
@@ -16,6 +18,7 @@ export const wb03: WorkbookMap = {
     { tool: "D3.1" },
     { tool: "D3.3", after: { all: ["D3.1"] }, repeats: true },
     { tool: "D3.4", after: { all: ["D3.3"] }, repeats: true },
+    { tool: "D3.5", after: { all: ["D3.4"] }, repeats: true },
   ],
   cycles: {
     count: { tool: "D3.1", field: "paymentSchedule", less: 1 },

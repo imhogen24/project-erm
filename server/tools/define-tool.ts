@@ -216,6 +216,15 @@ const columnRequired = {
     .regex(/^\d+(\.\d+)*$/, "A numbered column counts from a number, such as 2")
     .optional(),
   startsAs: z.string().min(1).optional(),
+  // Needed at submit only in a row whose select `column` holds `is`, such as
+  // D3.5's comment on a check marked Fail, with what to say until then.
+  requiredWhen: z
+    .strictObject({
+      column: fieldKey,
+      is: z.string().min(1),
+      message: z.string().min(1),
+    })
+    .optional(),
   // A system cell the app works out in every row, the form as it is typed
   // and the server as it is submitted: the row's `times` column, a
   // percentage, of the tool's `by` field, an amount, such as D3.1's Amount
@@ -314,6 +323,26 @@ const table = z
         })
       )
       .optional(),
+    // Cells the app sets as the record locks, in the same step, each by its
+    // fixed row's place and column, `when` the select `field` holds `is`,
+    // such as D3.5's two conversion tasks set to Done when it is approved
+    // with Yes. The form never changes them.
+    setOnLock: z
+      .array(
+        z.strictObject({
+          row: z.number().int().min(0),
+          column: fieldKey,
+          is: z.string().min(1),
+          when: z
+            .strictObject({ field: fieldKey, is: z.string().min(1) })
+            .optional(),
+        })
+      )
+      .optional(),
+    // A short note under each fixed row's fixed text, by the row's place,
+    // with its [bracketed] names filled in, such as D3.5's two amounts
+    // beside check 2.1. An empty note shows none. Only shown; never stored.
+    fixedRowNotes: z.array(z.string()).min(1).optional(),
     // Fixed rows not needed on a project, each by its place among the fixed
     // rows (0 for the first): when the project's locked record of `tool`
     // holds `is` in `field`, such as D2.13's negotiation notes when the
@@ -458,6 +487,55 @@ const table = z
         message: "A table has fixed rows or locked rows, not both",
       })
     }
+
+    value.setOnLock?.forEach((rule, index) => {
+      const set = value.columns.find((entry) => entry.key === rule.column)
+
+      if (rule.row >= (value.fixedRows?.length ?? 0)) {
+        context.addIssue({
+          code: "custom",
+          path: ["setOnLock", index, "row"],
+          message: "A cell set on lock is in one of the table's fixed rows",
+        })
+      }
+
+      if (set?.type !== "select" || !set.options.includes(rule.is)) {
+        context.addIssue({
+          code: "custom",
+          path: ["setOnLock", index, "column"],
+          message: `${rule.column} is not a select column with the option "${rule.is}"`,
+        })
+      }
+    })
+
+    if (
+      value.fixedRowNotes &&
+      value.fixedRowNotes.length > (value.fixedRows?.length ?? 0)
+    ) {
+      context.addIssue({
+        code: "custom",
+        path: ["fixedRowNotes"],
+        message: "A table has a note for each fixed row at most",
+      })
+    }
+
+    value.columns.forEach((entry, index) => {
+      const rule = entry.requiredWhen
+
+      if (!rule) {
+        return
+      }
+
+      const watched = value.columns.find((each) => each.key === rule.column)
+
+      if (watched?.type !== "select" || !watched.options.includes(rule.is)) {
+        context.addIssue({
+          code: "custom",
+          path: ["columns", index, "requiredWhen"],
+          message: `${rule.column} is not a select column with the option "${rule.is}"`,
+        })
+      }
+    })
 
     value.notNeeded?.forEach((rule, index) => {
       if (rule.row >= (value.fixedRows?.length ?? 0)) {
@@ -837,6 +915,12 @@ export type Workbook = (typeof workbooks)[number]
 
 // A tool for one tier only can name the tool it takes the place of on that
 // tier's track. The project's service track picks which variants show.
+// The answer a submit rule applies under: the select `field` holding `is`.
+const submitWhenAnswer = z.strictObject({
+  field: fieldKey,
+  is: z.string().min(1),
+})
+
 const toolDefinition = z
   .object({
     id: z.string().min(1),
@@ -879,7 +963,9 @@ const toolDefinition = z
       )
       .optional(),
     // Select fields that must hold one option before the record can be
-    // submitted, each with what to say until then, such as "Yes" to Ready
+    // submitted, or, with `when`, only while another select holds an
+    // option, such as every check Pass before D3.5 answers Yes (the refusal
+    // then shows on that select), each with what to say until then, such as "Yes" to Ready
     // for PM Review, or, with `isNot`, an answer other than that option,
     // such as a reply that is no longer Pending. With `column`, `field` is a
     // table and every one of its rows must hold the option in that select
@@ -894,11 +980,21 @@ const toolDefinition = z
             // With `column`, a table with no rows passes too, such as a
             // list of amendments that a contract nobody negotiated lacks.
             orNoRows: z.literal(true).optional(),
+            when: submitWhenAnswer.optional(),
             message: z.string().min(1),
           }),
           z.strictObject({
             field: fieldKey,
             isNot: z.string().min(1),
+            message: z.string().min(1),
+          }),
+          // At least one row of the table holds the option in that select
+          // column, such as a check marked Fail before D3.5 answers No.
+          z.strictObject({
+            field: fieldKey,
+            column: fieldKey,
+            some: z.string().min(1),
+            when: submitWhenAnswer.optional(),
             message: z.string().min(1),
           }),
         ])
@@ -950,6 +1046,12 @@ const toolDefinition = z
         is: z.string().min(1),
         tools: z.array(z.string().min(1)).min(1),
         notifies: z.array(z.enum(roles)).min(1).optional(),
+        // A table column whose filled cells say why, added to the reason
+        // the writer reads, each after its row's number, such as D3.5's
+        // Finance Head Comments.
+        explainedBy: z
+          .strictObject({ field: fieldKey, column: fieldKey })
+          .optional(),
       })
       .optional(),
     // The approver's decision, written on the record in the same step:
@@ -997,6 +1099,30 @@ const toolDefinition = z
       context.addIssue({ code: "custom", path: ["fields"], message: problem })
     }
 
+    value.fields.forEach((field, fieldIndex) => {
+      if (field.type !== "table") {
+        return
+      }
+
+      field.setOnLock?.forEach((rule, ruleIndex) => {
+        const when = rule.when
+
+        if (!when) {
+          return
+        }
+
+        const select = value.fields.find((entry) => entry.key === when.field)
+
+        if (!(select?.type === "select" && select.options.includes(when.is))) {
+          context.addIssue({
+            code: "custom",
+            path: ["fields", fieldIndex, "setOnLock", ruleIndex, "when"],
+            message: `${when.field} is not a select with the option "${when.is}"`,
+          })
+        }
+      })
+    })
+
     value.submitNeeds?.forEach((need, index) => {
       const unless = need.unless
 
@@ -1031,6 +1157,25 @@ const toolDefinition = z
           path: ["sendsBackTo"],
           message: `${back.field} is not a select with the option "${back.is}"`,
         })
+      }
+
+      const explained = back.explainedBy
+
+      if (explained) {
+        const table = value.fields.find(
+          (entry) => entry.key === explained.field
+        )
+
+        if (
+          table?.type !== "table" ||
+          !table.columns.some((entry) => entry.key === explained.column)
+        ) {
+          context.addIssue({
+            code: "custom",
+            path: ["sendsBackTo", "explainedBy"],
+            message: `${explained.field} is not a table with a column ${explained.column}`,
+          })
+        }
       }
 
       if (back.tools.includes(value.id)) {
@@ -1072,6 +1217,36 @@ const toolDefinition = z
 
     value.submitWhen?.forEach((rule, index) => {
       const named = value.fields.find((entry) => entry.key === rule.field)
+
+      if ("when" in rule && rule.when) {
+        const { when } = rule
+        const answer = value.fields.find((entry) => entry.key === when.field)
+
+        if (answer?.type !== "select" || !answer.options.includes(when.is)) {
+          context.addIssue({
+            code: "custom",
+            path: ["submitWhen", index, "when"],
+            message: `${when.field} is not a select with the option "${when.is}"`,
+          })
+        }
+      }
+
+      if ("some" in rule) {
+        const column =
+          named?.type === "table"
+            ? named.columns.find((entry) => entry.key === rule.column)
+            : undefined
+
+        if (column?.type !== "select" || !column.options.includes(rule.some)) {
+          context.addIssue({
+            code: "custom",
+            path: ["submitWhen", index],
+            message: `${rule.field} is not a table with a select column ${rule.column} holding "${rule.some}"`,
+          })
+        }
+
+        return
+      }
 
       if ("isNot" in rule) {
         if (named?.type !== "select" || !named.options.includes(rule.isNot)) {
@@ -1284,9 +1459,12 @@ function answerConditionProblems(fields: FieldOutput[]) {
 function fillProblems(fields: FieldOutput[], fills: Fills) {
   const named = fields.flatMap((entry) =>
     entry.type === "table"
-      ? (entry.fixedRows ?? []).flatMap((row) =>
-          Object.values(row).flatMap(placeholdersIn)
-        )
+      ? [
+          ...(entry.fixedRows ?? []).flatMap((row) =>
+            Object.values(row).flatMap(placeholdersIn)
+          ),
+          ...(entry.fixedRowNotes ?? []).flatMap(placeholdersIn),
+        ]
       : []
   )
 

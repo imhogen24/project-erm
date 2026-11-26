@@ -5,6 +5,7 @@ import { z } from "zod"
 import { createDatabase, type Database } from "@/db"
 import {
   accounts,
+  auditLog,
   changeRequests,
   counters,
   intakeSubmissions,
@@ -317,6 +318,34 @@ async function addRecords(
 
     for (const record of inserted) {
       recordIds.set(record.toolId, record.id)
+    }
+
+    // A sent-back draft carries the reason its reviewer gave, the same line
+    // the app writes in the audit log when a review sends work back, so the
+    // writer sees why the work is open again.
+    for (const record of missing) {
+      if (!record.sentBackReason) {
+        continue
+      }
+
+      const recordId = recordIds.get(record.toolId)
+      const actorId = holderOf(team, "PM")
+
+      if (!recordId || !actorId) {
+        continue
+      }
+
+      await database.insert(auditLog).values({
+        projectId,
+        recordId,
+        actorId,
+        action: "transitioned",
+        field: "state",
+        oldValue: "locked",
+        newValue: "draft",
+        reason: record.sentBackReason,
+        createdAt: new Date(received + 64 * DAY + 10 * HOUR),
+      })
     }
   }
 

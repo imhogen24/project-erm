@@ -325,8 +325,12 @@ function unansweredCells(table: TableField, value: JsonObject[string]) {
   const first = table.columns[0]!.key
   const optional = table.optionalRows ?? []
 
-  return countedRows(table, value).flatMap(({ row, index }) =>
-    required
+  // A column needed only in a row holding an answer, such as a comment on a
+  // check marked Fail.
+  const answered = table.columns.filter((column) => column.requiredWhen)
+
+  return countedRows(table, value).flatMap(({ row, index }) => [
+    ...required
       .filter(() => !optional.includes(String(row[first])))
       .filter((column) => blank.safeParse(row[column.key]).success)
       .map((column): FieldError => ({
@@ -334,8 +338,21 @@ function unansweredCells(table: TableField, value: JsonObject[string]) {
         row: index,
         column: column.key,
         message: "Required",
-      }))
-  )
+      })),
+    ...answered
+      .filter(
+        (column) =>
+          !column.required &&
+          row[column.requiredWhen!.column] === column.requiredWhen!.is &&
+          blank.safeParse(row[column.key]).success
+      )
+      .map((column): FieldError => ({
+        field: table.key,
+        row: index,
+        column: column.key,
+        message: column.requiredWhen!.message,
+      })),
+  ])
 }
 
 // A table's rows as saved, each a row of JSON cells, or none.

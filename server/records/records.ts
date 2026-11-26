@@ -53,7 +53,7 @@ import {
   withoutHiddenAnswers,
   withoutInherited,
 } from "./inherited"
-import { lockValues, unmetSubmitRules } from "./filled-on-lock"
+import { lockValues, setOnLockValues, unmetSubmitRules } from "./filled-on-lock"
 import { rowsNotNeeded } from "./not-needed"
 import { fieldsOff } from "./only-when"
 import { keepReadOnly } from "./read-only"
@@ -555,6 +555,8 @@ async function move(
       ...(await lockValues(transaction, current, actor, now)),
       ...(await decisionValues(transaction, current, actor, "approve")),
     }
+
+    payload = { ...payload, ...setOnLockValues(current.toolId, payload) }
   }
 
   const [moved] = await transaction

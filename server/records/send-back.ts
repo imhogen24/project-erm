@@ -1,4 +1,5 @@
 import { and, desc, eq, inArray, ne } from "drizzle-orm"
+import { z } from "zod"
 
 import {
   changeRequests,
@@ -22,7 +23,11 @@ import {
 import { systemActor } from "@/server/system/system"
 import { tools } from "@/server/tools/registry"
 import { catalogOf } from "@/server/workflow/tracks"
-import { opensAgainIn, waitsOn } from "@/server/workflow/workflow"
+import {
+  opensAgainIn,
+  repeatsPerCycle,
+  waitsOn,
+} from "@/server/workflow/workflow"
 
 import { signaturesOf, withoutSignatures } from "./signatures"
 
@@ -30,15 +35,18 @@ type LockedRecord = {
   id: string
   projectId: string
   toolId: string
+  cycle: number
   payload: JsonObject
 }
 
-// The project's newest record of the tool that is not void, held until the
-// transaction ends, so nothing else moves it meanwhile.
+// The project's newest record of the tool that is not void, or its record of
+// one payment milestone `cycle`, held until the transaction ends, so nothing
+// else moves it meanwhile.
 async function newestRecord(
   transaction: Transaction,
   projectId: string,
-  toolId: string
+  toolId: string,
+  cycle?: number
 ) {
   const [record] = await transaction
     .select({
@@ -56,7 +64,8 @@ async function newestRecord(
       and(
         eq(toolRecords.projectId, projectId),
         eq(toolRecords.toolId, toolId),
-        ne(toolRecords.state, "void")
+        ne(toolRecords.state, "void"),
+        cycle === undefined ? undefined : eq(toolRecords.cycle, cycle)
       )
     )
     .orderBy(desc(toolRecords.cycle), desc(toolRecords.createdAt))
@@ -162,6 +171,36 @@ async function reopen(
   )
 }
 
+const cells = z.array(z.record(z.string(), z.unknown())).catch([])
+
+// Why a review sent the work back: its answer, then each filled cell of the
+// column it is explained by (`explainedBy`), after its row's number, such as
+// "D3.5 sent it back: No. 2.2: VAT should be 15%".
+function sentBackReason(record: LockedRecord): string {
+  const tool = tools.getTool(record.toolId)
+  const review = tool?.sendsBackTo
+  const said = `${record.toolId} sent it back: ${review?.is ?? ""}`
+  const by = review?.explainedBy
+
+  const table = tool?.fields.find((field) => field.key === by?.field)
+
+  if (!by || table?.type !== "table") {
+    return said
+  }
+
+  const counted = table.columns.find((column) => column.numbered)?.numbered
+
+  const notes = cells.parse(record.payload[by.field]).flatMap((row, index) => {
+    const note = z.string().catch("").parse(row[by.column]).trim()
+
+    return note
+      ? [`${counted ? `${counted}.${index + 1}` : `Row ${index + 1}`}: ${note}`]
+      : []
+  })
+
+  return notes.length === 0 ? said : `${said}. ${notes.join(". ")}`
+}
+
 // Runs inside the transaction that locks `record`. A review locked with its
 // send-back answer, such as D2.3 with Revisions Required, reopens the work it
 // reviews for whoever wrote it. That work, locked again, reopens the first of
@@ -193,18 +232,31 @@ export async function applySendBack(
   const catalog = catalogOf(all)
   const review = tools.getTool(record.toolId)?.sendsBackTo
 
+  // A tool run once per payment milestone, read beside another, is read in
+  // the same cycle: D3.5 of a milestone sends back that milestone's D3.4.
+  const sameCycle = (id: string) =>
+    repeatsPerCycle(id) && repeatsPerCycle(record.toolId)
+      ? record.cycle
+      : undefined
+
   if (review && record.payload[review.field] === review.is) {
     for (const id of review.tools) {
       const used = catalog.onTrack(id, track)
 
       const held =
-        used && (await newestRecord(transaction, record.projectId, used))
+        used &&
+        (await newestRecord(
+          transaction,
+          record.projectId,
+          used,
+          sameCycle(used)
+        ))
 
       if (!held || held.state !== "locked") {
         continue
       }
 
-      const reason = `${record.toolId} sent it back: ${review.is}`
+      const reason = sentBackReason(record)
 
       await reopen(transaction, actor, held, reason)
       await notifySentBack(transaction, actor, held, reason)
@@ -243,7 +295,8 @@ export async function applySendBack(
 
   type Review = (typeof reviews)[number]
 
-  const newest = (id: string) => newestRecord(transaction, record.projectId, id)
+  const newest = (id: string) =>
+    newestRecord(transaction, record.projectId, id, sameCycle(id))
 
   const sentBack = (each: Review, held: Held | undefined) =>
     held?.state === "locked" && held.payload[each.back.field] === each.back.is
@@ -320,8 +373,11 @@ export async function applySendBack(
 
   for (const each of reviews) {
     if (
-      !each.reviewed.includes(record.toolId) &&
-      !each.waits.has(record.toolId)
+      (!each.reviewed.includes(record.toolId) &&
+        !each.waits.has(record.toolId)) ||
+      // A review run once per milestone runs again only for work of its
+      // own milestone.
+      (repeatsPerCycle(each.id) && !repeatsPerCycle(record.toolId))
     ) {
       continue
     }
@@ -360,7 +416,12 @@ export async function applySendBack(
 
     if (
       !revised ||
-      !(await opensAgainIn(transaction, record.projectId, each.id))
+      !(await opensAgainIn(
+        transaction,
+        record.projectId,
+        each.id,
+        sameCycle(each.id)
+      ))
     ) {
       continue
     }

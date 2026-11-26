@@ -47,6 +47,8 @@ import { BILLING_TRIGGER } from "@/lib/billing-trigger"
 import { billingTriggerValues } from "@/server/payments/billing-trigger"
 import { DRAFT_INVOICE } from "@/lib/draft-invoice"
 import { draftInvoiceValues } from "@/server/payments/draft-invoice"
+import { APPROVED_INVOICE } from "@/lib/approved-invoice"
+import { approvedInvoiceValues } from "@/server/payments/approved-invoice"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -67,15 +69,25 @@ export type ShownRecord = {
 // request and its other records, as the tool page shows it over the saved
 // answers, with what each field shown from another field's answer says.
 // Empty for a tool with no such fields. `writer` is the name of the person
-// writing D1.8, shown as its author until it is submitted.
+// writing D1.8, shown as its author until it is submitted. `cycle` is the
+// payment milestone cycle shown, for a tool run once per milestone.
 export async function systemValuesOf(
   database: Database,
   projectId: string,
   toolId: string,
   record: ShownRecord,
-  writer?: string
+  writer?: string,
+  cycle = 1
 ): Promise<JsonObject> {
-  const values = await workedOut(database, projectId, toolId, record, writer)
+  const values = await workedOut(
+    database,
+    projectId,
+    toolId,
+    record,
+    writer,
+    cycle
+  )
+
   const tool = tools.getTool(toolId)
 
   if (!tool) {
@@ -90,7 +102,8 @@ async function workedOut(
   projectId: string,
   toolId: string,
   record: ShownRecord,
-  writer?: string
+  writer: string | undefined,
+  cycle: number
 ): Promise<JsonObject> {
   const payload = record?.payload ?? {}
   const state = record?.state ?? "notStarted"
@@ -227,6 +240,15 @@ async function workedOut(
         database,
         projectId,
         record ? { payload } : null
+      )
+    }
+
+    case APPROVED_INVOICE: {
+      return await approvedInvoiceValues(
+        database,
+        projectId,
+        record ? { payload } : null,
+        cycle
       )
     }
 

@@ -346,19 +346,34 @@ export function TableEditor({
                           className="mt-0.5 size-4 shrink-0 text-muted-foreground"
                         />
                       )}
-                      <span className="min-w-0">
-                        {fixedText === undefined
-                          ? numbered
-                          : fillText(fixedText, fills)}
+                      <span className="flex min-w-0 flex-col">
+                        <span>
+                          {fixedText === undefined
+                            ? numbered
+                            : fillText(fixedText, fills)}
+                        </span>
+                        {/* The row's note, under its first fixed cell,
+                            such as D3.5's two amounts beside check 2.1. */}
+                        {fixedText !== undefined &&
+                          field.fixedRowNotes?.[rowIndex] &&
+                          Object.keys(field.fixedRows?.[rowIndex] ?? {})[0] ===
+                            column.key && (
+                            <span className="text-xs text-muted-foreground">
+                              {fillText(field.fixedRowNotes[rowIndex], fills)}
+                            </span>
+                          )}
                       </span>
                     </span>
                   </div>
                 )
               }
 
-              // A cell a signature sets, such as D2.14's "PM received this
-              // notice", reads as what it holds.
-              const setBySigning = field.setOnSign?.some(
+              // A cell a signature or the lock sets, such as D2.14's "PM
+              // received this notice", reads as what it holds.
+              const setBySigning = [
+                ...(field.setOnSign ?? []),
+                ...(field.setOnLock ?? []),
+              ].some(
                 (rule) => rule.row === rowIndex && rule.column === column.key
               )
 

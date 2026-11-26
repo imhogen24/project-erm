@@ -79,9 +79,10 @@ export function keepReadOnly(
   }
 
   // A cell a signature sets (`setOnSign`), such as D2.14's "PM received this
-  // notice", keeps what is stored, or its column's starting option.
+  // notice", or the lock sets (`setOnLock`), such as D3.5's conversion
+  // tasks, keeps what is stored, or its column's starting option.
   for (const field of tools.getTool(toolId)?.fields ?? []) {
-    if (field.type !== "table" || !field.setOnSign) {
+    if (field.type !== "table" || (!field.setOnSign && !field.setOnLock)) {
       continue
     }
 
@@ -100,7 +101,10 @@ export function keepReadOnly(
 
     const copy = rows.data.map((row) => ({ ...row }))
 
-    for (const rule of field.setOnSign) {
+    for (const rule of [
+      ...(field.setOnSign ?? []),
+      ...(field.setOnLock ?? []),
+    ]) {
       const row = copy[rule.row]
 
       if (!row) {

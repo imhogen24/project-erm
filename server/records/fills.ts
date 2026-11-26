@@ -12,15 +12,23 @@ import { financeReviewFills } from "@/server/contract/finance-review"
 import { draftFills } from "@/server/contract/initial-draft"
 import { contractFills } from "@/server/contract/standard-contract"
 import { tools } from "@/server/tools/registry"
+import { APPROVED_INVOICE } from "@/lib/approved-invoice"
+import { approvedInvoiceFills } from "@/server/payments/approved-invoice"
 
 // What the system fills into the [bracketed] names of a tool's fixed text,
-// read live from the project. Empty for a tool with none.
+// read live from the project, in the payment milestone `cycle` shown for a
+// tool run once per milestone. Empty for a tool with none.
 export async function systemFillsOf(
   database: Database,
   projectId: string,
-  toolId: string
+  toolId: string,
+  cycle = 1
 ): Promise<Fills> {
   switch (toolId) {
+    case APPROVED_INVOICE: {
+      return await approvedInvoiceFills(database, projectId, cycle)
+    }
+
     case STANDARD_CONTRACT: {
       return await contractFills(database, projectId)
     }
@@ -53,10 +61,11 @@ export async function fillsOf(
   database: Database,
   projectId: string,
   toolId: string,
-  values: JsonObject
+  values: JsonObject,
+  cycle = 1
 ): Promise<Fills> {
   return {
-    ...(await systemFillsOf(database, projectId, toolId)),
+    ...(await systemFillsOf(database, projectId, toolId, cycle)),
     ...fieldFills(tools.getTool(toolId)?.fills, (field) => values[field]),
   }
 }

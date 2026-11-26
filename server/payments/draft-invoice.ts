@@ -75,7 +75,7 @@ const signed = z
 // D3.1's agreed term for one of its rule categories, such as "Tax / VAT
 // Obligations": the row that names it, or the row in its place among the
 // sheet's categories.
-function termOf(
+export function termOf(
   rules: z.output<typeof terms>["complianceRules"],
   category: string
 ): string {
@@ -85,12 +85,12 @@ function termOf(
   return (named ?? rules[index])?.term ?? ""
 }
 
-async function paymentTerms(database: Reader, projectId: string) {
+export async function paymentTerms(database: Reader, projectId: string) {
   return terms.parse(await lockedPayload(database, projectId, PAYMENT_TERMS))
 }
 
 // The record of a tool in one cycle, never a voided one.
-async function cyclePayload(
+export async function cyclePayload(
   database: Reader,
   projectId: string,
   toolId: string,
@@ -154,6 +154,23 @@ async function startingAddress(
     .join("\n")
 }
 
+// D3.1's schedule row for the milestone the cycle's D3.3 picked, if any.
+export async function cycleMilestone(
+  database: Reader,
+  projectId: string,
+  cycle: number
+) {
+  const [schedule, trigger] = await Promise.all([
+    paymentTerms(database, projectId),
+    cyclePayload(database, projectId, BILLING_TRIGGER, cycle),
+  ])
+
+  const sn = snOf(text.parse(trigger.milestone))
+  const index = Number(sn.split(".")[1]) - 1
+
+  return sn.startsWith("2.") ? schedule.paymentSchedule[index] : undefined
+}
+
 // Where a cycle's D3.4 starts before the FO saves anything: the billing
 // address, line 2.1 on the milestone the cycle's D3.3 picked, as "<D3.1
 // description> (<%>% Milestone)", quantity 1 at D3.1's Amount Due, an empty
@@ -164,15 +181,11 @@ export async function draftInvoiceStart(
   projectId: string,
   cycle: number
 ): Promise<JsonObject> {
-  const [schedule, trigger, address] = await Promise.all([
+  const [schedule, row, address] = await Promise.all([
     paymentTerms(database, projectId),
-    cyclePayload(database, projectId, BILLING_TRIGGER, cycle),
+    cycleMilestone(database, projectId, cycle),
     startingAddress(database, projectId, cycle),
   ])
-
-  const sn = snOf(text.parse(trigger.milestone))
-  const index = Number(sn.split(".")[1]) - 1
-  const row = sn.startsWith("2.") ? schedule.paymentSchedule[index] : undefined
 
   const share =
     row?.percentage === undefined ? "" : ` (${row.percentage}% Milestone)`

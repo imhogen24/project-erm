@@ -16,8 +16,8 @@ import type { WorkbookMap } from "./map"
 // `sendsBackTo`). D2.10, the finalized contract, opens after D2.9 with Terms
 // Agreed, or straight after D2.7 when the client accepted the draft as it is.
 // D2.10 locked opens D2.11, the contract both sides sign, and D2.11 locked
-// opens D2.12, the executed contract, whose lock opens Workbook 3. The tools
-// after it are added as each is built.
+// opens D2.12, the executed contract, whose lock opens Workbook 3 and D2.13,
+// the archive. The tools after it are added as each is built.
 export const wb02: WorkbookMap = {
   workbook: "wb02",
   opens: { after: { all: ["D1.16"] } },
@@ -79,6 +79,7 @@ export const wb02: WorkbookMap = {
     },
     { tool: "D2.11", after: { all: ["D2.10"] } },
     { tool: "D2.12", after: { all: ["D2.11"] } },
+    { tool: "D2.13", after: { all: ["D2.12"] } },
   ],
   stops: [
     {

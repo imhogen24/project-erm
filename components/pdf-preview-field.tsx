@@ -22,6 +22,12 @@ import type { Field } from "@/lib/tool-definition"
 
 const Previews = createContext<PreviewStates>({})
 
+// What each PDF preview shows this person, for a table that reads its rows'
+// previews, such as one whose row is not needed.
+export function usePreviews(): PreviewStates {
+  return useContext(Previews)
+}
+
 // Hands the form what each PDF preview field shows this person, so the fields
 // deep inside it need no props threaded through.
 export function PdfPreviews({

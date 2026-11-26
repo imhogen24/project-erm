@@ -5,6 +5,9 @@ export type PreviewState =
   | { status: "ready"; name: string; href: string }
   | { status: "notStarted"; name: string }
   | { status: "noAccess"; name: string }
+  // The row's document is not needed on this project, such as negotiation
+  // notes for a contract the client accepted as it was.
+  | { status: "notNeeded"; name: string }
 
 // Each PDF preview of a tool: a field by its key, and a table cell by
 // `previewCellKey`.
@@ -13,6 +16,7 @@ export type PreviewStates = Record<string, PreviewState>
 export const previewNotes = {
   notStarted: "Not started",
   noAccess: "No access",
+  notNeeded: "Not needed",
 } as const
 
 // The key of a table cell's PDF preview among a tool's previews, such as

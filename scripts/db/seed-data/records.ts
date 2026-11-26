@@ -53,6 +53,7 @@ import {
 import { YES, inviteScriptFor } from "@/lib/negotiation-invite"
 import { TERMS_AGREED } from "@/lib/negotiation-notes"
 import { UPDATED, finalTasks } from "@/lib/final-contract"
+import { APP_PLATFORM, SCAN, financeTasks } from "@/lib/executed-contract"
 import {
   CLIENT_ROLE,
   COURIER,
@@ -1084,8 +1085,27 @@ function stageD29() {
 
 // The finalized contract: D2.9's two concessions written into the contract,
 // at the tier's own walk-away floor, the FO's re-check and the CA signed, and
-// the tasks done, which locked it and opened D2.11.
-function stageD210(finalValue: string) {
+// the tasks done, which locked it and opened D2.11. A contract accepted as it
+// was has no amendments and no re-check.
+function stageD210(finalValue: string | undefined) {
+  if (!finalValue) {
+    return payloadOf({
+      editedBy: staffWith("CA").name,
+      finalEditDate: "2026-11-20",
+      amendments: [],
+      finalTasks: finalTasks.map((task) => ({
+        task,
+        assignee: CONTRACT_ADMIN,
+        status: TASK_DONE,
+      })),
+      readyForSignature: "Yes",
+      caSignature: {
+        signedBy: "role:CA",
+        signedAt: "2026-11-20T10:00:00.000Z",
+      },
+    })
+  }
+
   return payloadOf({
     editedBy: staffWith("CA").name,
     finalEditDate: "2026-12-03",
@@ -1184,24 +1204,63 @@ function negotiated(
   day: number,
   finalValue: string
 ): SeedRecord[] {
-  return name === ACCEPTED_AS_IS_PROJECT
-    ? []
-    : [
-        { toolId: "D2.8", state: "locked", day, payload: stageD28(name) },
-        { toolId: "D2.9", state: "locked", day: day + 2, payload: stageD29() },
-        {
-          toolId: "D2.10",
-          state: "locked",
-          day: day + 4,
-          payload: stageD210(finalValue),
-        },
-        {
-          toolId: "D2.11",
-          state: "locked",
-          day: day + 7,
-          payload: stageD211(name === PAPER_SIGNED_PROJECT ? COURIER : DIGITAL),
-        },
-      ]
+  const accepted = name === ACCEPTED_AS_IS_PROJECT
+  const method = name === PAPER_SIGNED_PROJECT ? COURIER : DIGITAL
+
+  return [
+    ...(accepted
+      ? []
+      : ([
+          { toolId: "D2.8", state: "locked", day, payload: stageD28(name) },
+          {
+            toolId: "D2.9",
+            state: "locked",
+            day: day + 2,
+            payload: stageD29(),
+          },
+        ] satisfies SeedRecord[])),
+    {
+      toolId: "D2.10",
+      state: "locked",
+      day: day + 4,
+      payload: stageD210(accepted ? undefined : finalValue),
+    },
+    {
+      toolId: "D2.11",
+      state: "locked",
+      day: day + 7,
+      payload: stageD211(method),
+    },
+    {
+      toolId: "D2.12",
+      state: "locked",
+      day: day + 9,
+      payload: stageD212(method),
+    },
+  ]
+}
+
+// The executed contract filed and the advance invoice issued, which the PM
+// approved, locking D2.12 and opening D2.13 and Workbook 3. The seed's files
+// are web links, as its contract is; a paper signing has no certificate.
+function stageD212(method: string) {
+  const digital = method === DIGITAL
+
+  return payloadOf({
+    platform: digital ? APP_PLATFORM : SCAN,
+    executedPdf: "https://utfs.io/f/imho-executed-contract-client-test-ltd",
+    ...(digital && {
+      auditCertificate: "https://utfs.io/f/imho-signing-log-client-test-ltd",
+    }),
+    financeTrigger: financeTasks.map((row) => ({ ...row, status: TASK_DONE })),
+    invoiceNumber: "IMHO-INV26-ADV-010",
+    invoiceDate: "2026-12-09",
+    fullyExecuted: "Yes",
+    caSignature: {
+      signedBy: "role:CA",
+      signedAt: "2026-12-09T10:00:00.000Z",
+    },
+  })
 }
 
 function tier1Records(name: string): SeedRecord[] {

@@ -57,7 +57,8 @@ function meets(
   payload: JsonObject,
   rule:
     | { field: string; column?: string; is: string; orNoRows?: true }
-    | { field: string; isNot: string }
+    | { field: string; isNot: string },
+  skipped: ReadonlySet<number> = new Set()
 ) {
   const value = payload[rule.field]
 
@@ -77,7 +78,7 @@ function meets(
 
   return (
     (rows.length > 0 || rule.orNoRows === true) &&
-    rows.every((row) => row[column] === rule.is)
+    rows.every((row, index) => skipped.has(index) || row[column] === rule.is)
   )
 }
 
@@ -85,9 +86,12 @@ function meets(
 // submitting needs, each with what to say about it.
 export function unmetSubmitRules(
   toolId: string,
-  payload: JsonObject
+  payload: JsonObject,
+  notNeeded: ReadonlyMap<string, ReadonlySet<number>> = new Map()
 ): FieldError[] {
   return (tools.getTool(toolId)?.submitWhen ?? []).flatMap((rule) =>
-    meets(payload, rule) ? [] : [{ field: rule.field, message: rule.message }]
+    meets(payload, rule, notNeeded.get(rule.field))
+      ? []
+      : [{ field: rule.field, message: rule.message }]
   )
 }

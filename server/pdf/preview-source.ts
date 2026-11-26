@@ -18,6 +18,20 @@ export function sourceName(source: PreviewSource, track?: ServiceTrack) {
     return source.title
   }
 
+  // An upload is named by its tool and its field, without the sheet's
+  // "Link to", such as "D2.12 Executed PDF".
+  if ("upload" in source) {
+    const id =
+      (track && shownTool(source.upload.tool, track)) ?? source.upload.tool
+
+    const label = tools
+      .getTool(id)
+      ?.fields.find((field) => field.key === source.upload.field)
+      ?.label.replace(/^Link to /, "")
+
+    return `${id} ${label ?? source.upload.field}`
+  }
+
   const id = (track && shownTool(source.tool, track)) ?? source.tool
   const tool = tools.getTool(id)
 

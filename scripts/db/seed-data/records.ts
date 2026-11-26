@@ -97,6 +97,11 @@ import { BANK_TRANSFER, receiptScriptFor } from "@/lib/payment-receipt"
 import { financialStatuses } from "@/lib/payment-record"
 import { DONE as LAUNCH_DONE, launchTasks } from "@/lib/initiation"
 import { ghs } from "@/lib/cost-estimation"
+import {
+  DONE as ROUTING_DONE,
+  PENDING as ROUTING_PENDING,
+  routingTasks,
+} from "@/lib/unblock-notice"
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
 
 import { loginFor, staffWith } from "./people"
@@ -111,6 +116,8 @@ import {
   HALF_PAID_PROJECT,
   RECEIPT_SENT_PROJECT,
   ADVANCE_OVERDUE_PROJECT,
+  UNBLOCK_SUBMITTED_PROJECT,
+  UNBLOCK_APPROVED_PROJECT,
   PAPER_SIGNED_PROJECT,
   TRIGGER_APPROVED_PROJECT,
   TRIGGER_WAITING_PROJECT,
@@ -1614,20 +1621,41 @@ function stageD38(cleared: number, expected: number) {
 
 // The FO sent 2.2's receipt to the client at D3.9 on 2 Jan 2027, paid by
 // bank transfer.
-function stageD39() {
+function stageD39(received = 43424) {
   return payloadOf({
     receiptNumber: SEEDED_RECEIPT,
     dateIssued: "2027-01-02",
     timeSent: "10:00",
     receivedFrom: client.organisation,
     paymentMethod: BANK_TRANSFER,
-    amountReceived: 43424,
+    amountReceived: received,
     script: receiptScriptFor({
       clientName: client.organisation,
-      amount: ghs(43424),
+      amount: ghs(received),
       invoiceNumber: SEEDED_INVOICE,
     }),
     receiptAttached: "Yes",
+  })
+}
+
+// The FO's D3.10 for 2.2, submitted on 4 Jan 2027 with no holds, the
+// tracking database updated and Phase 3 authorized; `signed` once the PM
+// signed it as Head of Finance on 5 Jan, which marks the PM's task Done.
+function stageD310(signed: boolean) {
+  return payloadOf({
+    financialHolds: "No",
+    phaseAuthorized: "Phase 3: Final Handover (System Delivery)",
+    routingTasks: routingTasks.map((task, index) => ({
+      ...task,
+      status: index === 0 || signed ? ROUTING_DONE : ROUTING_PENDING,
+    })),
+    authorized: "Yes",
+    ...(signed && {
+      hofSignature: {
+        signedBy: "role:PM",
+        signedAt: "2027-01-05T09:00:00.000Z",
+      },
+    }),
   })
 }
 
@@ -1761,6 +1789,60 @@ function billingCycle(name: string): SeedRecord[] {
     ]
   }
 
+  // The FO sent 2.2's receipt at D3.9, which opens D3.10 for 2.2.
+  const receipted = (received = 43424): SeedRecord => ({
+    toolId: "D3.9",
+    cycle: 1,
+    state: "locked",
+    day: 71,
+    payload: stageD39(received),
+  })
+
+  if (name === testProjectName("Tier_1", "D3.10")) {
+    return [
+      approved,
+      invoice(),
+      passed(),
+      transmitted(),
+      proceeded(43424),
+      reconciled(),
+      receipted(),
+    ]
+  }
+
+  if (name === testProjectName("Tier_3", "D3.10")) {
+    return [
+      approved,
+      invoice(60000),
+      passed(),
+      transmitted("GHS 27,600.00"),
+      proceeded(27600, 27600),
+      reconciled(27600, 27600),
+      receipted(27600),
+    ]
+  }
+
+  if (name === UNBLOCK_SUBMITTED_PROJECT || name === UNBLOCK_APPROVED_PROJECT) {
+    const signed = name === UNBLOCK_APPROVED_PROJECT
+
+    return [
+      approved,
+      invoice(),
+      passed(),
+      transmitted(),
+      proceeded(43424),
+      reconciled(),
+      receipted(),
+      {
+        toolId: "D3.10",
+        cycle: 1,
+        state: signed ? "locked" : "submitted",
+        day: signed ? 74 : 73,
+        payload: stageD310(signed),
+      },
+    ]
+  }
+
   if (name === RECEIPT_SENT_PROJECT) {
     return [
       approved,
@@ -1769,13 +1851,7 @@ function billingCycle(name: string): SeedRecord[] {
       transmitted(),
       proceeded(43424),
       reconciled(),
-      {
-        toolId: "D3.9",
-        cycle: 1,
-        state: "locked",
-        day: 71,
-        payload: stageD39(),
-      },
+      receipted(),
       { toolId: "D3.2", state: "draft", day: 72, payload: stageD32() },
     ]
   }
@@ -2081,6 +2157,8 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   [HALF_PAID_PROJECT, tier1Records(HALF_PAID_PROJECT)],
   [RECEIPT_SENT_PROJECT, tier1Records(RECEIPT_SENT_PROJECT)],
   [ADVANCE_OVERDUE_PROJECT, tier1Records(ADVANCE_OVERDUE_PROJECT)],
+  [UNBLOCK_SUBMITTED_PROJECT, tier1Records(UNBLOCK_SUBMITTED_PROJECT)],
+  [UNBLOCK_APPROVED_PROJECT, tier1Records(UNBLOCK_APPROVED_PROJECT)],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
   [`${DEV_LOCKED} (Tier 3)`, tier3Records(`${DEV_LOCKED} (Tier 3)`)],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],

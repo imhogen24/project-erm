@@ -64,6 +64,16 @@ export type PendingEmail =
       recordTitle: string
       reason: string
     }
+  | {
+      kind: "lock_announced"
+      key: string
+      to: string
+      projectId: string
+      recordId: string
+      path: string
+      recordTitle: string
+      message: string
+    }
 
 type RecordRef = { id: string; projectId: string; toolId: string }
 
@@ -375,6 +385,49 @@ export async function notifyRolesSentBack(
   }))
 }
 
+// The people holding these roles on the project, told what a record says
+// once it locks, such as D3.10's next phase may start. In the app and by
+// email.
+export async function notifyLockAnnounced(
+  transaction: Transaction,
+  actor: string,
+  record: RecordRef,
+  told: readonly Role[],
+  message: string
+): Promise<PendingEmail[]> {
+  const holders = await holdersOf(
+    transaction,
+    record.projectId,
+    told.filter((role) => role !== "Client")
+  )
+
+  const name = await projectName(transaction, record.projectId)
+  const path = toolPath(record.projectId, record.toolId)
+
+  const written = await notify(transaction, {
+    personIds: others(actor, holders),
+    kind: "lock_announced",
+    title: `${record.toolId} is approved`,
+    text: `${toolName(record.toolId)} on ${name}: ${message}`,
+    projectId: record.projectId,
+    recordId: record.id,
+    path,
+  })
+
+  const addresses = await addressesOf(transaction, written)
+
+  return written.map((row) => ({
+    kind: "lock_announced",
+    key: row.id,
+    to: addresses.get(row.personId)!,
+    projectId: record.projectId,
+    recordId: record.id,
+    path,
+    recordTitle: `${record.toolId} ${toolName(record.toolId)} on ${name}`,
+    message,
+  }))
+}
+
 // Where a comment sits on its tool's page.
 function commentPath(record: RecordRef, commentId: string): string {
   return `${toolPath(record.projectId, record.toolId)}#comment-${commentId}`
@@ -621,6 +674,27 @@ export async function sendNotificationEmails(
             data: {
               recordTitle: email.recordTitle,
               signature: email.signature,
+              link,
+            },
+            projectId: email.projectId,
+            recordId: email.recordId,
+            key: email.key,
+          },
+          transport
+        )
+
+        continue
+      }
+
+      if (email.kind === "lock_announced") {
+        await sendEmail(
+          database,
+          {
+            to: email.to,
+            kind: email.kind,
+            data: {
+              recordTitle: email.recordTitle,
+              message: email.message,
               link,
             },
             projectId: email.projectId,

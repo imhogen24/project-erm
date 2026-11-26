@@ -1107,6 +1107,16 @@ const toolDefinition = z
           .optional(),
       })
       .optional(),
+    // Once the record locks, the people holding the `notifies` roles on the
+    // project are told `message`, in the app and by email, each `[key]` in
+    // it filled from that field of the locked record, such as D3.10's
+    // "[phaseAuthorized] may start".
+    announcesOnLock: z
+      .strictObject({
+        notifies: z.array(z.enum(roles)).min(1),
+        message: z.string().min(1),
+      })
+      .optional(),
     // The approver's decision, written on the record in the same step:
     // approving sets the select `field` to `approve`, sending back to
     // `sendBack`, and `by` to the approver's name and `receivedOn` to the day
@@ -1210,6 +1220,18 @@ const toolDefinition = z
 
     for (const problem of fillProblems(value.fields, value.fills ?? {})) {
       context.addIssue({ code: "custom", path: ["fills"], message: problem })
+    }
+
+    const announced = value.announcesOnLock
+
+    for (const key of announced ? placeholdersIn(announced.message) : []) {
+      if (!value.fields.some((entry) => entry.key === key)) {
+        context.addIssue({
+          code: "custom",
+          path: ["announcesOnLock", "message"],
+          message: `[${key}] is not a field of this tool`,
+        })
+      }
     }
 
     const back = value.sendsBackTo

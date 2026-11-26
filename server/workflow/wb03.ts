@@ -22,8 +22,9 @@ import type { WorkbookMap } from "./map"
 // Proceed opens that cycle's reconciled payment log, D3.8, for the FO. A
 // shortfall sends the D3.7 back (D3.8's `sendsBackTo`) as a new check.
 // Approving a cycle's D3.8 with the funds fully accounted for opens that
-// cycle's payment receipt, D3.9, for the FO to send. D3.10 is not built
-// yet, so sending D3.9 opens nothing more for now.
+// cycle's payment receipt, D3.9, for the FO to send. Sending a cycle's D3.9
+// opens that cycle's phase unblock notice, D3.10, for the FO; the PM's
+// signature locks it, which is what WB04 waits on.
 export const wb03: WorkbookMap = {
   workbook: "wb03",
   opens: { after: { all: ["D2.12"] } },
@@ -67,6 +68,7 @@ export const wb03: WorkbookMap = {
       },
       repeats: true,
     },
+    { tool: "D3.10", after: { all: ["D3.9"] }, repeats: true },
   ],
   cycles: {
     count: { tool: "D3.1", field: "paymentSchedule", less: 1 },

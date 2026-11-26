@@ -40,6 +40,9 @@ export const notificationKinds = [
   "signature_overdue",
   // A milestone's D3.7 check is open: the FO is reminded to check the bank.
   "bank_check_due",
+  // A locked record told the people it names what it decided, such as
+  // D3.10's next phase may start.
+  "lock_announced",
 ] as const
 
 export type NotificationKind = (typeof notificationKinds)[number]

@@ -369,7 +369,7 @@ async function draftToSend(
 // who paid and the amount are filled in before the email goes, which freezes
 // the payment method and the message, so an edit saved meanwhile cannot make
 // the record differ from the email. Once it has gone, 3.0 is filled in and
-// D3.9 locks, which opens D3.10 for the milestone once it is built. The
+// D3.9 locks, which opens D3.10 for the milestone. The
 // record's ID is the email's key, so pressing twice sends one email; when
 // the email service refuses it, what was filled in is cleared again and the
 // FO can send again. A send cut short after it was prepared is finished by

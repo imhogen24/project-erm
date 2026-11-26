@@ -31,6 +31,7 @@ import {
   clearApprovalNeeded,
   clearSignatureNeeded,
   notifyApprovalNeeded,
+  notifyLockAnnounced,
   notifySentBack,
   notifySignatureNeeded,
   notifyToolsOpened,
@@ -65,6 +66,7 @@ import {
 } from "./shown-fields"
 import { applySendBack } from "./send-back"
 import { answersSendBack } from "@/lib/send-back"
+import { fillText, placeholdersIn } from "@/lib/placeholders"
 import { submittedValues } from "./submitted-values"
 import { decisionValues, heldDecision, withoutDecision } from "./decision"
 import { heldIssued, issuedValues } from "./issued"
@@ -624,9 +626,40 @@ async function move(
       openBefore,
       await openToolsIn(transaction, current.projectId)
     )
+
+    outbox.push(...(await announceLock(transaction, actor, moved!)))
   }
 
   return moved!
+}
+
+// The tool's `announcesOnLock`, once its record locks: the roles it names
+// told its message, each [key] filled from the locked record.
+async function announceLock(
+  transaction: Transaction,
+  actor: string,
+  record: ToolRecord
+): Promise<PendingEmail[]> {
+  const announced = tools.getTool(record.toolId)?.announcesOnLock
+
+  if (!announced) {
+    return []
+  }
+
+  const fills = Object.fromEntries(
+    placeholdersIn(announced.message).map((key) => [
+      key,
+      String(record.payload[key] ?? ""),
+    ])
+  )
+
+  return notifyLockAnnounced(
+    transaction,
+    actor,
+    record,
+    announced.notifies,
+    fillText(announced.message, fills)
+  )
 }
 
 // The record is locked while it is checked and moved, so two simultaneous

@@ -16,6 +16,7 @@ import type { RenderedEmail } from "./html"
 import { meetingTimes, type MeetingTimesData } from "./meeting-times"
 import { newRequest, type NewRequestData } from "./new-request"
 import { sentBack, type SentBackData } from "./sent-back"
+import { lockAnnounced, type LockAnnouncedData } from "./lock-announced"
 import {
   signatureOverdue,
   type SignatureOverdueData,
@@ -53,6 +54,7 @@ export type EmailDataByKind = {
   bank_check_reminder: BankCheckReminderData
   follow_up_sent: FollowUpSentData
   sent_back: SentBackData
+  lock_announced: LockAnnouncedData
   signature_needed: SignatureNeededData
   signature_reminder: SignatureReminderData
   signature_overdue: SignatureOverdueData
@@ -81,6 +83,7 @@ const templates: Templates = {
   bank_check_reminder: bankCheckReminder,
   follow_up_sent: followUpSent,
   sent_back: sentBack,
+  lock_announced: lockAnnounced,
   signature_needed: signatureNeeded,
   signature_reminder: signatureReminder,
   signature_overdue: signatureOverdue,

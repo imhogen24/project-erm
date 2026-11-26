@@ -271,10 +271,12 @@ export function accessRow(
 // a tool may name a role that only reads it. The PM approves D1.2 and sends
 // D1.4 (its approval), as agreed on the 24 Oct 2026 onboarding call. D1.5 and
 // D1.6 have no approver: the OM's own step locks each. See
-// docs/WB01_PERMISSIONS/_.md.
+// docs/WB01_PERMISSIONS/_.md. The PM, as Head of Finance, approves D3.11
+// by signing it, though the matrix has them only read it.
 export const extraApprovers = new Map<string, readonly Role[]>([
   ["D1.2", ["PM"]],
   ["D1.4", ["PM"]],
+  ["D3.11", ["PM"]],
 ])
 
 // Who writes a tool is decided with the tool too. A review that the matrix

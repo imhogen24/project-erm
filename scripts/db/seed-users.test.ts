@@ -3,7 +3,7 @@ import { afterAll, beforeEach, describe, expect, it, vi } from "vitest"
 import { createTestDatabase, resetTestData } from "@/db/testing"
 import { createAuth } from "@/server/auth/auth"
 import { validateRecord } from "@/server/records/validate"
-import { availableTools } from "@/server/workflow/workflow"
+import { availableTools, opensByJob } from "@/server/workflow/workflow"
 import { tools } from "@/server/tools/registry"
 
 import { registerAllTools } from "@/workbooks"
@@ -233,14 +233,32 @@ describe("the projects", () => {
 
       const route = routeOf(project.serviceTrack)
 
-      expect(rows.every((row) => row.state === "locked")).toBe(true)
+      // A tool only an app job opens, such as D3.11, is never open to
+      // start: its project holds the empty draft the job opened instead.
+      const byJob = opensByJob(toolId)
+
+      const earlier = byJob
+        ? rows.filter((row) => row.tool_id !== toolId)
+        : rows
+
+      expect(earlier.every((row) => row.state === "locked")).toBe(true)
       expect(
-        rows.every((row) => route.indexOf(row.tool_id) < route.indexOf(toolId))
+        earlier.every(
+          (row) => route.indexOf(row.tool_id) < route.indexOf(toolId)
+        )
       ).toBe(true)
-      expect(
-        (await availableTools(database, id)).map((tool) => tool.toolId),
-        project.name
-      ).toContain(toolId)
+
+      if (byJob) {
+        expect(
+          rows.filter((row) => row.tool_id === toolId),
+          project.name
+        ).toEqual([{ tool_id: toolId, state: "draft" }])
+      } else {
+        expect(
+          (await availableTools(database, id)).map((tool) => tool.toolId),
+          project.name
+        ).toContain(toolId)
+      }
     }
   })
 
@@ -416,6 +434,8 @@ describe("what the PMs see", () => {
       { email: loginFor("PM"), kind: "approval_needed" },
       { email: loginFor("PM"), kind: "approval_needed" },
       // D3.10 for 2.2, submitted and waiting for the PM's signature.
+      { email: loginFor("PM"), kind: "approval_needed" },
+      // D3.11 for 2.2, submitted and waiting for the PM's signature.
       { email: loginFor("PM"), kind: "approval_needed" },
       { email: loginFor("PM"), kind: "change_waiting" },
     ])

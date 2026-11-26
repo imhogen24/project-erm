@@ -100,7 +100,16 @@ import {
   PENDING as ROUTING_PENDING,
   routingTasks,
 } from "@/lib/unblock-notice"
+import {
+  NO as OVERDUE_NO,
+  YES as OVERDUE_YES,
+  escalationSteps,
+  penaltyOf,
+  shownDays,
+} from "@/lib/overdue-account"
+import { addDays } from "@/lib/follow-dates"
 import { DEV_LOCKED, DEV_UNLOCKED } from "@/server/workflow/dev-unlocked"
+import { opensByJob } from "@/server/workflow/workflow"
 
 import { loginFor, staffWith } from "./people"
 import {
@@ -115,6 +124,9 @@ import {
   RECEIPT_SENT_PROJECT,
   UNBLOCK_SUBMITTED_PROJECT,
   UNBLOCK_APPROVED_PROJECT,
+  OVERDUE_LOGGED_PROJECT,
+  OVERDUE_SUBMITTED_PROJECT,
+  OVERDUE_HALTED_PROJECT,
   PAPER_SIGNED_PROJECT,
   TRIGGER_APPROVED_PROJECT,
   TRIGGER_WAITING_PROJECT,
@@ -1463,20 +1475,24 @@ function stageD35(failed?: number) {
 // The FO sent 2.2's approved invoice to the client at D3.6 on 24 Dec 2026,
 // which started the 21-day payment clock and scheduled the reminder for
 // 7 days before the due date.
-function stageD36(name: string, amount = "GHS 43,424.00") {
+function stageD36(
+  name: string,
+  amount = "GHS 43,424.00",
+  dueDate = "2027-01-14"
+) {
   return payloadOf({
     sentTo: client.email,
     ccBcc: loginFor("PM"),
     subject: `IMHO GEN Invoice ${SEEDED_INVOICE} - ${name}`,
-    dateSent: "2026-12-24",
+    dateSent: addDays(dueDate, -21)!,
     timeSent: "10:00",
-    paymentDueDate: "2027-01-14",
+    paymentDueDate: dueDate,
     script: transmittedScript({
       clientName: client.organisation,
       milestone: "Fabrication Milestone (Design Approval)",
       invoiceNumber: SEEDED_INVOICE,
       amount,
-      dueDate: "2027-01-14",
+      dueDate,
       windowDays: 21,
       bankName: companyBank.bankName,
     }),
@@ -1609,6 +1625,56 @@ function stageD310(signed: boolean) {
   })
 }
 
+// 14 days before the seed runs: the due date of an overdue 2.2 invoice.
+const overdueSince = addDays(new Date().toISOString().slice(0, 10), -14)!
+
+// The D3.11 the app opened for 2.2's overdue invoice, with the FO's
+// follow-ups: `logged` has 2.1 and 2.2 done and the revised invoice
+// answered No; `submitted` has every step logged and the halt answered Yes;
+// `signed` is that, signed by the PM as Head of Finance, keeping the figures
+// it showed on `outstanding`.
+function stageD311(
+  stage: "empty" | "logged" | "submitted" | "signed",
+  outstanding = 43424
+) {
+  if (stage === "empty") {
+    return {}
+  }
+
+  const done = stage === "logged" ? 2 : 4
+
+  return payloadOf({
+    escalationLog: escalationSteps.map((step, index) => ({
+      ...step,
+      ...(index < done && {
+        dateExecuted: addDays(overdueSince, [-7, 1, 7, 14][index]!)!,
+        notes: [
+          "Acknowledged by client",
+          "No response",
+          "Client stated waiting on internal signatures",
+          "Project officially paused",
+        ][index]!,
+      }),
+    })),
+    revisedInvoice: OVERDUE_NO,
+    ...(stage !== "logged" && {
+      escalated: OVERDUE_YES,
+      haltWork: OVERDUE_YES,
+    }),
+    ...(stage === "signed" && {
+      originalDueDate: overdueSince,
+      daysOverdue: shownDays(14),
+      outstandingBalance: outstanding,
+      penaltyRate: "2% Monthly Interest on outstanding balance",
+      penaltyAccrued: penaltyOf(2, outstanding, 14),
+      hofSignature: {
+        signedBy: "role:PM",
+        signedAt: `${overdueSince}T09:00:00.000Z`,
+      },
+    }),
+  })
+}
+
 // The first payment milestone cycle: D3.3 for 2.2 waiting for the FO, or
 // approved by them, which opens D3.4 for 2.2, as on the D3.4 test
 // projects; on the invoiced project, D3.4 for 2.2 locked and D3.3 for 2.3
@@ -1674,13 +1740,58 @@ function billingCycle(name: string): SeedRecord[] {
     ]
   }
 
-  const transmitted = (amount?: string): SeedRecord => ({
+  const transmitted = (amount?: string, dueDate?: string): SeedRecord => ({
     toolId: "D3.6",
     cycle: 1,
     state: "locked",
     day: 65,
-    payload: stageD36(name, amount),
+    payload: stageD36(name, amount, dueDate),
   })
+
+  // 2.2's invoice fell due unpaid, so the app opened D3.11 for 2.2.
+  const overdue = (
+    stage: Parameters<typeof stageD311>[0],
+    total?: number,
+    amount?: string,
+    outstanding?: number
+  ): SeedRecord[] => [
+    approved,
+    invoice(total),
+    passed(),
+    transmitted(amount, overdueSince),
+    {
+      toolId: "D3.11",
+      cycle: 1,
+      state:
+        stage === "signed"
+          ? "locked"
+          : stage === "submitted"
+            ? "submitted"
+            : "draft",
+      day: 70,
+      payload: stageD311(stage, outstanding),
+    },
+  ]
+
+  if (name === testProjectName("Tier_1", "D3.11")) {
+    return overdue("empty")
+  }
+
+  if (name === testProjectName("Tier_3", "D3.11")) {
+    return overdue("empty", 60000, "GHS 27,600.00")
+  }
+
+  if (name === OVERDUE_LOGGED_PROJECT) {
+    return overdue("logged")
+  }
+
+  if (name === OVERDUE_SUBMITTED_PROJECT) {
+    return overdue("submitted")
+  }
+
+  if (name === OVERDUE_HALTED_PROJECT) {
+    return overdue("signed")
+  }
 
   if (name === BANK_WAITING_PROJECT) {
     return [
@@ -2079,7 +2190,12 @@ function testRecords(project: SeedProject, toolId: string): SeedRecord[] {
       ? tier1Records(project.name)
       : tier3Records(project.name)
 
-  return all.filter((record) => route.indexOf(record.toolId) < at)
+  // A tool only an app job opens keeps the empty draft the job opened.
+  return all.filter(
+    (record) =>
+      route.indexOf(record.toolId) < at ||
+      (record.toolId === toolId && opensByJob(toolId))
+  )
 }
 
 export const projectRecords = new Map<string, SeedRecord[]>([
@@ -2106,6 +2222,9 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   [RECEIPT_SENT_PROJECT, tier1Records(RECEIPT_SENT_PROJECT)],
   [UNBLOCK_SUBMITTED_PROJECT, tier1Records(UNBLOCK_SUBMITTED_PROJECT)],
   [UNBLOCK_APPROVED_PROJECT, tier1Records(UNBLOCK_APPROVED_PROJECT)],
+  [OVERDUE_LOGGED_PROJECT, tier1Records(OVERDUE_LOGGED_PROJECT)],
+  [OVERDUE_SUBMITTED_PROJECT, tier1Records(OVERDUE_SUBMITTED_PROJECT)],
+  [OVERDUE_HALTED_PROJECT, tier1Records(OVERDUE_HALTED_PROJECT)],
   [`${DEV_UNLOCKED} (Tier 1)`, unlocked(`${DEV_UNLOCKED} (Tier 1)`)],
   [`${DEV_LOCKED} (Tier 3)`, tier3Records(`${DEV_LOCKED} (Tier 3)`)],
   [`${DEV_UNLOCKED} (Tier 3)`, unlocked(`${DEV_UNLOCKED} (Tier 3)`)],

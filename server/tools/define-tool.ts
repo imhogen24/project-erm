@@ -795,6 +795,12 @@ const field = z
       // (lib/sequences) when the record is first saved, and kept on it for
       // good, such as D3.4's invoice number. Never reused.
       issuedFrom: z.string().min(1).optional(),
+      // A system-filled date set to the day a save first holds the select
+      // `field` at `is`, kept while it stays there and cleared once it
+      // does not, such as D3.11's Date Issued for a revised invoice.
+      datedOnSave: z
+        .strictObject({ field: fieldKey, is: z.string().min(1) })
+        .optional(),
     }),
     signature.extend(required),
     select.extend({
@@ -1097,6 +1103,11 @@ const toolDefinition = z
       .strictObject({
         notifies: z.array(z.enum(roles)).min(1),
         message: z.string().min(1),
+        // Only when the locked record's select `field` holds `is`, such as
+        // D3.11's halt answered Yes.
+        when: z
+          .strictObject({ field: fieldKey, is: z.string().min(1) })
+          .optional(),
       })
       .optional(),
     // The approver's decision, written on the record in the same step:
@@ -1199,6 +1210,43 @@ const toolDefinition = z
           code: "custom",
           path: ["announcesOnLock", "message"],
           message: `[${key}] is not a field of this tool`,
+        })
+      }
+    }
+
+    const heard = announced?.when
+
+    if (heard) {
+      const named = value.fields.find((entry) => entry.key === heard.field)
+
+      if (named?.type !== "select" || !named.options.includes(heard.is)) {
+        context.addIssue({
+          code: "custom",
+          path: ["announcesOnLock", "when"],
+          message: `${heard.field} is not a select with the option "${heard.is}"`,
+        })
+      }
+    }
+
+    for (const entry of value.fields) {
+      const dated = "datedOnSave" in entry ? entry.datedOnSave : undefined
+
+      if (!dated) {
+        continue
+      }
+
+      const named = value.fields.find((other) => other.key === dated.field)
+
+      if (
+        entry.type !== "date" ||
+        !entry.systemFilled ||
+        named?.type !== "select" ||
+        !named.options.includes(dated.is)
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["fields", entry.key, "datedOnSave"],
+          message: `${entry.key} must be a system date following a select ${dated.field} with the option "${dated.is}"`,
         })
       }
     }

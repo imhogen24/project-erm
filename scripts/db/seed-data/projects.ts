@@ -551,6 +551,34 @@ const [unblockSubmitted, unblockApproved] = [
   )
 )
 
+// Tier 1 projects whose 2.2 invoice fell due 14 days before the seed ran,
+// unpaid, so the app opened D3.11 for 2.2: on the first the FO has logged
+// the first follow-ups; on the second the FO submitted it, waiting for the
+// PM's signature; on the third the PM signed it with the halt answered Yes,
+// so engineering work is halted.
+export const OVERDUE_LOGGED_PROJECT = `${DEV_PROJECT}D3.11 2.2 Overdue (Tier 1)`
+
+export const OVERDUE_SUBMITTED_PROJECT = `${DEV_PROJECT}D3.11 2.2 Submitted (Tier 1)`
+
+export const OVERDUE_HALTED_PROJECT = `${DEV_PROJECT}D3.11 2.2 Work Halted (Tier 1)`
+
+const [overdueLogged, overdueSubmitted, overdueHalted] = [
+  OVERDUE_LOGGED_PROJECT,
+  OVERDUE_SUBMITTED_PROJECT,
+  OVERDUE_HALTED_PROJECT,
+].map((name, index) =>
+  tier1Stage(
+    name,
+    "active",
+    `2026-11-0${1 + index}T09:00:00Z`,
+    "Accra",
+    client,
+    "everyone",
+    "Small rice mill with destoner",
+    "Mill 1 tonne of paddy an hour with a destoner and polisher."
+  )
+)
+
 const triggerApproved = tier1Stage(
   TRIGGER_APPROVED_PROJECT,
   "active",
@@ -581,6 +609,9 @@ export const projects: readonly SeedProject[] = [
   receiptSent,
   unblockSubmitted!,
   unblockApproved!,
+  overdueLogged!,
+  overdueSubmitted!,
+  overdueHalted!,
 ]
 
 export function seedProjectNamed(name: string) {

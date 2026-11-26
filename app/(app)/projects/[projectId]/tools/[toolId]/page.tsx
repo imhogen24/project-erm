@@ -40,6 +40,7 @@ import {
 } from "@/server/acknowledgement/acknowledgement"
 import { acknowledgementDelivery } from "@/server/acknowledgement/delivery"
 import { getDatabase } from "@/server/database"
+import { isCyclePaid } from "@/server/payments/reconciled-submit"
 import {
   clientAnswersOf,
   clientChangesOf,
@@ -150,6 +151,7 @@ import { BILLING_TRIGGER } from "@/lib/billing-trigger"
 import { milestoneValueOptions } from "@/server/payments/billing-trigger"
 import { CycleList } from "@/components/cycle-list"
 import { InvoiceFile } from "@/components/invoice-file"
+import { PaidBadge } from "@/components/paid-badge"
 import { APPROVED_INVOICE, invoicePath } from "@/lib/approved-invoice"
 import { shownInvoice } from "@/server/payments/approved-invoice"
 import { TRANSMITTED_INVOICE } from "@/lib/transmitted-invoice"
@@ -1199,6 +1201,11 @@ export default async function Page({
       body
     )
 
+  // A milestone's invoice tools, once its payment is reconciled (D3.8).
+  const paid =
+    [DRAFT_INVOICE, APPROVED_INVOICE, TRANSMITTED_INVOICE].includes(toolId) &&
+    (await isCyclePaid(getDatabase(), projectId, view.cycle))
+
   // D3.5, once approved: the invoice the client receives, to view or save.
   const invoice =
     toolId === APPROVED_INVOICE && view.state === "locked"
@@ -1305,6 +1312,7 @@ export default async function Page({
               cycles={view.cycles}
               current={view.cycle}
             />
+            {paid && <PaidBadge />}
             {invoice && (
               <InvoiceFile
                 fileName={invoice.fileName}

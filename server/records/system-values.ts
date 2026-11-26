@@ -53,6 +53,8 @@ import { TRANSMITTED_INVOICE } from "@/lib/transmitted-invoice"
 import { transmittedInvoiceValues } from "@/server/payments/transmitted-invoice"
 import { BANK_STATEMENT_LOG } from "@/lib/bank-statement-log"
 import { bankLogValues } from "@/server/payments/bank-statement-log"
+import { RECONCILED_PAYMENT } from "@/lib/reconciled-payment"
+import { reconciledValues } from "@/server/payments/reconciled-payment"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -262,6 +264,15 @@ async function workedOut(
 
     case BANK_STATEMENT_LOG: {
       return await bankLogValues(database, projectId, { state, payload }, cycle)
+    }
+
+    case RECONCILED_PAYMENT: {
+      return await reconciledValues(
+        database,
+        projectId,
+        { id: record?.id, state, payload },
+        cycle
+      )
     }
 
     default: {

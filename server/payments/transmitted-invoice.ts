@@ -17,7 +17,6 @@ import { daysIn } from "@/lib/follow-dates"
 import type { Fills } from "@/lib/placeholders"
 import {
   NO,
-  RECONCILED_PAYMENT,
   TRANSMITTED_INVOICE,
   YES,
   dueDateOf,
@@ -46,6 +45,7 @@ import {
   paymentTerms,
   termOf,
 } from "@/server/payments/draft-invoice"
+import { isCyclePaid } from "@/server/payments/reconciled-submit"
 import { invoicePdf } from "@/server/pdf/invoice-pdf"
 import { assertCan } from "@/server/permissions/permissions"
 import { assertProjectActive } from "@/server/projects/projects"
@@ -520,24 +520,12 @@ async function deliver(
   }
 }
 
-// Whether the cycle's payment is already reconciled: its D3.8 locked.
-async function reconciled(database: Reader, projectId: string, cycle: number) {
-  const record = await cycleRecord(
-    database,
-    projectId,
-    RECONCILED_PAYMENT,
-    cycle
-  )
-
-  return record?.state === "locked"
-}
-
 // The reminder, run every hour: each sent D3.6 with a reminder scheduled
 // whose reminder day, seven days before the due date, has come, emails the
 // client once, copying the PM. A project not active, or a milestone whose
-// payment is reconciled (its D3.8 locked), sends nothing. D3.8 is not built
-// yet, so until then the reminder always goes. Each reminder's key is its
-// record, so it goes once. Returns how many clients this run reminded.
+// payment is reconciled (its D3.8 approved, so the invoice is paid), sends
+// nothing. Each reminder's key is its record, so it goes once. Returns how
+// many clients this run reminded.
 export async function sendInvoiceReminders(
   database: Database,
   options: { transport?: Transport; now?: Date } = {}
@@ -576,7 +564,7 @@ export async function sendInvoiceReminders(
       !values.sentTo ||
       !day ||
       day > today ||
-      (await reconciled(database, record.projectId, record.cycle))
+      (await isCyclePaid(database, record.projectId, record.cycle))
     ) {
       continue
     }

@@ -1096,10 +1096,10 @@ export async function signField(
       )
     }
 
-    const payload = {
+    const payload = setBySigning(current.toolId, fieldKey, {
       ...current.payload,
       [fieldKey]: { signedBy: actor, signedAt: new Date().toISOString() },
-    }
+    })
 
     const [updated] = await transaction
       .update(toolRecords)
@@ -1508,6 +1508,43 @@ export async function setSystemValues(
   )
 
   return updated!
+}
+
+const tableRows = z.array(z.record(z.string(), z.unknown())).catch([])
+
+// The payload with the cells this signature sets (`setOnSign`), such as
+// D2.14's "PM received this notice" set to Done as the PM signs.
+function setBySigning(
+  toolId: string,
+  fieldKey: string,
+  payload: JsonObject
+): JsonObject {
+  const next: JsonObject = { ...payload }
+
+  for (const field of tools.getTool(toolId)?.fields ?? []) {
+    if (field.type !== "table") {
+      continue
+    }
+
+    for (const rule of field.setOnSign ?? []) {
+      if (rule.signature !== fieldKey) {
+        continue
+      }
+
+      const rows = tableRows.parse(next[field.key]).map((row) => ({ ...row }))
+
+      while (rows.length <= rule.row) {
+        rows.push({})
+      }
+
+      rows[rule.row]![rule.column] = rule.is
+
+      // SAFETY: rows of cells read from the payload, one cell changed.
+      next[field.key] = rows as JsonObject[]
+    }
+  }
+
+  return next
 }
 
 // Keeps when the person whose turn it is to sign first opens the record,

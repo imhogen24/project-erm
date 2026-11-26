@@ -356,6 +356,30 @@ export function TableEditor({
                 )
               }
 
+              // A cell a signature sets, such as D2.14's "PM received this
+              // notice", reads as what it holds.
+              const setBySigning = field.setOnSign?.some(
+                (rule) => rule.row === rowIndex && rule.column === column.key
+              )
+
+              if (setBySigning) {
+                return (
+                  <div
+                    key={column.key}
+                    role="cell"
+                    className="flex flex-col gap-1 @xl:justify-center @xl:border-r @xl:border-foreground/20 @xl:px-4 @xl:py-3 @xl:last:border-r-0"
+                  >
+                    <span className="pt-2 text-xs text-muted-foreground @xl:sr-only @xl:pt-0">
+                      {column.label}
+                      <span className="sr-only">, row {rowIndex + 1}</span>
+                    </span>
+                    <span id={id} className="text-sm">
+                      {String(row[column.key] ?? "")}
+                    </span>
+                  </div>
+                )
+              }
+
               if (column.type === "select" && notNeeded(rowIndex)) {
                 return (
                   <div

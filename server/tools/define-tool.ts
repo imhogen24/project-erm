@@ -278,6 +278,20 @@ const table = z
     // What the subtotal row is called, as the sheet names it.
     subtotalLabel: z.string().min(1).optional(),
     readOnly: z.boolean().optional(),
+    // Cells the app sets when a signature is given, in the same step, each
+    // by its fixed row's place (0 for the first) and column, such as D2.14's
+    // "Has the PM received this notice?" set to Done when the PM signs. The
+    // form never changes them, and the table's submit rules pass them by.
+    setOnSign: z
+      .array(
+        z.strictObject({
+          row: z.number().int().min(0),
+          column: fieldKey,
+          is: z.string().min(1),
+          signature: fieldKey,
+        })
+      )
+      .optional(),
     // Fixed rows not needed on a project, each by its place among the fixed
     // rows (0 for the first): when the project's locked record of `tool`
     // holds `is` in `field`, such as D2.13's negotiation notes when the
@@ -610,6 +624,17 @@ const field = z
       placeholder: z.string().min(1).optional(),
       // A file field that takes only a PDF, such as D2.11's final contract.
       pdfOnly: z.boolean().optional(),
+      // A date that follows another date `field` as it is typed, plus the
+      // days a duration field such as "40 Working Days" holds
+      // (`plusDurationOf`), until the person types a date of their own, such
+      // as D2.14's start date following the day the payment cleared. Worked
+      // out in the form; what is saved is what the field shows.
+      follows: z
+        .strictObject({
+          field: fieldKey,
+          plusDurationOf: fieldKey.optional(),
+        })
+        .optional(),
     }),
     signature.extend(required),
     select.extend({ ...required, blockedWhile: blockedWhile.optional() }),

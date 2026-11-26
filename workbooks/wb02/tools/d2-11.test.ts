@@ -54,6 +54,7 @@ import { d210 } from "./d2-10"
 import { d211 } from "./d2-11"
 import { d212 } from "./d2-12"
 import { d213 } from "./d2-13"
+import { d214 } from "./d2-14"
 import { t3d22a } from "./t3-d2-2a"
 
 const database = createTestDatabase()
@@ -75,6 +76,7 @@ for (const tool of [
   d211,
   d212,
   d213,
+  d214,
 ]) {
   tools.registerTool(tool)
 }

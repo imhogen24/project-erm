@@ -54,6 +54,7 @@ import { YES, inviteScriptFor } from "@/lib/negotiation-invite"
 import { TERMS_AGREED } from "@/lib/negotiation-notes"
 import { UPDATED, finalTasks } from "@/lib/final-contract"
 import { APP_PLATFORM, SCAN, financeTasks } from "@/lib/executed-contract"
+import { vaultDocuments } from "@/lib/archive"
 import {
   CLIENT_ROLE,
   COURIER,
@@ -1237,7 +1238,29 @@ function negotiated(
       day: day + 9,
       payload: stageD212(method),
     },
+    {
+      toolId: "D2.13",
+      state: "locked",
+      day: day + 10,
+      payload: stageD213(),
+    },
   ]
+}
+
+// Every contract document found in the vault and signed off, which locked
+// D2.13 and opened D2.14.
+function stageD213() {
+  return payloadOf({
+    vault: vaultDocuments.map((row) => ({
+      naming: row.naming,
+      status: TASK_DONE,
+    })),
+    allPresent: "Yes",
+    caSignature: {
+      signedBy: "role:CA",
+      signedAt: "2026-12-10T10:00:00.000Z",
+    },
+  })
 }
 
 // The executed contract filed and the advance invoice issued, which the PM

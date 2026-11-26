@@ -89,9 +89,29 @@ export function unmetSubmitRules(
   payload: JsonObject,
   notNeeded: ReadonlyMap<string, ReadonlySet<number>> = new Map()
 ): FieldError[] {
-  return (tools.getTool(toolId)?.submitWhen ?? []).flatMap((rule) =>
-    meets(payload, rule, notNeeded.get(rule.field))
+  const tool = tools.getTool(toolId)
+
+  // The rows the app sets as someone signs are not asked of the writer.
+  const setBySigning = (field: string, column: string | undefined) => {
+    const table = tool?.fields.find((entry) => entry.key === field)
+
+    return table?.type === "table"
+      ? (table.setOnSign ?? [])
+          .filter((rule) => rule.column === column)
+          .map((rule) => rule.row)
+      : []
+  }
+
+  return (tool?.submitWhen ?? []).flatMap((rule) => {
+    const column = "column" in rule ? rule.column : undefined
+
+    const skipped = new Set([
+      ...(notNeeded.get(rule.field) ?? []),
+      ...setBySigning(rule.field, column),
+    ])
+
+    return meets(payload, rule, skipped)
       ? []
       : [{ field: rule.field, message: rule.message }]
-  )
+  })
 }

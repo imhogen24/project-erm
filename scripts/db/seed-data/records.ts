@@ -65,6 +65,7 @@ import { TERMS_AGREED } from "@/lib/negotiation-notes"
 import { UPDATED, finalTasks } from "@/lib/final-contract"
 import { APP_PLATFORM, SCAN, financeTasks } from "@/lib/executed-contract"
 import { vaultDocuments } from "@/lib/archive"
+import { DONE as ACCESS_DONE, workspaces } from "@/lib/access-log"
 import {
   complianceRules,
   paymentMilestones as termsMilestones,
@@ -1346,7 +1347,7 @@ function stageD214() {
 // D4.1's test project, where 2.2's D3.10 is signed, which opens Workbook 4.
 const technicalNotesProject = () => testProjectName("Tier_1", "D4.1")
 
-// The projects where Workbook 4 is open: D4.1's to D4.4's test projects,
+// The projects where Workbook 4 is open: D4.1's to D4.5's test projects,
 // and the project whose team is locked.
 function inWorkbookFour(name: string) {
   return (
@@ -1354,6 +1355,7 @@ function inWorkbookFour(name: string) {
     name === testProjectName("Tier_1", "D4.2") ||
     name === testProjectName("Tier_1", "D4.3") ||
     name === testProjectName("Tier_1", "D4.4") ||
+    name === testProjectName("Tier_1", "D4.5") ||
     name === ENGINEER_BOOKED_PROJECT
   )
 }
@@ -1470,9 +1472,28 @@ function stageD43() {
   })
 }
 
+// D4.4 as the HE signed it and the PM approved it: every workspace set up,
+// checked and Done.
+function stageD44() {
+  return payloadOf({
+    accessChecklist: workspaces.map(({ workspace, action }) => ({
+      workspace,
+      action,
+      verified: "Yes",
+      status: ACCESS_DONE,
+    })),
+    engineersConfirmed: "Yes",
+    adminSignature: {
+      signedBy: "role:HE",
+      signedAt: "2027-01-02T09:00:00.000Z",
+    },
+  })
+}
+
 // Workbook 4's locked records: D4.1 on D4.2's test project; D4.1 and D4.2
-// on D4.3's test project; and D4.1, D4.2 and D4.3 on D4.4's test project
-// and on the project whose team is locked.
+// on D4.3's test project; D4.1, D4.2 and D4.3 on D4.4's test project and
+// on the project whose team is locked; and D4.1 to D4.4 on D4.5's test
+// project.
 function teamRecords(name: string): SeedRecord[] {
   const notes: SeedRecord = {
     toolId: "D4.1",
@@ -1496,13 +1517,25 @@ function teamRecords(name: string): SeedRecord[] {
     return [notes, request]
   }
 
+  const assignment: SeedRecord = {
+    toolId: "D4.3",
+    state: "locked",
+    day: 81,
+    payload: stageD43(),
+  }
+
+  if (name === testProjectName("Tier_1", "D4.5")) {
+    return [
+      notes,
+      request,
+      assignment,
+      { toolId: "D4.4", state: "locked", day: 84, payload: stageD44() },
+    ]
+  }
+
   return name === ENGINEER_BOOKED_PROJECT ||
     name === testProjectName("Tier_1", "D4.4")
-    ? [
-        notes,
-        request,
-        { toolId: "D4.3", state: "locked", day: 81, payload: stageD43() },
-      ]
+    ? [notes, request, assignment]
     : []
 }
 

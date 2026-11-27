@@ -273,6 +273,18 @@ export const previews: Preview[] = [
     expect: `On ${testProjectName("Tier_1", "D4.4")}, once the HE submitted D4.4 (above), the PM sees Approve and Send back. Approve: D4.4 locks. Send back instead returns it to the HE as a draft with your reason, to change and submit again.`,
   },
   {
+    screen: "D4.5 internal kick-off deck, as the PM (RDP-210)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D4.5`,
+    expect: `On ${testProjectName("Tier_1", "D4.5")}, where D4.4 is locked, D4.5 is open for the PM. Project Request ID, Prepared By (Project Manager) and Project / Client Name are the system's; Link to Presentation Deck takes an uploaded PDF. 2.0 starts on Client Background & Ultimate Vision, Hard Scope Boundaries (What we are NOT doing), Strict Timeline & Handover Dates, Financial/Budget Constraints for Prototyping and Known Technical & Operational Risks (2.1 to 2.5), which cannot be changed or removed, each with View on its source document: D1.8, D1.13, D2.12's executed contract, D1.14 and D1.11. Add row adds 2.6 with a topic of your own and no source. Submit without the deck, with a topic answered No, with 3.0 answered No or without the Project Manager Signature: it is refused and says why. Upload the deck, answer every topic and 3.0 Yes, Sign and Submit: D4.5 locks straight away, with no approver, and Date shows the day you signed. Tier 3 projects have no D4.5.`,
+  },
+  {
+    screen: "D4.5 internal kick-off deck, as the LE reading it (RDP-210)",
+    loginAs: "LE",
+    path: (id) => `/projects/${id}/tools/D4.5`,
+    expect: `On ${testProjectName("Tier_1", "D4.5")}, the LE reads D4.5 without editing and can open the deck once the PM uploaded it. The AE, LD, HE and CR read it too; the FO, the client and everyone else do not see it.`,
+  },
+  {
     screen: "D3.10 phase unblock notice, as the FO (RDP-204)",
     loginAs: "FO",
     path: (id) => `/projects/${id}/tools/D3.10`,

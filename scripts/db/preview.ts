@@ -285,6 +285,12 @@ export const previews: Preview[] = [
     expect: `On ${testProjectName("Tier_1", "D4.5")}, the LE reads D4.5 without editing and can open the deck once the PM uploaded it. The AE, LD, HE and CR read it too; the FO, the client and everyone else do not see it.`,
   },
   {
+    screen: "D4.6 kick-off calendar invite and agenda, as the PM (RDP-211)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D4.6`,
+    expect: `On ${testProjectName("Tier_1", "D4.6")}, where D4.5 is locked, D4.6 is open for the PM. Project Request ID, Lead Facilitator (${staffWith("PM").name}) and Required Attendees (${staffWith("AE").name}, ${staffWith("LD").name}, D4.3's roster) are the system's. Meeting Date, Time and Location / Link start empty, the last with the hint HQ / Google Meet; the time is Ghana time (GMT). 2.0 starts on the sheet's message: Team, We are officially kicking off engineering execution for the project's name, and the four agenda items; it can be changed. Calendar Invite sent to all rostered engineers? reads No and cannot be picked. Send invite is greyed out with Send invite needs: add the meeting date; add the time; add the location or link. Pick a date and time ahead, type a place and press Send invite: it says Invite sent and the 3.0 answer reads Yes. Each rostered engineer and the PM get one email, Internal Kick-off: the project's name, with the script, When and Where, and invite.ics (with no RESEND_API_KEY set, it is only recorded in the email log). Press it again: nothing new is sent. Change the time and press it again: an update to the same meeting goes. Press Submit before sending, or with Room/Platform booked? No: it is refused. Answer Yes and Submit: D4.6 reads Locked. The client, the LE, AE, LD, LO and CR read D4.6 without editing; anyone else does not see it, and a Tier 3 project has no D4.6.`,
+  },
+  {
     screen: "D3.10 phase unblock notice, as the FO (RDP-204)",
     loginAs: "FO",
     path: (id) => `/projects/${id}/tools/D3.10`,

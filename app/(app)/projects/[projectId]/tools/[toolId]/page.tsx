@@ -137,6 +137,12 @@ import {
   negotiationInviteStart,
 } from "@/server/contract/negotiation-invite"
 import { clientAttendees as inviteesFromClient } from "@/server/meetings/calendar-invite"
+import { KICKOFF_INVITE } from "@/lib/kickoff-invite"
+import {
+  hasRosteredEngineers,
+  kickoffInviteStart,
+  missingToKickoff,
+} from "@/server/team/kickoff-invite"
 import {
   readsAsClient,
   toolAsShown,
@@ -196,6 +202,7 @@ import {
   sendTransmittedInvoiceAction,
   sendPaymentReceiptAction,
   sendNegotiationInviteAction,
+  sendKickoffInviteAction,
   retryAcknowledgementAction,
 } from "./actions"
 import { requestChangeAction } from "../../actions"
@@ -346,6 +353,13 @@ async function startOf(
 
     case NEGOTIATION_INVITE: {
       const start = await negotiationInviteStart(getDatabase(), projectId)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
+    case KICKOFF_INVITE: {
+      const start = await kickoffInviteStart(getDatabase(), projectId)
 
       // SAFETY: the start is built for this tool's own fields.
       return start as FormValues
@@ -628,6 +642,7 @@ export default async function Page({
           | typeof sendAcknowledgementAction
           | typeof sendTransmittalAction
           | typeof sendNegotiationInviteAction
+          | typeof sendKickoffInviteAction
           | typeof sendSignatureRequestAction
           | typeof sendTransmittedInvoiceAction
           | typeof sendPaymentReceiptAction
@@ -806,6 +821,27 @@ export default async function Page({
       ),
       run: sendNegotiationInviteAction,
       label: "Send calendar invite",
+      done: "Invite sent.",
+    }
+  }
+
+  // D4.6: the PM sends the kick-off invite to D4.3's rostered engineers
+  // while D4.6 is a draft, and again after a change, which updates the same
+  // meeting.
+  if (
+    toolId === KICKOFF_INVITE &&
+    view.project.status === "active" &&
+    view.can.write &&
+    (view.state === "draft" || view.state === "notStarted")
+  ) {
+    send = {
+      missing: missingToKickoff(
+        view.record?.payload ?? {},
+        new Date(),
+        await hasRosteredEngineers(getDatabase(), projectId)
+      ),
+      run: sendKickoffInviteAction,
+      label: "Send invite",
       done: "Invite sent.",
     }
   }

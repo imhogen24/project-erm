@@ -1195,7 +1195,7 @@ export default async function Page({
       title="Not shared yet"
       description="IMHOGEN shares this with you once it is approved."
     />
-  ) : !hasRecord && !view.can.write && !send ? (
+  ) : !hasRecord && !view.can.write && !send && !tool.living ? (
     <EmptyState
       drawing="gear"
       title="Not started yet"

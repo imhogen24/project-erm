@@ -528,6 +528,21 @@ const receiptSent = tier1Stage(
   "Mill 1 tonne of paddy an hour with a destoner and polisher."
 )
 
+// A Tier 1 project whose advance invoice went out on 20 Oct 2026 and has not
+// cleared, so D3.2 shows row 2.1 overdue.
+export const ADVANCE_OVERDUE_PROJECT = `${DEV_PROJECT}D3.2 Advance Overdue (Tier 1)`
+
+const advanceOverdue = tier1Stage(
+  ADVANCE_OVERDUE_PROJECT,
+  "active",
+  "2026-09-28T09:00:00Z",
+  "Accra",
+  client,
+  "everyone",
+  "Small rice mill with destoner",
+  "Mill 1 tonne of paddy an hour with a destoner and polisher."
+)
+
 // Tier 1 projects past 2.2's receipt: on the first the FO submitted D3.10
 // for 2.2, waiting for the PM's signature; on the second the PM signed it,
 // which approved and locked it.
@@ -607,6 +622,7 @@ export const projects: readonly SeedProject[] = [
   bankFee!,
   halfPaid!,
   receiptSent,
+  advanceOverdue,
   unblockSubmitted!,
   unblockApproved!,
   overdueLogged!,

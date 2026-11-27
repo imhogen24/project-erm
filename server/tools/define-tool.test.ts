@@ -656,6 +656,15 @@ describe("defineTool, fixed rows of several columns", () => {
       defineTool({ ...clauses(), locksOnSubmit: true, withoutSubmit: true })
     ).toThrow("A tool without Submit cannot lock on submit")
   })
+
+  it("refuses a living record with a Submit", () => {
+    expect(() => defineTool({ ...clauses(), living: true })).toThrow(
+      "A living record has no Submit, no approval and no signing that locks it"
+    )
+    expect(() =>
+      defineTool({ ...clauses(), living: true, withoutSubmit: true })
+    ).not.toThrow()
+  })
 })
 
 describe("defineTool, a table's PDF preview column", () => {

@@ -772,6 +772,41 @@ describe("checking the map", () => {
     ])
   })
 
+  it("finds a wait for, or a reading of, a living record, which never locks", () => {
+    const ledger = defineTool({
+      id: "X.LEDGER",
+      name: "Ledger",
+      workbook: "wb06",
+      withoutSubmit: true,
+      living: true,
+      fields: [
+        {
+          key: "status",
+          label: "Status",
+          type: "select",
+          options: ["Healthy", "At Risk"],
+        },
+      ],
+    })
+
+    const maps = withRules("wb01", (rules) =>
+      rules.map((rule) =>
+        rule.tool === "D1.5"
+          ? {
+              tool: "D1.5",
+              after: { all: ["X.LEDGER"] },
+              when: { tool: "X.LEDGER", field: "status", oneOf: ["Healthy"] },
+            }
+          : rule
+      )
+    )
+
+    expect(brokenWorkflowRules(maps, [...all(), ledger])).toEqual([
+      "D1.5 waits for X.LEDGER, a living record that never locks",
+      "D1.5 reads X.LEDGER, a living record that never locks",
+    ])
+  })
+
   it("finds openings mixed with after, or only one of them", () => {
     const maps = withRules("wb01", (rules) =>
       rules.map((rule) =>

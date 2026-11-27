@@ -13,6 +13,7 @@ import {
   BANK_FEE_PROJECT,
   HALF_PAID_PROJECT,
   RECEIPT_SENT_PROJECT,
+  ADVANCE_OVERDUE_PROJECT,
   UNBLOCK_SUBMITTED_PROJECT,
   UNBLOCK_APPROVED_PROJECT,
   OVERDUE_LOGGED_PROJECT,
@@ -182,6 +183,18 @@ export const previews: Preview[] = [
     loginAs: "PM",
     path: (id) => `/projects/${id}/tools/D3.1`,
     expect: `On ${testProjectName("Tier_1", "D2.14")}, D3.1 is open but nobody has started it. The PM only reads it, so the sheet shows a line drawing of a gear, which draws itself in once, with Not started yet and The Finance Officer starts it. The same drawings mark every empty result: open the bell as the OM, ${loginFor("OM")}, for You have no notifications.; Comments on a tool nobody has commented on reads No comments yet with a small drawing beside it; so does an empty table, a meeting with no times, a request with no files, and a role nobody is free for. Check light, dark and 375px wide.`,
+  },
+  {
+    screen: "D3.2 systems payment record, as the FO (RDP-196)",
+    loginAs: "FO",
+    path: (id) => `/projects/${id}/tools/D3.2`,
+    expect: `On ${testProjectName("Tier_1", "D3.2")}, where D3.1 is locked with three milestones of GHS 94,400.00, D3.2 is open for the FO under Payments. 1.0: Project Request ID, Tracking Officer (${staffWith("FO").name}), Date Initiated (the day D3.1 locked) and Project / Client Name are the system's; Reference Terms opens D3.1. 2.0 has one row per D3.1 milestone, 2.1 to 2.3, with D3.1's descriptions and amounts (GHS 37,760.00, GHS 37,760.00, GHS 18,880.00) and no Add row or Remove. Row 2.1's Expected Trigger Date starts on the day the contract was signed, 6 Dec 2026; its Actual Invoice Date is D2.12's 9 Dec 2026, its Actual Clearance Date Pending, and its status Awaiting Payment, or Overdue (N days) after 30 Dec 2026. Row 2.2 reads Awaiting D3.3 Trigger and 2.3 Pending. 3.0: Total Project Value GHS 94,400.00, Total Amount Cleared GHS 0.00 and Outstanding Balance GHS 94,400.00 are the system's. Set 2.2's Expected Trigger Date and pick At Risk: it saves by itself, and there is no Submit; come back and change them again. On ${RECEIPT_SENT_PROJECT}, the advance cleared at D2.14 on 20 Dec 2026 and 2.2 was invoiced at D3.6 on 24 Dec 2026 and cleared at D3.8 on 30 Dec 2026: both rows read Cleared On Time, 2.3 Awaiting D3.3 Trigger, Total Amount Cleared GHS 81,184.00 (2.2 at D3.8's reconciled GHS 43,424.00), Outstanding Balance GHS 13,216.00, with the FO's saved dates and Healthy. On ${ADVANCE_OVERDUE_PROJECT}, the advance was invoiced on 20 Oct 2026 and has not cleared, so row 2.1 reads Overdue (N days). ${testProjectName("Tier_3", "D3.2")} works the same on Tier 3, with T3.D1.15a's GHS 60,000.00.`,
+  },
+  {
+    screen: "D3.2 systems payment record, as the PM (RDP-196)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D3.2`,
+    expect: `On ${RECEIPT_SENT_PROJECT}, the PM reads D3.2 as the FO keeps it, with nothing to change: the expected dates and Financial Status read as text. On ${testProjectName("Tier_1", "D3.2")}, where the FO has not saved it yet, the PM still sees the whole ledger. The CR reads it the same way; the client and everyone else do not see it.`,
   },
   {
     screen:

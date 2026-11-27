@@ -135,9 +135,18 @@ function selectSchema(cell: Extract<Field | Column, { type: "select" }>) {
 }
 
 function tableSchema(table: TableField) {
+  // A table whose rows come from another tool's names each row by its key,
+  // such as D3.2's SN, which the form sends back as it was shown.
+  const keyedBy = table.rowsFrom?.keyedBy
+
   const row = z.strictObject(
     Object.fromEntries(
-      table.columns.map((column) => [column.key, cellSchema(column).optional()])
+      table.columns.map((column) => [
+        column.key,
+        column.key === keyedBy
+          ? z.string({ error: "Must be text" }).optional()
+          : cellSchema(column).optional(),
+      ])
     ),
     { error: "Must be a row of cells" }
   )

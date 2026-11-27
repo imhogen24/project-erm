@@ -77,7 +77,9 @@ import { KICKOFF_INVITE } from "@/lib/kickoff-invite"
 import { kickoffInviteValues } from "@/server/team/kickoff-invite"
 import { KICKOFF_NOTES } from "@/lib/kickoff-notes"
 import { kickoffMinutesValues } from "@/server/team/kickoff-notes"
+import { DRAFTING_ASSIGNMENT } from "@/lib/drafting-assignment"
 import { LOCKED_BASELINE } from "@/lib/locked-baseline"
+import { draftingAssignmentValues } from "@/server/team/drafting-assignment"
 import { lockedBaselineValues } from "@/server/team/locked-baseline"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
@@ -366,6 +368,10 @@ async function workedOut(
 
     case LOCKED_BASELINE: {
       return await lockedBaselineValues(database, projectId, payload)
+    }
+
+    case DRAFTING_ASSIGNMENT: {
+      return await draftingAssignmentValues(database, projectId, payload)
     }
 
     default: {

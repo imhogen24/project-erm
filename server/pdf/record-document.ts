@@ -245,9 +245,16 @@ function cellText(
 
   const fixed = fixedValue(field, index, column.key)
 
-  // A row's PDF preview is named, as a preview field is.
+  // A row's PDF preview is named, as a preview field is, in a preview
+  // column or in place of another column's input (rowPreviews).
   if (column.type === "pdfPreview") {
     return fixed === undefined ? EMPTY : sourceName({ tool: fixed }, track)
+  }
+
+  const preview = column.rowPreviews?.[index]
+
+  if (preview) {
+    return sourceName({ tool: preview }, track)
   }
 
   return fixed === undefined

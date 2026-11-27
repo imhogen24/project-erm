@@ -2221,6 +2221,27 @@ function billingCycle(name: string): SeedRecord[] {
     ]
   }
 
+  // T3.D4.8a's test project, where D3.10 is signed, which opens Workbook 4
+  // on Tier 3.
+  if (name === testProjectName("Tier_3", "T3.D4.8a")) {
+    return [
+      approved,
+      invoice(60000),
+      passed(),
+      transmitted("GHS 27,600.00"),
+      proceeded(27600, 27600),
+      reconciled(27600, 27600),
+      receipted(27600),
+      {
+        toolId: "D3.10",
+        cycle: 1,
+        state: "locked",
+        day: 74,
+        payload: stageD310(true),
+      },
+    ]
+  }
+
   if (
     name === UNBLOCK_SUBMITTED_PROJECT ||
     name === UNBLOCK_APPROVED_PROJECT ||

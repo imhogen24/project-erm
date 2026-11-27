@@ -86,8 +86,9 @@ async function trackOf(database: Database, projectId: string) {
   return project?.track
 }
 
-// Every PDF preview of the tool, by its key: each preview field, and each
-// fixed row's cell of a table's preview column, which names a tool.
+// Every PDF preview of the tool, by its key: each preview field, each
+// fixed row's cell of a table's preview column, which names a tool, and each
+// fixed row's cell another column shows a preview in (rowPreviews).
 export function previewSourcesOf(
   tool: ToolDefinition
 ): [string, PreviewSource][] {
@@ -100,13 +101,12 @@ export function previewSourcesOf(
       return []
     }
 
-    const previewColumns = field.columns.filter(
-      (column) => column.type === "pdfPreview"
-    )
-
     return (field.fixedRows ?? []).flatMap((row, index) =>
-      previewColumns.flatMap((column): [string, PreviewSource][] => {
-        const named = row[column.key]
+      field.columns.flatMap((column): [string, PreviewSource][] => {
+        const named =
+          column.type === "pdfPreview"
+            ? row[column.key]
+            : column.rowPreviews?.[index]
 
         return named
           ? [

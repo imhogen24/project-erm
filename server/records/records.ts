@@ -61,6 +61,7 @@ import { fieldsOff } from "./only-when"
 import { repeatIfAsked } from "./repeat"
 import { keepReadOnly } from "./read-only"
 import { keepReviewed, reviewKeys, unmetReview, withReview } from "./review"
+import { DRAFTING_ASSIGNMENT } from "@/lib/drafting-assignment"
 import { TEAM_ASSIGNMENT } from "@/lib/team-assignment"
 import { joinRoster } from "@/server/team/team-assignment"
 import {
@@ -634,8 +635,12 @@ async function move(
     await applySendBack(transaction, actor, moved!, outbox, said)
     await applyHardStop(transaction, actor, current)
 
-    // A locked team assignment (D4.3) adds its roster to the project.
-    if (current.toolId === TEAM_ASSIGNMENT) {
+    // A locked team assignment (D4.3), or Tier 3's drafting assignment
+    // (T3.D4.8a), adds its roster to the project.
+    if (
+      current.toolId === TEAM_ASSIGNMENT ||
+      current.toolId === DRAFTING_ASSIGNMENT
+    ) {
       outbox.push(
         ...(await joinRoster(transaction, current.projectId, moved!.payload))
       )

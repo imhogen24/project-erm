@@ -145,7 +145,9 @@ import {
 } from "@/server/team/kickoff-invite"
 import { KICKOFF_NOTES } from "@/lib/kickoff-notes"
 import { kickoffMinutesStart } from "@/server/team/kickoff-notes"
+import { DRAFTING_ASSIGNMENT } from "@/lib/drafting-assignment"
 import { LOCKED_BASELINE } from "@/lib/locked-baseline"
+import { draftingAssignmentStart } from "@/server/team/drafting-assignment"
 import { lockedBaselineStart } from "@/server/team/locked-baseline"
 import {
   readsAsClient,
@@ -371,6 +373,17 @@ async function startOf(
 
     case KICKOFF_NOTES: {
       const start = await kickoffMinutesStart(getDatabase(), projectId)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
+    case DRAFTING_ASSIGNMENT: {
+      const start = await draftingAssignmentStart(
+        getDatabase(),
+        projectId,
+        writer.name
+      )
 
       // SAFETY: the start is built for this tool's own fields.
       return start as FormValues

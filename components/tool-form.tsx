@@ -85,6 +85,9 @@ type Props = {
   // belong after Submit, such as Approve. Both sit in the sheet's action row.
   message?: string
   extraActions?: ReactNode
+  // Fields shown but not changed in this form, such as the approver's own
+  // fields for the writer.
+  heldBack?: readonly string[]
   // A tool that a step of its own locks, such as D1.4's Send, has no Submit.
   submits?: boolean
 }
@@ -350,7 +353,11 @@ export function ToolForm({
   message: said,
   extraActions,
   submits = true,
+  heldBack = [],
 }: Props) {
+  // Whether the person may not change the field here.
+  const shut = (key: string) => readOnly || heldBack.includes(key)
+
   const form = useForm<Record<string, RawValue>>({
     defaultValues: Object.fromEntries(
       tool.fields
@@ -697,8 +704,8 @@ export function ToolForm({
       return (
         <TableBox key={field.key} title={title}>
           <fieldset
-            disabled={readOnly && !previews}
-            data-final={readOnly}
+            disabled={shut(field.key) && !previews}
+            data-final={shut(field.key)}
             className="min-w-0 border-0 p-0"
           >
             <Controller
@@ -714,7 +721,7 @@ export function ToolForm({
                   onChange={control.onChange}
                   fills={fills}
                   recordId={recordId}
-                  disabled={readOnly}
+                  disabled={shut(field.key)}
                   errors={errors.filter(
                     (error) =>
                       error.field === field.key &&
@@ -735,8 +742,8 @@ export function ToolForm({
     return (
       <TableBox key={field.key} title={title}>
         <fieldset
-          disabled={readOnly && field.type !== "signature"}
-          data-final={readOnly}
+          disabled={shut(field.key) && field.type !== "signature"}
+          data-final={shut(field.key)}
           className="min-w-0 border-0 p-0"
         >
           <FieldSet className="gap-3 p-4">
@@ -759,8 +766,8 @@ export function ToolForm({
       return (
         <TableBox title={heading}>
           <fieldset
-            disabled={readOnly}
-            data-final={readOnly}
+            disabled={shut(only.key)}
+            data-final={shut(only.key)}
             className="min-w-0 border-0 p-4"
           >
             <FieldLabel htmlFor={only.key} className="sr-only">
@@ -791,8 +798,10 @@ export function ToolForm({
                 {/* A PDF preview opens, and a signature is given, on a
                     locked record too. */}
                 <fieldset
-                  disabled={readOnly && !actsWhenLocked.includes(field.type)}
-                  data-final={readOnly}
+                  disabled={
+                    shut(field.key) && !actsWhenLocked.includes(field.type)
+                  }
+                  data-final={shut(field.key)}
                   className="min-w-0 border-0 p-0"
                 >
                   {field.type === "signature" ? (

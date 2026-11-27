@@ -594,6 +594,22 @@ const [overdueLogged, overdueSubmitted, overdueHalted] = [
   )
 )
 
+// A Tier 1 project whose resource request (D4.2) the HE approved and locked,
+// booking the AE for 15 days, so another project's D4.2 shows those days as
+// the AE's Current Utilization Status.
+export const ENGINEER_BOOKED_PROJECT = `${DEV_PROJECT}D4.2 Approved (Tier 1)`
+
+const engineerBooked = tier1Stage(
+  ENGINEER_BOOKED_PROJECT,
+  "active",
+  "2026-11-10T09:00:00Z",
+  "Accra",
+  client,
+  "everyone",
+  "Small rice mill with destoner",
+  "Mill 1 tonne of paddy an hour with a destoner and polisher."
+)
+
 const triggerApproved = tier1Stage(
   TRIGGER_APPROVED_PROJECT,
   "active",
@@ -628,6 +644,7 @@ export const projects: readonly SeedProject[] = [
   overdueLogged!,
   overdueSubmitted!,
   overdueHalted!,
+  engineerBooked,
 ]
 
 export function seedProjectNamed(name: string) {

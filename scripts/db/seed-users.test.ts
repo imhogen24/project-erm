@@ -116,6 +116,7 @@ describe("the people", () => {
       LE: 1,
       AE: 1,
       HE: 1,
+      LD: 1,
     })
   })
 

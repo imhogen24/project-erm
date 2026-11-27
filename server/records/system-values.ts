@@ -65,6 +65,8 @@ import { OVERDUE_ACCOUNTS } from "@/lib/overdue-account"
 import { overdueValues } from "@/server/payments/overdue-figures"
 import { TECHNICAL_NOTES } from "@/lib/technical-notes"
 import { technicalNotesValues } from "@/server/team/technical-notes"
+import { RESOURCE_REQUEST } from "@/lib/resource-request"
+import { resourceRequestValues } from "@/server/team/resource-request"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -312,6 +314,14 @@ async function workedOut(
 
     case TECHNICAL_NOTES: {
       return await technicalNotesValues(
+        database,
+        projectId,
+        record ? { id: record.id, payload } : null
+      )
+    }
+
+    case RESOURCE_REQUEST: {
+      return await resourceRequestValues(
         database,
         projectId,
         record ? { id: record.id, payload } : null

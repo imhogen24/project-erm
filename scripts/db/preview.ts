@@ -16,6 +16,7 @@ import {
   ADVANCE_OVERDUE_PROJECT,
   UNBLOCK_SUBMITTED_PROJECT,
   UNBLOCK_APPROVED_PROJECT,
+  ENGINEER_BOOKED_PROJECT,
   OVERDUE_LOGGED_PROJECT,
   OVERDUE_SUBMITTED_PROJECT,
   OVERDUE_HALTED_PROJECT,
@@ -233,6 +234,18 @@ export const previews: Preview[] = [
     loginAs: "PM",
     path: (id) => `/projects/${id}/tools/D4.1`,
     expect: `On ${testProjectName("Tier_1", "D4.1")}, once the LE submitted D4.1 (above), it waits for the PM: there is no Approve button, only Sign on Project Manager Signature and Send back. Sign: D4.1 approves and locks and the Date fills in. Send back instead returns it to the LE as a draft with your reason, to change and submit again.`,
+  },
+  {
+    screen: "D4.2 resource request form, as the LE (RDP-207)",
+    loginAs: "LE",
+    path: (id) => `/projects/${id}/tools/D4.2`,
+    expect: `On ${testProjectName("Tier_1", "D4.2")}, where the PM signed D4.1, D4.2 is open for the LE. 1.0: Project Request ID, Requesting PM (${staffWith("PM").name}), Project Name and Total Budgeted Labor (GHS), D1.14's Base Labor Subtotal, are the system's; Date of Request says Filled in when D4.2 is submitted. 2.0 starts on D4.1's two rows, Mid-Level CAD Engineer (40 days) and Junior Technician (20 days), numbered 2.1 and 2.2; role and days can be changed, Dates Needed hints DD/MM to DD/MM, and Add row adds 2.3 with a bin. Preferred Engineer lists the engineers (${staffWith("AE").name}, ${staffWith("LE").name}, ${staffWith("HE").name}, ${staffWith("LD").name}) and Any available, and may stay empty. 3.0 has one row per 2.0 row (3.1, 3.2) with no Add row; its Requested Engineer is the row's Preferred Engineer, or its role when none is named; pick ${staffWith("AE").name} on 2.1 and reload: Current Utilization Status reads 15 days on ${ENGINEER_BOOKED_PROJECT}, and another engineer reads Fully available. The LE cannot change 3.0 or 4.0. Fill in the dates and Submit: Date of Request fills in and the HE is told in the app and by email. Tier 3 projects have no D4.2. The PM, OM, AE and CR read D4.2 without editing; the FO, the client and everyone else do not see it.`,
+  },
+  {
+    screen: "D4.2 resource request form, as the HE reviewing it (RDP-207)",
+    loginAs: "HE",
+    path: (id) => `/projects/${id}/tools/D4.2`,
+    expect: `On ${testProjectName("Tier_1", "D4.2")}, once the LE submitted D4.2 (above), the HE answers 3.0 and 4.0 and nothing else: 2.0 cannot be changed, and there is no Submit or Approve, only Sign on Head of Engineering / R&D Signature and Send back. Sign with a 3.0 row unanswered, a No with no Alternative Assignment, or 4.0 answered No: it is refused and says why on that field. Answer each row Yes, or No with an alternative engineer, answer 4.0 Yes and Sign: D4.2 approves and locks and the Date fills in. Send back instead returns it to the LE as a draft with your reason; the LE still cannot change your answers. On ${ENGINEER_BOOKED_PROJECT}, D4.2 is already signed and locked.`,
   },
   {
     screen: "D3.10 phase unblock notice, as the FO (RDP-204)",

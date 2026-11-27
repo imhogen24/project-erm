@@ -127,6 +127,7 @@ import {
   ADVANCE_OVERDUE_PROJECT,
   UNBLOCK_SUBMITTED_PROJECT,
   UNBLOCK_APPROVED_PROJECT,
+  ENGINEER_BOOKED_PROJECT,
   OVERDUE_LOGGED_PROJECT,
   OVERDUE_SUBMITTED_PROJECT,
   OVERDUE_HALTED_PROJECT,
@@ -1345,11 +1346,117 @@ function stageD214() {
 // D4.1's test project, where 2.2's D3.10 is signed, which opens Workbook 4.
 const technicalNotesProject = () => testProjectName("Tier_1", "D4.1")
 
+// The projects where Workbook 4 is open: D4.1's and D4.2's test projects,
+// and the project whose D4.2 is locked.
+function inWorkbookFour(name: string) {
+  return (
+    name === technicalNotesProject() ||
+    name === testProjectName("Tier_1", "D4.2") ||
+    name === ENGINEER_BOOKED_PROJECT
+  )
+}
+
+// D4.1 as the LE wrote it and the PM signed: a role and its days for each
+// of D1.14's two modules.
+function stageD41() {
+  return payloadOf({
+    targetStartDate: "2026-12-21",
+    skills: [
+      {
+        module: "Mechanical",
+        role: "Mid-Level CAD Engineer",
+        days: 40,
+        notes: "Must be prolific in Autodesk Inventor",
+      },
+      {
+        module: "Electronics",
+        role: "Junior Technician",
+        days: 20,
+        notes: "3D printing and basic soldering skills needed",
+      },
+    ],
+    resources: [
+      {
+        category: "Software License",
+        tool: "Autodesk Inventor 2025",
+        duration: "40 Days",
+        status: "Available",
+      },
+      {
+        category: "Specialized Equipment",
+        tool: "3D Printer (High Temp Resin)",
+        duration: "3 Days",
+        status: "Needs Procurement",
+      },
+      {
+        category: "Testing Apparatus",
+        tool: "Digital Anemometer / Thermal Camera",
+        duration: "2 Days",
+        status: "Available",
+      },
+    ],
+    readyForRequest: "Yes",
+    pmSignature: {
+      signedBy: "role:PM",
+      signedAt: "2026-12-23T09:00:00.000Z",
+    },
+  })
+}
+
+// D4.2 as the HE approved it: the AE for the Mechanical role's 15 days, and
+// anyone free for the Electronics role, given to the LD.
+function stageD42() {
+  return payloadOf({
+    resourceRequests: [
+      {
+        role: "Mid-Level CAD Engineer",
+        preferredEngineer: staffWith("AE").name,
+        dates: "04/01 to 22/01",
+        days: 15,
+      },
+      {
+        role: "Junior Technician",
+        preferredEngineer: "Any available",
+        dates: "11/01 to 22/01",
+        days: 10,
+      },
+    ],
+    conflictCheck: [
+      { sn: "3.1", approved: "Yes" },
+      { sn: "3.2", approved: "No", alternative: staffWith("LD").name },
+    ],
+    rolesApproved: "Yes",
+    heSignature: {
+      signedBy: "role:HE",
+      signedAt: "2026-12-28T09:00:00.000Z",
+    },
+  })
+}
+
+// Workbook 4's locked records: D4.1 on D4.2's test project and on the
+// project whose D4.2 is locked, which has its D4.2 too.
+function teamRecords(name: string): SeedRecord[] {
+  const notes: SeedRecord = {
+    toolId: "D4.1",
+    state: "locked",
+    day: 76,
+    payload: stageD41(),
+  }
+
+  if (name === testProjectName("Tier_1", "D4.2")) {
+    return [notes]
+  }
+
+  return name === ENGINEER_BOOKED_PROJECT
+    ? [notes, { toolId: "D4.2", state: "locked", day: 79, payload: stageD42() }]
+    : []
+}
+
 // D2.14 locked where the advance has cleared: on the project whose 2.2
 // receipt is sent, so D3.2 shows both milestones cleared, and on D4.1's
 // test project, so D4.1 starts on its start date.
 function advanceCleared(name: string): SeedRecord[] {
-  return name === RECEIPT_SENT_PROJECT || name === technicalNotesProject()
+  return name === RECEIPT_SENT_PROJECT || inWorkbookFour(name)
     ? [{ toolId: "D2.14", state: "locked", day: 54, payload: stageD214() }]
     : []
 }
@@ -1940,7 +2047,7 @@ function billingCycle(name: string): SeedRecord[] {
   if (
     name === UNBLOCK_SUBMITTED_PROJECT ||
     name === UNBLOCK_APPROVED_PROJECT ||
-    name === technicalNotesProject()
+    inWorkbookFour(name)
   ) {
     const signed = name !== UNBLOCK_SUBMITTED_PROJECT
 
@@ -2129,6 +2236,7 @@ function tier1Records(name: string): SeedRecord[] {
     ...advanceCleared(name),
     { toolId: "D3.1", state: "locked", day: 55, payload: stageD31(94400) },
     ...billingCycle(name),
+    ...teamRecords(name),
   ]
 }
 
@@ -2283,6 +2391,7 @@ export const projectRecords = new Map<string, SeedRecord[]>([
   [ADVANCE_OVERDUE_PROJECT, tier1Records(ADVANCE_OVERDUE_PROJECT)],
   [UNBLOCK_SUBMITTED_PROJECT, tier1Records(UNBLOCK_SUBMITTED_PROJECT)],
   [UNBLOCK_APPROVED_PROJECT, tier1Records(UNBLOCK_APPROVED_PROJECT)],
+  [ENGINEER_BOOKED_PROJECT, tier1Records(ENGINEER_BOOKED_PROJECT)],
   [OVERDUE_LOGGED_PROJECT, tier1Records(OVERDUE_LOGGED_PROJECT)],
   [OVERDUE_SUBMITTED_PROJECT, tier1Records(OVERDUE_SUBMITTED_PROJECT)],
   [OVERDUE_HALTED_PROJECT, tier1Records(OVERDUE_HALTED_PROJECT)],

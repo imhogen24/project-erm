@@ -78,6 +78,12 @@ type Props = {
   // The writer's button once the record is out of their hands: Withdraw while
   // it waits for approval, Request a change once it is locked.
   writerAction?: ReactNode
+  // Fields shown but not changed here, such as D4.2's conflict check for the
+  // LE, or everything but it for the HE reviewing it.
+  heldBack?: readonly string[]
+  // The approver answering the fields only they fill, on a submitted record:
+  // what they type saves, and there is no Submit.
+  reviewing?: boolean
 }
 
 // Typed text that is empty is left out, since the server refuses an empty date
@@ -133,6 +139,8 @@ export function RecordForm({
   sendBack,
   sentBack,
   writerAction,
+  heldBack = [],
+  reviewing = false,
 }: Props) {
   const router = useRouter()
   const [pending, startTransition] = useTransition()
@@ -229,7 +237,8 @@ export function RecordForm({
           recordId={recordId}
           signable={signable}
           message={sheet.footLine}
-          submits={!tool.withoutSubmit}
+          submits={!tool.withoutSubmit && !reviewing}
+          heldBack={heldBack}
           extraActions={
             send ? (
               <div className="flex flex-col gap-2 @md:items-end">

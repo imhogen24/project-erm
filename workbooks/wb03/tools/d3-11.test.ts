@@ -64,6 +64,7 @@ registerTestTools({
 loadUnorderedWorkflow({
   wb01: ["D1.15", "T3.D1.15a", "D1.16"],
   wb02: ["D2.1", "D2.2", "D2.6", "D2.12"],
+  wb04: ["D4.1"],
 })
 
 const fabrication = "2.2 Fabrication Milestone (Design Approval)"

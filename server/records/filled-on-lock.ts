@@ -85,13 +85,20 @@ function agrees(payload: JsonObject, matches: Matches) {
 
 // Whether the record holds the option a submit rule needs: in the select
 // field itself, or, for a table, in that column of every one of its rows; or,
-// with `isNot`, any answer other than that option; or, with `some`, that
-// option in at least one row; or, with `matches`, anything but that option
-// unless the worked-out number agrees.
+// with `row`, in that column of that one row; or, with `isNot`, any answer
+// other than that option; or, with `some`, that option in at least one row;
+// or, with `matches`, anything but that option unless the worked-out number
+// agrees.
 function meets(
   payload: JsonObject,
   rule:
-    | { field: string; column?: string; is: string; orNoRows?: true }
+    | {
+        field: string
+        column?: string
+        is: string
+        orNoRows?: true
+        row?: number
+      }
     | { field: string; isNot: string }
     | { field: string; column: string; some: string }
     | { field: string; is: string; matches: Matches },
@@ -124,6 +131,10 @@ function meets(
   }
 
   const rows = tableRows.parse(value)
+
+  if ("row" in rule && rule.row !== undefined) {
+    return skipped.has(rule.row) || rows[rule.row]?.[column] === rule.is
+  }
 
   return (
     (rows.length > 0 || rule.orNoRows === true) &&

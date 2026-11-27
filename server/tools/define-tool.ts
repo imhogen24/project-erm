@@ -294,6 +294,26 @@ const columnRequired = {
   followsRowAbove: z
     .strictObject({ column: fieldKey, plusDays: z.number().int() })
     .optional(),
+  // A date cell that follows the `column` date of the same row, plus the
+  // days of the tool's `plusDurationOf` field, a duration such as "5 Days",
+  // until the person picks a date of their own, such as T3.D4.8a's target
+  // delivery date following the start date plus T3.D1.15a's timeline.
+  followsInRow: z
+    .strictObject({ column: fieldKey, plusDurationOf: fieldKey })
+    .optional(),
+  // The options a select column offers in each fixed row, in order, each
+  // some of the column's `options`, such as T3.D4.8a's Ready or Missing for
+  // the client's data and Created or Pending for the CAD folder. A row with
+  // none, or a row the person adds, offers all of them.
+  rowOptions: z
+    .array(z.array(z.string().min(1)).min(1))
+    .min(1)
+    .optional(),
+  // A fixed row's cell that shows a PDF preview in place of the column's
+  // own input, by the row's place, named as a preview column's fixed row
+  // names it, such as "D1.1" for T3.D4.8a's client files in 2.1. An empty
+  // entry, or a row past the end, keeps the column's input. Never stored.
+  rowPreviews: z.array(z.string()).min(1).optional(),
   // Hint text in the empty cell of each fixed row, in order, such as the
   // sheet's "Governs technical scope", or of each row a table with no fixed
   // rows starts with. An empty hint shows none. Only shown; never stored.
@@ -695,6 +715,45 @@ const table = z
 
       const typeOf = (key: string | undefined) =>
         value.columns.find((each) => each.key === key)?.type
+
+      const inRow = entry.followsInRow
+
+      if (inRow && (entry.type !== "date" || typeOf(inRow.column) !== "date")) {
+        context.addIssue({
+          code: "custom",
+          path: ["columns", index, "followsInRow"],
+          message: "A date column follows a date column of the same row",
+        })
+      }
+
+      if (
+        entry.rowOptions &&
+        !(
+          entry.type === "select" &&
+          entry.rowOptions
+            .flat()
+            .every((option) => entry.options.includes(option))
+        )
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["columns", index, "rowOptions"],
+          message: "A row's options are some of its select column's options",
+        })
+      }
+
+      if (
+        entry.rowPreviews &&
+        (entry.type === "pdfPreview" ||
+          entry.rowPreviews.length > (value.fixedRows?.length ?? 0))
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["columns", index, "rowPreviews"],
+          message:
+            "A preview in place of a column's input is named for a fixed row",
+        })
+      }
 
       const followed = entry.followsRowAbove
 
@@ -1124,6 +1183,10 @@ const toolDefinition = z
             // With `column`, a table with no rows passes too, such as a
             // list of amendments that a contract nobody negotiated lacks.
             orNoRows: z.literal(true).optional(),
+            // With `column`, only the fixed row at this place (0 for the
+            // first) must hold the option, such as T3.D4.8a's client data
+            // Ready.
+            row: z.number().int().min(0).optional(),
             when: submitWhenAnswer.optional(),
             message: z.string().min(1),
           }),
@@ -1531,8 +1594,36 @@ const toolDefinition = z
       }
     })
 
+    // A date following its row plus a duration reads it from a field of
+    // the tool, such as T3.D4.8a's timeline from T3.D1.15a.
+    value.fields.forEach((entry, index) => {
+      if (entry.type !== "table") {
+        return
+      }
+
+      entry.columns.forEach((column, at) => {
+        const duration = column.followsInRow?.plusDurationOf
+
+        if (duration && !value.fields.some((each) => each.key === duration)) {
+          context.addIssue({
+            code: "custom",
+            path: ["fields", index, "columns", at, "followsInRow"],
+            message: `${duration} is not a field of this tool`,
+          })
+        }
+      })
+    })
+
     value.submitWhen?.forEach((rule, index) => {
       const named = value.fields.find((entry) => entry.key === rule.field)
+
+      if ("row" in rule && rule.row !== undefined && !rule.column) {
+        context.addIssue({
+          code: "custom",
+          path: ["submitWhen", index, "row"],
+          message: "A rule on one row names its table's column",
+        })
+      }
 
       if ("when" in rule && rule.when) {
         const { when } = rule

@@ -4,6 +4,7 @@ import type { WorkbookMap } from "./map"
 // payment milestone is locked. D4.1 runs on Tier 1 only, D4.2 opens once
 // D4.1 locks, D4.3 once D4.2 locks, D4.4 once D4.3 locks, D4.5 once D4.4 locks,
 // D4.6 once D4.5 locks, D4.7 once D4.6 locks, and D4.8 once D4.7 locks.
+// On Tier 3, T3.D4.8a opens with the workbook in place of all of them.
 export const wb04: WorkbookMap = {
   workbook: "wb04",
   opens: { after: { all: ["D3.10"] } },
@@ -16,5 +17,6 @@ export const wb04: WorkbookMap = {
     { tool: "D4.6", after: { all: ["D4.5"] } },
     { tool: "D4.7", after: { all: ["D4.6"] } },
     { tool: "D4.8", after: { all: ["D4.7"] } },
+    { tool: "T3.D4.8a" },
   ],
 }

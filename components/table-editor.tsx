@@ -316,11 +316,19 @@ export function TableEditor({
                 )
               }
 
-              // A fixed row's PDF preview of the tool it names. A row the
-              // person added has none.
-              const fixedText = fixedValue(field, rowIndex, column.key)
+              // A fixed row's PDF preview of the tool it names, in a preview
+              // column or in place of another column's input (rowPreviews),
+              // such as T3.D4.8a's client files. A row the person added has
+              // none.
+              const rowPreview =
+                column.type === "pdfPreview"
+                  ? undefined
+                  : column.rowPreviews?.[rowIndex] || undefined
 
-              if (column.type === "pdfPreview") {
+              const fixedText =
+                rowPreview ?? fixedValue(field, rowIndex, column.key)
+
+              if (column.type === "pdfPreview" || rowPreview) {
                 return (
                   <div
                     key={column.key}
@@ -518,7 +526,7 @@ export function TableEditor({
                         </RadioGroup>
                       ) : readOnly ? (
                         <FieldControl
-                          cell={column}
+                          cell={rowCell(column, rowIndex)}
                           id={id}
                           value={row[column.key]}
                           onChange={() => undefined}
@@ -536,7 +544,7 @@ export function TableEditor({
                         />
                       ) : (
                         <FieldControl
-                          cell={column}
+                          cell={rowCell(column, rowIndex)}
                           id={id}
                           value={row[column.key]}
                           onChange={(value) =>
@@ -619,6 +627,15 @@ export function TableEditor({
       </div>
     </div>
   )
+}
+
+// A column as one row's cell offers it: a select with the options of its
+// fixed row (rowOptions), such as T3.D4.8a's Created or Pending.
+function rowCell(column: Column, rowIndex: number): Column {
+  const options =
+    column.type === "select" ? column.rowOptions?.[rowIndex] : undefined
+
+  return options && column.type === "select" ? { ...column, options } : column
 }
 
 // What a read-only cell says: a yes or no answer, the checked items of a

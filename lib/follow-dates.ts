@@ -138,13 +138,14 @@ export function followedAmount(
 
 // A table's date column that follows a date column of the row above it, plus
 // some days (`followsRowAbove`), such as D4.8's phase starting the day after
-// the phase before ends.
+// the phase before ends; or a date column of its own row, plus the days of a
+// duration field of the tool (`followsInRow`), such as T3.D4.8a's target
+// delivery date following the start date plus T3.D1.15a's timeline.
 export type RowFollower = {
   table: string
   key: string
   column: string
-  plusDays: number
-}
+} & ({ plusDays: number } | { sameRow: true; plusDurationOf: string })
 
 export function rowFollowersOf(
   fields: readonly {
@@ -154,18 +155,62 @@ export function rowFollowersOf(
       key: string
       type: string
       followsRowAbove?: { column: string; plusDays: number }
+      followsInRow?: { column: string; plusDurationOf: string }
     }[]
   }[]
 ): RowFollower[] {
   return fields.flatMap((field) =>
     field.type === "table"
-      ? (field.columns ?? []).flatMap((column) =>
-          column.type === "date" && column.followsRowAbove
-            ? [{ table: field.key, key: column.key, ...column.followsRowAbove }]
+      ? (field.columns ?? []).flatMap((column): RowFollower[] => {
+          if (column.type !== "date") {
+            return []
+          }
+
+          if (column.followsRowAbove) {
+            return [
+              { table: field.key, key: column.key, ...column.followsRowAbove },
+            ]
+          }
+
+          return column.followsInRow
+            ? [
+                {
+                  table: field.key,
+                  key: column.key,
+                  sameRow: true,
+                  ...column.followsInRow,
+                },
+              ]
             : []
-        )
+        })
       : []
   )
+}
+
+// A following cell as followRows reads it: the column it follows, in the
+// row above or with `sameRow` its own, plus `plusDays`. With no days, such
+// as a duration that names none, it has nothing to follow.
+export type CellFollower = {
+  key: string
+  column: string
+  plusDays: number | undefined
+  sameRow?: boolean
+}
+
+// A row follower as followRows reads it, the days of a duration read from
+// `textOf`, such as the form's values by key.
+export function cellFollowerOf(
+  follower: RowFollower,
+  textOf: (key: string) => string
+): CellFollower {
+  return "sameRow" in follower
+    ? {
+        key: follower.key,
+        column: follower.column,
+        plusDays: daysIn(textOf(follower.plusDurationOf)),
+        sameRow: true,
+      }
+    : follower
 }
 
 // What each following cell of a row last followed to, by its column.
@@ -185,10 +230,10 @@ const dateText = z.string().catch("")
 // A table's rows with each following cell moved, from the top down, so a
 // row that follows one that just moved follows on. `applied` is what each
 // cell last followed to, by row. Each cell follows as nextFollowed says.
-// The first row follows nothing.
+// The first row follows nothing of a row above.
 export function followRows<Row extends Record<string, unknown>>(
   rows: readonly Row[],
-  followers: readonly Pick<RowFollower, "key" | "column" | "plusDays">[],
+  followers: readonly CellFollower[],
   applied: readonly AppliedCells[]
 ): FollowedRows<Row> {
   const next: Row[] = []
@@ -201,16 +246,23 @@ export function followRows<Row extends Record<string, unknown>>(
     const above = next[index - 1]
 
     for (const follower of followers) {
-      if (!above) {
+      const source = follower.sameRow
+        ? { ...row, ...Object.fromEntries(changes) }
+        : above
+
+      if (!source) {
         held.set(follower.key, undefined)
         continue
       }
 
-      const from = dateText.parse(above[follower.column])
+      const from = dateText.parse(source[follower.column])
 
       const step = nextFollowed({
         current: dateText.parse(row[follower.key]),
-        next: from === "" ? undefined : addDays(from, follower.plusDays),
+        next:
+          from === "" || follower.plusDays === undefined
+            ? undefined
+            : addDays(from, follower.plusDays),
         applied: applied[index]?.[follower.key],
       })
 

@@ -315,6 +315,18 @@ export const previews: Preview[] = [
     expect: `On ${testProjectName("Tier_1", "D4.8")}, once the HE submitted D4.8, the PM reads it without editing and sees Sign on Head of Operations / Engineering Signature. Sign: Locked By shows your name, Date Locked and Date show the day you signed, and D4.8 reads Locked. Or Send back with a reason: it goes back to the HE as a draft. The LE and CR read D4.8 without editing; anyone else, the client too, does not see it.`,
   },
   {
+    screen: "T3.D4.8a drafting assignment and baseline, as the AE (RDP-214)",
+    loginAs: "AE",
+    path: (id) => `/projects/${id}/tools/T3.D4.8a`,
+    expect: `On ${testProjectName("Tier_3", "T3.D4.8a")}, where D3.10 is locked, Workbook 4 shows only T3.D4.8a, open for the AE; no D4.1 to D4.8 show, and a Tier 1 project never shows T3.D4.8a. Project Request ID is the system's. 1.0 shows the direct assignment note and T3.D1.15a's Delivery Timeline (2 weeks), then one row, 1.1, starting on your name, with hints e.g. 3D Modeling/Surfacing and e.g. 16 Hrs; Add row adds 1.2. Pick a Start Date: Target Delivery Date fills in two weeks later; pick a target date by hand and moving the start no longer changes it. 2.0 has three locked rows: 2.1 Client Source Data offers Ready or Missing and its Direct Link shows View, which opens the client's D1.1 web form with their files; 2.2 Project CAD Folder offers Created or Pending with a link to type; 2.3 Software License offers Verified or Pending with the hint e.g. Autodesk Inventor. 3.0's Requirements start on T3.D1.3a's ISO, General and STEP, each editable, beside the fixed Reference Standards. 4.0 shows the kick-off bypass line. Submit without Ready, Created and Verified, or before signing Assigned Engineer Signature, is refused and says why. Sign, then Submit: the PM is told in the app and by email.`,
+  },
+  {
+    screen: "T3.D4.8a drafting assignment and baseline, as the PM (RDP-214)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/T3.D4.8a`,
+    expect: `On ${testProjectName("Tier_3", "T3.D4.8a")}, once the AE submitted T3.D4.8a, the PM reads it without editing and sees Sign on Project Manager Signature. Sign: both Dates show the day each signed, T3.D4.8a reads Locked, and each engineer in 1.0 not yet on the project now holds AE on it and is told. Or Send back with a reason: it goes back to the AE as a draft. The OM, LE, LD, HE and CR read it without editing; anyone else, the client too, cannot open it.`,
+  },
+  {
     screen: "D3.10 phase unblock notice, as the FO (RDP-204)",
     loginAs: "FO",
     path: (id) => `/projects/${id}/tools/D3.10`,

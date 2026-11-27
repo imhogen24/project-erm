@@ -37,6 +37,7 @@ import {
   followedDate,
   followersOf,
   alignApplied,
+  cellFollowerOf,
   followRows,
   nextFollowed,
   type AppliedCells,
@@ -511,9 +512,19 @@ export function ToolForm({
   const rowFollowers = rowFollowersOf(tool.fields)
   const followingTables = [...new Set(rowFollowers.map((each) => each.table))]
 
+  // The durations a row's date adds, such as T3.D4.8a's timeline, are
+  // watched with the tables.
+  const rowDurations = [
+    ...new Set(
+      rowFollowers.flatMap((each) =>
+        "sameRow" in each ? [each.plusDurationOf] : []
+      )
+    ),
+  ]
+
   const followedRows = useWatch({
     control: form.control,
-    name: followingTables,
+    name: [...followingTables, ...rowDurations],
     disabled: followingTables.length === 0,
   })
 
@@ -543,9 +554,14 @@ export function ToolForm({
       const held = rows as RawRow[]
       const last = lastRows.current[table]
 
+      const values = form.getValues()
+      const read = (key: string) => z.string().catch("").parse(values[key])
+
       const step = followRows(
         held,
-        rowFollowers.filter((each) => each.table === table),
+        rowFollowers
+          .filter((each) => each.table === table)
+          .map((each) => cellFollowerOf(each, read)),
         last ? alignApplied(last.rows, held, last.applied) : []
       )
 

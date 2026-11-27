@@ -44,6 +44,7 @@ export const qualifiedRoles: readonly Role[] = [
   "FO",
   "LE",
   "AE",
+  "LD",
 ]
 
 export function holdsCompanyWide(role: Role) {

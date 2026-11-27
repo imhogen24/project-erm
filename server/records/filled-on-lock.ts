@@ -132,13 +132,16 @@ function meets(
 }
 
 // The tool's select fields, or table columns, that do not yet hold the option
-// submitting needs, each with what to say about it.
+// submitting needs, each with what to say about it. `rules` are the tool's
+// `submitWhen` unless given, such as its `reviewWhen` as the approver signs.
 export function unmetSubmitRules(
   toolId: string,
   payload: JsonObject,
-  notNeeded: ReadonlyMap<string, ReadonlySet<number>> = new Map()
+  notNeeded: ReadonlyMap<string, ReadonlySet<number>> = new Map(),
+  rules?: NonNullable<ReturnType<typeof tools.getTool>>["submitWhen"]
 ): FieldError[] {
   const tool = tools.getTool(toolId)
+  const asked = rules ?? tool?.submitWhen ?? []
 
   // The rows the app sets as someone signs, or as the record locks, are not
   // asked of the writer.
@@ -154,7 +157,7 @@ export function unmetSubmitRules(
 
   // A table's column that must add up to a number, such as D3.1's
   // percentages to 100.
-  const sums = (tool?.fields ?? []).flatMap((field) =>
+  const sums = (rules ? [] : (tool?.fields ?? [])).flatMap((field) =>
     field.type === "table" &&
     field.sumsTo &&
     columnSum(payload[field.key], field.sumsTo.column) !== field.sumsTo.value
@@ -171,7 +174,7 @@ export function unmetSubmitRules(
     return field !== undefined && !shownFor(field, payload)
   }
 
-  const rules = (tool?.submitWhen ?? []).flatMap((rule) => {
+  const unmet = asked.flatMap((rule) => {
     const column = "column" in rule ? rule.column : undefined
     const when = "when" in rule ? rule.when : undefined
 
@@ -195,7 +198,7 @@ export function unmetSubmitRules(
       : [{ field: when?.field ?? rule.field, message: rule.message }]
   })
 
-  return [...rules, ...sums]
+  return [...unmet, ...sums]
 }
 
 // The tables whose cells the app sets as the record locks (`setOnLock`), with

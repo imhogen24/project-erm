@@ -107,14 +107,42 @@ const signature = z.object({
   viewedAs: fieldKey.optional(),
 })
 
+// Where a select's people come from, read each time the record is shown:
+// "staff", everyone holding one of `roles` as a company role, such as
+// D4.2's engineers. A roster of the project may follow as another source.
+const peopleSource = z.strictObject({
+  from: z.literal("staff"),
+  roles: z.array(z.enum(roles)).min(1),
+})
+
+export type PeopleSource = z.output<typeof peopleSource>
+
 // `systemOptions` are options only the system sets. They are shown, but the
-// form can never choose them.
+// form can never choose them. `optionsFromPeople` lists people's names
+// before the select's own `options`, such as D4.2's engineers and "Any
+// available"; such a select may have no options of its own.
 const select = z.object({
   ...cellBase,
   type: z.literal("select"),
-  options: z.array(z.string().min(1)).min(1),
+  options: z.array(z.string().min(1)),
   systemOptions: z.array(z.string().min(1)).min(1).optional(),
+  optionsFromPeople: peopleSource.optional(),
 })
+
+const noOptions = "A select has options, or takes them from people"
+
+// A select needs options of its own unless it lists people.
+function hasOptions(cell: {
+  type: string
+  options?: string[]
+  optionsFromPeople?: unknown
+}) {
+  return (
+    cell.type !== "select" ||
+    cell.optionsFromPeople !== undefined ||
+    (cell.options?.length ?? 0) > 0
+  )
+}
 
 // Refuses `option` while any row of the `table` field has `value` in its
 // `column`. The refusal is `message`, followed by the first cell of each such
@@ -369,9 +397,12 @@ const table = z
     // columns the person writes are stored, each row by its `keyedBy`
     // column, such as the SN, so a typed cell stays with its row when the
     // source changes. The app fills every other column.
+    // Without `tool`, the rows follow another table of this record, one per
+    // row of its `field`, such as D4.2's conflict check, one row per
+    // request: the key column numbered, such as 3.1, 3.2, keys each row.
     rowsFrom: z
       .strictObject({
-        tool: z.string().min(1),
+        tool: z.string().min(1).optional(),
         field: fieldKey,
         keyedBy: fieldKey,
       })
@@ -606,6 +637,14 @@ const table = z
     })
 
     value.columns.forEach((entry, index) => {
+      if (!hasOptions(entry)) {
+        context.addIssue({
+          code: "custom",
+          path: ["columns", index, "options"],
+          message: noOptions,
+        })
+      }
+
       if (entry.numbered && entry.type !== "text") {
         context.addIssue({
           code: "custom",
@@ -847,8 +886,8 @@ const field = z
     (value) =>
       value.type !== "select" ||
       (value.optionsFrom
-        ? value.options.length === 0
-        : value.options.length > 0),
+        ? value.options.length === 0 && !value.optionsFromPeople
+        : hasOptions(value)),
     {
       message:
         "A select has its own options, or takes them from another tool's table, not both",
@@ -1143,8 +1182,53 @@ const toolDefinition = z
         receivedOn: fieldKey.optional(),
       })
       .optional(),
+    // Fields only the approver writes, and only while the record is
+    // submitted, such as D4.2's conflict check by the HE: the writer cannot
+    // change them, and they are not asked of the writer at submit. Signing
+    // the approving signature needs their required answers, and every rule
+    // of `reviewWhen`, written as `submitWhen`'s.
+    reviewFields: z.array(fieldKey).min(1).optional(),
+    reviewWhen: z
+      .array(
+        z.strictObject({
+          field: fieldKey,
+          column: fieldKey.optional(),
+          is: z.string().min(1),
+          message: z.string().min(1),
+        })
+      )
+      .optional(),
     fields: z.array(field).min(1),
   })
+  .refine(
+    (value) =>
+      !value.reviewFields ||
+      (value.signInTurn !== undefined && "approves" in value.signInTurn),
+    {
+      message:
+        "Fields the approver fills need a signature that approves the record",
+    }
+  )
+  .refine(
+    (value) =>
+      (value.reviewFields ?? []).every((key) =>
+        value.fields.some(
+          (entry) =>
+            entry.key === key &&
+            !entry.systemFilled &&
+            !entry.inherited &&
+            entry.type !== "signature"
+        )
+      ),
+    { message: "A field the approver fills is one the form writes" }
+  )
+  .refine(
+    (value) =>
+      (value.reviewWhen ?? []).every((rule) =>
+        value.reviewFields?.includes(rule.field)
+      ),
+    { message: "A review rule is on a field the approver fills" }
+  )
   .refine(
     (value) =>
       new Set(value.fields.map((entry) => entry.key)).size ===
@@ -1189,6 +1273,22 @@ const toolDefinition = z
     value.fields.forEach((field, fieldIndex) => {
       if (field.type !== "table") {
         return
+      }
+
+      // Rows that follow another table of this record need that table.
+      const own = field.rowsFrom
+      const source = value.fields.find((entry) => entry.key === own?.field)
+
+      if (
+        own &&
+        !own.tool &&
+        (source?.type !== "table" || source.key === field.key)
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["fields", fieldIndex, "rowsFrom"],
+          message: "Rows follow another table of this tool",
+        })
       }
 
       field.setOnLock?.forEach((rule, ruleIndex) => {

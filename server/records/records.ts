@@ -60,6 +60,7 @@ import { rowsNotNeeded } from "./not-needed"
 import { fieldsOff } from "./only-when"
 import { repeatIfAsked } from "./repeat"
 import { keepReadOnly } from "./read-only"
+import { keepReviewed, reviewKeys, unmetReview, withReview } from "./review"
 import {
   hasInternalFields,
   readsAsClient,
@@ -810,7 +811,11 @@ async function writeDraft(
   const signatures = signaturesOf(current.toolId, current.payload)
 
   const kept = {
-    ...keepReadOnly(current.toolId, current.payload, values),
+    ...keepReviewed(
+      current.toolId,
+      current.payload,
+      keepReadOnly(current.toolId, current.payload, values)
+    ),
     ...heldDecision(current.toolId, current.payload),
     ...heldIssued(current.toolId, current.payload),
   }
@@ -931,6 +936,16 @@ export async function saveDraft(
   input: DraftSave,
   transport?: Transport
 ): Promise<ToolRecord> {
+  // A submitted record whose approver fills fields of their own, such as
+  // D4.2's conflict check, takes the approver's answers instead.
+  if (reviewKeys(input.toolId).length > 0) {
+    const reviewed = await liveRecord(database, input)
+
+    if (reviewed?.state === "submitted") {
+      return saveReview(database, actor, reviewed, input)
+    }
+  }
+
   await assertMay(database, actor, input.projectId, input.toolId, "write")
 
   const values = assertValid(input.toolId, input.values, { forSubmit: false })
@@ -944,7 +959,11 @@ export async function saveDraft(
   }
 
   if (!existing) {
-    const first = keepReadOnly(input.toolId, undefined, values)
+    const first = keepReviewed(
+      input.toolId,
+      undefined,
+      keepReadOnly(input.toolId, undefined, values)
+    )
 
     try {
       return await createRecord(
@@ -985,6 +1004,84 @@ export async function saveDraft(
     }
 
     return writeDraft(transaction, actor, current, values)
+  })
+}
+
+// Saves the approver's answers to the fields only they fill
+// (`reviewFields`) on a submitted record, such as the HE's conflict check on
+// D4.2. Nothing else on the record changes, and whoever submitted it may not
+// answer. Refused with StaleRecordError, as a draft's save is, when the
+// record changed since the screen opened.
+async function saveReview(
+  database: Database,
+  actor: string,
+  record: ToolRecord,
+  input: DraftSave
+): Promise<ToolRecord> {
+  await assertMay(database, actor, record.projectId, record.toolId, "approve")
+
+  // Only whoever gives the approving signature answers, such as the HE.
+  const approving = signatureField(record.toolId, approvingTurn(record.toolId)!)
+  const signers = approving?.signedBy ?? []
+  const held = await rolesOn(database, actor, record.projectId)
+
+  if (!signers.some((role) => held.includes(role))) {
+    throw new PermissionDeniedError(
+      `Only ${signers.join(", ")} may answer this review`
+    )
+  }
+
+  if (record.submittedBy === actor) {
+    throw new SelfApprovalError(
+      "The person who submitted this record cannot review it"
+    )
+  }
+
+  const values = assertValid(input.toolId, input.values, { forSubmit: false })
+  const expected = input.expectedUpdatedAt
+
+  return database.transaction(async (transaction) => {
+    await assertProjectActive(transaction, record.projectId)
+
+    const current = await lockRecord(transaction, record.id)
+
+    if (
+      current.state !== "submitted" ||
+      !expected ||
+      current.updatedAt.getTime() !== expected.getTime()
+    ) {
+      throw await staleError(transaction, actor, current)
+    }
+
+    const payload = withReview(
+      current.toolId,
+      current.payload,
+      keepReadOnly(current.toolId, current.payload, values)
+    )
+
+    if (isDeepStrictEqual(payload, current.payload)) {
+      return current
+    }
+
+    const [updated] = await transaction
+      .update(toolRecords)
+      .set({ payload, updatedAt: nextUpdatedAt(current) })
+      .where(eq(toolRecords.id, current.id))
+      .returning(columns)
+
+    await writeAudit(
+      transaction,
+      {
+        recordId: current.id,
+        projectId: current.projectId,
+        actor,
+        action: "updated",
+        reason: "Reviewed",
+      },
+      payloadChanges(current.payload, payload)
+    )
+
+    return updated!
   })
 }
 
@@ -1196,6 +1293,16 @@ export async function signField(
 
     if (inTurn) {
       assertTurn(current, fieldKey, actor)
+
+      // The approver's own answers must be given before they approve.
+      const unanswered =
+        fieldKey === approvingTurn(current.toolId)
+          ? unmetReview(current.toolId, current.payload)
+          : []
+
+      if (unanswered.length > 0) {
+        throw new ValidationError(unanswered)
+      }
     } else if (current.state !== "draft" && current.state !== "submitted") {
       throw new RecordNotEditableError(
         `A ${current.state} record cannot be signed`

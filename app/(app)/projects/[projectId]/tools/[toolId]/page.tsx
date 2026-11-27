@@ -165,6 +165,9 @@ import {
 import { UNBLOCK_NOTICE } from "@/lib/unblock-notice"
 import { TECHNICAL_NOTES } from "@/lib/technical-notes"
 import { technicalNotesStart } from "@/server/team/technical-notes"
+import { RESOURCE_REQUEST } from "@/lib/resource-request"
+import { resourceRequestStart } from "@/server/team/resource-request"
+import { withPeopleOptions } from "@/server/records/people-options"
 import { unblockStart } from "@/server/payments/unblock-notice"
 import { systemValuesOf } from "@/server/records/system-values"
 import { listComments, type Comment } from "@/server/comments/comments"
@@ -422,6 +425,13 @@ async function startOf(
 
     case TECHNICAL_NOTES: {
       const start = await technicalNotesStart(getDatabase(), projectId)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
+    case RESOURCE_REQUEST: {
+      const start = await resourceRequestStart(getDatabase(), projectId)
 
       // SAFETY: the start is built for this tool's own fields.
       return start as FormValues
@@ -909,6 +919,9 @@ export default async function Page({
     }
   }
 
+  // A select of people, such as D4.2's engineers, lists them as they are now.
+  sheetTool = await withPeopleOptions(getDatabase(), sheetTool)
+
   // A tool with no record yet starts its writer from what earlier tools hold.
   // D1.12: the critical risks from D1.11's register. D1.14: 4.0 from D1.13's
   // deliverables. D1.15: from D1.13 and D1.14. T3.D1.15a: from the standard
@@ -1067,6 +1080,29 @@ export default async function Page({
     />
   ) : undefined
 
+  // Fields only the approver fills, such as D4.2's conflict check: the
+  // approver whose signature approves answers them while the record is
+  // submitted, and nothing else; the writer sees them but cannot change them.
+  const reviewed = tool.reviewFields ?? []
+
+  const approving =
+    tool.signInTurn && "approves" in tool.signInTurn
+      ? tool.signInTurn.approves
+      : undefined
+
+  const reviewing =
+    reviewed.length > 0 &&
+    view.state === "submitted" &&
+    view.can.approve &&
+    approving !== undefined &&
+    view.can.sign.includes(approving)
+
+  const heldBack = reviewing
+    ? tool.fields
+        .map((field) => field.key)
+        .filter((key) => !reviewed.includes(key))
+    : reviewed
+
   const checks = tool.fields.flatMap((field) =>
     field.type === "table" && field.key === "triageChecklist"
       ? (field.prefilledRows ?? [])
@@ -1221,7 +1257,9 @@ export default async function Page({
         fills={fills}
         recordId={view.record?.id}
         updatedAt={view.record?.updatedAt.toISOString()}
-        canWrite={view.can.write}
+        canWrite={view.can.write || reviewing}
+        heldBack={heldBack}
+        reviewing={reviewing}
         canApprove={view.can.approve}
         signable={view.can.sign}
         save={saveDraftAction}

@@ -126,7 +126,17 @@ function selectSchema(cell: Extract<Field | Column, { type: "select" }>) {
     return z.string({ error: "Must be text" })
   }
 
+  // People's names change, so a select of people takes any name, or one of
+  // its own options.
   const system = cell.systemOptions ?? []
+
+  if (cell.optionsFromPeople) {
+    return z
+      .string({ error: "Must be text" })
+      .min(1, { error: "Pick one" })
+      .refine((value) => !system.includes(value), { error: systemSets })
+  }
+
   const choosable = cell.options.filter((option) => !system.includes(option))
 
   return z
@@ -439,10 +449,12 @@ function blockedChoice(
 // inherited, system-filled or read-only fields are checked on every write.
 // Required fields and required table columns are checked only when
 // `forSubmit` is set, so a draft can be saved incomplete.
+// `review` checks, at submit, the fields only the approver fills
+// (`reviewFields`) instead of the writer's, as the approver signs.
 export function validateRecord(
   toolId: string,
   payload: JsonObject,
-  options: { forSubmit: boolean }
+  options: { forSubmit: boolean; review?: boolean }
 ): Validation {
   const tool = tools.getTool(toolId)
 
@@ -460,9 +472,19 @@ export function validateRecord(
   }
 
   const wrong = new Set(errors.map((error) => error.field))
+  const reviewed = new Set(tool.reviewFields ?? [])
 
   for (const field of tool.fields) {
     if (wrong.has(field.key)) {
+      continue
+    }
+
+    // The writer is never asked for the approver's fields, and the approver
+    // only for theirs.
+    if (
+      options.forSubmit &&
+      reviewed.has(field.key) !== Boolean(options.review)
+    ) {
       continue
     }
 
@@ -498,7 +520,7 @@ export function validateRecord(
 export function assertValid(
   toolId: string,
   payload: JsonObject,
-  options: { forSubmit: boolean }
+  options: { forSubmit: boolean; review?: boolean }
 ): JsonObject {
   const validation = validateRecord(toolId, payload, options)
 

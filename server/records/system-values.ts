@@ -67,6 +67,8 @@ import { TECHNICAL_NOTES } from "@/lib/technical-notes"
 import { technicalNotesValues } from "@/server/team/technical-notes"
 import { RESOURCE_REQUEST } from "@/lib/resource-request"
 import { resourceRequestValues } from "@/server/team/resource-request"
+import { TEAM_ASSIGNMENT } from "@/lib/team-assignment"
+import { assignmentValues } from "@/server/team/team-assignment"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -235,6 +237,10 @@ async function workedOut(
         projectId,
         record ? { id: record.id, payload } : null
       )
+    }
+
+    case TEAM_ASSIGNMENT: {
+      return await assignmentValues(database, projectId, payload)
     }
 
     case PAYMENT_TERMS: {

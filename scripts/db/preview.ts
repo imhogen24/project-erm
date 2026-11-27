@@ -248,6 +248,19 @@ export const previews: Preview[] = [
     expect: `On ${testProjectName("Tier_1", "D4.2")}, once the LE submitted D4.2 (above), the HE answers 3.0 and 4.0 and nothing else: 2.0 cannot be changed, and there is no Submit or Approve, only Sign on Head of Engineering / R&D Signature and Send back. Sign with a 3.0 row unanswered, a No with no Alternative Assignment, or 4.0 answered No: it is refused and says why on that field. Answer each row Yes, or No with an alternative engineer, answer 4.0 Yes and Sign: D4.2 approves and locks and the Date fills in. Send back instead returns it to the LE as a draft with your reason; the LE still cannot change your answers. On ${ENGINEER_BOOKED_PROJECT}, D4.2 is already signed and locked.`,
   },
   {
+    screen: "D4.3 team assignment and provisioning record, as the LE (RDP-208)",
+    loginAs: "LE",
+    path: (id) => `/projects/${id}/tools/D4.3`,
+    expect: `On ${testProjectName("Tier_1", "D4.3")}, where the HE signed D4.2, D4.3 is open for the LE. 1.0: Project Request ID, Project Manager (${staffWith("PM").name}) and Project Name are the system's; Reference Request previews D4.2; Assignment Date says Filled in when the Head of Engineering signs. 2.0 starts on D4.2's two rows, numbered 2.1 and 2.2: Mid-Level CAD Engineer with ${staffWith("AE").name} for 15 days (approved), and Junior Technician with ${staffWith("LD").name} for 10 days (the HE's alternative). Role, engineer and days can be changed, Assigned Engineer lists the engineers (${staffWith("AE").name}, ${staffWith("LE").name}, ${staffWith("HE").name}, ${staffWith("LD").name}), Project Phase Involvement offers Phase 1 Only to All Phases, and Add row adds 2.3 with a bin. 3.0 starts on D4.1's three tools (3.1 to 3.3); its Assigned Engineer lists only the engineers named in 2.0 and follows 2.0 as it changes; Provisioning Status is Pending or Provisioned. Clear an engineer in 2.0, or answer 4.0 No, and Submit: it is refused and says why. Fill them in, answer Yes and Submit: the HE is told in the app and by email. Tier 3 projects have no D4.3. The PM, AE, LD and CR read D4.3 without editing; the FO, the client and everyone else do not see it.`,
+  },
+  {
+    screen:
+      "D4.3 team assignment and provisioning record, as the HE signing it (RDP-208)",
+    loginAs: "HE",
+    path: (id) => `/projects/${id}/tools/D4.3`,
+    expect: `On ${testProjectName("Tier_1", "D4.3")}, once the LE submitted D4.3 (above), it waits for the HE: there is no Approve button, only Sign on Head of Engineering Signature and Send back. Sign: D4.3 approves and locks, Assignment Date and Date fill in, and each rostered engineer who held no role on the project now holds AE on it (see the project's team page) and is told in the app and by email. Send back instead returns it to the LE as a draft with your reason. On ${ENGINEER_BOOKED_PROJECT}, D4.3 is already signed and locked, which is where another project's D4.2 reads ${staffWith("AE").name}'s 15 booked days.`,
+  },
+  {
     screen: "D3.10 phase unblock notice, as the FO (RDP-204)",
     loginAs: "FO",
     path: (id) => `/projects/${id}/tools/D3.10`,

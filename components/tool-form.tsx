@@ -45,6 +45,7 @@ import {
   hasComputedColumns,
 } from "@/lib/computed-columns"
 import { hasLiveValues, liveValues } from "@/lib/live-values"
+import { peopleColumnSources, withColumnPeople } from "@/lib/people-columns"
 import { fieldFills, fillFields, type Fills } from "@/lib/placeholders"
 import { shownFromSources, shownFromValues } from "@/lib/shown-from"
 import type {
@@ -383,6 +384,16 @@ export function ToolForm({
     disabled: sources.length === 0,
   })
 
+  // The tables a select lists people from, such as D4.3's 2.0 roster for
+  // 3.0's engineers, so its options follow them as they are typed.
+  const peopleSources = peopleColumnSources(tool.fields)
+
+  useWatch({
+    control: form.control,
+    name: peopleSources,
+    disabled: peopleSources.length === 0,
+  })
+
   const typed = toValues(tool, form.getValues())
 
   const live = {
@@ -713,7 +724,7 @@ export function ToolForm({
               control={form.control}
               render={({ field: control }) => (
                 <TableEditor
-                  field={field}
+                  field={withColumnPeople(field, typed)}
                   rows={Array.isArray(control.value) ? control.value : []}
                   // SAFETY: the live sums are numbers and text, which a raw
                   // cell holds.

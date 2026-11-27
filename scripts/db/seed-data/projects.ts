@@ -594,9 +594,9 @@ const [overdueLogged, overdueSubmitted, overdueHalted] = [
   )
 )
 
-// A Tier 1 project whose resource request (D4.2) the HE approved and locked,
-// booking the AE for 15 days, so another project's D4.2 shows those days as
-// the AE's Current Utilization Status.
+// A Tier 1 project whose resource request (D4.2) and team assignment (D4.3)
+// the HE signed and locked, rostering the AE for 15 days, so another
+// project's D4.2 shows those days as the AE's Current Utilization Status.
 export const ENGINEER_BOOKED_PROJECT = `${DEV_PROJECT}D4.2 Approved (Tier 1)`
 
 const engineerBooked = tier1Stage(

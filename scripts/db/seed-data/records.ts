@@ -1346,12 +1346,13 @@ function stageD214() {
 // D4.1's test project, where 2.2's D3.10 is signed, which opens Workbook 4.
 const technicalNotesProject = () => testProjectName("Tier_1", "D4.1")
 
-// The projects where Workbook 4 is open: D4.1's and D4.2's test projects,
-// and the project whose D4.2 is locked.
+// The projects where Workbook 4 is open: D4.1's, D4.2's and D4.3's test
+// projects, and the project whose team is locked.
 function inWorkbookFour(name: string) {
   return (
     name === technicalNotesProject() ||
     name === testProjectName("Tier_1", "D4.2") ||
+    name === testProjectName("Tier_1", "D4.3") ||
     name === ENGINEER_BOOKED_PROJECT
   )
 }
@@ -1433,8 +1434,44 @@ function stageD42() {
   })
 }
 
-// Workbook 4's locked records: D4.1 on D4.2's test project and on the
-// project whose D4.2 is locked, which has its D4.2 too.
+// D4.3 as the HE signed it: the AE rostered for the Mechanical role's 15
+// days and the LD for the Electronics role's 10, so another project's D4.2
+// shows the AE's 15 days as their Current Utilization Status.
+function stageD43() {
+  return payloadOf({
+    roster: [
+      {
+        role: "Mid-Level CAD Engineer",
+        engineer: staffWith("AE").name,
+        days: 15,
+        phases: "Phases 1 & 2",
+      },
+      {
+        role: "Junior Technician",
+        engineer: staffWith("LD").name,
+        days: 10,
+        phases: "Phase 2 Only",
+      },
+    ],
+    provisioning: [
+      {
+        engineer: staffWith("AE").name,
+        asset: "Autodesk Inventor 2025",
+        dateRequired: "2027-01-04",
+        status: "Provisioned",
+      },
+    ],
+    engineersLocked: "Yes",
+    heSignature: {
+      signedBy: "role:HE",
+      signedAt: "2026-12-30T09:00:00.000Z",
+    },
+  })
+}
+
+// Workbook 4's locked records: D4.1 on D4.2's test project; D4.1 and D4.2
+// on D4.3's test project; and D4.1, D4.2 and D4.3 on the project whose team
+// is locked.
 function teamRecords(name: string): SeedRecord[] {
   const notes: SeedRecord = {
     toolId: "D4.1",
@@ -1447,8 +1484,23 @@ function teamRecords(name: string): SeedRecord[] {
     return [notes]
   }
 
+  const request: SeedRecord = {
+    toolId: "D4.2",
+    state: "locked",
+    day: 79,
+    payload: stageD42(),
+  }
+
+  if (name === testProjectName("Tier_1", "D4.3")) {
+    return [notes, request]
+  }
+
   return name === ENGINEER_BOOKED_PROJECT
-    ? [notes, { toolId: "D4.2", state: "locked", day: 79, payload: stageD42() }]
+    ? [
+        notes,
+        request,
+        { toolId: "D4.3", state: "locked", day: 81, payload: stageD43() },
+      ]
     : []
 }
 

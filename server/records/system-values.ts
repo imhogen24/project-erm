@@ -69,6 +69,8 @@ import { RESOURCE_REQUEST } from "@/lib/resource-request"
 import { resourceRequestValues } from "@/server/team/resource-request"
 import { TEAM_ASSIGNMENT } from "@/lib/team-assignment"
 import { assignmentValues } from "@/server/team/team-assignment"
+import { ACCESS_LOG } from "@/lib/access-log"
+import { accessLogValues } from "@/server/team/access-log"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -328,6 +330,14 @@ async function workedOut(
 
     case RESOURCE_REQUEST: {
       return await resourceRequestValues(
+        database,
+        projectId,
+        record ? { id: record.id, payload } : null
+      )
+    }
+
+    case ACCESS_LOG: {
+      return await accessLogValues(
         database,
         projectId,
         record ? { id: record.id, payload } : null

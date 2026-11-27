@@ -1346,13 +1346,14 @@ function stageD214() {
 // D4.1's test project, where 2.2's D3.10 is signed, which opens Workbook 4.
 const technicalNotesProject = () => testProjectName("Tier_1", "D4.1")
 
-// The projects where Workbook 4 is open: D4.1's, D4.2's and D4.3's test
-// projects, and the project whose team is locked.
+// The projects where Workbook 4 is open: D4.1's to D4.4's test projects,
+// and the project whose team is locked.
 function inWorkbookFour(name: string) {
   return (
     name === technicalNotesProject() ||
     name === testProjectName("Tier_1", "D4.2") ||
     name === testProjectName("Tier_1", "D4.3") ||
+    name === testProjectName("Tier_1", "D4.4") ||
     name === ENGINEER_BOOKED_PROJECT
   )
 }
@@ -1470,8 +1471,8 @@ function stageD43() {
 }
 
 // Workbook 4's locked records: D4.1 on D4.2's test project; D4.1 and D4.2
-// on D4.3's test project; and D4.1, D4.2 and D4.3 on the project whose team
-// is locked.
+// on D4.3's test project; and D4.1, D4.2 and D4.3 on D4.4's test project
+// and on the project whose team is locked.
 function teamRecords(name: string): SeedRecord[] {
   const notes: SeedRecord = {
     toolId: "D4.1",
@@ -1495,7 +1496,8 @@ function teamRecords(name: string): SeedRecord[] {
     return [notes, request]
   }
 
-  return name === ENGINEER_BOOKED_PROJECT
+  return name === ENGINEER_BOOKED_PROJECT ||
+    name === testProjectName("Tier_1", "D4.4")
     ? [
         notes,
         request,

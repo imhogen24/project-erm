@@ -261,6 +261,18 @@ export const previews: Preview[] = [
     expect: `On ${testProjectName("Tier_1", "D4.3")}, once the LE submitted D4.3 (above), it waits for the HE: there is no Approve button, only Sign on Head of Engineering Signature and Send back. Sign: D4.3 approves and locks, Assignment Date and Date fill in, and each rostered engineer who held no role on the project now holds AE on it (see the project's team page) and is told in the app and by email. Send back instead returns it to the LE as a draft with your reason. On ${ENGINEER_BOOKED_PROJECT}, D4.3 is already signed and locked, which is where another project's D4.2 reads ${staffWith("AE").name}'s 15 booked days.`,
   },
   {
+    screen: "D4.4 access confirmation log, as the HE (RDP-209)",
+    loginAs: "HE",
+    path: (id) => `/projects/${id}/tools/D4.4`,
+    expect: `On ${testProjectName("Tier_1", "D4.4")}, where the HE signed D4.3, D4.4 is open for the HE. 1.0: Project Request ID, Project / Client Name and Total Team Size (2 Engineers, D4.3's roster) are the system's; Executing Admin/IT and Date Executed say Filled in when D4.4 is submitted. 2.0 starts on Google Drive Workspace, CAD Vault / Server, Communication Channel and QMS Documentation Hub (2.1 to 2.4) with their Required Action, which cannot be changed or removed; Verification Check hints Link provided?, Permissions verified?, PM made Admin? and Linked?, and each Status starts on Pending. Add row adds 2.5 with its own workspace and action. Submit with a No, a Pending, 3.0 answered No or no Admin Signature: it is refused and says why. Answer every check Yes, mark every row Done, answer 3.0 Yes, Sign and Submit: Executing Admin/IT, Date Executed and Date fill in and the PM is told in the app and by email. Tier 3 projects have no D4.4. The LE, AE, LD and CR read D4.4 without editing; the FO, the client and everyone else do not see it.`,
+  },
+  {
+    screen: "D4.4 access confirmation log, as the PM approving it (RDP-209)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D4.4`,
+    expect: `On ${testProjectName("Tier_1", "D4.4")}, once the HE submitted D4.4 (above), the PM sees Approve and Send back. Approve: D4.4 locks. Send back instead returns it to the HE as a draft with your reason, to change and submit again.`,
+  },
+  {
     screen: "D3.10 phase unblock notice, as the FO (RDP-204)",
     loginAs: "FO",
     path: (id) => `/projects/${id}/tools/D3.10`,

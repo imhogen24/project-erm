@@ -1,8 +1,14 @@
-import { and, eq, inArray } from "drizzle-orm"
+import { and, eq, inArray, ne } from "drizzle-orm"
 import { z } from "zod"
 
 import type { Database } from "@/db"
-import { people, personProjectRoles, projects, toolRecords } from "@/db/schema"
+import {
+  notifications,
+  people,
+  personProjectRoles,
+  projects,
+  toolRecords,
+} from "@/db/schema"
 import { BILLING_TRIGGER } from "@/lib/billing-trigger"
 import { OVERDUE_ACCOUNTS } from "@/lib/overdue-account"
 import { TRANSMITTED_INVOICE, shownDay } from "@/lib/transmitted-invoice"
@@ -10,7 +16,6 @@ import { requireEnv } from "@/server/database"
 import { getTransport, sendEmail, type Transport } from "@/server/email/email"
 import { toolPath } from "@/server/notifications/raise"
 import { notify } from "@/server/notifications/notifications"
-import { cycleRecord } from "@/server/payments/approved-invoice"
 import { cyclePayload } from "@/server/payments/draft-invoice"
 import { isCyclePaid } from "@/server/payments/reconciled-submit"
 import { ToolNotAvailableError, createRecord } from "@/server/records/records"
@@ -41,11 +46,31 @@ async function toldOf(database: Database, projectId: string) {
     )
 }
 
+// The cycle's D3.11, never a voided one.
+async function reportOf(database: Database, projectId: string, cycle: number) {
+  const [report] = await database
+    .select({ id: toolRecords.id, state: toolRecords.state })
+    .from(toolRecords)
+    .where(
+      and(
+        eq(toolRecords.projectId, projectId),
+        eq(toolRecords.toolId, OVERDUE_ACCOUNTS),
+        eq(toolRecords.cycle, cycle),
+        ne(toolRecords.state, "void")
+      )
+    )
+    .limit(1)
+
+  return report
+}
+
 // The daily overdue check, run with the hourly follow-ups: every milestone
 // whose sent invoice (D3.6) fell due before today, on an active project,
 // whose D3.8 is not approved and that has no D3.11 yet, gets one, opened by
-// the app. The project's FO and PM are told in the app and by email. The
-// unique record per cycle keeps it to one, even when two runs overlap.
+// the app. The project's FO and PM are told in the app and by email; while
+// the report is still a draft, a later run tells anyone a failed delivery
+// missed, each email keyed to its report and person, so none goes twice.
+// The unique record per cycle keeps it to one, even when two runs overlap.
 // Returns how many reports this run opened.
 export async function openOverdueReports(
   database: Database,
@@ -79,36 +104,42 @@ export async function openOverdueReports(
     if (
       !due ||
       due >= today ||
-      (await cycleRecord(
-        database,
-        invoice.projectId,
-        OVERDUE_ACCOUNTS,
-        invoice.cycle
-      )) ||
       (await isCyclePaid(database, invoice.projectId, invoice.cycle))
     ) {
       continue
     }
 
-    let record: { id: string }
+    const existing = await reportOf(database, invoice.projectId, invoice.cycle)
 
-    try {
-      record = await createRecord(database, systemActor, {
-        projectId: invoice.projectId,
-        toolId: OVERDUE_ACCOUNTS,
-        cycle: invoice.cycle,
-        byJob: true,
-      })
-    } catch (error) {
-      // Not open on this project, or another run opened it first.
-      if (error instanceof ToolNotAvailableError) {
-        continue
-      }
-
-      throw error
+    // A report the FO has started on was told already; one still a draft
+    // may have had a delivery fail, so it is told again where it was not.
+    if (existing && existing.state !== "draft") {
+      continue
     }
 
-    opened += 1
+    let record = existing
+
+    if (!record) {
+      try {
+        record = await createRecord(database, systemActor, {
+          projectId: invoice.projectId,
+          toolId: OVERDUE_ACCOUNTS,
+          cycle: invoice.cycle,
+          byJob: true,
+        })
+      } catch (error) {
+        // Not open on this project, or another run opened it first.
+        if (error instanceof ToolNotAvailableError) {
+          continue
+        }
+
+        throw error
+      }
+
+      opened += 1
+    }
+
+    const reportId = record.id
 
     const [trigger, told] = await Promise.all([
       cyclePayload(database, invoice.projectId, BILLING_TRIGGER, invoice.cycle),
@@ -118,14 +149,30 @@ export async function openOverdueReports(
     const milestone = text.parse(trigger.milestone)
     const path = `${toolPath(invoice.projectId, OVERDUE_ACCOUNTS)}?cycle=${invoice.cycle}`
 
+    const notified = new Set(
+      (
+        await database
+          .select({ personId: notifications.personId })
+          .from(notifications)
+          .where(
+            and(
+              eq(notifications.recordId, reportId),
+              eq(notifications.kind, "tool_open")
+            )
+          )
+      ).map((row) => row.personId)
+    )
+
     await database.transaction((transaction) =>
       notify(transaction, {
-        personIds: told.map((person) => person.id),
+        personIds: told
+          .map((person) => person.id)
+          .filter((id) => !notified.has(id)),
         kind: "tool_open",
         title: `${OVERDUE_ACCOUNTS} is open: payment overdue`,
         text: `Overdue Accounts Report for ${milestone || "the milestone"} on ${invoice.projectName}, due ${shownDay(due)}`,
         projectId: invoice.projectId,
-        recordId: record.id,
+        recordId: reportId,
         path,
       })
     )
@@ -143,8 +190,8 @@ export async function openOverdueReports(
             link: linkOf(path),
           },
           projectId: invoice.projectId,
-          recordId: record.id,
-          key: `payment_overdue:${record.id}:${person.id}`,
+          recordId: reportId,
+          key: `payment_overdue:${reportId}:${person.id}`,
         },
         transport
       )

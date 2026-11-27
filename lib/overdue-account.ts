@@ -56,7 +56,7 @@ export function shownDays(days: number): string {
 // The percentage a penalty term holds, such as 2 for "2% Monthly Interest on
 // outstanding balance". Undefined for a term with none.
 export function percentIn(term: string): number | undefined {
-  const match = /(\d+(?:\.\d+)?)\s*%/.exec(term)
+  const match = /(\d*\.\d+|\d+)\s*%/.exec(term)
 
   return match ? Number(match[1]) : undefined
 }

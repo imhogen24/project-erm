@@ -248,6 +248,8 @@ describe("the figures", () => {
     expect(shownDays(14)).toBe("14 Days")
     expect(shownDays(1)).toBe("1 Day")
     expect(percentIn(PENALTY)).toBe(2)
+    expect(percentIn("0.5% Monthly Interest")).toBe(0.5)
+    expect(percentIn(".5% Monthly Interest")).toBe(0.5)
     expect(percentIn("None agreed")).toBeUndefined()
     expect(penaltyOf(2, 69400, 14)).toBe(1388)
     expect(penaltyOf(2, 69400, 31)).toBe(2776)

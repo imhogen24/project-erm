@@ -1,6 +1,7 @@
 import { z } from "zod"
 
 import type { JsonObject, JsonValue, ServiceTrack } from "@/db/schema"
+import { amountOf, countsDays, daysText } from "@/lib/computed-columns"
 import { fileIdOf } from "@/lib/file-reference"
 import { fixedValue, rowNumber, startingFixedRows } from "@/lib/fixed-rows"
 import { fillText, type Fills } from "@/lib/placeholders"
@@ -194,6 +195,22 @@ function rowsOf(field: TableField, answer: Answer): Row[] {
 }
 
 function totalOf(field: TableField, rows: Row[], key: string) {
+  // A total of working days, such as D4.8's, adds up each row's "15 Days".
+  if (countsDays(field.columns.find((column) => column.key === key))) {
+    const days = rows.reduce(
+      (total, each) => total + (amountOf(each[key]) ?? 0),
+      0
+    )
+
+    return field.columns.map((column, index) =>
+      column.key === key
+        ? daysText(days)
+        : index === 0
+          ? (field.subtotalLabel ?? "Subtotal")
+          : ""
+    )
+  }
+
   const sum = rows.reduce((total, each) => {
     const parsed = amount.safeParse(each[key] ?? "")
 

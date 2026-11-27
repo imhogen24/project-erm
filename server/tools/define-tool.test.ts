@@ -319,6 +319,69 @@ describe("defineTool, the wider field types", () => {
     }
   })
 
+  it("accepts working days between two dates, totalled, and a date following the row above", () => {
+    const tool = withFields([
+      {
+        key: "phases",
+        label: "Phases",
+        type: "table",
+        subtotal: "days",
+        columns: [
+          {
+            key: "start",
+            label: "Start",
+            type: "date",
+            followsRowAbove: { column: "end", plusDays: 1 },
+          },
+          { key: "end", label: "End", type: "date" },
+          {
+            key: "days",
+            label: "Days",
+            type: "number",
+            systemFilled: true,
+            computed: { weekdaysFrom: "start", to: "end" },
+          },
+        ],
+      },
+    ])
+
+    expect(tool.fields[0]).toMatchObject({ subtotal: "days" })
+  })
+
+  it("refuses working days the person types, or a date following a text column", () => {
+    for (const columns of [
+      [
+        { key: "start", label: "Start", type: "date" },
+        { key: "end", label: "End", type: "date" },
+        {
+          key: "days",
+          label: "Days",
+          type: "number",
+          computed: { weekdaysFrom: "start", to: "end" },
+        },
+      ],
+      [
+        {
+          key: "start",
+          label: "Start",
+          type: "date",
+          followsRowAbove: { column: "note", plusDays: 1 },
+        },
+        { key: "note", label: "Note", type: "text" },
+      ],
+    ]) {
+      expect(() =>
+        withFields(
+          // SAFETY: each list holds column shapes defineTool parses; it is
+          // their rules, not their shape, the test checks.
+          [
+            { key: "phases", label: "Phases", type: "table", columns },
+          ] as ToolInput["fields"]
+        )
+      ).toThrow()
+    }
+  })
+
   it("refuses a checklist with no items, or a repeated item", () => {
     for (const items of [[], ["Readable", "Readable"]]) {
       expect(() =>

@@ -35,10 +35,11 @@ import { d44 } from "./d4-4"
 import { d45 } from "./d4-5"
 import { d46 } from "./d4-6"
 import { d47 } from "./d4-7"
+import { d48 } from "./d4-8"
 
 const database = createTestDatabase()
 
-for (const tool of [d41, d42, d43, d44, d45, d46, d47]) {
+for (const tool of [d41, d42, d43, d44, d45, d46, d47, d48]) {
   tools.registerTool(tool)
 }
 

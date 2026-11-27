@@ -145,6 +145,8 @@ import {
 } from "@/server/team/kickoff-invite"
 import { KICKOFF_NOTES } from "@/lib/kickoff-notes"
 import { kickoffMinutesStart } from "@/server/team/kickoff-notes"
+import { LOCKED_BASELINE } from "@/lib/locked-baseline"
+import { lockedBaselineStart } from "@/server/team/locked-baseline"
 import {
   readsAsClient,
   toolAsShown,
@@ -369,6 +371,13 @@ async function startOf(
 
     case KICKOFF_NOTES: {
       const start = await kickoffMinutesStart(getDatabase(), projectId)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
+    case LOCKED_BASELINE: {
+      const start = await lockedBaselineStart(getDatabase(), projectId)
 
       // SAFETY: the start is built for this tool's own fields.
       return start as FormValues

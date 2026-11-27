@@ -63,6 +63,8 @@ import { UNBLOCK_NOTICE } from "@/lib/unblock-notice"
 import { unblockValues } from "@/server/payments/unblock-notice"
 import { OVERDUE_ACCOUNTS } from "@/lib/overdue-account"
 import { overdueValues } from "@/server/payments/overdue-figures"
+import { TECHNICAL_NOTES } from "@/lib/technical-notes"
+import { technicalNotesValues } from "@/server/team/technical-notes"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -306,6 +308,14 @@ async function workedOut(
 
     case OVERDUE_ACCOUNTS: {
       return await overdueValues(database, projectId, { state, payload }, cycle)
+    }
+
+    case TECHNICAL_NOTES: {
+      return await technicalNotesValues(
+        database,
+        projectId,
+        record ? { id: record.id, payload } : null
+      )
     }
 
     default: {

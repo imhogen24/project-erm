@@ -223,6 +223,18 @@ export const previews: Preview[] = [
     expect: `On ${OVERDUE_SUBMITTED_PROJECT}, D3.11 for 2.2 is submitted with the account escalated and the halt answered Yes, and waits for the PM: there is no Approve button and no Save, only Sign on Head of Finance Signature and Send back. Sign: D3.11 approves and locks with the days, balance and penalty it showed, the Date fills in, and the PM, HE and engineers are told in the app and by email that engineering work is halted. The project page (/projects/<id>) then shows a Work halted badge, and every tool after Workbook 3 is read only for everyone until 2.2's D3.8 is approved, which lifts the halt and tells the same people work may resume. Send back instead returns it to the FO as a draft with your reason. On ${OVERDUE_HALTED_PROJECT}, D3.11 for 2.2 is already signed and locked with the halt answered Yes, so the project page shows Work halted.`,
   },
   {
+    screen: "D4.1 technical requirement notes, as the LE (RDP-206)",
+    loginAs: "LE",
+    path: (id) => `/projects/${id}/tools/D4.1`,
+    expect: `On ${testProjectName("Tier_1", "D4.1")}, where the PM signed 2.2's D3.10, Workbook 4 is open and D4.1 is open for the LE. 1.0: Project Request ID, Project Manager (${staffWith("PM").name}) and Project / Client Name are the system's; Date of Breakdown says Filled in when D4.1 is submitted; Target Project Start Date starts on D2.14's 21 Dec 2026 and can be changed; Reference Contract previews D2.12. 2.0 starts on D1.14's two modules, Mechanical (40 days) and Electronics (20 days), numbered 2.1 and 2.2; module and days can be changed, the role and notes hints read e.g. Mid-Level CAD Engineer and e.g. Must be prolific in Autodesk Inventor, and Add row adds 2.3 with a bin. 3.0 starts on Software License, Specialized Equipment and Testing Apparatus (3.1 to 3.3), whose category cannot be changed or removed; Add row adds 3.4 with its own category. Each row's Status is Available or Needs Procurement. Answer No to ready for Resource Request (D4.2) and Submit: it is refused and says why. Answer Yes and Submit: Date of Breakdown fills in and the PM is told. D4.1 is on Tier 1 only: Tier 3 projects have no D4.1. The OM, AE, HE and CR read D4.1 without editing; the FO, the client and everyone else do not see it.`,
+  },
+  {
+    screen: "D4.1 technical requirement notes, as the PM signing it (RDP-206)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D4.1`,
+    expect: `On ${testProjectName("Tier_1", "D4.1")}, once the LE submitted D4.1 (above), it waits for the PM: there is no Approve button, only Sign on Project Manager Signature and Send back. Sign: D4.1 approves and locks and the Date fills in. Send back instead returns it to the LE as a draft with your reason, to change and submit again.`,
+  },
+  {
     screen: "D3.10 phase unblock notice, as the FO (RDP-204)",
     loginAs: "FO",
     path: (id) => `/projects/${id}/tools/D3.10`,

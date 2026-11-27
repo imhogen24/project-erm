@@ -3,6 +3,7 @@ import { sendSignatureReminders } from "@/server/contract/signature-contract"
 import { sendTransmittalFollowUps } from "@/server/contract/transmittal"
 import { getDatabase } from "@/server/database"
 import { sendBankCheckReminders } from "@/server/payments/bank-statement-log"
+import { openOverdueReports } from "@/server/payments/overdue-account"
 import { sendInvoiceReminders } from "@/server/payments/transmitted-invoice"
 
 import { inngest } from "./client"
@@ -16,7 +17,8 @@ export type FollowUpRunOptions = { database: () => Database }
 // once, so a run that overlaps the last sends nothing twice. It also reminds
 // each client seven days before a milestone invoice D3.6 sent is due, and,
 // from 9:00 each working day, the Finance Officer whose milestone payment
-// D3.7 is still waiting for.
+// D3.7 is still waiting for. The day after a sent invoice falls due unpaid,
+// it opens that milestone's overdue accounts report, D3.11.
 export function createFollowUpRun({ database }: FollowUpRunOptions) {
   return inngest.createFunction(
     {
@@ -33,6 +35,7 @@ export function createFollowUpRun({ database }: FollowUpRunOptions) {
           signatureReminders: await sendSignatureReminders(database()),
           invoiceReminders: await sendInvoiceReminders(database()),
           bankCheckReminders: await sendBankCheckReminders(database()),
+          overdueReports: await openOverdueReports(database()),
         }
       } catch {
         // The error may quote a client's details, so none of it is kept.

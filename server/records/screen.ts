@@ -23,6 +23,7 @@ import {
   roleAllows,
   rolesOn,
 } from "@/server/permissions/permissions"
+import { haltedFor } from "@/server/permissions/work-halted"
 import { tools } from "@/server/tools/registry"
 import { repeatsPerCycle, toolStatus } from "@/server/workflow/workflow"
 
@@ -242,7 +243,10 @@ export async function getRecordScreen(
     .from(projects)
     .where(eq(projects.id, projectId))
 
-  const active = project!.status === "active"
+  // A project whose work is halted keeps its later workbooks read only.
+  const active =
+    project!.status === "active" &&
+    !(await haltedFor(database, projectId, toolId))
 
   const repeating = repeatsPerCycle(toolId)
 

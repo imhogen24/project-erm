@@ -97,6 +97,12 @@ const sampleData: EmailDataByKind = {
     milestone: "2.2 Fabrication Milestone (Design Approval)",
     link: "https://erm.example.com/b",
   },
+  payment_overdue: {
+    projectName: "Boiler",
+    milestone: "2.2 Fabrication Milestone (Design Approval)",
+    dueDate: "14/01/2027",
+    link: "https://erm.example.com/o",
+  },
   follow_up_sent: { projectName: "Boiler", link: "https://erm.example.com/f" },
   lock_announced: {
     recordTitle: "D3.10 Phase Unblock Notice on Boiler",
@@ -384,6 +390,7 @@ describe("templates", () => {
       "lock_announced",
       "meeting_times",
       "new_request",
+      "payment_overdue",
       "receipt_transmittal",
       "sent_back",
       "signature_needed",

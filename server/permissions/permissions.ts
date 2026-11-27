@@ -17,6 +17,7 @@ import {
   type Access,
   type Action,
 } from "./matrix"
+import { haltedFor } from "./work-halted"
 
 export type { Action }
 
@@ -124,7 +125,12 @@ export async function can(
   toolId: string,
   action: Action
 ): Promise<boolean> {
-  return roleAllows(await rolesOn(database, actor, projectId), toolId, action)
+  if (!roleAllows(await rolesOn(database, actor, projectId), toolId, action)) {
+    return false
+  }
+
+  // A halted project's later workbooks only read (work-halted.ts).
+  return action === "read" || !(await haltedFor(database, projectId, toolId))
 }
 
 // For the few actions that belong to one role on the project rather than to a

@@ -25,6 +25,7 @@ import { changeControlsFor } from "@/server/change-requests/controls"
 import { getDatabase } from "@/server/database"
 import { getClientRequestPreview } from "@/server/intake/preview"
 import { PermissionDeniedError } from "@/server/permissions/permissions"
+import { isWorkHalted } from "@/server/permissions/work-halted"
 import { getProjectOverview } from "@/server/projects/projects"
 
 import { decideChangeAction, requestChangeAction } from "./actions"
@@ -83,6 +84,9 @@ export default async function Page({
 
     throw error
   }
+
+  // A D3.11 locked with the halt answered Yes, until its D3.8 is approved.
+  const halted = await isWorkHalted(getDatabase(), projectId)
 
   // Only to decide whether the top bar offers the invite page.
   const canInvite = await isItAdmin(session.user.id)
@@ -145,6 +149,18 @@ export default async function Page({
                   {overview.serviceTrack.replace("_", " ")}
                 </Badge>
                 <span className="tabular-nums">{overview.requestId}</span>
+                {halted && (
+                  <span
+                    aria-label="Work halted"
+                    className="flex flex-wrap items-center gap-2"
+                  >
+                    <Badge variant="destructive">Work halted</Badge>
+                    <span>
+                      A milestone payment is overdue: later workbooks are read
+                      only until it is reconciled.
+                    </span>
+                  </span>
+                )}
               </div>
             }
             actions={

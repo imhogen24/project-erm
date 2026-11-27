@@ -26,6 +26,7 @@ import {
   rolesOn,
   type Action,
 } from "@/server/permissions/permissions"
+import { haltedFor } from "@/server/permissions/work-halted"
 import type { Transport } from "@/server/email/email"
 import {
   clearApprovalNeeded,
@@ -70,6 +71,9 @@ import { fillText, placeholdersIn } from "@/lib/placeholders"
 import { submittedValues } from "./submitted-values"
 import { decisionValues, heldDecision, withoutDecision } from "./decision"
 import { heldIssued, issuedValues } from "./issued"
+import { datedKeys, datedOnSave } from "./dated-on-save"
+import { figuresOnLock } from "./figures-on-lock"
+import { announceWorkResumed } from "./work-resumed"
 import { unmetOptionsFrom } from "./options-from"
 import {
   approvingTurn,
@@ -146,6 +150,9 @@ type NewRecord = {
   toolId: string
   cycle?: number
   payload?: JsonObject
+  // The app job opening a tool only it opens, such as D3.11. Only the
+  // system actor's create counts as one.
+  byJob?: true
 }
 
 // `expectedUpdatedAt` is the `updatedAt` of the record the screen opened, or
@@ -261,7 +268,8 @@ export async function createRecordIn(
     transaction,
     input.projectId,
     input.toolId,
-    input.cycle
+    input.cycle,
+    input.byJob === true && actor === systemActor
   )
 
   // A number the record is given, such as D3.4's invoice number, is taken
@@ -572,7 +580,11 @@ async function move(
       ...(await decisionValues(transaction, current, actor, "approve")),
     }
 
-    payload = { ...payload, ...setOnLockValues(current.toolId, payload) }
+    payload = {
+      ...payload,
+      ...setOnLockValues(current.toolId, payload),
+      ...(await figuresOnLock(transaction, current, now)),
+    }
   }
 
   const [moved] = await transaction
@@ -628,6 +640,7 @@ async function move(
     )
 
     outbox.push(...(await announceLock(transaction, actor, moved!)))
+    outbox.push(...(await announceWorkResumed(transaction, actor, moved!)))
   }
 
   return moved!
@@ -642,7 +655,11 @@ async function announceLock(
 ): Promise<PendingEmail[]> {
   const announced = tools.getTool(record.toolId)?.announcesOnLock
 
-  if (!announced) {
+  if (
+    !announced ||
+    (announced.when &&
+      record.payload[announced.when.field] !== announced.when.is)
+  ) {
     return []
   }
 
@@ -792,10 +809,19 @@ async function writeDraft(
   const before = withoutSignatures(current.toolId, current.payload)
   const signatures = signaturesOf(current.toolId, current.payload)
 
-  const next = {
+  const kept = {
     ...keepReadOnly(current.toolId, current.payload, values),
     ...heldDecision(current.toolId, current.payload),
     ...heldIssued(current.toolId, current.payload),
+  }
+
+  for (const key of datedKeys(current.toolId)) {
+    delete kept[key]
+  }
+
+  const next = {
+    ...kept,
+    ...datedOnSave(current.toolId, current.payload, kept),
   }
 
   const edited = !isDeepStrictEqual(
@@ -1134,6 +1160,12 @@ export async function signField(
   if (!signers.some((role) => held.includes(role))) {
     throw new PermissionDeniedError(
       `Only ${signers.join(", ")} may sign ${field.label}`
+    )
+  }
+
+  if (await haltedFor(database, record.projectId, record.toolId)) {
+    throw new PermissionDeniedError(
+      `Work is halted on this project, so ${record.toolId} cannot be signed`
     )
   }
 

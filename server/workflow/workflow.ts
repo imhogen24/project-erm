@@ -65,6 +65,14 @@ export function repeatsPerCycle(toolId: string): boolean {
   )
 }
 
+// Whether only an app job opens the tool (its rule's `byJob`), such as
+// D3.11.
+export function opensByJob(toolId: string): boolean {
+  return active.some((map) =>
+    map.tools.some((rule) => rule.tool === toolId && rule.byJob)
+  )
+}
+
 export type OpenTool = { toolId: string; cycle: number }
 
 type LiveRecord = {
@@ -310,7 +318,12 @@ class Route {
   // Whether `toolId` can start in `cycle`, or the first cycle it has no
   // record in when no cycle is given. `again` asks whether its rule holds
   // for a record it already has, as for a review reopened to run again.
-  verdict(toolId: string, cycle?: number, again = false): Verdict {
+  verdict(
+    toolId: string,
+    cycle?: number,
+    again = false,
+    byJob = false
+  ): Verdict {
     const tool = this.catalog.get(toolId)!
     const map = this.maps.find((entry) => entry.workbook === tool.workbook)
     const rule = map?.tools.find((entry) => entry.tool === toolId)
@@ -370,6 +383,10 @@ class Route {
       missing.push(...this.unmetOpenings(rule, at))
     }
 
+    if (rule?.byJob && !byJob) {
+      missing.push(`${toolId} is opened by the app ${rule.byJob}`)
+    }
+
     if (repeating) {
       missing.push(...this.unmetCycle(map, at))
     }
@@ -391,6 +408,11 @@ class Route {
     const tool = this.catalog.get(toolId)!
     const map = this.maps.find((entry) => entry.workbook === tool.workbook)
     const rule = map?.tools.find((entry) => entry.tool === toolId)
+
+    if (rule?.byJob) {
+      return `The app opens this tool ${rule.byJob}.`
+    }
+
     const condition = rule?.openings ? undefined : rule?.when
 
     if (!condition?.note) {
@@ -656,14 +678,21 @@ export function waitsOn(toolId: string, track: ServiceTrack): Set<string> {
 }
 
 // Runs inside the transaction that creates the record, and returns the cycle
-// the record gets.
+// the record gets. `byJob` is the app job that opens a tool only it opens
+// (the rule's `byJob`).
 export async function assertAvailable(
   transaction: Transaction,
   projectId: string,
   toolId: string,
-  cycle?: number
+  cycle?: number,
+  byJob = false
 ): Promise<number> {
-  const verdict = (await routeOf(transaction, projectId)).verdict(toolId, cycle)
+  const verdict = (await routeOf(transaction, projectId)).verdict(
+    toolId,
+    cycle,
+    false,
+    byJob
+  )
 
   if (verdict.missing.length > 0) {
     throw new ToolNotAvailableError(

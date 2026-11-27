@@ -24,7 +24,10 @@ import type { WorkbookMap } from "./map"
 // Approving a cycle's D3.8 with the funds fully accounted for opens that
 // cycle's payment receipt, D3.9, for the FO to send. Sending a cycle's D3.9
 // opens that cycle's phase unblock notice, D3.10, for the FO; the PM's
-// signature locks it, which is what WB04 waits on.
+// signature locks it, which is what WB04 waits on. Beside them, a cycle's
+// overdue accounts report, D3.11, is opened only by the daily job, the day
+// after the cycle's sent invoice falls due without D3.8 approved. Nothing
+// waits for it, so a cycle paid on time never has one.
 export const wb03: WorkbookMap = {
   workbook: "wb03",
   opens: { after: { all: ["D2.12"] } },
@@ -69,6 +72,12 @@ export const wb03: WorkbookMap = {
       repeats: true,
     },
     { tool: "D3.10", after: { all: ["D3.9"] }, repeats: true },
+    {
+      tool: "D3.11",
+      after: { all: ["D3.6"] },
+      byJob: "the day after the milestone's invoice falls due unpaid",
+      repeats: true,
+    },
   ],
   cycles: {
     count: { tool: "D3.1", field: "paymentSchedule", less: 1 },

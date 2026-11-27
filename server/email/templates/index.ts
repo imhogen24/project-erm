@@ -15,6 +15,7 @@ import { invoiceReminder, type InvoiceReminderData } from "./invoice-reminder"
 import type { RenderedEmail } from "./html"
 import { meetingTimes, type MeetingTimesData } from "./meeting-times"
 import { newRequest, type NewRequestData } from "./new-request"
+import { paymentOverdue, type PaymentOverdueData } from "./payment-overdue"
 import { sentBack, type SentBackData } from "./sent-back"
 import { lockAnnounced, type LockAnnouncedData } from "./lock-announced"
 import {
@@ -52,6 +53,7 @@ export type EmailDataByKind = {
   receipt_transmittal: ContractTransmittalData
   invoice_reminder: InvoiceReminderData
   bank_check_reminder: BankCheckReminderData
+  payment_overdue: PaymentOverdueData
   follow_up_sent: FollowUpSentData
   sent_back: SentBackData
   lock_announced: LockAnnouncedData
@@ -81,6 +83,7 @@ const templates: Templates = {
   receipt_transmittal: contractTransmittal,
   invoice_reminder: invoiceReminder,
   bank_check_reminder: bankCheckReminder,
+  payment_overdue: paymentOverdue,
   follow_up_sent: followUpSent,
   sent_back: sentBack,
   lock_announced: lockAnnounced,

@@ -61,6 +61,8 @@ import { PAYMENT_RECEIPT } from "@/lib/payment-receipt"
 import { paymentReceiptValues } from "@/server/payments/payment-receipt"
 import { UNBLOCK_NOTICE } from "@/lib/unblock-notice"
 import { unblockValues } from "@/server/payments/unblock-notice"
+import { OVERDUE_ACCOUNTS } from "@/lib/overdue-account"
+import { overdueValues } from "@/server/payments/overdue-figures"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -300,6 +302,10 @@ async function workedOut(
         record ? { id: record.id, payload } : null,
         cycle
       )
+    }
+
+    case OVERDUE_ACCOUNTS: {
+      return await overdueValues(database, projectId, { state, payload }, cycle)
     }
 
     default: {

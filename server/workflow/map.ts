@@ -34,6 +34,12 @@ export type ToolRule = Opening & {
   openings?: readonly Opening[]
   // Runs once per payment milestone, in the cycles the map's `cycles` sets.
   repeats?: true
+  // Only an app job opens the tool, never a person or another tool locking,
+  // once its own rule holds too, such as D3.11 the day after a milestone's
+  // invoice falls due unpaid. Says what the job waits for, shown while the
+  // tool is closed. Nothing waits for such a tool, so a cycle can finish
+  // without one.
+  byJob?: string
 }
 
 // The ways a rule opens its tool: its openings, or its own `after` and

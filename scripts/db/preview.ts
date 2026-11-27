@@ -291,6 +291,18 @@ export const previews: Preview[] = [
     expect: `On ${testProjectName("Tier_1", "D4.6")}, where D4.5 is locked, D4.6 is open for the PM. Project Request ID, Lead Facilitator (${staffWith("PM").name}) and Required Attendees (${staffWith("AE").name}, ${staffWith("LD").name}, D4.3's roster) are the system's. Meeting Date, Time and Location / Link start empty, the last with the hint HQ / Google Meet; the time is Ghana time (GMT). 2.0 starts on the sheet's message: Team, We are officially kicking off engineering execution for the project's name, and the four agenda items; it can be changed. Calendar Invite sent to all rostered engineers? reads No and cannot be picked. Send invite is greyed out with Send invite needs: add the meeting date; add the time; add the location or link. Pick a date and time ahead, type a place and press Send invite: it says Invite sent and the 3.0 answer reads Yes. Each rostered engineer and the PM get one email, Internal Kick-off: the project's name, with the script, When and Where, and invite.ics (with no RESEND_API_KEY set, it is only recorded in the email log). Press it again: nothing new is sent. Change the time and press it again: an update to the same meeting goes. Press Submit before sending, or with Room/Platform booked? No: it is refused. Answer Yes and Submit: D4.6 reads Locked. The client, the LE, AE, LD, LO and CR read D4.6 without editing; anyone else does not see it, and a Tier 3 project has no D4.6.`,
   },
   {
+    screen: "D4.7 kick-off meeting minutes, as the LE (RDP-212)",
+    loginAs: "LE",
+    path: (id) => `/projects/${id}/tools/D4.7`,
+    expect: `On ${testProjectName("Tier_1", "D4.7")}, where D4.6 is locked, D4.7 is open for the LE. Project Request ID and Lead Facilitator (PM) (${staffWith("PM").name}) are the system's; Actual Meeting Date starts on D4.6's 5 January 2027 and can be changed; Start / End Time has the hint 00:00 to 00:00. Note Taker, Engineer Raising Point and Assigned To list ${staffWith("AE").name}, ${staffWith("LD").name} (D4.3's roster) and ${staffWith("PM").name}. 2.0 lists 2.1 ${staffWith("AE").name}, Mid-Level CAD Engineer and 2.2 ${staffWith("LD").name}, Junior Technician, which cannot be changed or removed; Add row adds 2.3, where the name and role are typed, and Remove takes it out again. 3.0 starts on one row, 3.1, with the sheet's hints, and 4.0 on one row with no SN; both can grow. Submit with an attendee's Present? empty, or with 5.0 answered No: it is refused and says why. Answer them and Submit: the PM is told in the app and by email. Tier 3 projects have no D4.7.`,
+  },
+  {
+    screen: "D4.7 kick-off meeting minutes, as the PM (RDP-212)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D4.7`,
+    expect: `On ${testProjectName("Tier_1", "D4.7")}, once the LE submitted D4.7, the PM reads it without editing and sees Sign on Project Manager Signature. Sign: Date shows the day you signed and D4.7 reads Locked. Or Send back with a reason: it goes back to the LE as a draft. The client, AE, LD, LO and CR read D4.7 without editing; anyone else does not see it.`,
+  },
+  {
     screen: "D3.10 phase unblock notice, as the FO (RDP-204)",
     loginAs: "FO",
     path: (id) => `/projects/${id}/tools/D3.10`,

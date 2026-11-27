@@ -112,8 +112,18 @@ export function TableEditor({
   const shownOnly = field.readOnly === true
 
   // Rows read from another tool's table, such as D3.2's schedule from
-  // D3.1's: the person writes their cells, but adds and removes none.
+  // D3.1's: the person writes their cells, but adds and removes none. With
+  // `addRows`, such as D4.7's attendees, rows the person adds follow them:
+  // each holds no key, and its system columns are typed.
   const sourced = field.rowsFrom !== undefined
+  const addable = field.rowsFrom?.addRows === true
+  const keyedBy = field.rowsFrom?.keyedBy
+
+  const isSourcedRow = (rowIndex: number) =>
+    sourced &&
+    (!addable ||
+      (keyedBy !== undefined && Boolean(textOf(typed[rowIndex]?.[keyedBy]))))
+
   const previews = usePreviews()
 
   // A row whose document the project does not need, such as D2.13's
@@ -128,7 +138,11 @@ export function TableEditor({
     )
 
   const canRemove = (rowIndex: number) =>
-    !fixed && !sourced && !shownOnly && !disabled && rowIndex >= lockedCount
+    !fixed &&
+    !isSourcedRow(rowIndex) &&
+    !shownOnly &&
+    !disabled &&
+    rowIndex >= lockedCount
 
   // Some row can be removed: wide, the Remove buttons get a narrow column of
   // their own at the right, so every row's fields line up. A table whose rows
@@ -231,7 +245,7 @@ export function TableEditor({
         {rows.length === 0 && (
           <div role="row">
             <div role="cell" className="px-4 py-4">
-              {shownOnly || sourced ? (
+              {shownOnly || (sourced && !addable) ? (
                 <EmptyState size="inline" title="None" />
               ) : (
                 <EmptyState
@@ -388,7 +402,10 @@ export function TableEditor({
                 (rule) => rule.row === rowIndex && rule.column === column.key
               )
 
-              if (setBySigning || (sourced && column.systemFilled)) {
+              if (
+                setBySigning ||
+                (isSourcedRow(rowIndex) && column.systemFilled)
+              ) {
                 return (
                   <div
                     key={column.key}
@@ -565,22 +582,26 @@ export function TableEditor({
           />
         )}
         {/* A table that picks one of its fixed rows holds no others. */}
-        {!fixed && !sourced && !shownOnly && !disabled && !field.pickOne && (
-          <div role="row">
-            <div role="cell" className="p-4 @xl:p-3">
-              <Button
-                type="button"
-                variant="secondary"
-                className="tile-action"
-                disabled={disabled}
-                onClick={() => onChange([...typed, newRow(field)])}
-              >
-                <PlusIcon aria-hidden />
-                Add row
-              </Button>
+        {!fixed &&
+          (!sourced || addable) &&
+          !shownOnly &&
+          !disabled &&
+          !field.pickOne && (
+            <div role="row">
+              <div role="cell" className="p-4 @xl:p-3">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="tile-action"
+                  disabled={disabled}
+                  onClick={() => onChange([...typed, newRow(field)])}
+                >
+                  <PlusIcon aria-hidden />
+                  Add row
+                </Button>
+              </div>
             </div>
-          </div>
-        )}
+          )}
       </div>
     </div>
   )

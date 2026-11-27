@@ -274,21 +274,30 @@ function toCell(
 
 // A table whose rows come from another tool's also sends each row's key,
 // such as D3.2's SN, so the server keeps what is typed with its row.
+// A row the person added after them (`addRows`), such as D4.7's attendee,
+// holds no key and sends its typed system columns too.
 function toRows(field: TableField, rows: RawRow[]) {
   const keyedBy = field.rowsFrom?.keyedBy
 
-  return rows.map((row) =>
-    Object.fromEntries(
+  return rows.map((row) => {
+    const added =
+      field.rowsFrom?.addRows === true &&
+      keyedBy !== undefined &&
+      !textOf(row[keyedBy])
+
+    return Object.fromEntries(
       field.columns.flatMap((column) => {
         const value =
           column.key === keyedBy
             ? textOf(row[column.key]) || undefined
-            : toCell(column, row[column.key])
+            : added && column.systemFilled && !column.numbered
+              ? toCell({ ...column, systemFilled: false }, row[column.key])
+              : toCell(column, row[column.key])
 
         return value === undefined ? [] : [[column.key, value]]
       })
     )
-  )
+  })
 }
 
 // The inputs hold text, so a number is turned back into a number here. An empty

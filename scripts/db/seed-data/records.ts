@@ -67,6 +67,7 @@ import { APP_PLATFORM, SCAN, financeTasks } from "@/lib/executed-contract"
 import { vaultDocuments } from "@/lib/archive"
 import { DONE as ACCESS_DONE, workspaces } from "@/lib/access-log"
 import { briefingTopics } from "@/lib/kickoff-deck"
+import { kickoffScriptFor } from "@/lib/kickoff-invite"
 import {
   complianceRules,
   paymentMilestones as termsMilestones,
@@ -1348,7 +1349,7 @@ function stageD214() {
 // D4.1's test project, where 2.2's D3.10 is signed, which opens Workbook 4.
 const technicalNotesProject = () => testProjectName("Tier_1", "D4.1")
 
-// The projects where Workbook 4 is open: D4.1's to D4.6's test projects,
+// The projects where Workbook 4 is open: D4.1's to D4.7's test projects,
 // and the project whose team is locked.
 function inWorkbookFour(name: string) {
   return (
@@ -1358,6 +1359,7 @@ function inWorkbookFour(name: string) {
     name === testProjectName("Tier_1", "D4.4") ||
     name === testProjectName("Tier_1", "D4.5") ||
     name === testProjectName("Tier_1", "D4.6") ||
+    name === testProjectName("Tier_1", "D4.7") ||
     name === ENGINEER_BOOKED_PROJECT
   )
 }
@@ -1508,10 +1510,26 @@ function stageD45() {
   })
 }
 
+// D4.6 as the PM submitted it: the kick-off set for 5 January 2027 at HQ,
+// the invite sent and the room booked.
+function stageD46(projectName: string) {
+  return payloadOf({
+    meetingDate: "2027-01-05",
+    meetingTime: "10:00",
+    location: "HQ Boardroom",
+    script: kickoffScriptFor(projectName),
+    inviteSent: "Yes",
+    roomBooked: "Yes",
+    inviteSentAt: "2027-01-04T09:00:00.000Z",
+    inviteSequence: 0,
+  })
+}
+
 // Workbook 4's locked records: D4.1 on D4.2's test project; D4.1 and D4.2
 // on D4.3's test project; D4.1, D4.2 and D4.3 on D4.4's test project and
 // on the project whose team is locked; and D4.1 to D4.4 on D4.5's test
-// project; and D4.1 to D4.5 on D4.6's test project.
+// project; D4.1 to D4.5 on D4.6's test project; and D4.1 to D4.6 on D4.7's
+// test project.
 function teamRecords(name: string): SeedRecord[] {
   const notes: SeedRecord = {
     toolId: "D4.1",
@@ -1560,6 +1578,17 @@ function teamRecords(name: string): SeedRecord[] {
       assignment,
       access,
       { toolId: "D4.5", state: "locked", day: 85, payload: stageD45() },
+    ]
+  }
+
+  if (name === testProjectName("Tier_1", "D4.7")) {
+    return [
+      notes,
+      request,
+      assignment,
+      access,
+      { toolId: "D4.5", state: "locked", day: 85, payload: stageD45() },
+      { toolId: "D4.6", state: "locked", day: 86, payload: stageD46(name) },
     ]
   }
 

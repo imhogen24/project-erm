@@ -143,6 +143,8 @@ import {
   kickoffInviteStart,
   missingToKickoff,
 } from "@/server/team/kickoff-invite"
+import { KICKOFF_NOTES } from "@/lib/kickoff-notes"
+import { kickoffMinutesStart } from "@/server/team/kickoff-notes"
 import {
   readsAsClient,
   toolAsShown,
@@ -360,6 +362,13 @@ async function startOf(
 
     case KICKOFF_INVITE: {
       const start = await kickoffInviteStart(getDatabase(), projectId)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
+    case KICKOFF_NOTES: {
+      const start = await kickoffMinutesStart(getDatabase(), projectId)
 
       // SAFETY: the start is built for this tool's own fields.
       return start as FormValues
@@ -965,7 +974,7 @@ export default async function Page({
   }
 
   // A select of people, such as D4.2's engineers, lists them as they are now.
-  sheetTool = await withPeopleOptions(getDatabase(), sheetTool)
+  sheetTool = await withPeopleOptions(getDatabase(), sheetTool, projectId)
 
   // A tool with no record yet starts its writer from what earlier tools hold.
   // D1.12: the critical risks from D1.11's register. D1.14: 4.0 from D1.13's
@@ -979,7 +988,8 @@ export default async function Page({
   // the platform D2.11 was signed on. D2.14: D2.12's invoice number and the
   // advance due. D3.1: the sheet's milestones and terms, with D2.1's
   // advance % and currency. D3.4: the cycle's milestone line from D3.1, the
-  // billing address and the VAT at D3.1's tax rate.
+  // billing address and the VAT at D3.1's tax rate. D4.7: D4.6's meeting
+  // date.
   if (!view.record && view.can.write) {
     formValues = {
       ...(await startOf(toolId, projectId, session.user, view.cycle)),

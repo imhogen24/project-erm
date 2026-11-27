@@ -8,6 +8,7 @@ import {
   RESOURCE_REQUEST,
   utilizationText,
 } from "@/lib/resource-request"
+import { rosterBookings, TEAM_ASSIGNMENT } from "@/lib/team-assignment"
 import type { Transaction } from "@/server/audit/audit"
 import { holderOf, lockedPayload } from "@/server/handoff/handoff"
 import { ownRows } from "@/server/records/review"
@@ -84,11 +85,13 @@ function named(engineer: string | undefined): string {
   return engineer && engineer !== ANY_AVAILABLE ? engineer : ""
 }
 
-// Who a locked request booked, and for how many days: each approved row's
-// engineer, or the alternative the HE named for a row answered No.
-export function bookedOn(
+// Each 2.0 row of a locked request with the engineer the HE settled on:
+// the one asked for when approved, or the alternative the HE named for a
+// row answered No. No engineer when the row named nobody or was not
+// answered.
+export function approvedRows(
   payload: JsonObject
-): { engineer: string; days: number }[] {
+): { role: string; engineer: string; days?: number }[] {
   const { resourceRequests } = request.parse(payload)
 
   const check = request.parse({
@@ -96,7 +99,7 @@ export function bookedOn(
     ...ownRows(RESOURCE_REQUEST, payload),
   }).conflictCheck
 
-  return resourceRequests.flatMap((row, index) => {
+  return resourceRequests.map((row, index) => {
     const answer = check[index]
 
     const engineer =
@@ -106,13 +109,17 @@ export function bookedOn(
           ? named(row.preferredEngineer)
           : ""
 
-    return engineer && row.days ? [{ engineer, days: row.days }] : []
+    return {
+      role: row.role ?? "",
+      engineer,
+      ...(row.days !== undefined && { days: row.days }),
+    }
   })
 }
 
 // Each engineer's days on the other active projects, by project name, read
-// from those projects' locked resource requests (D4.2): what the HE approved
-// there. Keyed by the engineer's name.
+// from those projects' locked team assignments (D4.3): the roster's
+// Allocated Days. Keyed by the engineer's name.
 export async function engineerBookings(
   database: Reader,
   exceptProjectId: string
@@ -123,7 +130,7 @@ export async function engineerBookings(
     .innerJoin(projects, eq(projects.id, toolRecords.projectId))
     .where(
       and(
-        eq(toolRecords.toolId, RESOURCE_REQUEST),
+        eq(toolRecords.toolId, TEAM_ASSIGNMENT),
         eq(toolRecords.state, "locked"),
         eq(projects.status, "active"),
         ne(toolRecords.projectId, exceptProjectId)
@@ -133,7 +140,7 @@ export async function engineerBookings(
   const bookings = new Map<string, Map<string, number>>()
 
   for (const { project, payload } of locked) {
-    for (const { engineer, days } of bookedOn(payload)) {
+    for (const { engineer, days } of rosterBookings(payload)) {
       const byProject = bookings.get(engineer) ?? new Map<string, number>()
 
       byProject.set(project, (byProject.get(project) ?? 0) + days)

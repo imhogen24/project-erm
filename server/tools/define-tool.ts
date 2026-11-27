@@ -109,11 +109,20 @@ const signature = z.object({
 
 // Where a select's people come from, read each time the record is shown:
 // "staff", everyone holding one of `roles` as a company role, such as
-// D4.2's engineers. A roster of the project may follow as another source.
-const peopleSource = z.strictObject({
-  from: z.literal("staff"),
-  roles: z.array(z.enum(roles)).min(1),
-})
+// D4.2's engineers. "column", the names the same record holds in `column` of
+// its `field` table as it is typed, such as D4.3's 3.0 engineers, taken from
+// its 2.0 roster.
+const peopleSource = z.discriminatedUnion("from", [
+  z.strictObject({
+    from: z.literal("staff"),
+    roles: z.array(z.enum(roles)).min(1),
+  }),
+  z.strictObject({
+    from: z.literal("column"),
+    field: fieldKey,
+    column: fieldKey,
+  }),
+])
 
 export type PeopleSource = z.output<typeof peopleSource>
 

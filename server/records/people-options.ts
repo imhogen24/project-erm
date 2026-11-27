@@ -13,11 +13,17 @@ type Reader = Pick<Transaction, "select">
 type Select = { optionsFromPeople?: PeopleSource; options: string[] }
 
 // The names a people source lists now, in name order, each once: for
-// "staff", everyone holding one of its roles as a company role.
+// "staff", everyone holding one of its roles as a company role. A "column"
+// source lists what the form holds as it is typed (lib/people-columns), so
+// nothing here.
 export async function peopleOf(
   database: Reader,
   source: PeopleSource
 ): Promise<string[]> {
+  if (source.from !== "staff") {
+    return []
+  }
+
   const rows = await database
     .select({ name: people.name })
     .from(personCompanyRoles)

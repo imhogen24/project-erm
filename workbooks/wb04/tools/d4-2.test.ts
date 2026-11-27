@@ -31,12 +31,15 @@ import { availableTools } from "@/server/workflow/workflow"
 
 import { d41 } from "./d4-1"
 import { d42 } from "./d4-2"
+import { d43 } from "./d4-3"
 
 const database = createTestDatabase()
 
 tools.registerTool(d41)
 
 tools.registerTool(d42)
+
+tools.registerTool(d43)
 
 registerTestTools({
   wb01: ["D1.14", "D1.15", "T3.D1.15a", "D1.16"],
@@ -294,14 +297,21 @@ describe("D4.2 resource request form", () => {
 
     const other = await addProject("Solar Dryer")
 
+    // The other project's locked team (D4.3) is what books the engineer;
+    // its D4.2 alone does not.
     await addRecord(
       "D4.2",
       {
         resourceRequests: [
-          { role: "CAD", preferredEngineer: "Fiifi Acquah", days: 15 },
+          { role: "CAD", preferredEngineer: "Fiifi Acquah", days: 99 },
         ],
         conflictCheck: [{ sn: "3.1", approved: "Yes" }],
       },
+      other
+    )
+    await addRecord(
+      "D4.3",
+      { roster: [{ role: "CAD", engineer: "Fiifi Acquah", days: 15 }] },
       other
     )
 

@@ -167,6 +167,8 @@ import { TECHNICAL_NOTES } from "@/lib/technical-notes"
 import { technicalNotesStart } from "@/server/team/technical-notes"
 import { RESOURCE_REQUEST } from "@/lib/resource-request"
 import { resourceRequestStart } from "@/server/team/resource-request"
+import { TEAM_ASSIGNMENT } from "@/lib/team-assignment"
+import { assignmentStart } from "@/server/team/team-assignment"
 import { withPeopleOptions } from "@/server/records/people-options"
 import { unblockStart } from "@/server/payments/unblock-notice"
 import { systemValuesOf } from "@/server/records/system-values"
@@ -432,6 +434,13 @@ async function startOf(
 
     case RESOURCE_REQUEST: {
       const start = await resourceRequestStart(getDatabase(), projectId)
+
+      // SAFETY: the start is built for this tool's own fields.
+      return start as FormValues
+    }
+
+    case TEAM_ASSIGNMENT: {
+      const start = await assignmentStart(getDatabase(), projectId)
 
       // SAFETY: the start is built for this tool's own fields.
       return start as FormValues

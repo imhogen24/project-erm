@@ -279,8 +279,21 @@ const columnRequired = {
   // percentage, of the tool's `by` field, an amount, such as D3.1's Amount
   // Due as the row's percentage of the Total Project Value; or the row's
   // `times` column, a number, times its `by` column, such as D3.4's Total
-  // Amount as the quantity times the unit price.
-  computed: z.strictObject({ times: fieldKey, by: fieldKey }).optional(),
+  // Amount as the quantity times the unit price. Or the weekdays, Monday to
+  // Friday, from the row's `weekdaysFrom` date column to its `to` date
+  // column, both counted, such as D4.8's Allocated Working Days.
+  computed: z
+    .union([
+      z.strictObject({ times: fieldKey, by: fieldKey }),
+      z.strictObject({ weekdaysFrom: fieldKey, to: fieldKey }),
+    ])
+    .optional(),
+  // A date cell that follows the `column` date of the row above, plus
+  // `plusDays`, as it is picked, until the person picks a date of their own,
+  // such as D4.8's phase starting the day after the phase before ends.
+  followsRowAbove: z
+    .strictObject({ column: fieldKey, plusDays: z.number().int() })
+    .optional(),
   // Hint text in the empty cell of each fixed row, in order, such as the
   // sheet's "Governs technical scope", or of each row a table with no fixed
   // rows starts with. An empty hint shows none. Only shown; never stored.
@@ -541,11 +554,15 @@ const table = z
         (entry) => entry.key === value.subtotal
       )
 
-      if (totalled?.type !== "currency") {
+      const days =
+        totalled?.computed !== undefined && "weekdaysFrom" in totalled.computed
+
+      if (totalled?.type !== "currency" && !days) {
         context.addIssue({
           code: "custom",
           path: ["subtotal"],
-          message: "A subtotal adds up a currency column of the table",
+          message:
+            "A subtotal adds up a currency column of the table, or its working days",
         })
       }
     }
@@ -676,16 +693,47 @@ const table = z
         })
       }
 
-      const times = value.columns.find(
-        (each) => each.key === entry.computed?.times
-      )?.type
+      const typeOf = (key: string | undefined) =>
+        value.columns.find((each) => each.key === key)?.type
 
-      const by = value.columns.find(
-        (each) => each.key === entry.computed?.by
-      )?.type
+      const followed = entry.followsRowAbove
 
       if (
-        entry.computed &&
+        followed &&
+        (entry.type !== "date" || typeOf(followed.column) !== "date")
+      ) {
+        context.addIssue({
+          code: "custom",
+          path: ["columns", index, "followsRowAbove"],
+          message: "A date column follows a date column of the row above it",
+        })
+      }
+
+      if (entry.computed && "weekdaysFrom" in entry.computed) {
+        if (
+          entry.type !== "number" ||
+          !entry.systemFilled ||
+          typeOf(entry.computed.weekdaysFrom) !== "date" ||
+          typeOf(entry.computed.to) !== "date"
+        ) {
+          context.addIssue({
+            code: "custom",
+            path: ["columns", index, "computed"],
+            message:
+              "Working days are a system number column counted between two date columns of the table",
+          })
+        }
+      }
+
+      const product =
+        entry.computed && "times" in entry.computed ? entry.computed : undefined
+
+      const times = typeOf(product?.times)
+
+      const by = typeOf(product?.by)
+
+      if (
+        product &&
         (entry.type !== "currency" ||
           !entry.systemFilled ||
           !(

@@ -1,3 +1,5 @@
+import { z } from "zod"
+
 // A date field that follows another as it is typed (`follows`), such as
 // D2.14's start date following the day the payment cleared.
 export type Follower = { key: string; field: string; plusDurationOf?: string }
@@ -132,4 +134,119 @@ export function followedAmount(
   return of === undefined || rate === undefined
     ? undefined
     : String(Math.round(of * rate) / 100)
+}
+
+// A table's date column that follows a date column of the row above it, plus
+// some days (`followsRowAbove`), such as D4.8's phase starting the day after
+// the phase before ends.
+export type RowFollower = {
+  table: string
+  key: string
+  column: string
+  plusDays: number
+}
+
+export function rowFollowersOf(
+  fields: readonly {
+    key: string
+    type: string
+    columns?: readonly {
+      key: string
+      type: string
+      followsRowAbove?: { column: string; plusDays: number }
+    }[]
+  }[]
+): RowFollower[] {
+  return fields.flatMap((field) =>
+    field.type === "table"
+      ? (field.columns ?? []).flatMap((column) =>
+          column.type === "date" && column.followsRowAbove
+            ? [{ table: field.key, key: column.key, ...column.followsRowAbove }]
+            : []
+        )
+      : []
+  )
+}
+
+// What each following cell of a row last followed to, by its column.
+export type AppliedCells = Record<string, string | undefined>
+
+// A table's rows after following, what each following cell now holds
+// because it followed, by row, and whether any cell changed.
+export type FollowedRows<Row> = {
+  rows: Row[]
+  applied: AppliedCells[]
+  moved: boolean
+}
+
+// A cell as a date's text: anything else is empty.
+const dateText = z.string().catch("")
+
+// A table's rows with each following cell moved, from the top down, so a
+// row that follows one that just moved follows on. `applied` is what each
+// cell last followed to, by row. Each cell follows as nextFollowed says.
+// The first row follows nothing.
+export function followRows<Row extends Record<string, unknown>>(
+  rows: readonly Row[],
+  followers: readonly Pick<RowFollower, "key" | "column" | "plusDays">[],
+  applied: readonly AppliedCells[]
+): FollowedRows<Row> {
+  const next: Row[] = []
+  const nextApplied: AppliedCells[] = []
+  let moved = false
+
+  rows.forEach((row, index) => {
+    const changes = new Map<string, string>()
+    const held = new Map<string, string | undefined>()
+    const above = next[index - 1]
+
+    for (const follower of followers) {
+      if (!above) {
+        held.set(follower.key, undefined)
+        continue
+      }
+
+      const from = dateText.parse(above[follower.column])
+
+      const step = nextFollowed({
+        current: dateText.parse(row[follower.key]),
+        next: from === "" ? undefined : addDays(from, follower.plusDays),
+        applied: applied[index]?.[follower.key],
+      })
+
+      if (step.value !== undefined) {
+        changes.set(follower.key, step.value)
+        moved = true
+      }
+
+      held.set(follower.key, step.applied)
+    }
+
+    next.push({ ...row, ...Object.fromEntries(changes) })
+    nextApplied.push(Object.fromEntries(held))
+  })
+
+  return { rows: next, applied: nextApplied, moved }
+}
+
+// What each row last followed to, kept with the same row as rows are
+// removed or added: each row of `rows` takes the applied cells of the same
+// row of `previous`, found by its cells from where the last match ended, or
+// else of the row in its place, such as one just edited.
+export function alignApplied<Row>(
+  previous: readonly Row[],
+  rows: readonly Row[],
+  applied: readonly AppliedCells[]
+): AppliedCells[] {
+  const before = previous.map((row) => JSON.stringify(row))
+  let from = 0
+
+  return rows.map((row) => {
+    const at = before.indexOf(JSON.stringify(row), from)
+    const matched = at === -1 ? from : at
+
+    from = matched + 1
+
+    return applied[matched] ?? {}
+  })
 }

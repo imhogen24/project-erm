@@ -12,6 +12,8 @@ import { BANK_STATEMENT_LOG } from "@/lib/bank-statement-log"
 import { bankLogOnSubmit } from "@/server/payments/bank-check-submit"
 import { RECONCILED_PAYMENT } from "@/lib/reconciled-payment"
 import { reconciledOnSubmit } from "@/server/payments/reconciled-submit"
+import { LOCKED_BASELINE } from "@/lib/locked-baseline"
+import { lockedBaselineOnSubmit } from "@/server/team/locked-baseline"
 
 import type { FieldError } from "./validate"
 
@@ -59,6 +61,10 @@ export async function submittedValues(
 
     case RECONCILED_PAYMENT: {
       return reconciledOnSubmit(transaction, record.projectId, record.cycle)
+    }
+
+    case LOCKED_BASELINE: {
+      return lockedBaselineOnSubmit(record.payload)
     }
 
     default: {

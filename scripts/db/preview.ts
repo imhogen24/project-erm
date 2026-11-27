@@ -303,6 +303,18 @@ export const previews: Preview[] = [
     expect: `On ${testProjectName("Tier_1", "D4.7")}, once the LE submitted D4.7, the PM reads it without editing and sees Sign on Project Manager Signature. Sign: Date shows the day you signed and D4.7 reads Locked. Or Send back with a reason: it goes back to the LE as a draft. The client, AE, LD, LO and CR read D4.7 without editing; anyone else does not see it.`,
   },
   {
+    screen: "D4.8 locked project baseline, as the HE (RDP-213)",
+    loginAs: "HE",
+    path: (id) => `/projects/${id}/tools/D4.8`,
+    expect: `On ${testProjectName("Tier_1", "D4.8")}, where D4.7 is locked, D4.8 is open for the HE. Project Request ID, Project / Client Name and Total Approved Budget (GHS) (D1.14's Total Project Value) are the system's; Locked By and Date Locked say they are filled in when the Project Manager signs. 2.0 starts on Phase 1: Conceptual Design & CAD, Phase 2: Client Review & Iteration and Phase 3: Prototype Fabrication, numbered 2.1 to 2.3, with 2.1 starting on D4.1's 21 December 2026. Pick 2.1's end date: its Allocated Working Days fills in, counting Monday to Friday, and 2.2 starts the next day; TOTAL PROJECT DURATION adds up the rows in days. Pick 2.2's start by hand: it stays when 2.1's end changes. Rows can be renamed, added and removed. 3.0 lists 3.1 ${staffWith("AE").name}, Mid-Level CAD Engineer, 15 Days and 3.2 ${staffWith("LD").name}, Junior Technician, 10 Days (D4.3's roster), with no Add row; type each Cost Impact Buffer (hints e.g. Max 2 days overtime, e.g. None). Submit with a date missing, an end before its start, or 4.0 answered No: it is refused and says why. Fill them and answer Yes, then Submit: the PM is told in the app and by email. Tier 3 projects have no D4.8.`,
+  },
+  {
+    screen: "D4.8 locked project baseline, as the PM (RDP-213)",
+    loginAs: "PM",
+    path: (id) => `/projects/${id}/tools/D4.8`,
+    expect: `On ${testProjectName("Tier_1", "D4.8")}, once the HE submitted D4.8, the PM reads it without editing and sees Sign on Head of Operations / Engineering Signature. Sign: Locked By shows your name, Date Locked and Date show the day you signed, and D4.8 reads Locked. Or Send back with a reason: it goes back to the HE as a draft. The LE and CR read D4.8 without editing; anyone else, the client too, does not see it.`,
+  },
+  {
     screen: "D3.10 phase unblock notice, as the FO (RDP-204)",
     loginAs: "FO",
     path: (id) => `/projects/${id}/tools/D3.10`,

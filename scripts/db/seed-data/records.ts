@@ -1349,7 +1349,7 @@ function stageD214() {
 // D4.1's test project, where 2.2's D3.10 is signed, which opens Workbook 4.
 const technicalNotesProject = () => testProjectName("Tier_1", "D4.1")
 
-// The projects where Workbook 4 is open: D4.1's to D4.7's test projects,
+// The projects where Workbook 4 is open: D4.1's to D4.8's test projects,
 // and the project whose team is locked.
 function inWorkbookFour(name: string) {
   return (
@@ -1360,6 +1360,7 @@ function inWorkbookFour(name: string) {
     name === testProjectName("Tier_1", "D4.5") ||
     name === testProjectName("Tier_1", "D4.6") ||
     name === testProjectName("Tier_1", "D4.7") ||
+    name === testProjectName("Tier_1", "D4.8") ||
     name === ENGINEER_BOOKED_PROJECT
   )
 }
@@ -1525,11 +1526,29 @@ function stageD46(projectName: string) {
   })
 }
 
+// D4.7 as the PM signed it: both rostered engineers present, the team clear
+// on Phase 1.
+function stageD47() {
+  return payloadOf({
+    actualDate: "2027-01-05",
+    startEndTime: "10:00 to 10:40",
+    attendance: [
+      { sn: "2.1", present: "Yes" },
+      { sn: "2.2", present: "Yes" },
+    ],
+    teamClear: "Yes",
+    pmSignature: {
+      signedBy: "role:PM",
+      signedAt: "2027-01-05T12:00:00.000Z",
+    },
+  })
+}
+
 // Workbook 4's locked records: D4.1 on D4.2's test project; D4.1 and D4.2
 // on D4.3's test project; D4.1, D4.2 and D4.3 on D4.4's test project and
 // on the project whose team is locked; and D4.1 to D4.4 on D4.5's test
-// project; D4.1 to D4.5 on D4.6's test project; and D4.1 to D4.6 on D4.7's
-// test project.
+// project; D4.1 to D4.5 on D4.6's test project; D4.1 to D4.6 on D4.7's
+// test project; and D4.1 to D4.7 on D4.8's test project.
 function teamRecords(name: string): SeedRecord[] {
   const notes: SeedRecord = {
     toolId: "D4.1",
@@ -1589,6 +1608,18 @@ function teamRecords(name: string): SeedRecord[] {
       access,
       { toolId: "D4.5", state: "locked", day: 85, payload: stageD45() },
       { toolId: "D4.6", state: "locked", day: 86, payload: stageD46(name) },
+    ]
+  }
+
+  if (name === testProjectName("Tier_1", "D4.8")) {
+    return [
+      notes,
+      request,
+      assignment,
+      access,
+      { toolId: "D4.5", state: "locked", day: 85, payload: stageD45() },
+      { toolId: "D4.6", state: "locked", day: 86, payload: stageD46(name) },
+      { toolId: "D4.7", state: "locked", day: 87, payload: stageD47() },
     ]
   }
 

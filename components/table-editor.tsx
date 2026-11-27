@@ -2,6 +2,7 @@
 
 import { LockSimpleIcon, PlusIcon, TrashIcon } from "@phosphor-icons/react"
 import type { CSSProperties } from "react"
+import { z } from "zod"
 
 import {
   FieldControl,
@@ -16,6 +17,7 @@ import { PdfPreviewField, usePreviews } from "@/components/pdf-preview-field"
 import { Button } from "@/components/ui/button"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { columnWidths } from "@/lib/column-widths"
+import { amountOf, countsDays, daysText } from "@/lib/computed-columns"
 import { fixedValue, newRow, rowNumber } from "@/lib/fixed-rows"
 import { previewCellKey } from "@/lib/pdf-preview"
 import { fillText, placeholdersIn, type Fills } from "@/lib/placeholders"
@@ -58,13 +60,16 @@ const money = new Intl.NumberFormat("en-US", {
   maximumFractionDigits: 2,
 })
 
+// A cell as a number or text an amount is read from: anything else holds none.
+const cellAmount = z.union([z.number(), z.string()]).optional().catch(undefined)
+
+// What a column adds up to. A cell the sums show as text, such as a
+// row's "15 Days", counts as its number.
 function sumOf(rows: RawRow[], key: string) {
   return rows.reduce((total, row) => {
-    const amount = Number(row[key])
+    const amount = amountOf(cellAmount.parse(row[key]))
 
-    return row[key] === undefined || row[key] === "" || Number.isNaN(amount)
-      ? total
-      : total + amount
+    return amount === undefined ? total : total + amount
   }, 0)
 }
 
@@ -149,8 +154,17 @@ export function TableEditor({
   // all stay has no such column.
   const growable = !field.pickOne && rows.some((_, index) => canRemove(index))
 
+  // A total of working days, such as D4.8's TOTAL PROJECT DURATION, reads
+  // in days; any other total is money.
   const total = field.subtotal
-    ? { column: field.subtotal, amount: sumOf(rows, field.subtotal) }
+    ? {
+        column: field.subtotal,
+        text: countsDays(
+          columns.find((column) => column.key === field.subtotal)
+        )
+          ? daysText(sumOf(rows, field.subtotal))
+          : money.format(sumOf(rows, field.subtotal)),
+      }
     : undefined
 
   // Picking a row lets go of any other; pressing the picked one again lets go
@@ -577,7 +591,7 @@ export function TableEditor({
           <Subtotal
             columns={columns}
             column={total.column}
-            amount={total.amount}
+            text={total.text}
             label={field.subtotalLabel ?? "Subtotal"}
           />
         )}
@@ -677,12 +691,12 @@ function ShownCell({
 function Subtotal({
   columns,
   column,
-  amount,
+  text,
   label,
 }: {
   columns: Column[]
   column: string
-  amount: number
+  text: string
   label: string
 }) {
   const position = columns.findIndex((entry) => entry.key === column) + 1
@@ -700,7 +714,7 @@ function Subtotal({
         role="cell"
         className="px-4 py-3 text-right tabular-nums @xl:col-start-[var(--at)] @xl:row-start-1 @xl:text-left"
       >
-        {money.format(amount)}
+        {text}
       </div>
     </div>
   )

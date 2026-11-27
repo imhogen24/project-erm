@@ -36,7 +36,11 @@ import {
   followedAmount,
   followedDate,
   followersOf,
+  alignApplied,
+  followRows,
   nextFollowed,
+  type AppliedCells,
+  rowFollowersOf,
 } from "@/lib/follow-dates"
 import { startingFixedRows } from "@/lib/fixed-rows"
 import {
@@ -500,6 +504,65 @@ export function ToolForm({
     // The dates move only when what they follow changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [followedKey])
+
+  // Table dates that follow a date of the row above, such as D4.8's phase
+  // starting the day after the phase before ends, each until the person
+  // picks a date of their own. What moves is saved like a change.
+  const rowFollowers = rowFollowersOf(tool.fields)
+  const followingTables = [...new Set(rowFollowers.map((each) => each.table))]
+
+  const followedRows = useWatch({
+    control: form.control,
+    name: followingTables,
+    disabled: followingTables.length === 0,
+  })
+
+  // Each table's rows as they last followed, and what each cell followed to,
+  // so a row keeps its own when another is removed (alignApplied).
+  const lastRows = useRef<
+    Record<string, { rows: RawRow[]; applied: AppliedCells[] }>
+  >({})
+
+  const followedRowsKey = JSON.stringify(followedRows ?? [])
+
+  useEffect(() => {
+    if (readOnly || followingTables.length === 0) {
+      return
+    }
+
+    let moved = false
+
+    for (const table of followingTables) {
+      const rows = form.getValues(table)
+
+      if (!Array.isArray(rows)) {
+        continue
+      }
+
+      // SAFETY: a table's value in the form is its rows.
+      const held = rows as RawRow[]
+      const last = lastRows.current[table]
+
+      const step = followRows(
+        held,
+        rowFollowers.filter((each) => each.table === table),
+        last ? alignApplied(last.rows, held, last.applied) : []
+      )
+
+      lastRows.current[table] = { rows: step.rows, applied: step.applied }
+
+      if (step.moved) {
+        form.setValue(table, step.rows)
+        moved = true
+      }
+    }
+
+    if (moved) {
+      save.current(toValues(tool, form.getValues()))
+    }
+    // The dates move only when the rows they follow change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [followedRowsKey])
 
   // Amounts that follow another as it changes, such as D3.4's VAT following
   // the subtotal at D3.1's tax rate, each until the person types an amount

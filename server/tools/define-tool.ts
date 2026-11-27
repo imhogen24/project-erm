@@ -1617,11 +1617,18 @@ const toolDefinition = z
     value.submitWhen?.forEach((rule, index) => {
       const named = value.fields.find((entry) => entry.key === rule.field)
 
-      if ("row" in rule && rule.row !== undefined && !rule.column) {
+      if (
+        "row" in rule &&
+        rule.row !== undefined &&
+        (!rule.column ||
+          named?.type !== "table" ||
+          rule.row >= (named.fixedRows?.length ?? 0))
+      ) {
         context.addIssue({
           code: "custom",
           path: ["submitWhen", index, "row"],
-          message: "A rule on one row names its table's column",
+          message:
+            "A rule on one row names its table's column and one of its fixed rows",
         })
       }
 

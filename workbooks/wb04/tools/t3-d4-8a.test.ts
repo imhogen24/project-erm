@@ -411,6 +411,40 @@ describe("the new column options", () => {
     ).toThrow()
   })
 
+  it("refuses a submit rule on a row past the fixed rows", () => {
+    expect(() =>
+      defineTool({
+        ...base,
+        submitWhen: [
+          {
+            field: "rows",
+            column: "status",
+            row: 1,
+            is: "Ready",
+            message: "Ready",
+          },
+        ],
+        fields: [
+          {
+            key: "rows",
+            label: "Rows",
+            type: "table",
+            fixedRows: [{ name: "A" }],
+            columns: [
+              { key: "name", label: "Name", type: "text" },
+              {
+                key: "status",
+                label: "Status",
+                type: "select",
+                options: ["Ready"],
+              },
+            ],
+          },
+        ],
+      })
+    ).toThrow()
+  })
+
   it("refuses a following date with no duration field", () => {
     expect(() =>
       defineTool({

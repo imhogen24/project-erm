@@ -111,7 +111,9 @@ const signature = z.object({
 // "staff", everyone holding one of `roles` as a company role, such as
 // D4.2's engineers. "column", the names the same record holds in `column` of
 // its `field` table as it is typed, such as D4.3's 3.0 engineers, taken from
-// its 2.0 roster.
+// its 2.0 roster. "roster", the names in `column` of the project's locked
+// `tool`'s `field` table, in its order, then the project's holders of
+// `roles`, such as D4.7's people: D4.3's rostered engineers and the PM.
 const peopleSource = z.discriminatedUnion("from", [
   z.strictObject({
     from: z.literal("staff"),
@@ -121,6 +123,13 @@ const peopleSource = z.discriminatedUnion("from", [
     from: z.literal("column"),
     field: fieldKey,
     column: fieldKey,
+  }),
+  z.strictObject({
+    from: z.literal("roster"),
+    tool: z.string().min(1),
+    field: fieldKey,
+    column: fieldKey,
+    roles: z.array(z.enum(roles)).min(1).optional(),
   }),
 ])
 
@@ -409,11 +418,16 @@ const table = z
     // Without `tool`, the rows follow another table of this record, one per
     // row of its `field`, such as D4.2's conflict check, one row per
     // request: the key column numbered, such as 3.1, 3.2, keys each row.
+    // With `addRows`, rows read from another tool are followed by rows the
+    // person adds and removes, such as D4.7's attendees beyond D4.3's
+    // roster. Such a row holds no key, and the person types its system
+    // columns too; it is stored as it is.
     rowsFrom: z
       .strictObject({
         tool: z.string().min(1).optional(),
         field: fieldKey,
         keyedBy: fieldKey,
+        addRows: z.boolean().optional(),
       })
       .optional(),
     // Read only, as `readOnly`, while the record's select `field` holds
@@ -1287,6 +1301,15 @@ const toolDefinition = z
       // Rows that follow another table of this record need that table.
       const own = field.rowsFrom
       const source = value.fields.find((entry) => entry.key === own?.field)
+
+      if (own?.addRows && !own.tool) {
+        context.addIssue({
+          code: "custom",
+          path: ["fields", fieldIndex, "rowsFrom", "addRows"],
+          message:
+            "Only rows read from another tool are followed by added ones",
+        })
+      }
 
       if (
         own &&

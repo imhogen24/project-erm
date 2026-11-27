@@ -281,6 +281,7 @@ export const extraApprovers = new Map<string, readonly Role[]>([
   ["D3.11", ["PM"]],
   ["D4.2", ["HE"]],
   ["D4.3", ["HE"]],
+  ["D4.7", ["PM"]],
 ])
 
 // Who writes a tool is decided with the tool too. A review that the matrix

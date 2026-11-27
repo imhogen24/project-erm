@@ -75,6 +75,8 @@ import { KICKOFF_DECK } from "@/lib/kickoff-deck"
 import { kickoffDeckValues } from "@/server/team/kickoff-deck"
 import { KICKOFF_INVITE } from "@/lib/kickoff-invite"
 import { kickoffInviteValues } from "@/server/team/kickoff-invite"
+import { KICKOFF_NOTES } from "@/lib/kickoff-notes"
+import { kickoffMinutesValues } from "@/server/team/kickoff-notes"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -354,6 +356,10 @@ async function workedOut(
 
     case KICKOFF_INVITE: {
       return await kickoffInviteValues(database, projectId, payload)
+    }
+
+    case KICKOFF_NOTES: {
+      return await kickoffMinutesValues(database, projectId, payload)
     }
 
     default: {

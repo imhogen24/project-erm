@@ -149,13 +149,23 @@ function tableSchema(table: TableField) {
   // such as D3.2's SN, which the form sends back as it was shown.
   const keyedBy = table.rowsFrom?.keyedBy
 
+  // A row the person adds after them (`addRows`), such as D4.7's attendee
+  // beyond D4.3's roster, has its system columns typed too. The server keeps
+  // them only in such a row (server/records/read-only.ts).
+  const typedTooInAdded = (column: Column) =>
+    table.rowsFrom?.addRows === true &&
+    column.systemFilled === true &&
+    !column.numbered
+
   const row = z.strictObject(
     Object.fromEntries(
       table.columns.map((column) => [
         column.key,
         column.key === keyedBy
           ? z.string({ error: "Must be text" }).optional()
-          : cellSchema(column).optional(),
+          : typedTooInAdded(column)
+            ? cellSchema({ ...column, systemFilled: false }).optional()
+            : cellSchema(column).optional(),
       ])
     ),
     { error: "Must be a row of cells" }

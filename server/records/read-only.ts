@@ -149,14 +149,27 @@ export function keepReadOnly(
       (column) => !column.systemFilled && !column.inherited && !column.numbered
     )
 
-    kept[field.key] = rows.data.map((row) => ({
-      [keyedBy]: row[keyedBy] ?? null,
-      ...Object.fromEntries(
-        written.flatMap((column) =>
+    // A row the person added after the sourced ones (`addRows`) holds no
+    // key and is kept as typed, its system columns too.
+    const typedToo = field.columns.filter(
+      (column) => column.systemFilled && !column.numbered
+    )
+
+    const cellsOf = (
+      row: (typeof rows.data)[number],
+      columns: typeof written
+    ) =>
+      Object.fromEntries(
+        columns.flatMap((column) =>
           row[column.key] === undefined ? [] : [[column.key, row[column.key]]]
         )
-      ),
-    }))
+      )
+
+    kept[field.key] = rows.data.map((row) =>
+      field.rowsFrom?.addRows && !row[keyedBy]
+        ? cellsOf(row, [...written, ...typedToo])
+        : { [keyedBy]: row[keyedBy] ?? null, ...cellsOf(row, written) }
+    )
   }
 
   // A system-filled value, such as the client's choice on D1.5, is written

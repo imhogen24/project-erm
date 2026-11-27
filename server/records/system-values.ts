@@ -71,6 +71,8 @@ import { TEAM_ASSIGNMENT } from "@/lib/team-assignment"
 import { assignmentValues } from "@/server/team/team-assignment"
 import { ACCESS_LOG } from "@/lib/access-log"
 import { accessLogValues } from "@/server/team/access-log"
+import { KICKOFF_DECK } from "@/lib/kickoff-deck"
+import { kickoffDeckValues } from "@/server/team/kickoff-deck"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -342,6 +344,10 @@ async function workedOut(
         projectId,
         record ? { id: record.id, payload } : null
       )
+    }
+
+    case KICKOFF_DECK: {
+      return await kickoffDeckValues(database, projectId, payload)
     }
 
     default: {

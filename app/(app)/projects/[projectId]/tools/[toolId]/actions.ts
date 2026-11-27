@@ -23,6 +23,10 @@ import { sendTransmittal } from "@/server/contract/transmittal"
 import { getDatabase } from "@/server/database"
 import { sendTransmittedInvoice } from "@/server/payments/transmitted-invoice"
 import { sendPaymentReceipt } from "@/server/payments/payment-receipt"
+import {
+  KickoffInviteNotReadyError,
+  sendKickoffInvite,
+} from "@/server/team/kickoff-invite"
 import { resubmitClientRequest } from "@/server/intake/client-requests"
 import {
   AgendaNotReadyError,
@@ -488,6 +492,35 @@ export async function sendNegotiationInviteAction(values: {
     } catch (error) {
       if (
         error instanceof InviteNotReadyError ||
+        error instanceof InviteRefusedError
+      ) {
+        return { status: "error", message: error.message }
+      }
+
+      throw error
+    }
+  })
+}
+
+// The PM's Send invite on D4.6: the internal kick-off to D4.3's rostered
+// engineers. What stops it comes back in words for the button.
+export async function sendKickoffInviteAction(values: {
+  recordId: string
+}): Promise<RecordResult> {
+  const parsed = recordInput.safeParse(values)
+
+  if (!parsed.success) {
+    return { status: "error", message: "Check the form and try again." }
+  }
+
+  const input = parsed.data
+
+  return attempt(async (actor) => {
+    try {
+      return done(await sendKickoffInvite(getDatabase(), actor, input.recordId))
+    } catch (error) {
+      if (
+        error instanceof KickoffInviteNotReadyError ||
         error instanceof InviteRefusedError
       ) {
         return { status: "error", message: error.message }

@@ -95,23 +95,20 @@ export async function assignmentValues(
   }
 }
 
-// As a D4.3 locks, each rostered engineer who holds no role on the project
-// is given AE on it, with an access log line, and told in the app and by
-// email (the returned emails), as when staff are assigned on the team page.
-// The system acts, not the HE. A name that is not one engineer, such as two
-// staff sharing it, is left for IT/Admin to assign by hand.
-export async function joinRoster(
-  transaction: Transaction,
-  projectId: string,
+// The engineers a D4.3 rosters, as staff: each name on 2.0 that is exactly
+// one person holding an engineering role. A name shared by two staff, or by
+// nobody, is left out.
+export async function rosterStaff(
+  database: Pick<Transaction, "selectDistinct">,
   payload: JsonObject
-): Promise<PendingEmail[]> {
+): Promise<{ id: string; name: string; email: string }[]> {
   const names = rosterEngineers(payload)
 
   if (names.length === 0) {
     return []
   }
 
-  const staff = await transaction
+  const staff = await database
     .selectDistinct({
       id: people.id,
       name: people.name,
@@ -126,11 +123,24 @@ export async function joinRoster(
       )
     )
 
-  const engineers = names.flatMap((name) => {
+  return names.flatMap((name) => {
     const matches = staff.filter((person) => person.name === name)
 
     return matches.length === 1 ? matches : []
   })
+}
+
+// As a D4.3 locks, each rostered engineer who holds no role on the project
+// is given AE on it, with an access log line, and told in the app and by
+// email (the returned emails), as when staff are assigned on the team page.
+// The system acts, not the HE. A name that is not one engineer, such as two
+// staff sharing it, is left for IT/Admin to assign by hand.
+export async function joinRoster(
+  transaction: Transaction,
+  projectId: string,
+  payload: JsonObject
+): Promise<PendingEmail[]> {
+  const engineers = await rosterStaff(transaction, payload)
 
   if (engineers.length === 0) {
     return []

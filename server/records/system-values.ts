@@ -73,6 +73,8 @@ import { ACCESS_LOG } from "@/lib/access-log"
 import { accessLogValues } from "@/server/team/access-log"
 import { KICKOFF_DECK } from "@/lib/kickoff-deck"
 import { kickoffDeckValues } from "@/server/team/kickoff-deck"
+import { KICKOFF_INVITE } from "@/lib/kickoff-invite"
+import { kickoffInviteValues } from "@/server/team/kickoff-invite"
 import { archiveValues } from "@/server/contract/archive"
 import { executedValues } from "@/server/contract/executed-contract"
 import { signatureValues } from "@/server/contract/signature-contract"
@@ -348,6 +350,10 @@ async function workedOut(
 
     case KICKOFF_DECK: {
       return await kickoffDeckValues(database, projectId, payload)
+    }
+
+    case KICKOFF_INVITE: {
+      return await kickoffInviteValues(database, projectId, payload)
     }
 
     default: {

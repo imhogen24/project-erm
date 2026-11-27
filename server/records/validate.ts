@@ -128,11 +128,15 @@ function selectSchema(cell: Extract<Field | Column, { type: "select" }>) {
 
   // People's names change, so a select of people takes any name, or one of
   // its own options.
+  const system = cell.systemOptions ?? []
+
   if (cell.optionsFromPeople) {
-    return z.string({ error: "Must be text" }).min(1, { error: "Pick one" })
+    return z
+      .string({ error: "Must be text" })
+      .min(1, { error: "Pick one" })
+      .refine((value) => !system.includes(value), { error: systemSets })
   }
 
-  const system = cell.systemOptions ?? []
   const choosable = cell.options.filter((option) => !system.includes(option))
 
   return z

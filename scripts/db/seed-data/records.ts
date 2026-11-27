@@ -1342,10 +1342,14 @@ function stageD214() {
   })
 }
 
+// D4.1's test project, where 2.2's D3.10 is signed, which opens Workbook 4.
+const technicalNotesProject = () => testProjectName("Tier_1", "D4.1")
+
 // D2.14 locked where the advance has cleared: on the project whose 2.2
-// receipt is sent, so D3.2 shows both milestones cleared.
+// receipt is sent, so D3.2 shows both milestones cleared, and on D4.1's
+// test project, so D4.1 starts on its start date.
 function advanceCleared(name: string): SeedRecord[] {
-  return name === RECEIPT_SENT_PROJECT
+  return name === RECEIPT_SENT_PROJECT || name === technicalNotesProject()
     ? [{ toolId: "D2.14", state: "locked", day: 54, payload: stageD214() }]
     : []
 }
@@ -1933,8 +1937,12 @@ function billingCycle(name: string): SeedRecord[] {
     ]
   }
 
-  if (name === UNBLOCK_SUBMITTED_PROJECT || name === UNBLOCK_APPROVED_PROJECT) {
-    const signed = name === UNBLOCK_APPROVED_PROJECT
+  if (
+    name === UNBLOCK_SUBMITTED_PROJECT ||
+    name === UNBLOCK_APPROVED_PROJECT ||
+    name === technicalNotesProject()
+  ) {
+    const signed = name !== UNBLOCK_SUBMITTED_PROJECT
 
     return [
       approved,

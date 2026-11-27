@@ -47,6 +47,7 @@ import { d38 } from "./wb03/tools/d3-8"
 import { d39 } from "./wb03/tools/d3-9"
 import { d310 } from "./wb03/tools/d3-10"
 import { d311 } from "./wb03/tools/d3-11"
+import { d41 } from "./wb04/tools/d4-1"
 
 // The one file that lists every tool definition from every workbook.
 export const allTools = [
@@ -95,6 +96,7 @@ export const allTools = [
   d39,
   d310,
   d311,
+  d41,
 ]
 
 // Fails when a workflow rule names a tool, field or option that is not
